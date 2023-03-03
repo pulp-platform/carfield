@@ -1,0 +1,34 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+package:
+  name: carfield
+  authors:
+    - "Luca Valente <luca.valente@unibo.it>"    
+    
+dependencies:
+  register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
+  axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: a8c204f1a3309df7cdabbd7c477c42a412ba9511 }
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
+
+workspace:
+  package_links:
+    cheshire: cheshire
+       
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+  # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+  # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+  # Level 0
+  - hw/carfield_pkg.sv
+  # Level 1
+  - hw/carfield.sv
+
+  - target: test
+    files:
+      - tb/hyp_vip/s27ks0641.v
+      - tb/carfield_fix.sv
+      - tb/carfield_tb.sv
+  
