@@ -10,6 +10,14 @@ include $(CHS_ROOT)/cheshire.mk
 
 elf-bin ?= $(CHS_ROOT)/sw/tests/helloworld.dram.elf
 
+ifdef gui
+	vsim-flag :=
+	run_and_exit := run -all
+else
+	vsim-flag := -c
+	run_and_exit := run_and_exit
+endif
+
 tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@
 
@@ -21,4 +29,4 @@ hw-build:
 	vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
 hw-sim:
-	vsim -c -do  "set BINARY $(elf-bin); set TESTBENCH tb_carfield_soc; source scripts/start_carfield.tcl ; run_and_exit ;"
+	vsim $(vsim-flag) -do  "set BINARY $(elf-bin); set TESTBENCH tb_carfield_soc; source scripts/start_carfield.tcl ; $(run_and_exit)"

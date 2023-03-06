@@ -34,6 +34,8 @@ module tb_carfield_soc;
 
     fix.wait_for_reset();
 
+    #600000ns;
+     
     // Load binaries into memory (if any)
     if ($value$plusargs("BINARY=%s", binary)) begin
       $display("[tb_cheshire_soc] BINARY = %s", binary);

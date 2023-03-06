@@ -522,7 +522,63 @@ module carfield_soc_fixture;
     */
   end
 
+  //////////////////
+  // AXI Monitors //
+  //////////////////
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
+  ) axi_llc_s_intf_dv (
+    .clk_i ( clk_sys )
+  );
 
+  typedef axi_test::axi_scoreboard #(
+    .IW( AxiXbarSlaveIdWidth ),
+    .AW( AxiAddrWidth        ),
+    .DW( AxiDataWidth        ),
+    .UW( AxiUserWidth        ),
+    .TT( TT                  )
+  ) axi_scoreboard_slv_t;
+   
+  `AXI_ASSIGN_FROM_REQ(axi_llc_s_intf_dv, i_dut_carfield_soc.i_cheshire_soc.i_axi_llc_reg_wrap.slv_req_i)
+  `AXI_ASSIGN_FROM_RESP(axi_llc_s_intf_dv,i_dut_carfield_soc.i_cheshire_soc.i_axi_llc_reg_wrap.slv_resp_o)      
+
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth          ),
+    .AXI_DATA_WIDTH ( AxiDataWidth          ),
+    .AXI_ID_WIDTH   ( AxiXbarSlaveIdWidth+1 ),
+    .AXI_USER_WIDTH ( AxiUserWidth          )
+  ) axi_llc_m_intf_dv (
+    .clk_i ( clk_sys )
+  );
+
+  typedef axi_test::axi_scoreboard #(
+    .IW( AxiXbarSlaveIdWidth+1 ),
+    .AW( AxiAddrWidth          ),
+    .DW( AxiDataWidth          ),
+    .UW( AxiUserWidth          ),
+    .TT( TT                    )
+  ) axi_scoreboard_dram_t;
+   
+  `AXI_ASSIGN_FROM_REQ(axi_llc_m_intf_dv,i_dut_carfield_soc.i_cheshire_soc.i_axi_llc_reg_wrap.mst_req_o)
+  `AXI_ASSIGN_FROM_RESP(axi_llc_m_intf_dv,i_dut_carfield_soc.i_cheshire_soc.i_axi_llc_reg_wrap.mst_resp_i)
+
+  initial begin : proc_sim_ctrl
+
+    automatic axi_scoreboard_slv_t    mst_scoreboard   = new( axi_llc_s_intf_dv );
+    automatic axi_scoreboard_dram_t   dram_scoreboard  = new( axi_llc_m_intf_dv );
+
+    mst_scoreboard.reset();
+    dram_scoreboard.reset();
+    mst_scoreboard.enable_all_checks();
+    dram_scoreboard.enable_all_checks();
+    @(posedge rst_n);
+    mst_scoreboard.monitor();
+    dram_scoreboard.monitor();
+
+  end
 
   /////////////////
   // Serial Link //
@@ -1001,27 +1057,30 @@ module carfield_soc_fixture;
         
   generate
      for (genvar i=0; i<NumPhys; i++) begin : hyperrams
+        for (genvar j=0; j<NumChips; j++) begin : chips
 
-        s27ks0641 #(
-          /*.mem_file_name ( "s27ks0641.mem"    ),*/
-          .TimingModel   ( "S27KS0641DPBHI020"    )
-        ) i_s27ks0641 (
-          .DQ7           ( hyper_dq_wire[i][7]      ),
-          .DQ6           ( hyper_dq_wire[i][6]      ),
-          .DQ5           ( hyper_dq_wire[i][5]      ),
-          .DQ4           ( hyper_dq_wire[i][4]      ),
-          .DQ3           ( hyper_dq_wire[i][3]      ),
-          .DQ2           ( hyper_dq_wire[i][2]      ),
-          .DQ1           ( hyper_dq_wire[i][1]      ),
-          .DQ0           ( hyper_dq_wire[i][0]      ),
-          .RWDS          ( hyper_rwds_wire[i]       ),
-          .CSNeg         ( hyper_cs_n_wire[i][0]    ),
-          .CK            ( hyper_ck_wire[i]         ),
-          .CKNeg         ( hyper_ck_n_wire[i]       ),
-          .RESETNeg      ( hyper_reset_n_wire[i]    )
-        );
+           s27ks0641 #(
+             /*.mem_file_name ( "s27ks0641.mem"    ),*/
+             .TimingModel   ( "S27KS0641DPBHI020"    )
+           ) i_s27ks0641 (
+             .DQ7           ( hyper_dq_wire[i][7]      ),
+             .DQ6           ( hyper_dq_wire[i][6]      ),
+             .DQ5           ( hyper_dq_wire[i][5]      ),
+             .DQ4           ( hyper_dq_wire[i][4]      ),
+             .DQ3           ( hyper_dq_wire[i][3]      ),
+             .DQ2           ( hyper_dq_wire[i][2]      ),
+             .DQ1           ( hyper_dq_wire[i][1]      ),
+             .DQ0           ( hyper_dq_wire[i][0]      ),
+             .RWDS          ( hyper_rwds_wire[i]       ),
+             .CSNeg         ( hyper_cs_n_wire[i][j]    ),
+             .CK            ( hyper_ck_wire[i]         ),
+             .CKNeg         ( hyper_ck_n_wire[i]       ),
+             .RESETNeg      ( hyper_reset_n_wire[i]    )
+           );
 
+        end // block: chips
      end // block: hyperrams
-  endgenerate
 
+  endgenerate
+   
 endmodule
