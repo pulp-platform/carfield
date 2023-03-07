@@ -8,10 +8,10 @@ package:
     - "Luca Valente <luca.valente@unibo.it>"    
     
 dependencies:
-  register_interface:       { git: "https://github.com/pulp-platform/register_interface.git",    rev: backport/steer-fix  }
-  axi: { git: https://github.com/pulp-platform/axi.git, version: =0.39.0-beta.4 }
-  cheshire: { git: https://github.com/pulp-platform/cheshire.git, rev: a5f34c642d8e69a0a34dd3143dc0d78cb84ccf20 }
-  hyperbus: { git: https://github.com/pulp-platform/hyperbus.git, rev: 80f137ce8904c78602b589918911f388d507e935 }
+  register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
+  axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: a8c204f1a3309df7cdabbd7c477c42a412ba9511 }
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
 
 workspace:
   package_links:

@@ -33,8 +33,6 @@ module tb_carfield_soc;
     end
 
     fix.wait_for_reset();
-
-    #600000ns;
      
     // Load binaries into memory (if any)
     if ($value$plusargs("BINARY=%s", binary)) begin
@@ -53,6 +51,8 @@ module tb_carfield_soc;
     fix.jtag_init();
 
     fix.jtag_cfg_llc_spm();
+
+    //#600000ns;
 
     fix.sl_preload();
 
