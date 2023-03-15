@@ -8,7 +8,9 @@ CHS_ROOT ?= ./cheshire
 
 include $(CHS_ROOT)/cheshire.mk
 
-elf-bin ?= $(CHS_ROOT)/sw/tests/helloworld.dram.elf
+testname ?= axi_llc
+memtype ?= dram
+elf-bin ?= $(CHS_ROOT)/sw/tests/$(testname)_test.$(memtype).elf
 
 ifdef gui
 	vsim-flag :=
@@ -25,7 +27,7 @@ scripts/carfield_compile.tcl:
 	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-hw-build:
+hw-build: scripts/carfield_compile.tcl
 	vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
 hw-sim:
