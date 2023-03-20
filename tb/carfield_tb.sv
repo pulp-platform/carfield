@@ -45,7 +45,7 @@ module tb_carfield_soc;
 
     end else begin
       // If no ELF file is provided jump to the beginning of the SPM
-      entry = cheshire_pkg::SpmBase;
+      entry = cheshire_pkg::BaseSpm;
     end
 
     fix.jtag_init();
@@ -66,7 +66,7 @@ module tb_carfield_soc;
     fix.jtag_run(entry);
 
     // Wait for the application to write the return value to the first scratch register
-    fix.jtag_wait_for_eoc(cheshire_pkg::ScratchRegsBase + 64'h4, exit_status);
+    fix.jtag_wait_for_eoc(carfield_pkg::CSRBase48 + 64'h4, exit_status);
 
     $finish;
   end
