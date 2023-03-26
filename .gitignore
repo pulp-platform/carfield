@@ -1,0 +1,7 @@
+.bender
+cheshire
+modelsim.ini
+scripts/carfield_compile.tcl
+tb/hyp_vip
+transcript
+work/

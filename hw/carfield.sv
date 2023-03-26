@@ -174,7 +174,7 @@ module carfield import carfield_pkg::*;
         .uart_dtr_no                    ,
         .uart_cts_ni                    ,
         .uart_dsr_ni                    ,
-        .uart_dcd_ni                    ,        
+        .uart_dcd_ni                    ,
         .uart_rin_ni                    ,
         // I2C interface
         .i2c_sda_o                      ,
@@ -259,22 +259,87 @@ module carfield import carfield_pkg::*;
     assign spim_csb_en_no   = ~spim_csb_en;
     assign spim_sd_en_no    = ~spim_sd_en;
 
-   for (genvar i = 0 ; i<HypNumPhys; i++) begin: pad_gen
-    for (genvar j = 0; j<HypNumChips; j++) begin
-      pad_functional_pd padinst_hyper_csno   (.OEN( 1'b0            ), .I( hyper_cs_n_wire[i][j] ), .O(                  ), .PAD( pad_hyper_csn[i][j] ) );
-    end
-    pad_functional_pd padinst_hyper_ck     (.OEN( 1'b0            ), .I( hyper_ck_wire[i]      ), .O(                  ), .PAD( pad_hyper_ck[i]     ) );
-    pad_functional_pd padinst_hyper_ckno   (.OEN( 1'b0            ), .I( hyper_ck_n_wire[i]    ), .O(                  ), .PAD( pad_hyper_ckn[i]    ) );
-    pad_functional_pd padinst_hyper_rwds0  (.OEN(~hyper_rwds_oe[i]), .I( hyper_rwds_o[i]       ), .O( hyper_rwds_i[i]  ), .PAD( pad_hyper_rwds[i]   ) );
-    pad_functional_pd padinst_hyper_resetn (.OEN( 1'b0            ), .I( hyper_reset_n_wire[i] ), .O(                  ), .PAD( pad_hyper_reset[i]  ) );
-    pad_functional_pd padinst_hyper_dqio0  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][0]      ), .O( hyper_dq_i[i][0] ), .PAD( pad_hyper_dq[i][0]  ) );
-    pad_functional_pd padinst_hyper_dqio1  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][1]      ), .O( hyper_dq_i[i][1] ), .PAD( pad_hyper_dq[i][1]  ) );
-    pad_functional_pd padinst_hyper_dqio2  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][2]      ), .O( hyper_dq_i[i][2] ), .PAD( pad_hyper_dq[i][2]  ) );
-    pad_functional_pd padinst_hyper_dqio3  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][3]      ), .O( hyper_dq_i[i][3] ), .PAD( pad_hyper_dq[i][3]  ) );
-    pad_functional_pd padinst_hyper_dqio4  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][4]      ), .O( hyper_dq_i[i][4] ), .PAD( pad_hyper_dq[i][4]  ) );
-    pad_functional_pd padinst_hyper_dqio5  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][5]      ), .O( hyper_dq_i[i][5] ), .PAD( pad_hyper_dq[i][5]  ) );
-    pad_functional_pd padinst_hyper_dqio6  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][6]      ), .O( hyper_dq_i[i][6] ), .PAD( pad_hyper_dq[i][6]  ) );
-    pad_functional_pd padinst_hyper_dqio7  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][7]      ), .O( hyper_dq_i[i][7] ), .PAD( pad_hyper_dq[i][7]  ) );
-   end
+    for (genvar i = 0 ; i<HypNumPhys; i++) begin : gen_hyper_phy
+      for (genvar j = 0; j<HypNumChips; j++) begin : gen_hyper_cs
+        pad_functional_pd padinst_hyper_csno (
+          .OEN ( 1'b0                  ),
+          .I   ( hyper_cs_n_wire[i][j] ),
+          .O   (                       ),
+          .PAD ( pad_hyper_csn[i][j]   )
+        );
+      end
+      pad_functional_pd padinst_hyper_ck (
+        .OEN ( 1'b0             ),
+        .I   ( hyper_ck_wire[i] ),
+        .O   (                  ),
+        .PAD ( pad_hyper_ck[i]  )
+      );
+      pad_functional_pd padinst_hyper_ckno   (
+        .OEN ( 1'b0               ),
+        .I   ( hyper_ck_n_wire[i] ),
+        .O   (                    ),
+        .PAD ( pad_hyper_ckn[i]   )
+      );
+      pad_functional_pd padinst_hyper_rwds0  (
+        .OEN (~hyper_rwds_oe[i]  ),
+        .I   ( hyper_rwds_o[i]   ),
+        .O   ( hyper_rwds_i[i]   ),
+        .PAD ( pad_hyper_rwds[i] )
+      );
+      pad_functional_pd padinst_hyper_resetn (
+        .OEN ( 1'b0                  ),
+        .I   ( hyper_reset_n_wire[i] ),
+        .O   (                       ),
+        .PAD ( pad_hyper_reset[i]    )
+      );
+      pad_functional_pd padinst_hyper_dqio0  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][0]   ),
+        .O   ( hyper_dq_i[i][0]   ),
+        .PAD ( pad_hyper_dq[i][0] )
+      );
+      pad_functional_pd padinst_hyper_dqio1  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][1]   ),
+        .O   ( hyper_dq_i[i][1]   ),
+        .PAD ( pad_hyper_dq[i][1] )
+      );
+      pad_functional_pd padinst_hyper_dqio2  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][2]   ),
+        .O   ( hyper_dq_i[i][2]   ),
+        .PAD ( pad_hyper_dq[i][2] )
+      );
+      pad_functional_pd padinst_hyper_dqio3  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][3]   ),
+        .O   ( hyper_dq_i[i][3]   ),
+        .PAD ( pad_hyper_dq[i][3] )
+      );
+      pad_functional_pd padinst_hyper_dqio4  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][4]   ),
+        .O   ( hyper_dq_i[i][4]   ),
+        .PAD ( pad_hyper_dq[i][4] )
+      );
+      pad_functional_pd padinst_hyper_dqio5  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][5]   ),
+        .O   ( hyper_dq_i[i][5]   ),
+        .PAD ( pad_hyper_dq[i][5] )
+      );
+      pad_functional_pd padinst_hyper_dqio6  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][6]   ),
+        .O   ( hyper_dq_i[i][6]   ),
+        .PAD ( pad_hyper_dq[i][6] )
+      );
+      pad_functional_pd padinst_hyper_dqio7  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][7]   ),
+        .O   ( hyper_dq_i[i][7]   ),
+        .PAD ( pad_hyper_dq[i][7] )
+      );
+    end // block: gen_hyper_phy
 
 endmodule

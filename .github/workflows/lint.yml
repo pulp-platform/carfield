@@ -1,0 +1,55 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+name: lint
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+
+  lint-license:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+    -
+      name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    -
+      name: Install Python requirements
+      run: |
+        cd .github
+        pip install -r requirements.txt
+    -
+      name: Intall license linter
+      run: |
+        cd .github
+        git clone https://github.com/lowRISC/misc-linters.git
+    -
+      name: Check license
+      run: |
+        echo "::add-matcher::.github/license-checker-matcher.json"
+        bash -c "set -e; .github/misc-linters/licence-checker/licence-checker.py --config .github/license-checker.hjson"
+        echo "::remove-matcher owner=license-checker-matcher::"
+
+  lint-sv:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v3
+    -
+      name: Run Verible
+      uses: chipsalliance/verible-linter-action@main
+      with:
+        paths: hw
+        extra_args: "--waiver_files .github/verible.waiver"
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        fail_on_error: true
+        reviewdog_reporter: github-check
