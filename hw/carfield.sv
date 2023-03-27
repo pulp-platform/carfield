@@ -2,11 +2,13 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Thomas Benz  <tbenz@ethz.ch>
+// Thomas Benz     <tbenz@ethz.ch>
+// Luca Valente    <luca.valente@unibo.it>
+// Yvan Tortorella <yvan.tortorella@unibo.it>
 
 /// Top-level implementation of Carfield
 module carfield import cheshire_pkg::*;#(
-    parameter cheshire_cfg_t Cfg = '0,
+    parameter cheshire_cfg_t Cfg = DefaultCfg, // from Cheshire package
     // AXI and REG types that must match Cheshire configuration
     parameter type axi_ext_mst_req_t  = logic,
     parameter type axi_ext_mst_rsp_t  = logic,
@@ -19,71 +21,64 @@ module carfield import cheshire_pkg::*;#(
     parameter int unsigned HypNumPhys  = 1,
     parameter int unsigned HypNumChips = 1
 ) (
-    input   logic               clk_i,
-    input   logic               rst_ni,
-
-    input   logic               testmode_i,
-
+    input   logic                                       clk_i,
+    input   logic                                       rst_ni,
+    input   logic                                       test_mode_i,
     // Boot mode selection
-    input   logic [1:0]         boot_mode_i,
-
-    // DDR-Link
-    input   logic [3:0]         ddr_link_i,
-    output  logic [3:0]         ddr_link_o,
-
-    input   logic               ddr_link_clk_i,
-    output  logic               ddr_link_clk_o,
-
-    // VGA Controller
-    output  logic                           vga_hsync_o,
-    output  logic                           vga_vsync_o,
-    output  logic [Cfg.VgaRedWidth-1:0]     vga_red_o,
-    output  logic [Cfg.VgaGreenWidth-1:0]   vga_green_o,
-    output  logic [Cfg.VgaBlueWidth-1:0]    vga_blue_o,
-
-    // JTAG Interface
-    input   logic               jtag_tck_i,
-    input   logic               jtag_trst_ni,
-    input   logic               jtag_tms_i,
-    input   logic               jtag_tdi_i,
-    output  logic               jtag_tdo_o,
-
-    // UART Interface
-    output logic                uart_tx_o,
-    input  logic                uart_rx_i,
-
-    // I2C Interface
-    output logic                i2c_sda_o,
-    input  logic                i2c_sda_i,
-    output logic                i2c_sda_en_no,
-    output logic                i2c_scl_o,
-    input  logic                i2c_scl_i,
-    output logic                i2c_scl_en_no,
-
-    // SPI Host Interface
-    output logic                spim_sck_o,
-    output logic                spim_sck_en_no,
-    output logic [ 1:0]         spim_csb_o,
-    output logic [ 1:0]         spim_csb_en_no,
-    output logic [ 3:0]         spim_sd_o,
-    output logic [ 3:0]         spim_sd_en_no,
-    input  logic [ 3:0]         spim_sd_i,
-
+    input   logic [1:0]                                 boot_mode_i,
     // CLINT
-    input  logic                rtc_i,
-
-    // hyperbus clocks
-    input  logic                hyp_clk_phy_i,
-    input  logic                hyp_rst_phy_ni,
-
-    // hyperbus
+    input   logic                                       rtc_i,
+    // JTAG Interface
+    input   logic                                       jtag_tck_i,
+    input   logic                                       jtag_trst_ni,
+    input   logic                                       jtag_tms_i,
+    input   logic                                       jtag_tdi_i,
+    output  logic                                       jtag_tdo_o,
+    output  logic                                       jtag_tdo_oe_o,
+    // UART Interface
+    output logic                                        uart_tx_o,
+    input  logic                                        uart_rx_i,
+    // UART Modem flow control
+    output logic                                        uart_rts_no,
+    output logic                                        uart_dtr_no,
+    input  logic                                        uart_cts_ni,
+    input  logic                                        uart_dsr_ni,
+    input  logic                                        uart_dcd_ni,
+    input  logic                                        uart_rin_ni,
+    // I2C Interface
+    output logic                                        i2c_sda_o,
+    input  logic                                        i2c_sda_i,
+    output logic                                        i2c_sda_en_no,
+    output logic                                        i2c_scl_o,
+    input  logic                                        i2c_scl_i,
+    output logic                                        i2c_scl_en_no,
+    // SPI Host Interface
+    output logic                                        spih_sck_o,
+    output logic                                        spih_sck_en_no,
+    output logic [SpihNumCs-1:0]                        spih_csb_o,
+    output logic [SpihNumCs-1:0]                        spih_csb_en_no,
+    output logic [ 3:0]                                 spih_sd_o,
+    output logic [ 3:0]                                 spih_sd_en_no,
+    input  logic [ 3:0]                                 spih_sd_i,
+    // GPIO interface
+    input  logic [31:0]                                 gpio_i,
+    output logic [31:0]                                 gpio_o,
+    output logic [31:0]                                 gpio_en_o,
+    // Serial link interface
+    input  logic [SlinkNumChan-1:0]                     slink_rcv_clk_i,
+    output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
+    input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
+    output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
+    // HyperBus clocks
+    input  logic                                        hyp_clk_phy_i,
+    input  logic                                        hyp_rst_phy_ni,
     // Physical interace: facing HyperBus
-    inout  [HypNumPhys-1:0][HypNumChips-1:0]  pad_hyper_csn,
-    inout  [HypNumPhys-1:0]                   pad_hyper_ck,
-    inout  [HypNumPhys-1:0]                   pad_hyper_ckn,
-    inout  [HypNumPhys-1:0]                   pad_hyper_rwds,
-    inout  [HypNumPhys-1:0]                   pad_hyper_reset,
-    inout  [HypNumPhys-1:0][7:0]              pad_hyper_dq   
+    inout  [HypNumPhys-1:0][HypNumChips-1:0]            pad_hyper_csn,
+    inout  [HypNumPhys-1:0]                             pad_hyper_ck,
+    inout  [HypNumPhys-1:0]                             pad_hyper_ckn,
+    inout  [HypNumPhys-1:0]                             pad_hyper_rwds,
+    inout  [HypNumPhys-1:0]                             pad_hyper_reset,
+    inout  [HypNumPhys-1:0][7:0]                        pad_hyper_dq
 );
 
   // Generate indices and get maps for all ports
@@ -106,8 +101,8 @@ module carfield import cheshire_pkg::*;#(
     axi_llc_mst_rsp_t dram_rsp;
 
     // hyper cfg
-    reg_req_t external_reg_req;
-    reg_rsp_t external_reg_rsp;
+    reg_req_t ext_reg_req;
+    reg_rsp_t ext_reg_rsp;
 
     // local output enable flipped
     logic        i2c_sda_en;
@@ -129,8 +124,8 @@ module carfield import cheshire_pkg::*;#(
 
     // the SoC
     cheshire_soc #(
-        .CheshireCfg(Cfg),
-        // AXI and REG types that must match Cheshire configuration
+        .CheshireCfg       ( Cfg               ),
+        .ExtHartinfo       ( '0                ),
         .axi_ext_mst_req_t ( axi_ext_mst_req_t ),
         .axi_ext_mst_rsp_t ( axi_ext_mst_rsp_t ),
         .axi_llc_mst_req_t ( axi_llc_mst_req_t ),
@@ -139,46 +134,81 @@ module carfield import cheshire_pkg::*;#(
         .axi_ext_slv_rsp_t ( axi_ext_slv_rsp_t ),
         .reg_req_t         ( reg_req_t         ),
         .reg_rsp_t         ( reg_rsp_t         )
-    ) i_cheshire_soc (
-        .clk_i,
-        .rst_ni,
-        .testmode_i,
-        .boot_mode_i,
-        .boot_addr_i        ( carfield_pkg::carfield_boot_addr ),
-        .axi_llc_mst_req_o  ( dram_req                         ),
-        .axi_llc_mst_rsp_i  ( dram_resp                        ),
-        .ddr_link_i,
-        .ddr_link_o,
-        .ddr_link_clk_i,
-        .ddr_link_clk_o,
-        .vga_hsync_o,
-        .vga_vsync_o,
-        .jtag_tck_i,
-        .jtag_trst_ni,
-        .jtag_tms_i,
-        .jtag_tdi_i,
-        .jtag_tdo_o,
-        .uart_tx_o,
-        .uart_rx_i,
+    ) i_cheshire_soc       (
+        .clk_i                          ,
+        .rst_ni                         ,
+        .test_mode_i                    ,
+        .boot_mode_i                    ,
+        .rtc_i                          ,
+        // External AXI LLC (DRAM) port
+        .axi_llc_mst_req_o ( dram_req  ),
+        .axi_llc_mst_rsp_i ( dram_resp ),
+        // External AXI crossbar ports
+        .axi_ext_mst_req_i ( '0        ),
+        .axi_ext_mst_rsp_o (           ),
+        .axi_ext_slv_req_o (           ),
+        .axi_ext_slv_rsp_i ( '0        ),
+        // External reg demux slaves
+        .reg_ext_slv_req_o (ext_reg_req),
+        .reg_ext_slv_rsp_i (ext_reg_rsp),
+        // Interrupts from external devices
+        .intr_ext_i        ( '0        ),
+        // Interrupts to external harts
+        .meip_ext_o        (           ),
+        .seip_ext_o        (           ),
+        .mtip_ext_o        (           ),
+        .msip_ext_o        (           ),
+        // Debug interface to external harts
+        .dbg_active_o      (           ),
+        .dbg_ext_req_o     (           ),
+        .dbg_ext_unavail_i ( '0        ),
+        // JTAG interface
+        .jtag_tck_i                     ,
+        .jtag_trst_ni                   ,
+        .jtag_tms_i                     ,
+        .jtag_tdi_i                     ,
+        .jtag_tdo_o                     ,
+        .jtag_tdo_oe_o                  ,
+        // UART interface
+        .uart_tx_o                      ,
+        .uart_rx_i                      ,
+        // UART Modem flow control
+        .uart_rts_no                    ,
+        .uart_dtr_no                    ,
+        .uart_cts_ni                    ,
+        .uart_dsr_ni                    ,
+        .uart_dcd_ni                    ,        
+        .uart_rin_ni                    ,
         // I2C interface
-        .i2c_sda_o,
-        .i2c_sda_i,
-        .i2c_sda_en_o       ( i2c_sda_en                    ),
-        .i2c_scl_o,
-        .i2c_scl_i,
-        .i2c_scl_en_o       ( i2c_scl_en                    ),
+        .i2c_sda_o                      ,
+        .i2c_sda_i                      ,
+        .i2c_sda_en_o     ( i2c_sda_en ),
+        .i2c_scl_o                      ,
+        .i2c_scl_i                      ,
+        .i2c_scl_en_o     ( i2c_scl_en ),
         // SPI host interface
-        .spim_sck_o,
-        .spim_sck_en_o      ( spim_sck_en                   ),
-        .spim_csb_o,
-        .spim_csb_en_o      ( spim_csb_en                   ),
-        .spim_sd_o,
-        .spim_sd_en_o       ( spim_sd_en                    ),
-        .spim_sd_i,
-        .rtc_i,
-        .clk_locked_i       ( 1'b0                          ), // tied-off
-        .external_reg_req_o ( external_reg_req              ),
-        .external_reg_rsp_i ( external_reg_rsp              )
+        .spih_sck_o                     ,
+        .spih_sck_en_o   ( spim_sck_en ),
+        .spih_csb_o                     ,
+        .spih_csb_en_o   ( spim_csb_en ),
+        .spih_sd_o                      ,
+        .spih_sd_en_o    ( spim_sd_en  ),
+        .spih_sd_i                      ,
+        // GPIO interface
+        .gpio_i                         ,
+        .gpio_o                         ,
+        .gpio_en_o                      ,
+        // Serial link interface
+        .slink_rcv_clk_i                ,
+        .slink_rcv_clk_o                ,
+        .slink_i                        ,
+        .slink_o                        ,
+        // VGA interface
+        .vga_hsync_o (                 ),
+        .vga_vsync_o (                 ),
+        .vga_red_o   (                 ),
+        .vga_green_o (                 ),
+        .vga_blue_o  (                 )
     );
 
     // hyperbus memory

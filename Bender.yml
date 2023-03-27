@@ -10,7 +10,7 @@ package:
 dependencies:
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: bd6fd4be9b2ab9ade9c60e2eabc028801ef4b2b5 } # branch: sim
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: ee505405ac81f873342d5d6632c66c740a56f81e } # branch: sim
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
 
 workspace:
