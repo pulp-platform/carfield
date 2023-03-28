@@ -124,16 +124,16 @@ module carfield import cheshire_pkg::*;#(
 
     // the SoC
     cheshire_soc #(
-        .CheshireCfg       ( Cfg               ),
+        .Cfg               ( Cfg               ),
         .ExtHartinfo       ( '0                ),
+        .axi_ext_llc_req_t ( axi_llc_mst_req_t ),
+        .axi_ext_llc_rsp_t ( axi_llc_mst_rsp_t ),
         .axi_ext_mst_req_t ( axi_ext_mst_req_t ),
         .axi_ext_mst_rsp_t ( axi_ext_mst_rsp_t ),
-        .axi_llc_mst_req_t ( axi_llc_mst_req_t ),
-        .axi_llc_mst_rsp_t ( axi_llc_mst_rsp_t ),
         .axi_ext_slv_req_t ( axi_ext_slv_req_t ),
         .axi_ext_slv_rsp_t ( axi_ext_slv_rsp_t ),
-        .reg_req_t         ( reg_req_t         ),
-        .reg_rsp_t         ( reg_rsp_t         )
+        .reg_ext_req_t     ( reg_req_t         ),
+        .reg_ext_rsp_t     ( reg_rsp_t         )
     ) i_cheshire_soc       (
         .clk_i                          ,
         .rst_ni                         ,

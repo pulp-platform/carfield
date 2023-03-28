@@ -813,7 +813,7 @@ module carfield_soc_fixture;
     // Boot mode selection
     .boot_mode_i      ( bootmode           ),
     // CLINT
-    .rtc_             ( clk_rtc            ),
+    .rtc_i            ( clk_rtc            ),
     // JTAG Interface
     .jtag_tck_i       ( jtag_tck           ),
     .jtag_trst_ni     ( jtag_trst_n        ),
