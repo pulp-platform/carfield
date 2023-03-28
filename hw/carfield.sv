@@ -6,18 +6,13 @@
 // Luca Valente    <luca.valente@unibo.it>
 // Yvan Tortorella <yvan.tortorella@unibo.it>
 
+`include "cheshire/typedef.svh"
+
 /// Top-level implementation of Carfield
-module carfield import cheshire_pkg::*;#(
-    parameter cheshire_cfg_t Cfg = DefaultCfg, // from Cheshire package
-    // AXI and REG types that must match Cheshire configuration
-    parameter type axi_ext_mst_req_t  = logic,
-    parameter type axi_ext_mst_rsp_t  = logic,
-    parameter type axi_llc_mst_req_t  = logic,
-    parameter type axi_llc_mst_rsp_t  = logic,
-    parameter type axi_ext_slv_req_t  = logic,
-    parameter type axi_ext_slv_rsp_t  = logic,
-    parameter type reg_req_t          = logic,
-    parameter type reg_rsp_t          = logic,
+module carfield import carfield_pkg::*;
+                import cheshire_pkg::*;
+#(
+    parameter cheshire_cfg_t Cfg = cheshire_pkg::DefaultCfg, // from Cheshire package
     parameter int unsigned HypNumPhys  = 1,
     parameter int unsigned HypNumChips = 1
 ) (
@@ -81,13 +76,15 @@ module carfield import cheshire_pkg::*;#(
     inout  [HypNumPhys-1:0][7:0]                        pad_hyper_dq
 );
 
+  `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
+
   // Generate indices and get maps for all ports
   localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
   localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
 
   // Define needed parameters
   localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
-  localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiOut.num_out);
+  localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
   // Type for address map entries
   typedef struct packed {
@@ -97,12 +94,12 @@ module carfield import cheshire_pkg::*;#(
   } addr_rule_t;
 
     // local AXI LLC -> Hyper
-    axi_llc_mst_req_t dram_req;
-    axi_llc_mst_rsp_t dram_rsp;
+    carfield_axi_llc_req_t dram_req;
+    carfield_axi_llc_rsp_t dram_rsp;
 
     // hyper cfg
-    reg_req_t ext_reg_req;
-    reg_rsp_t ext_reg_rsp;
+    carfield_reg_req_t ext_reg_req;
+    carfield_reg_rsp_t ext_reg_rsp;
 
     // local output enable flipped
     logic        i2c_sda_en;
@@ -124,16 +121,16 @@ module carfield import cheshire_pkg::*;#(
 
     // the SoC
     cheshire_soc #(
-        .Cfg               ( Cfg               ),
-        .ExtHartinfo       ( '0                ),
-        .axi_ext_llc_req_t ( axi_llc_mst_req_t ),
-        .axi_ext_llc_rsp_t ( axi_llc_mst_rsp_t ),
-        .axi_ext_mst_req_t ( axi_ext_mst_req_t ),
-        .axi_ext_mst_rsp_t ( axi_ext_mst_rsp_t ),
-        .axi_ext_slv_req_t ( axi_ext_slv_req_t ),
-        .axi_ext_slv_rsp_t ( axi_ext_slv_rsp_t ),
-        .reg_ext_req_t     ( reg_req_t         ),
-        .reg_ext_rsp_t     ( reg_rsp_t         )
+        .Cfg               ( Cfg                    ),
+        .ExtHartinfo       ( '0                     ),
+        .axi_ext_llc_req_t ( carfield_axi_llc_req_t ),
+        .axi_ext_llc_rsp_t ( carfield_axi_llc_rsp_t ),
+        .axi_ext_mst_req_t ( carfield_axi_mst_req_t ),
+        .axi_ext_mst_rsp_t ( carfield_axi_mst_rsp_t ),
+        .axi_ext_slv_req_t ( carfield_axi_slv_req_t ),
+        .axi_ext_slv_rsp_t ( carfield_axi_slv_rsp_t ),
+        .reg_ext_req_t     ( carfield_reg_req_t     ),
+        .reg_ext_rsp_t     ( carfield_reg_rsp_t     )
     ) i_cheshire_soc       (
         .clk_i                          ,
         .rst_ni                         ,
@@ -142,7 +139,7 @@ module carfield import cheshire_pkg::*;#(
         .rtc_i                          ,
         // External AXI LLC (DRAM) port
         .axi_llc_mst_req_o ( dram_req  ),
-        .axi_llc_mst_rsp_i ( dram_resp ),
+        .axi_llc_mst_rsp_i ( dram_rsp  ),
         // External AXI crossbar ports
         .axi_ext_mst_req_i ( '0        ),
         .axi_ext_mst_rsp_o (           ),
@@ -213,26 +210,26 @@ module carfield import cheshire_pkg::*;#(
 
     // hyperbus memory
     hyperbus #(
-        .NumChips         ( HypNumChips       ),
-        .NumPhys          ( HypNumPhys        ),
-        .IsClockODelayed  ( 1'b0              ),
-        .AxiAddrWidth     ( Cfg.AddrWidth     ),
-        .AxiDataWidth     ( Cfg.AxiDataWidth  ),
-        .AxiIdWidth       ( AxiSlvIdWidth     ),
-        .AxiUserWidth     ( Cfg.AxiUserWidth  ),
-        .axi_req_t        ( axi_llc_mst_req_t ),
-        .axi_rsp_t        ( axi_llc_mst_rsp_t ),
-        .RegAddrWidth     ( Cfg.AddrWidth     ),
-        .RegDataWidth     ( 32'd32            ),
-        .reg_req_t        ( reg_req_t         ),
-        .reg_rsp_t        ( reg_rsp_t         ),
-        .axi_rule_t       ( addr_rule_t       ),
-        .RxFifoLogDepth   ( 32'd2             ),
-        .TxFifoLogDepth   ( 32'd2             ),
-        .RstChipBase      ( 'h0               ),
-        .RstChipSpace     ( 'h1_0000          ),
-        .PhyStartupCycles ( 300 * 200         ),
-        .AxiLogDepth      ( 32'd3             )
+        .NumChips         ( HypNumChips            ),
+        .NumPhys          ( HypNumPhys             ),
+        .IsClockODelayed  ( 1'b0                   ),
+        .AxiAddrWidth     ( Cfg.AddrWidth          ),
+        .AxiDataWidth     ( Cfg.AxiDataWidth       ),
+        .AxiIdWidth       ( AxiSlvIdWidth+1        ),
+        .AxiUserWidth     ( Cfg.AxiUserWidth       ),
+        .axi_req_t        ( carfield_axi_llc_req_t ),
+        .axi_rsp_t        ( carfield_axi_llc_rsp_t ),
+        .RegAddrWidth     ( Cfg.AddrWidth          ),
+        .RegDataWidth     ( 32'd32                 ),
+        .reg_req_t        ( carfield_reg_req_t     ),
+        .reg_rsp_t        ( carfield_reg_rsp_t     ),
+        .axi_rule_t       ( addr_rule_t            ),
+        .RxFifoLogDepth   ( 32'd2                  ),
+        .TxFifoLogDepth   ( 32'd2                  ),
+        .RstChipBase      ( 'h0                    ),
+        .RstChipSpace     ( 'h1_0000               ),
+        .PhyStartupCycles ( 300 * 200              ),
+        .AxiLogDepth      ( 32'd3                  )
     ) i_hyperbus (
         .clk_phy_i       ( hyp_clk_phy_i      ),
         .rst_phy_ni      ( hyp_rst_phy_ni     ),
@@ -240,9 +237,9 @@ module carfield import cheshire_pkg::*;#(
         .rst_sys_ni      ( rst_ni             ),
         .test_mode_i     ( testmode_i         ),
         .axi_req_i       ( dram_req           ),
-        .axi_rsp_o       ( dram_resp          ),
-        .reg_req_i       ( external_reg_req   ),
-        .reg_rsp_o       ( external_reg_rsp   ),
+        .axi_rsp_o       ( dram_rsp           ),
+        .reg_req_i       ( ext_reg_req        ),
+        .reg_rsp_o       ( ext_reg_rsp        ),
         .hyper_cs_no     ( hyper_cs_n_wire    ),
         .hyper_ck_o      ( hyper_ck_wire      ),
         .hyper_ck_no     ( hyper_ck_n_wire    ),

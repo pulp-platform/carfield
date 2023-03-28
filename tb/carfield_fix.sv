@@ -8,6 +8,7 @@
 module carfield_soc_fixture;
 
   `include "cheshire/typedef.svh"
+  `include "axi/assign.svh"
 
   import cheshire_pkg::*;
   import carfield_pkg::*;
@@ -25,7 +26,8 @@ module carfield_soc_fixture;
   // Parameters  //
   /////////////////
 
-  localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
+  // localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
+  localparam cheshire_cfg_t DutCfg = cheshire_pkg::DefaultCfg;
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
   localparam time ClkPeriodSys    = 5ns;
@@ -45,6 +47,8 @@ module carfield_soc_fixture;
   localparam int ExitSuccess = 0;
   localparam int ExitFail    = 1;
   int exit_status            = ExitFail;  // per default we fail
+  logic [63:0] memory[bit [63:0]] = '{default: '0};
+  int sections [bit [63:0]];
 
   ////////////////////
   // Global Signals //
@@ -55,7 +59,7 @@ module carfield_soc_fixture;
   logic clk_jtag;
   logic clk_rtc;
   logic clk_hyp;
-   
+
   logic testmode;
   logic [1:0] bootmode;
 
@@ -137,7 +141,7 @@ module carfield_soc_fixture;
       sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 3, default: '0};
  
   // Define test bus and driver
-  JTAG_DV jtag_bus(jtag_tck);
+  JTAG_DV jtag(jtag_tck);
 
   typedef jtag_test::riscv_dbg #(
     .IrLength ( 5                   ),
@@ -145,14 +149,14 @@ module carfield_soc_fixture;
     .TT       ( ClkPeriodJTAG * TT  )
   ) riscv_dbg_t;
 
-  riscv_dbg_t::jtag_driver_t  jtag_dv   = new (jtag_bus);
+  riscv_dbg_t::jtag_driver_t  jtag_dv   = new (jtag);
   riscv_dbg_t                 jtag_dbg  = new (jtag_dv);
 
   // Connect DUT to test bus
-  assign jtag_trst_n  = jtag_bus.trst_n;
-  assign jtag_tms     = jtag_bus.tms;
-  assign jtag_tdi     = jtag_bus.tdi;
-  assign jtag_bus.tdo = jtag_tdo;
+  assign jtag_trst_n  = jtag.trst_n;
+  assign jtag_tms     = jtag.tms;
+  assign jtag_tdi     = jtag.tdi;
+  assign jtag.tdo = jtag_tdo;
 
   task automatic jtag_write(
     input dm::dm_csr_e addr,
@@ -340,284 +344,284 @@ module carfield_soc_fixture;
   //   dram_scoreboard.monitor();
   // 
   // end
-  // 
-  // /////////////////
-  // // Serial Link //
-  // /////////////////
-  // 
-  // AXI_BUS_DV #(
-  //   .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-  //   .AXI_DATA_WIDTH ( AxiDataWidth  ),
-  //   .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
-  //   .AXI_USER_WIDTH ( AxiUserWidth  )
-  // ) axi_bus_sl2tb (
-  //   .clk_i  ( clk_sys )
-  // );
-  // 
-  // AXI_BUS_DV #(
-  //   .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-  //   .AXI_DATA_WIDTH ( AxiDataWidth  ),
-  //   .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
-  //   .AXI_USER_WIDTH ( AxiUserWidth  )
-  // ) axi_bus_tb2sl (
-  //   .clk_i  ( clk_sys )
-  // );
-  // 
-  // axi_mst_req_t sl_out_req, sl_in_req;
-  // axi_mst_rsp_t sl_out_resp, sl_in_resp;
-  // 
-  // // From the Serial Link to the Testbench
-  // `AXI_ASSIGN_FROM_REQ(axi_bus_sl2tb, sl_out_req)
-  // `AXI_ASSIGN_TO_RESP(sl_out_resp, axi_bus_sl2tb)
-  // 
-  // // From the Testbench to the Serial Link
-  // `AXI_ASSIGN_TO_REQ(sl_in_req, axi_bus_tb2sl)
-  // `AXI_ASSIGN_FROM_RESP(axi_bus_tb2sl, sl_in_resp)
-  // 
-  // logic [3:0]   sl_ddr_data_o, sl_ddr_data_i;
-  // logic         sl_ddr_clk_o, sl_ddr_clk_i;
-  // 
-  // serial_link #(
-  //   .axi_req_t      ( axi_mst_req_t     ),
-  //   .axi_rsp_t      ( axi_mst_rsp_t     ),
-  //   .cfg_req_t      ( reg_a48_d32_req_t ),
-  //   .cfg_rsp_t      ( reg_a48_d32_rsp_t ),
-  //   .aw_chan_t      ( axi_mst_aw_chan_t ),
-  //   .ar_chan_t      ( axi_mst_ar_chan_t ),
-  //   .r_chan_t       ( axi_mst_r_chan_t  ),
-  //   .w_chan_t       ( axi_mst_w_chan_t  ),
-  //   .b_chan_t       ( axi_mst_b_chan_t  ),
-  //   .hw2reg_t       (serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t),
-  //   .reg2hw_t       (serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t),
-  //   .NumChannels    ( 1                                 ),
-  //   .NumLanes       ( 4                                 ),
-  //   .MaxClkDiv      ( CarfieldCfgDefault.SlinkMaxClkDiv )
-  // ) i_fix_serial_link (
-  //   // There are 3 different clock/resets:
-  //   // 1) clk_i & rst_ni: "always-on" clock & reset coming from the SoC domain. Only config registers are conected to this clock
-  //   // 2) clk_sl_i & rst_sl_ni: Same as 1) but clock is gated and reset is SW synchronized.
-  //   // 3) clk_reg_i & rst_reg_ni: peripheral clock and reset. Only connected to RegBus CDC
-  //   // W/o clock gating, reset synchronization -> tie clk_sl_i to clk_i resp. rst_sl_ni to rst_ni
-  //   .clk_i          ( clk_sys       ),
-  //   .rst_ni         ( rst_n         ),
-  //   .clk_sl_i       ( clk_sys       ),
-  //   .rst_sl_ni      ( rst_n         ),
-  //   .clk_reg_i      ( clk_sys       ),
-  //   .rst_reg_ni     ( rst_n         ),
-  //   .testmode_i     ( testmode      ),
-  //   .axi_in_req_i   ( sl_in_req     ),
-  //   .axi_in_rsp_o   ( sl_in_resp    ),
-  //   .axi_out_req_o  ( sl_out_req    ),
-  //   .axi_out_rsp_i  ( sl_out_resp   ),
-  //   .cfg_req_i      ( '0            ),
-  //   .cfg_rsp_o      (               ),
-  //   .ddr_rcv_clk_i  ( sl_ddr_clk_o  ),
-  //   .ddr_rcv_clk_o  ( sl_ddr_clk_i  ),
-  //   .ddr_i          ( sl_ddr_data_o ),
-  //   .ddr_o          ( sl_ddr_data_i ),
-  //   // AXI isolation signals (in/out), if not used tie to 0
-  //   .isolated_i     ( '0            ),
-  //   .isolate_o      (               ),
-  //   // Clock gate register
-  //   .clk_ena_o      (               ),
-  //   // synch-reset register
-  //   .reset_no       (               )
-  // );
-  // 
-  // // Random slave that keeps written data for the slave side
-  // axi_test::axi_rand_slave #(
-  //   .AW                   ( AxiAddrWidth                  ),
-  //   .DW                   ( AxiDataWidth                  ),
-  //   .IW                   ( AxiXbarMasterIdWidth          ),
-  //   .UW                   ( AxiUserWidth                  ),
-  //   .MAPPED               ( 1'b1                          ),
-  //   .TA                   ( TA                            ),
-  //   .TT                   ( TT                            ),
-  //   .RAND_RESP            ( 0                             ),
-  //   .AX_MIN_WAIT_CYCLES   ( 0                             ),
-  //   .AX_MAX_WAIT_CYCLES   ( 100                           ),
-  //   .R_MIN_WAIT_CYCLES    ( 0                             ),
-  //   .R_MAX_WAIT_CYCLES    ( 5                             ),
-  //   .RESP_MIN_WAIT_CYCLES ( 0                             ),
-  //   .RESP_MAX_WAIT_CYCLES ( 20                            )
-  // ) sl_axi_rand_slave = new (axi_bus_sl2tb);
-  // 
-  // 
-  // // Start the rand slave directly from the beginning
-  // initial begin
-  //   sl_axi_rand_slave.run();
-  // end
-  // 
-  // // An AXI driver for the master side
-  // typedef axi_test::axi_driver #(
-  //   .AW     ( AxiAddrWidth    ),
-  //   .DW     ( AxiDataWidth    ),
-  //   .IW     ( AxiXbarMasterIdWidth ),
-  //   .UW     ( AxiUserWidth    ),
-  //   .TA     ( TA              ),
-  //   .TT     ( TT              )
-  // ) sl_axi_driver_t;
-  // 
-  // sl_axi_driver_t sl_axi_driver = new (axi_bus_tb2sl);
-  // 
-  // initial begin
-  //   @(negedge rst_n);
-  //   sl_axi_driver.reset_master();
-  // end
-  // 
-  // // Write data from queue with given granularity (1, 2, 4 or 8 bytes)
-  // task automatic sl_write_size(
-  //   input logic [AxiAddrWidth-1:0]  addr,
-  //   input logic [3:0]               size,
-  //   ref logic   [AxiDataWidth-1:0]  data [$]
-  // );
-  //   automatic sl_axi_driver_t::ax_beat_t ax = new();
-  //   automatic sl_axi_driver_t::w_beat_t w = new();
-  //   automatic sl_axi_driver_t::b_beat_t b;
-  //   automatic int i = 0;
-  //   automatic int size_bytes = (1 << size);
-  // 
-  //   @(posedge clk_sys);
-  // 
-  //   sl_axi_driver.reset_master();  
-  //   
-  //   //$display("[SL] Write address: %h, len: %0d", addr, data.size()-1);
-  //   ax.ax_addr  = addr;
-  //   ax.ax_id    = '0;
-  //   ax.ax_len   = data.size() - 1;
-  //   ax.ax_size  = size;
-  //   ax.ax_burst = axi_pkg::BURST_INCR;
-  // 
-  //   sl_axi_driver.cycle_start();
-  //   sl_axi_driver.cycle_end();
-  //    
-  //   //$write("[SL] - Sending AW... ");
-  //   sl_axi_driver.send_aw(ax);
-  // 
-  //   sl_axi_driver.cycle_start();
-  //   sl_axi_driver.cycle_end();
-  //   
-  //   //$display("OK");
-  //   //$display("[SL] - Writing burst data");
-  //    
-  //   do begin
-  //     w.w_strb = (~('1 << size_bytes)) << addr[$clog2(AxiDataWidth)-1:0];
-  //     w.w_data = data[i];
-  //     w.w_last = (i == ax.ax_len);
-  // 
-  //     sl_axi_driver.cycle_start();
-  //     sl_axi_driver.cycle_end();
-  //      
-  //     sl_axi_driver.send_w(w);
-  // 
-  //     sl_axi_driver.cycle_start();
-  //     sl_axi_driver.cycle_end();
-  //        
-  //     i++;
-  //     addr += size_bytes;
-  //     addr &= size_bytes - 1;
-  //   end while (i <= ax.ax_len);
-  //   
-  //   //$write("[SL] - Waiting for B... ");
-  //   sl_axi_driver.recv_b(b);
-  // 
-  //   //$display("OK (1)");
-  // endtask
-  // 
-  // task automatic sl_read_size(
-  //   input logic [AxiAddrWidth-1:0]  addr,
-  //   input logic [3:0]               size,
-  //   input logic [7:0]               len,
-  //   ref logic   [AxiDataWidth-1:0]  data [$]
-  // );
-  //   automatic sl_axi_driver_t::ax_beat_t ax = new();
-  //   automatic sl_axi_driver_t::r_beat_t r;
-  // 
-  //   @(posedge clk_sys);
-  // 
-  //   sl_axi_driver.reset_master();
-  //    
-  //   $display("[SL] Read address: %h, len: %0d", addr, len);
-  //   ax.ax_addr  = addr;
-  //   ax.ax_id    = '0;
-  //   ax.ax_len   = len;
-  //   ax.ax_size  = size;
-  //   ax.ax_burst = axi_pkg::BURST_INCR;
-  // 
-  //   sl_axi_driver.cycle_start();
-  //   sl_axi_driver.cycle_end();
-  //    
-  //   $write("[SL] - Sending AR... ");
-  //   sl_axi_driver.send_ar(ax);
-  // 
-  //   sl_axi_driver.cycle_start();
-  //   sl_axi_driver.cycle_end();
-  //   
-  //   $display("OK");
-  // 
-  //   do begin
-  //     $write("[SL] - Receiving R... ");
-  //     sl_axi_driver.recv_r(r);
-  // 
-  //     $display("OK");
-  //     data.push_back(r.r_data);
-  // 
-  //   end while (!r.r_last);
-  // endtask
-  // 
-  // // Preload the ELF sections using 64-bit bursts
-  // task sl_preload;
-  //   logic [AxiDataWidth-1:0] wdata [$];
-  //   int loopcount;
-  // 
-  //   $display("[SL] Preloading ELF sections");
-  // 
-  //   foreach (sections[addr]) begin
-  //     $display("[SL] Writing section 0x%x (%0d words)", addr * 8, sections[addr]);
-  // 
-  //     for (int i = 0; i < sections[addr]/256; i++) begin
-  //       wdata = {};
-  // 
-  //       // Load the queue for one burst
-  //       for(int k = 0; k < 256; k++) begin
-  //         wdata.push_back(memory[addr + 256*i + k]);
-  //       end
-  // 
-  //       $display(" - Word %0d/%0d (%0d%%)", i*256, sections[addr], i*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-  //       sl_write_size(((addr + i*256) * 8), 3, wdata);
-  // 
-  //       loopcount = i+1;
-  //     end
-  // 
-  //     // Complete the remainder in a shorter burst
-  //     if(loopcount*256 < sections[addr]) begin
-  //       wdata = {};
-  // 
-  //       for(int k = loopcount*256; k < sections[addr]; k++) begin
-  //         wdata.push_back(memory[addr + k]);
-  //       end
-  // 
-  //       $display(" - Word %0d/%0d (%0d%%)", loopcount*256, sections[addr], loopcount*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
-  //       sl_write_size(((addr + loopcount*256) * 8), 3, wdata);
-  //     end
-  //   end // foreach (sections[addr])
-  // 
-  //   $display("[SL] Preload completed");
-  //    
-  // endtask
-  // 
-  // 
-  // // Randomize memory contents
-  // task sl_rand(
-  //   input logic [AxiAddrWidth-1:0]  addr,
-  //   input logic [AxiDataWidth-1:0]  len
-  // );
-  //   logic [AxiDataWidth-1:0] wdata [$];
-  //   logic [AxiDataWidth-1:0] random_data;
-  //   int loopcount;
-  // 
-  //   $display("[SL] Randomizing 0x%h -> 0x%h", addr, addr+len);
   // To be removed: end
+
+  /////////////////
+  // Serial Link //
+  /////////////////
+
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
+  ) axi_bus_sl2tb (
+    .clk_i  ( clk_sys )
+  );
+
+  AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiXbarMasterIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
+  ) axi_bus_tb2sl (
+    .clk_i  ( clk_sys )
+  );
+
+  axi_mst_req_t sl_out_req, sl_in_req;
+  axi_mst_rsp_t sl_out_resp, sl_in_resp;
+
+  // From the Serial Link to the Testbench
+  `AXI_ASSIGN_FROM_REQ(axi_bus_sl2tb, sl_out_req)
+  `AXI_ASSIGN_TO_RESP(sl_out_resp, axi_bus_sl2tb)
+
+  // From the Testbench to the Serial Link
+  `AXI_ASSIGN_TO_REQ(sl_in_req, axi_bus_tb2sl)
+  `AXI_ASSIGN_FROM_RESP(axi_bus_tb2sl, sl_in_resp)
+
+  logic [3:0]   sl_ddr_data_o, sl_ddr_data_i;
+  logic         sl_ddr_clk_o, sl_ddr_clk_i;
+
+  serial_link #(
+    .axi_req_t      ( axi_mst_req_t     ),
+    .axi_rsp_t      ( axi_mst_rsp_t     ),
+    .cfg_req_t      ( reg_req_t ),
+    .cfg_rsp_t      ( reg_rsp_t ),
+    .aw_chan_t      ( axi_mst_aw_chan_t ),
+    .ar_chan_t      ( axi_mst_ar_chan_t ),
+    .r_chan_t       ( axi_mst_r_chan_t  ),
+    .w_chan_t       ( axi_mst_w_chan_t  ),
+    .b_chan_t       ( axi_mst_b_chan_t  ),
+    .hw2reg_t       ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
+    .reg2hw_t       ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
+    .NumChannels    ( 1                                 ),
+    .NumLanes       ( 4                                 ),
+    .MaxClkDiv      ( CarfieldCfgDefault.SlinkMaxClkDiv )
+  ) i_fix_serial_link (
+    // There are 3 different clock/resets:
+    // 1) clk_i & rst_ni: "always-on" clock & reset coming from the SoC domain. Only config registers are conected to this clock
+    // 2) clk_sl_i & rst_sl_ni: Same as 1) but clock is gated and reset is SW synchronized.
+    // 3) clk_reg_i & rst_reg_ni: peripheral clock and reset. Only connected to RegBus CDC
+    // W/o clock gating, reset synchronization -> tie clk_sl_i to clk_i resp. rst_sl_ni to rst_ni
+    .clk_i          ( clk_sys       ),
+    .rst_ni         ( rst_n         ),
+    .clk_sl_i       ( clk_sys       ),
+    .rst_sl_ni      ( rst_n         ),
+    .clk_reg_i      ( clk_sys       ),
+    .rst_reg_ni     ( rst_n         ),
+    .testmode_i     ( testmode      ),
+    .axi_in_req_i   ( sl_in_req     ),
+    .axi_in_rsp_o   ( sl_in_resp    ),
+    .axi_out_req_o  ( sl_out_req    ),
+    .axi_out_rsp_i  ( sl_out_resp   ),
+    .cfg_req_i      ( '0            ),
+    .cfg_rsp_o      (               ),
+    .ddr_rcv_clk_i  ( sl_ddr_clk_o  ),
+    .ddr_rcv_clk_o  ( sl_ddr_clk_i  ),
+    .ddr_i          ( sl_ddr_data_o ),
+    .ddr_o          ( sl_ddr_data_i ),
+    // AXI isolation signals (in/out), if not used tie to 0
+    .isolated_i     ( '0            ),
+    .isolate_o      (               ),
+    // Clock gate register
+    .clk_ena_o      (               ),
+    // synch-reset register
+    .reset_no       (               )
+  );
+
+  // Random slave that keeps written data for the slave side
+  axi_test::axi_rand_slave #(
+    .AW                   ( AxiAddrWidth                  ),
+    .DW                   ( AxiDataWidth                  ),
+    .IW                   ( AxiXbarMasterIdWidth          ),
+    .UW                   ( AxiUserWidth                  ),
+    .MAPPED               ( 1'b1                          ),
+    .TA                   ( TA                            ),
+    .TT                   ( TT                            ),
+    .RAND_RESP            ( 0                             ),
+    .AX_MIN_WAIT_CYCLES   ( 0                             ),
+    .AX_MAX_WAIT_CYCLES   ( 100                           ),
+    .R_MIN_WAIT_CYCLES    ( 0                             ),
+    .R_MAX_WAIT_CYCLES    ( 5                             ),
+    .RESP_MIN_WAIT_CYCLES ( 0                             ),
+    .RESP_MAX_WAIT_CYCLES ( 20                            )
+  ) sl_axi_rand_slave = new (axi_bus_sl2tb);
+
+  // Start the rand slave directly from the beginning
+  initial begin
+    sl_axi_rand_slave.run();
+  end
+
+  // An AXI driver for the master side
+  typedef axi_test::axi_driver #(
+    .AW     ( AxiAddrWidth    ),
+    .DW     ( AxiDataWidth    ),
+    .IW     ( AxiXbarMasterIdWidth ),
+    .UW     ( AxiUserWidth    ),
+    .TA     ( TA              ),
+    .TT     ( TT              )
+  ) sl_axi_driver_t;
+
+  sl_axi_driver_t sl_axi_driver = new (axi_bus_tb2sl);
+
+  initial begin
+    @(negedge rst_n);
+    sl_axi_driver.reset_master();
+  end
+
+  // Write data from queue with given granularity (1, 2, 4 or 8 bytes)
+  task automatic sl_write_size(
+    input logic [AxiAddrWidth-1:0]  addr,
+    input logic [3:0]               size,
+    ref logic   [AxiDataWidth-1:0]  data [$]
+  );
+    automatic sl_axi_driver_t::ax_beat_t ax = new();
+    automatic sl_axi_driver_t::w_beat_t w = new();
+    automatic sl_axi_driver_t::b_beat_t b;
+    automatic int i = 0;
+    automatic int size_bytes = (1 << size);
+
+    @(posedge clk_sys);
+
+    sl_axi_driver.reset_master();
+
+    //$display("[SL] Write address: %h, len: %0d", addr, data.size()-1);
+    ax.ax_addr  = addr;
+    ax.ax_id    = '0;
+    ax.ax_len   = data.size() - 1;
+    ax.ax_size  = size;
+    ax.ax_burst = axi_pkg::BURST_INCR;
+
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
+
+    //$write("[SL] - Sending AW... ");
+    sl_axi_driver.send_aw(ax);
+
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
+
+    //$display("OK");
+    //$display("[SL] - Writing burst data");
+
+    do begin
+      w.w_strb = (~('1 << size_bytes)) << addr[$clog2(AxiDataWidth)-1:0];
+      w.w_data = data[i];
+      w.w_last = (i == ax.ax_len);
+
+      sl_axi_driver.cycle_start();
+      sl_axi_driver.cycle_end();
+
+      sl_axi_driver.send_w(w);
+
+      sl_axi_driver.cycle_start();
+      sl_axi_driver.cycle_end();
+
+      i++;
+      addr += size_bytes;
+      addr &= size_bytes - 1;
+    end while (i <= ax.ax_len);
+
+    //$write("[SL] - Waiting for B... ");
+    sl_axi_driver.recv_b(b);
+
+    //$display("OK (1)");
+  endtask
+
+  task automatic sl_read_size(
+    input logic [AxiAddrWidth-1:0]  addr,
+    input logic [3:0]               size,
+    input logic [7:0]               len,
+    ref logic   [AxiDataWidth-1:0]  data [$]
+  );
+    automatic sl_axi_driver_t::ax_beat_t ax = new();
+    automatic sl_axi_driver_t::r_beat_t r;
+
+    @(posedge clk_sys);
+
+    sl_axi_driver.reset_master();
+
+    $display("[SL] Read address: %h, len: %0d", addr, len);
+    ax.ax_addr  = addr;
+    ax.ax_id    = '0;
+    ax.ax_len   = len;
+    ax.ax_size  = size;
+    ax.ax_burst = axi_pkg::BURST_INCR;
+
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
+
+    $write("[SL] - Sending AR... ");
+    sl_axi_driver.send_ar(ax);
+
+    sl_axi_driver.cycle_start();
+    sl_axi_driver.cycle_end();
+
+    $display("OK");
+
+    do begin
+      $write("[SL] - Receiving R... ");
+      sl_axi_driver.recv_r(r);
+
+      $display("OK");
+      data.push_back(r.r_data);
+
+    end while (!r.r_last);
+  endtask
+
+  // Preload the ELF sections using 64-bit bursts
+  task sl_preload;
+    logic [AxiDataWidth-1:0] wdata [$];
+    int loopcount;
+
+    $display("[SL] Preloading ELF sections");
+
+    foreach (sections[addr]) begin
+      $display("[SL] Writing section 0x%x (%0d words)", addr * 8, sections[addr]);
+
+      for (int i = 0; i < sections[addr]/256; i++) begin
+        wdata = {};
+
+        // Load the queue for one burst
+        for(int k = 0; k < 256; k++) begin
+          wdata.push_back(memory[addr + 256*i + k]);
+        end
+
+        $display(" - Word %0d/%0d (%0d%%)", i*256, sections[addr], i*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
+        sl_write_size(((addr + i*256) * 8), 3, wdata);
+
+        loopcount = i+1;
+      end
+
+      // Complete the remainder in a shorter burst
+      if(loopcount*256 < sections[addr]) begin
+        wdata = {};
+
+        for(int k = loopcount*256; k < sections[addr]; k++) begin
+          wdata.push_back(memory[addr + k]);
+        end
+
+        $display(" - Word %0d/%0d (%0d%%)", loopcount*256, sections[addr], loopcount*256*100/(sections[addr] > 1 ? sections[addr]-1 : 1));
+        sl_write_size(((addr + loopcount*256) * 8), 3, wdata);
+      end
+    end
+
+    $display("[SL] Preload completed");
+
+  endtask
+
+
+  // Randomize memory contents
+  task sl_rand(
+    input logic [AxiAddrWidth-1:0]  addr,
+    input logic [AxiDataWidth-1:0]  len
+  );
+    logic [AxiDataWidth-1:0] wdata [$];
+    logic [AxiDataWidth-1:0] random_data;
+    int loopcount;
+
+    $display("[SL] Randomizing 0x%h -> 0x%h", addr, addr+len);
+  endtask
 
   // Run a binary
   task automatic jtag_elf_run(input string binary);
@@ -767,14 +771,14 @@ module carfield_soc_fixture;
   // Regbus Error Slaves //
   /////////////////////////
 
-  reg_a48_d32_req_t external_reg_req;
-  reg_a48_d32_rsp_t external_reg_rsp; 
+  reg_req_t external_reg_req;
+  reg_rsp_t external_reg_rsp;
    
   reg_err_slv #(
     .DW       ( 32                 ),
     .ERR_VAL  ( 32'hBADCAB1E       ),
-    .req_t    ( reg_a48_d32_req_t  ),
-    .rsp_t    ( reg_a48_d32_rsp_t  )
+    .req_t    ( reg_req_t  ),
+    .rsp_t    ( reg_rsp_t  )
   ) i_reg_err_slv_external_reg (
     .req_i    ( external_reg_req   ),
     .rsp_o    ( external_reg_rsp   )
@@ -795,17 +799,9 @@ module carfield_soc_fixture;
   wire  [NumPhys-1:0]               hyper_reset_n_wire;
 
   carfield #(
-    .Cfg               ( DefaultCfg        ), // from Cheshire package
-    .axi_ext_mst_req_t ( axi_mst_req_t     ),
-    .axi_ext_mst_rsp_t ( axi_mst_rsp_t     ),
-    .axi_llc_mst_req_t ( axi_llc_mst_req_t ),
-    .axi_llc_mst_rsp_t ( axi_llc_mst_rsp_t ),
-    .axi_ext_slv_req_t ( axi_slv_req_t     ),
-    .axi_ext_slv_rsp_t ( axi_slv_rsp_t     ),
-    .reg_req_t         ( reg_a48_d32_req_t ),
-    .reg_rsp_t         ( reg_a48_d32_rsp_t ),
-    .HypNumPhys        ( NumPhys           ),
-    .HypNumChips       ( NumChips          )
+    .Cfg              ( DutCfg             ), // from Cheshire package
+    .HypNumPhys       ( NumPhys            ),
+    .HypNumChips      ( NumChips           )
   )i_dut_carfield_soc (
     .clk_i            ( clk_sys            ),
     .rst_ni           ( rst_n              ),
@@ -820,7 +816,7 @@ module carfield_soc_fixture;
     .jtag_tms_i       ( jtag_tms           ),
     .jtag_tdi_i       ( jtag_tdi           ),
     .jtag_tdo_o       ( jtag_tdo           ),
-    .jtag_tdo_oe_o    ( ),
+    .jtag_tdo_oe_o    ( jtag_tdo_oe        ),
     // UART Interface
     .uart_tx_o        ( uart_tx            ),
     .uart_rx_i        ( 1'b0               ),
