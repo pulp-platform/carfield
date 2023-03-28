@@ -4,18 +4,12 @@
 //
 // Thomas Benz  <tbenz@ethz.ch>
 
+`include "cheshire/typedef.svh"
+
 /// Top-level implementation of Carfield
-module carfield import cheshire_pkg::*;#(
-    parameter cheshire_cfg_t Cfg = '0,
-    // AXI and REG types that must match Cheshire configuration
-    parameter type axi_ext_mst_req_t  = logic,
-    parameter type axi_ext_mst_rsp_t  = logic,
-    parameter type axi_llc_mst_req_t  = logic,
-    parameter type axi_llc_mst_rsp_t  = logic,
-    parameter type axi_ext_slv_req_t  = logic,
-    parameter type axi_ext_slv_rsp_t  = logic,
-    parameter type reg_req_t          = logic,
-    parameter type reg_rsp_t          = logic,
+module carfield import carfield_pkg::*;
+                import cheshire_pkg::*; #(
+    parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
     parameter int unsigned HypNumPhys  = 1,
     parameter int unsigned HypNumChips = 1
 ) (
@@ -27,12 +21,11 @@ module carfield import cheshire_pkg::*;#(
     // Boot mode selection
     input   logic [1:0]         boot_mode_i,
 
-    // DDR-Link
-    input   logic [3:0]         ddr_link_i,
-    output  logic [3:0]         ddr_link_o,
-
-    input   logic               ddr_link_clk_i,
-    output  logic               ddr_link_clk_o,
+    // Serial link interface
+    input  logic [SlinkNumChan-1:0]                     slink_rcv_clk_i,
+    output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
+    input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
+    output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
 
     // VGA Controller
     output  logic                           vga_hsync_o,
@@ -61,13 +54,13 @@ module carfield import cheshire_pkg::*;#(
     output logic                i2c_scl_en_no,
 
     // SPI Host Interface
-    output logic                spim_sck_o,
-    output logic                spim_sck_en_no,
-    output logic [ 1:0]         spim_csb_o,
-    output logic [ 1:0]         spim_csb_en_no,
-    output logic [ 3:0]         spim_sd_o,
-    output logic [ 3:0]         spim_sd_en_no,
-    input  logic [ 3:0]         spim_sd_i,
+    output logic                spih_sck_o,
+    output logic                spih_sck_en_no,
+    output logic [ 1:0]         spih_csb_o,
+    output logic [ 1:0]         spih_csb_en_no,
+    output logic [ 3:0]         spih_sd_o,
+    output logic [ 3:0]         spih_sd_en_no,
+    input  logic [ 3:0]         spih_sd_i,
 
     // CLINT
     input  logic                rtc_i,
@@ -92,7 +85,7 @@ module carfield import cheshire_pkg::*;#(
 
   // Define needed parameters
   localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
-  localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiOut.num_out);
+  localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
   // Type for address map entries
   typedef struct packed {
@@ -101,13 +94,21 @@ module carfield import cheshire_pkg::*;#(
     logic [Cfg.AddrWidth-1:0] end_addr;
   } addr_rule_t;
 
+   // AXI and REG types that must match Cheshire configuration
+   // defining internally:
+   // - carfield_axi_mst_t, carfield_axi_mst_req/resp_t 
+   // - carfield_axi_slv_t, carfield_axi_slv_req/resp_t 
+   // - carfield_axi_llc_t, carfield_axi_llc_req/resp_t
+   // - carfield_reg_req/resp_t
+   `CHESHIRE_TYPEDEF_ALL(carfield_,Cfg)
+
     // local AXI LLC -> Hyper
-    axi_llc_mst_req_t dram_req;
-    axi_llc_mst_rsp_t dram_rsp;
+    carfield_axi_llc_req_t dram_req;
+    carfield_axi_llc_rsp_t dram_rsp;
 
     // hyper cfg
-    reg_req_t external_reg_req;
-    reg_rsp_t external_reg_rsp;
+    carfield_reg_req_t external_reg_req;
+    carfield_reg_rsp_t external_reg_rsp;
 
     // local output enable flipped
     logic        i2c_sda_en;
@@ -129,28 +130,28 @@ module carfield import cheshire_pkg::*;#(
 
     // the SoC
     cheshire_soc #(
-        .CheshireCfg(Cfg),
+        .Cfg               ( Cfg                    ),
         // AXI and REG types that must match Cheshire configuration
-        .axi_ext_mst_req_t ( axi_ext_mst_req_t ),
-        .axi_ext_mst_rsp_t ( axi_ext_mst_rsp_t ),
-        .axi_llc_mst_req_t ( axi_llc_mst_req_t ),
-        .axi_llc_mst_rsp_t ( axi_llc_mst_rsp_t ),
-        .axi_ext_slv_req_t ( axi_ext_slv_req_t ),
-        .axi_ext_slv_rsp_t ( axi_ext_slv_rsp_t ),
-        .reg_req_t         ( reg_req_t         ),
-        .reg_rsp_t         ( reg_rsp_t         )
+        .axi_ext_mst_req_t ( carfield_axi_mst_req_t ),
+        .axi_ext_mst_rsp_t ( carfield_axi_mst_rsp_t ),
+        .axi_ext_llc_req_t ( carfield_axi_llc_req_t ),
+        .axi_ext_llc_rsp_t ( carfield_axi_llc_rsp_t ),
+        .axi_ext_slv_req_t ( carfield_axi_slv_req_t ),
+        .axi_ext_slv_rsp_t ( carfield_axi_slv_rsp_t ),
+        .reg_ext_req_t     ( carfield_reg_req_t     ),
+        .reg_ext_rsp_t     ( carfield_reg_rsp_t     )
     ) i_cheshire_soc (
         .clk_i,
         .rst_ni,
-        .testmode_i,
+        .test_mode_i        ( testmode_i                       ),
         .boot_mode_i,
-        .boot_addr_i        ( carfield_pkg::carfield_boot_addr ),
         .axi_llc_mst_req_o  ( dram_req                         ),
-        .axi_llc_mst_rsp_i  ( dram_resp                        ),
-        .ddr_link_i,
-        .ddr_link_o,
-        .ddr_link_clk_i,
-        .ddr_link_clk_o,
+        .axi_llc_mst_rsp_i  ( dram_rsp                         ),
+        .intr_ext_i         ( '0                               ),
+        .slink_i,
+        .slink_o,
+        .slink_rcv_clk_i,
+        .slink_rcv_clk_o,
         .vga_hsync_o,
         .vga_vsync_o,
         .jtag_tck_i,
@@ -168,41 +169,40 @@ module carfield import cheshire_pkg::*;#(
         .i2c_scl_i,
         .i2c_scl_en_o       ( i2c_scl_en                    ),
         // SPI host interface
-        .spim_sck_o,
-        .spim_sck_en_o      ( spim_sck_en                   ),
-        .spim_csb_o,
-        .spim_csb_en_o      ( spim_csb_en                   ),
-        .spim_sd_o,
-        .spim_sd_en_o       ( spim_sd_en                    ),
-        .spim_sd_i,
+        .spih_sck_o,
+        .spih_sck_en_o      ( spim_sck_en                   ),
+        .spih_csb_o,
+        .spih_csb_en_o      ( spim_csb_en                   ),
+        .spih_sd_o,
+        .spih_sd_en_o       ( spim_sd_en                    ),
+        .spih_sd_i,
         .rtc_i,
-        .clk_locked_i       ( 1'b0                          ), // tied-off
-        .external_reg_req_o ( external_reg_req              ),
-        .external_reg_rsp_i ( external_reg_rsp              )
+        .reg_ext_slv_req_o ( external_reg_req              ),
+        .reg_ext_slv_rsp_i ( external_reg_rsp              )
     );
 
     // hyperbus memory
     hyperbus #(
-        .NumChips         ( HypNumChips       ),
-        .NumPhys          ( HypNumPhys        ),
-        .IsClockODelayed  ( 1'b0              ),
-        .AxiAddrWidth     ( Cfg.AddrWidth     ),
-        .AxiDataWidth     ( Cfg.AxiDataWidth  ),
-        .AxiIdWidth       ( AxiSlvIdWidth     ),
-        .AxiUserWidth     ( Cfg.AxiUserWidth  ),
-        .axi_req_t        ( axi_llc_mst_req_t ),
-        .axi_rsp_t        ( axi_llc_mst_rsp_t ),
-        .RegAddrWidth     ( Cfg.AddrWidth     ),
-        .RegDataWidth     ( 32'd32            ),
-        .reg_req_t        ( reg_req_t         ),
-        .reg_rsp_t        ( reg_rsp_t         ),
-        .axi_rule_t       ( addr_rule_t       ),
-        .RxFifoLogDepth   ( 32'd2             ),
-        .TxFifoLogDepth   ( 32'd2             ),
-        .RstChipBase      ( 'h0               ),
-        .RstChipSpace     ( 'h1_0000          ),
-        .PhyStartupCycles ( 300 * 200         ),
-        .AxiLogDepth      ( 32'd3             )
+        .NumChips         ( HypNumChips            ),
+        .NumPhys          ( HypNumPhys             ),
+        .IsClockODelayed  ( 1'b0                   ),
+        .AxiAddrWidth     ( Cfg.AddrWidth          ),
+        .AxiDataWidth     ( Cfg.AxiDataWidth       ),
+        .AxiIdWidth       ( AxiSlvIdWidth+1        ),
+        .AxiUserWidth     ( Cfg.AxiUserWidth       ),
+        .axi_req_t        ( carfield_axi_llc_req_t ),
+        .axi_rsp_t        ( carfield_axi_llc_rsp_t ),
+        .RegAddrWidth     ( Cfg.AddrWidth          ),
+        .RegDataWidth     ( 32'd32                 ),
+        .reg_req_t        ( carfield_reg_req_t     ),
+        .reg_rsp_t        ( carfield_reg_rsp_t     ),
+        .axi_rule_t       ( addr_rule_t            ),
+        .RxFifoLogDepth   ( 32'd2                  ),
+        .TxFifoLogDepth   ( 32'd2                  ),
+        .RstChipBase      ( 'h0                    ),
+        .RstChipSpace     ( 'h1_0000               ),
+        .PhyStartupCycles ( 300 * 200              ),
+        .AxiLogDepth      ( 32'd3                  )
     ) i_hyperbus (
         .clk_phy_i       ( hyp_clk_phy_i      ),
         .rst_phy_ni      ( hyp_rst_phy_ni     ),
@@ -210,7 +210,7 @@ module carfield import cheshire_pkg::*;#(
         .rst_sys_ni      ( rst_ni             ),
         .test_mode_i     ( testmode_i         ),
         .axi_req_i       ( dram_req           ),
-        .axi_rsp_o       ( dram_resp          ),
+        .axi_rsp_o       ( dram_rsp           ),
         .reg_req_i       ( external_reg_req   ),
         .reg_rsp_o       ( external_reg_rsp   ),
         .hyper_cs_no     ( hyper_cs_n_wire    ),

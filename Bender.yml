@@ -10,7 +10,7 @@ package:
 dependencies:
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: bd6fd4be9b2ab9ade9c60e2eabc028801ef4b2b5 } # branch: sim
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: e5ffb8ebb9f0079ba25fa7f8ef0130e3085084d9 } # branch: sim
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
 
 workspace:
@@ -32,3 +32,9 @@ sources:
       - tb/carfield_fix.sv
       - tb/carfield_tb.sv
   
+  - target: synth
+    files:
+      - intel16/tech_mem/src/tc_clk.sv
+      - intel16/tech_mem/src/tc_sram_i16.sv
+      - intel16/tech_mem/src/tc_pads.sv
+      - intel16/tech_mem/src/generic_delay_D4_O1_3P750_CG0.sv

@@ -45,3 +45,9 @@ car-hw-build: scripts/carfield_compile.tcl
 
 car-hw-sim:
 	vsim $(vsim-flag) -do  "set BINARY $(elf-bin); set TESTBENCH tb_carfield_soc; source scripts/start_carfield.tcl ; $(run_and_exit)"
+
+pdk:
+	git clone git@iis-git.ee.ethz.ch:carfield/intel16.git
+
+intel16/synopsys/scripts/analyze_carfield.tcl:
+	$(BENDER) script synopsys -t rtl -t synthesis -t synth -t asic -t top_level -t cva6 -t cv64a6_imafdc_sv39 > $@
