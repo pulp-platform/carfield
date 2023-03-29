@@ -23,7 +23,7 @@ module carfield import carfield_pkg::*;
     input   logic [1:0]                                 boot_mode_i,
     // CLINT
     input   logic                                       rtc_i,
-    // JTAG Interface
+    // JTAG Interfacex
     input   logic                                       jtag_tck_i,
     input   logic                                       jtag_trst_ni,
     input   logic                                       jtag_tms_i,
@@ -43,17 +43,17 @@ module carfield import carfield_pkg::*;
     // I2C Interface
     output logic                                        i2c_sda_o,
     input  logic                                        i2c_sda_i,
-    output logic                                        i2c_sda_en_no,
+    output logic                                        i2c_sda_en_o,
     output logic                                        i2c_scl_o,
     input  logic                                        i2c_scl_i,
-    output logic                                        i2c_scl_en_no,
+    output logic                                        i2c_scl_en_o,
     // SPI Host Interface
     output logic                                        spih_sck_o,
-    output logic                                        spih_sck_en_no,
+    output logic                                        spih_sck_en_o,
     output logic [SpihNumCs-1:0]                        spih_csb_o,
-    output logic [SpihNumCs-1:0]                        spih_csb_en_no,
+    output logic [SpihNumCs-1:0]                        spih_csb_en_o,
     output logic [ 3:0]                                 spih_sd_o,
-    output logic [ 3:0]                                 spih_sd_en_no,
+    output logic [ 3:0]                                 spih_sd_en_o,
     input  logic [ 3:0]                                 spih_sd_i,
     // GPIO interface
     input  logic [31:0]                                 gpio_i,

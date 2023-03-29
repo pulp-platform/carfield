@@ -16,17 +16,35 @@ module tb_carfield_soc;
   bit [31:0] ret;
 
   initial begin
+
+    if ($value$plusargs("BOOTMODE=%d", boot_mode)) begin
+      fix.set_boot_mode(boot_mode);
+    end else begin
+      // If no BOOTMODE is provided, use default
+      fix.set_boot_mode(0);
+    end
+
     fix.wait_for_reset();
-    fix.jtag_init();
-    fix.jtag_elf_run("../cheshire/sw/tests/helloworld.spm.elf");
 
-    #20000ns;
+    if ($value$plusargs("TESTMODE=%d", test_mode)) begin
+      fix.set_test_mode(test_mode);
+    end else begin
+      // If no BOOTMODE is provided, use default
+      fix.set_test_mode(0);
+    end
 
-    fix.jtag_wait_for_eoc(ret);
+    if ($value$plusargs("BINARY=%s", binary)) begin
+      $display("[tb_carfield_soc] BINARY = %s", binary);
+      fix.slink_elf_run(binary);
+    end else begin
+      fix.slink_elf_run("./cheshire/sw/tests/helloworld.spm.elf");
+    end
 
+    fix.slink_wait_for_eoc(ret);
+    $display("[tb_carfield_soc] Ret Value: %x", ret);
+    
     $finish;
+    
   end
-
-
 
 endmodule
