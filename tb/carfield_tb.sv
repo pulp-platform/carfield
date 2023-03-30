@@ -9,40 +9,50 @@ module tb_carfield_soc;
 
   carfield_soc_fixture fix();
 
-  string        binary;
-  logic [1:0]   boot_mode;
-  logic         test_mode;
-
-  bit [31:0] ret;
+  string      binary;
+  string      boot_hex;
+  logic [1:0] boot_mode;
+  logic [1:0] preload_mode;
+  logic       test_mode;
+  bit [31:0]  exit_code;
 
   initial begin
 
-    if ($value$plusargs("BOOTMODE=%d", boot_mode)) begin
-      fix.set_boot_mode(boot_mode);
-    end else begin
-      // If no BOOTMODE is provided, use default
-      fix.set_boot_mode(0);
-    end
+    if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
+    if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
+    if (!$value$plusargs("TESTMODE=%d", test_mode))     test_mode     = 0;
+    if (!$value$plusargs("BINARY=%s",   binary)) binary  = "./cheshire/sw/tests/helloworld.spm.elf";
+    if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
+
+    fix.set_boot_mode(boot_mode);
+    fix.set_test_mode(test_mode);
 
     fix.wait_for_reset();
 
-    if ($value$plusargs("TESTMODE=%d", test_mode)) begin
-      fix.set_test_mode(test_mode);
+    if (boot_mode == 0) begin
+      // Idle boot: preload with the specified mode
+      case (preload_mode)
+        0: begin      // JTAG
+          fix.jtag_init();
+          fix.jtag_elf_run(binary);
+          fix.jtag_wait_for_eoc(exit_code);
+        end 1: begin  // Serial Link
+          fix.slink_elf_run(binary);
+          fix.slink_wait_for_eoc(exit_code);
+        end 2: begin  // UART
+          fix.uart_debug_elf_run_and_wait(binary, exit_code);
+        end default: begin
+          $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
+        end
+      endcase
+    end else if (boot_mode == 1) begin
+      $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
     end else begin
-      // If no BOOTMODE is provided, use default
-      fix.set_test_mode(0);
+      // Autonomous boot: Only poll return code
+      fix.jtag_init();
+      fix.jtag_wait_for_eoc(exit_code);
     end
-
-    if ($value$plusargs("BINARY=%s", binary)) begin
-      $display("[tb_carfield_soc] BINARY = %s", binary);
-      fix.slink_elf_run(binary);
-    end else begin
-      fix.slink_elf_run("./cheshire/sw/tests/helloworld.spm.elf");
-    end
-
-    fix.slink_wait_for_eoc(ret);
-    $display("[tb_carfield_soc] Ret Value: %x", ret);
-    
+  
     $finish;
     
   end

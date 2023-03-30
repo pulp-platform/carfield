@@ -6,11 +6,7 @@
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-module carfield_soc_fixture #(
-  parameter     I2cEepromMemFile    = "/dev/null",
-  parameter     SpiNorflashMemFile  = "none",
-  parameter bit SlinkAxiDebug       = 0
-);
+module carfield_soc_fixture;
 
   `include "cheshire/typedef.svh"
   `include "axi/assign.svh"
@@ -42,13 +38,16 @@ module carfield_soc_fixture #(
   localparam real TAppl   = 0.1;
   localparam real TTest   = 0.9;
 
-  localparam int unsigned UartBaudRate  = 115200;
-  localparam int unsigned UartParityEna  = 0;
+  localparam int unsigned UartBaudRate    = 115200;
+  localparam int unsigned UartParityEna   = 0;
+  localparam int unsigned UartBurstBytes  = 256;
+  localparam int unsigned UartWaitCycles  = 50;
 
   localparam int unsigned SlinkMaxWaitAx    = 100;
   localparam int unsigned SlinkMaxWaitR     = 5;
   localparam int unsigned SlinkMaxWaitResp  = 20;
   localparam int unsigned SlinkBurstBytes   = 1024;
+  localparam bit          SlinkAxiDebug     = 0;
 
   /********************/
   /* Hyper RAM Params */
@@ -64,9 +63,6 @@ module carfield_soc_fixture #(
   logic       test_mode;
   logic [1:0] boot_mode;
   logic       rtc;
-
-  axi_llc_req_t axi_llc_mst_req;
-  axi_llc_rsp_t axi_llc_mst_rsp;
 
   logic jtag_tck;
   logic jtag_trst_n;
@@ -96,7 +92,7 @@ module carfield_soc_fixture #(
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
-   
+
   wire  [NumPhys-1:0][NumChips-1:0] hyper_cs_n_wire;
   wire  [NumPhys-1:0]               hyper_ck_wire;
   wire  [NumPhys-1:0]               hyper_ck_n_wire;
@@ -259,6 +255,11 @@ module carfield_soc_fixture #(
   assign jtag_tdi     = jtag.tdi;
   assign jtag.tdo     = jtag_tdo;
 
+  initial begin
+    @(negedge rst_n);
+    jtag_dbg.reset_master();
+  end
+
   task automatic jtag_write(
     input dm::dm_csr_e addr,
     input word_bt data,
@@ -296,17 +297,15 @@ module carfield_soc_fixture #(
       jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
     end while (~data[0]);
   endtask
-
   // Initialize the debug module
   task automatic jtag_init;
     jtag_idcode_t idcode;
     dm::dmcontrol_t dmcontrol = '{dmactive: 1, default: '0};
-    // Reset debug module
-    jtag_dbg.reset_master();
     // Check ID code
+    repeat(100) @(posedge jtag_tck);
     jtag_dbg.get_idcode(idcode);
     if (idcode != DutCfg.DbgIdCode)
-        $fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", idcode, DutCfg.DbgIdCode);
+        $fatal(1, "[JTAG] Unexpected ID code: expected 0x%h, got 0x%h!", DutCfg.DbgIdCode, idcode);
     // Activate, wait for debug module
     jtag_write(dm::DMControl, dmcontrol);
     do jtag_dbg.read_dmi_exp_backoff(dm::DMControl, dmcontrol);
@@ -333,7 +332,7 @@ module carfield_soc_fixture #(
       for (longint i = 0; i <= sec_len ; i += 8) begin
         bit checkpoint = (i != 0 && i % 512 == 0);
         if (checkpoint)
-          $display("[JTAG] - %0d/%0d Bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+          $display("[JTAG] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
         jtag_write(dm::SBData1, {bf[i+7], bf[i+6], bf[i+5], bf[i+4]});
         jtag_write(dm::SBData0, {bf[i+3], bf[i+2], bf[i+1], bf[i]}, checkpoint, checkpoint);
       end
@@ -379,17 +378,176 @@ module carfield_soc_fixture #(
   /********/
   /* UART */
   /********/
-  // TODO: Implement UART boot
-  assign uart_rx = '0;
+  localparam time UartBaudPeriod = 1000ns*1000*1000/UartBaudRate;
 
-  uart_tb_rx #(
-    .BAUD_RATE  ( UartBaudRate  ),
-    .PARITY_EN  ( UartParityEna )
-  ) i_uart_rx_model (
-    .rx        ( uart_tx ),
-    .rx_en     ( 1'b1 ),
-    .word_done ( )
-  );
+  localparam byte_bt UartDebugCmdRead  = 'h11;
+  localparam byte_bt UartDebugCmdWrite = 'h12;
+  localparam byte_bt UartDebugCmdExec  = 'h13;
+  localparam byte_bt UartDebugAck      = 'h06;
+  localparam byte_bt UartDebugEot      = 'h04;
+  localparam byte_bt UartDebugEoc      = 'h14;
+
+  byte_bt uart_boot_byte;
+  logic   uart_boot_ena;
+  logic   uart_boot_eoc;
+
+  initial begin
+    uart_rx       = 1;
+    uart_boot_eoc = 0;
+    uart_boot_ena = 0;
+  end
+
+  task automatic uart_read_byte(output byte_bt bite);
+    // Start bit
+    @(negedge uart_tx);
+    #(UartBaudPeriod/2);
+    // 8-bit byte
+    for (int i = 0; i < 8; i++) begin
+      #UartBaudPeriod bite[i] = uart_tx;
+    end
+    // Parity bit
+    if(UartParityEna) begin
+      bit parity;
+      #UartBaudPeriod parity = uart_tx;
+      if(parity ^ (^bite))
+        $error("[UART] - Parity error detected!");
+    end
+    // Stop bit
+    #UartBaudPeriod;
+  endtask
+
+  task automatic uart_write_byte(input byte_bt bite);
+    // Start bit
+    uart_rx = 1'b0;
+    // 8-bit byte
+    for (int i = 0; i < 8; i++)
+      #UartBaudPeriod uart_rx = bite[i];
+    // Parity bit
+    if (UartParityEna)
+      #UartBaudPeriod uart_rx = (^bite);
+    // Stop bit
+    #UartBaudPeriod uart_rx = 1'b1;
+    #UartBaudPeriod;
+  endtask
+
+  task automatic uart_boot_scoop(output byte_bt bite);
+    // Assert our intention to scoop the next received byte
+    uart_boot_ena = 1;
+    // Wait until read task notifies us a scooped byte is available
+    @(negedge uart_boot_ena);
+    // Grab scooped byte
+    bite = uart_boot_byte;
+  endtask
+
+  task automatic uart_boot_scoop_expect(input string name, input byte_bt exp);
+    byte_bt bite;
+    uart_boot_scoop(bite);
+    if (bite != exp)
+      $fatal(1, "[UART] Expected %s (%0x) after read command, received %0x", name, exp, bite);
+  endtask
+
+  // Continually read characters and print lines
+  // TODO: we should be able to support CR properly, but buffers are hard to deal with...
+  initial begin
+    static byte_bt uart_read_buf [$];
+    byte_bt bite;
+    wait_for_reset();
+    forever begin
+      uart_read_byte(bite);
+      if (uart_boot_ena) begin
+        uart_boot_byte  = bite;
+        uart_boot_ena = 0;
+      end else if (bite == "\n") begin
+        $display("[UART] %s", {>>8{uart_read_buf}});
+        uart_read_buf.delete();
+      end else if (bite == UartDebugEoc) begin
+        uart_boot_eoc = 1;
+      end else begin
+        uart_read_buf.push_back(bite);
+      end
+    end
+  end
+
+  // A length of zero indcates a write (write lengths are inferred from their queue)
+  task automatic uart_debug_rw(doub_bt addr, doub_bt len_or_w, ref byte_bt data [$]);
+    byte_bt bite;
+    doub_bt len = len_or_w ? len_or_w : data.size();
+    // Send command, address, and length
+    uart_write_byte(len_or_w ? UartDebugCmdRead : UartDebugCmdWrite);
+    for (int i = 0; i < 8; ++i)
+      uart_write_byte(addr[8*i +: 8]);
+        for (int i = 0; i < 8; ++i)
+      uart_write_byte(len[8*i +: 8]);
+    // Receive and check ACK
+    uart_boot_scoop_expect("ACK", UartDebugAck);
+    // Send or receive requested data
+    for (int i = 0; i < len; ++i) begin
+      if (len_or_w) begin
+        uart_boot_scoop(bite);
+        data.push_back(bite);
+      end else begin
+        uart_write_byte(data[i]);
+      end
+    end
+    // Receive and check EOT
+    uart_boot_scoop_expect("EOT", UartDebugEot);
+  endtask
+
+  // Load a binary
+  task automatic uart_debug_elf_preload(input string binary, output doub_bt entry);
+    longint sec_addr, sec_len;
+    $display("[UART] Preloading ELF binary: %s", binary);
+    if (read_elf(binary))
+      $fatal(1, "[UART] Failed to load ELF!");
+    while (get_section(sec_addr, sec_len)) begin
+      byte bf[] = new [sec_len];
+      $display("[UART] Preloading section at 0x%h (%0d bytes)", sec_addr, sec_len);
+      if (read_section(sec_addr, bf, sec_len)) $fatal(1, "[UART] Failed to read ELF section!");
+      // Write section in blocks
+      for (longint i = 0; i <= sec_len ; i += UartBurstBytes) begin
+        byte_bt bytes [$];
+        if (i != 0)
+          $display("[UART] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+        for (int b = 0; b < UartBurstBytes; b++) begin
+          if (i+b >= sec_len) break;
+          bytes.push_back(bf [i+b]);
+        end
+        uart_debug_rw(sec_addr + i, 0, bytes);
+      end
+    end
+    void'(get_entry(entry));
+    $display("[UART] Preload complete");
+  endtask
+
+  task automatic uart_debug_elf_run_and_wait(input string binary, output word_bt exit_code);
+    byte_bt bite;
+    doub_bt entry;
+    // Wait some time for boot ROM to settle (No way to query this using only UART)
+    $display("[UART] Waiting for debug loop to start");
+    #(UartWaitCycles*UartBaudPeriod);
+    // We send an ACK challenge to the debug server and wait for an ACK response
+    $display("[UART] Sending ACK chellenge");
+    uart_write_byte(UartDebugAck);
+    uart_boot_scoop_expect("ACK", UartDebugAck);
+    // Preload
+    uart_debug_elf_preload(binary, entry);
+  $display("[UART] Sending EXEC command for address %0x", entry);
+    // Send exec command and receive ACK
+    uart_write_byte(UartDebugCmdExec);
+    for (int i = 0; i < 8; ++i)
+      uart_write_byte(entry[8*i +: 8]);
+    uart_boot_scoop_expect("ACK", UartDebugAck);
+    // Wait for EOC and read return code
+    wait (uart_boot_eoc == 1);
+    $display("[UART] Received EOC signal");
+    uart_boot_eoc = 0;
+    for (int i = 0; i < 8; ++i)
+      uart_boot_scoop(exit_code[8*i +: 8]);
+    // Report exit code
+    exit_code >>= 1;
+    if (exit_code) $error("[UART] FAILED: return code %d", exit_code);
+    else $display("[UART] SUCCESS");
+  endtask
 
   /*******/
   /* I2C */
@@ -410,21 +568,25 @@ module carfield_soc_fixture #(
   // however, the boot ROM will always boot from chip 0.
   for (genvar i = 0; i < 2; i++) begin : gen_i2c_eeproms
     M24FC1025 i_i2c_eeprom (
-      .RESET  ( rst_n     ),
-      .A0     ( i[0]      ),
-      .A1     ( i[1]      ),
-      .A2     ( 1'b1      ),
+      .RESET  ( rst_n ),
+      .A0     ( i[0] ),
+      .A1     ( 1'b0 ),
+      .A2     ( 1'b1 ),
       .WP     ( i2c_wp[i] ),
       .SDA    ( i2c_sda   ),
       .SCL    ( i2c_scl   )
     );
-    // Preload chip 0 with bootloader
-    initial if (i == 0) begin
-      for (int k = 0; k < $size(i_i2c_eeprom.MemoryBlock); ++k)
-        i_i2c_eeprom.MemoryBlock[k] = 'h9a;
-      //$readmemh(I2cEepromMemFile, i_i2c_eeprom.MemoryBlock);
-    end
   end
+
+  // Preload function called by testbench
+  task automatic i2c_eeprom_preload(string image);
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock); ++k)
+        gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock[k] = 'h9a;
+    // We load an image into chip 0 only if it exists
+    if (image != "")
+      $readmemh(image, gen_i2c_eeproms[0].i_i2c_eeprom.MemoryBlock);
+  endtask
 
   /************/
   /* SPI Host */
@@ -436,7 +598,7 @@ module carfield_soc_fixture #(
 
   // Map data IO to wires and pull up
   wire [3:0] spih_sd;
-  for (genvar i = 0; i < 3; ++i) begin : gen_spih_sd_io
+  for (genvar i = 0; i < 4; ++i) begin : gen_spih_sd_io
     bufif1 (spih_sd_i[i], spih_sd[i], ~spih_sd_en[i]);
     bufif1 (spih_sd[i], spih_sd_o[i],  spih_sd_en[i]);
     pullup (spih_sd[i]);
@@ -451,9 +613,7 @@ module carfield_soc_fixture #(
 
   // We connect one chip at CS1, where we can boot from this flash.
   s25fs512s #(
-    .UserPreload    (  1'b1 ),
-    .mem_file_name  ( SpiNorflashMemFile ),
-    .otp_file_name  ( "none" )
+    .UserPreload ( 0 )
   ) i_spi_norflash (
     .SI       ( spih_sd[0] ),
     .SO       ( spih_sd[1] ),
@@ -462,6 +622,16 @@ module carfield_soc_fixture #(
     .SCK      ( spih_sck ),
     .CSNeg    ( spih_csb[1] )
   );
+
+  // Preload function called by testbench
+  task automatic spih_norflash_preload(string image);
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(i_spi_norflash.Mem); ++k)
+        i_spi_norflash.Mem[k] = 'h9a;
+    // We load an image into chip 0 only if it exists
+    if (image != "")
+      $readmemh(image, i_spi_norflash.Mem);
+  endtask
 
   /***************/
   /* Serial Link */
@@ -678,7 +848,7 @@ module carfield_soc_fixture #(
       for (longint i = 0; i <= sec_len ; i += SlinkBurstBytes) begin
         axi_data_t beats [$];
         if (i != 0)
-          $display("[SLINK] - %0d/%0d Bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
+          $display("[SLINK] - %0d/%0d bytes (%0d%%)", i, sec_len, i*100/(sec_len>1 ? sec_len-1 : 1));
         // Assemble beats for current burst from section buffer
         for (int b = 0; b < SlinkBurstBytes; b += AxiStrbWidth) begin
           axi_data_t beat;
@@ -710,7 +880,7 @@ module carfield_soc_fixture #(
     slink_elf_preload(binary, entry);
     // Write entry point
     slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_1_OFFSET, entry[63:32]);
-    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[31:0]);
+    slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_0_OFFSET, entry[32:0]);
     // Resume hart 0
     slink_write_32(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, 2);
     $display("[SLINK] Wrote launch signal and entry point 0x%h", entry);

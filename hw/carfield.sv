@@ -12,7 +12,7 @@
 module carfield import carfield_pkg::*;
                 import cheshire_pkg::*;
 #(
-    parameter cheshire_cfg_t Cfg = cheshire_pkg::DefaultCfg, // from Cheshire package
+    parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault, // from Cheshire package
     parameter int unsigned HypNumPhys  = 1,
     parameter int unsigned HypNumChips = 1
 ) (
