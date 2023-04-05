@@ -12,6 +12,7 @@
 module carfield import carfield_pkg::*;
                 import cheshire_pkg::*;
                 import car_l2_pkg::*;
+                import safety_island_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault, // from Cheshire package
   parameter int unsigned HypNumPhys  = 1,
@@ -94,8 +95,13 @@ typedef struct packed {
   logic [Cfg.AddrWidth-1:0] end_addr;
 } addr_rule_t;
 
+// All AXI slave buses
 carfield_axi_slv_req_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_req;
 carfield_axi_slv_rsp_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_rsp;
+
+// All AXI master buses
+carfield_axi_mst_req_t [Cfg.AxiExtNumMst-1:0] axi_ext_mst_req;
+carfield_axi_mst_rsp_t [Cfg.AxiExtNumMst-1:0] axi_ext_mst_rsp;
 
 // local AXI LLC -> Hyper
 carfield_axi_llc_req_t dram_req;
@@ -349,6 +355,16 @@ end
 // Reconfigurable L2
 logic l2_ecc_err;
 
+// L2 connection buses
+carfield_axi_slv_req_t [NumL2Ports-1:0] axi_l2_slv_req;
+carfield_axi_slv_rsp_t [NumL2Ports-1:0] axi_l2_slv_rsp;
+
+assign axi_l2_slv_req[L2Port1Idx] = axi_ext_slv_req[L2Port1Idx];
+assign axi_l2_slv_req[L2Port2Idx] = axi_ext_slv_req[L2Port2Idx];
+
+assign axi_ext_slv_rsp[L2Port1Idx] = axi_l2_slv_rsp[L2Port1Idx];
+assign axi_ext_slv_rsp[L2Port2Idx] = axi_l2_slv_rsp[L2Port2Idx];
+
 // L2 mapping
 typedef struct packed {
   int unsigned              idx;
@@ -375,12 +391,68 @@ car_l2_top #(
   .axi_req_t           ( carfield_axi_slv_req_t ),
   .axi_resp_t          ( carfield_axi_slv_rsp_t )
 ) i_reconfigrurable_l2 (
-  .clk_i               ( clk_i                           ),
-  .rst_ni              ( rst_ni                          ),
-  .mapping_rules_i     ( l2_mapping_rules                ),
-  .axi_req_i           ( axi_ext_slv_req[NumL2Ports-1:0] ),
-  .axi_resp_o          ( axi_ext_slv_rsp[NumL2Ports-1:0] ),
-  .ecc_error_o         ( l2_ecc_err                      )
+  .clk_i               ( clk_i            ),
+  .rst_ni              ( rst_ni           ),
+  .mapping_rules_i     ( l2_mapping_rules ),
+  .axi_req_i           ( axi_l2_slv_req   ),
+  .axi_resp_o          ( axi_l2_slv_rsp   ),
+  .ecc_error_o         ( l2_ecc_err       )
+);
+
+// Safety Island
+logic safety_jtag_tck ,
+      safety_jtag_tdi ,
+      safety_jtag_tdo ,
+      safety_jtag_tms ,
+      safety_jtag_trst;
+
+assign safety_jtag_tcl  = '0;
+assign safety_jtag_tdi  = '0;
+assign safety_jtag_tms  = '0;
+assign safety_jtag_trst = '1;
+
+safety_island_pkg::bootmode_e safety_island_bootmode;
+assign safety_island_bootmode = safety_island_pkg::Preloaded;
+
+carfield_axi_slv_req_t axi_safety_island_slv_req;
+carfield_axi_slv_rsp_t axi_safety_island_slv_rsp;
+
+carfield_axi_mst_req_t axi_safety_island_mst_req;
+carfield_axi_mst_rsp_t axi_safety_island_mst_rsp;
+
+assign axi_safety_island_slv_req = axi_ext_slv_req[SafetyIslandIdx];
+assign axi_ext_slv_rsp[SafetyIslandIdx] = axi_safety_island_slv_rsp;
+
+assign axi_safety_island_mst_rsp = '0;
+
+safety_island_top #(
+  .BaseAddr          ( SafetyIslandBase       ),
+  .AddrRange         ( SafetyIslandSize       ),
+  .AxiDataWidth      ( Cfg.AxiDataWidth       ),
+  .AxiAddrWidth      ( Cfg.AddrWidth          ),
+  .AxiInputIdWidth   ( AxiSlvIdWidth          ),
+  .AxiUserWidth      ( Cfg.AxiUserWidth       ),
+  .axi_input_req_t   ( carfield_axi_slv_req_t ),
+  .axi_input_resp_t  ( carfield_axi_slv_rsp_t ),
+  .AxiOutputIdWidth  ( Cfg.AxiMstIdWidth      ),
+  .axi_output_req_t  ( carfield_axi_mst_req_t ),
+  .axi_output_resp_t ( carfield_axi_mst_rsp_t )
+) i_safety_island    (
+  .clk_i             ( clk_i                     ),
+  .rst_ni            ( rst_ni                    ),
+  .ref_clk_i         ( clk_i                     ),
+  .test_enable_i     ( '0                        ),
+  .irqs_i            ( '0                        ),
+  .jtag_tck_i        ( safety_jtag_tck           ),
+  .jtag_tdi_i        ( safety_jtag_tdi           ),
+  .jtag_tdo_o        ( safety_jtag_tdo           ),
+  .jtag_tms_i        ( safety_jtag_tms           ),
+  .jtag_trst_i       ( safety_jtag_trst          ),
+  .bootmode_i        ( safety_island_bootmode    ),
+  .axi_input_req_i   ( axi_safety_island_slv_req ),
+  .axi_input_resp_o  ( axi_safety_island_slv_rsp ),
+  .axi_output_req_o  ( axi_safety_island_mst_req ),
+  .axi_output_resp_i ( axi_safety_island_mst_rsp )
 );
 
 endmodule

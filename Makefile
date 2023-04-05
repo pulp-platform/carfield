@@ -4,7 +4,9 @@
 #
 # Luca Valente <luca.valente@unibo.it>
 
-CHS_ROOT ?= ./cheshire
+ROOT := .
+CHS_ROOT ?= $(ROOT)/cheshire
+SW_ROOT := $(ROOT)/sw
 
 -include $(CHS_ROOT)/cheshire.mk
 
@@ -37,7 +39,7 @@ tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@
 
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim -t sim -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim -t sim -t rtl -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 car-hw-build: car-hw-clean scripts/carfield_compile.tcl
