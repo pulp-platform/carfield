@@ -3,4 +3,9 @@
 # SPDX-License-Identifier: SHL-0.51
 
 overrides:
-  axi: { git: https://github.com/pulp-platform/axi.git, version: =0.39.0-beta.4 }
+  axi               : { git: https://github.com/pulp-platform/axi.git                 , version: =0.39.0-beta.4                         }
+  apb:                { git: "https://github.com/pulp-platform/apb.git"               , version: =0.2.3                                 }
+  register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev: 7786760a75fed8534c84f6e52e80089e2d491b76   } # branch: master
+  redundancy_cells:   { git: "https://github.com/pulp-platform/redundancy_cells.git"  , rev: "d44b90c3d5c6ed228bbc07cac7a8276e361272ee" } # branch: fix_ecc_wrap
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: =0.2.11                                }
+  riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git"         , version: =0.8.0                                 }

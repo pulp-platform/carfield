@@ -26,7 +26,7 @@ if {![info exists TESTMODE ]} {
     set TESTMODE 0
 }
 
-vsim -c $TESTBENCH -t 1ps -voptargs=+acc +BINARY=$BINARY +BOOTMODE=$BOOTMODE +TESTMODE=$TESTMODE -permissive -suppress 3009 -suppress 2685 -suppress 2718 -suppress 8386
+vsim -c $TESTBENCH -t 1ps -voptargs=+acc +BINARY=$BINARY +BOOTMODE=$BOOTMODE +TESTMODE=$TESTMODE -permissive -suppress 3009 -suppress 2685 -suppress 2718 -suppress 8386 -suppress 8315 -suppress 8360
 
 set StdArithNoWarnings 1
 set NumericStdNoWarnings 1

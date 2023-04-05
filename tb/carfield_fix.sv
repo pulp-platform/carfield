@@ -12,6 +12,7 @@ module carfield_soc_fixture;
   `include "axi/assign.svh"
 
   import cheshire_pkg::*;
+  import carfield_pkg::*;
 
   /********/
   /* DPI  */
@@ -24,7 +25,7 @@ module carfield_soc_fixture;
   /**********************/
   /* General Parameters */
   /**********************/
-  localparam cheshire_cfg_t DutCfg = DefaultCfg;
+  localparam cheshire_cfg_t DutCfg = CarfieldCfgDefault;
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
   localparam int unsigned AxiStrbWidth = DutCfg.AxiDataWidth/8;
   localparam int unsigned AxiStrbBits  = $clog2(DutCfg.AxiDataWidth/8);
@@ -371,7 +372,7 @@ module carfield_soc_fixture;
   task automatic jtag_wait_for_eoc(output word_bt exit_code);
     jtag_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
     exit_code >>= 1;
-    if (exit_code) $error("[JTAG] FAILED: return code %d", exit_code);
+    if (exit_code) $error("[JTAG] FAILED: return code %0d", exit_code);
     else $display("[JTAG] SUCCESS");
   endtask
 
@@ -541,11 +542,11 @@ module carfield_soc_fixture;
     wait (uart_boot_eoc == 1);
     $display("[UART] Received EOC signal");
     uart_boot_eoc = 0;
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 4; ++i)
       uart_boot_scoop(exit_code[8*i +: 8]);
     // Report exit code
     exit_code >>= 1;
-    if (exit_code) $error("[UART] FAILED: return code %d", exit_code);
+    if (exit_code) $error("[UART] FAILED: return code %0d", exit_code);
     else $display("[UART] SUCCESS");
   endtask
 
@@ -686,7 +687,7 @@ module carfield_soc_fixture;
     .rst_sl_ni      ( rst_n ),
     .clk_reg_i      ( clk   ),
     .rst_reg_ni     ( rst_n ),
-    .testmode_i     ( test_mode_i ),
+    .testmode_i     ( test_mode ),
     .axi_in_req_i   ( slink_axi_mst_req ),
     .axi_in_rsp_o   ( slink_axi_mst_rsp ),
     .axi_out_req_o  ( slink_axi_slv_req ),
@@ -890,7 +891,7 @@ module carfield_soc_fixture;
   task automatic slink_wait_for_eoc(output word_bt exit_code);
     slink_poll_bit0(AmRegs + cheshire_reg_pkg::CHESHIRE_SCRATCH_2_OFFSET, exit_code, 800);
     exit_code >>= 1;
-    if (exit_code) $error("[SLINK] FAILED: return code %d", exit_code);
+    if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
   endtask
 
