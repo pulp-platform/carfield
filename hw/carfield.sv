@@ -11,6 +11,7 @@
 /// Top-level implementation of Carfield
 module carfield import carfield_pkg::*;
                 import cheshire_pkg::*;
+                import car_l2_pkg::*;
 #(
     parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault, // from Cheshire package
     parameter int unsigned HypNumPhys  = 1,
@@ -93,6 +94,9 @@ module carfield import carfield_pkg::*;
     logic [Cfg.AddrWidth-1:0] end_addr;
   } addr_rule_t;
 
+carfield_axi_slv_req_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_req;
+carfield_axi_slv_rsp_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_rsp;
+
     // local AXI LLC -> Hyper
     carfield_axi_llc_req_t dram_req;
     carfield_axi_llc_rsp_t dram_rsp;
@@ -138,16 +142,16 @@ module carfield import carfield_pkg::*;
         .boot_mode_i                    ,
         .rtc_i                          ,
         // External AXI LLC (DRAM) port
-        .axi_llc_mst_req_o ( dram_req  ),
-        .axi_llc_mst_rsp_i ( dram_rsp  ),
+        .axi_llc_mst_req_o ( dram_req        ),
+        .axi_llc_mst_rsp_i ( dram_rsp        ),
         // External AXI crossbar ports
-        .axi_ext_mst_req_i ( '0        ),
-        .axi_ext_mst_rsp_o (           ),
-        .axi_ext_slv_req_o (           ),
-        .axi_ext_slv_rsp_i ( '0        ),
+        .axi_ext_mst_req_i ( '0              ),
+        .axi_ext_mst_rsp_o (                 ),
+        .axi_ext_slv_req_o ( axi_ext_slv_req ),
+        .axi_ext_slv_rsp_i ( axi_ext_slv_rsp ),
         // External reg demux slaves
-        .reg_ext_slv_req_o (ext_reg_req),
-        .reg_ext_slv_rsp_i (ext_reg_rsp),
+        .reg_ext_slv_req_o ( ext_reg_req     ),
+        .reg_ext_slv_rsp_i ( ext_reg_rsp     ),
         // Interrupts from external devices
         .intr_ext_i        ( '0        ),
         // Interrupts to external harts
@@ -179,10 +183,10 @@ module carfield import carfield_pkg::*;
         // I2C interface
         .i2c_sda_o                      ,
         .i2c_sda_i                      ,
-        .i2c_sda_en_o     ( i2c_sda_en ),
+        .i2c_sda_en_o    ( i2c_sda_en  ),
         .i2c_scl_o                      ,
         .i2c_scl_i                      ,
-        .i2c_scl_en_o     ( i2c_scl_en ),
+        .i2c_scl_en_o    ( i2c_scl_en  ),
         // SPI host interface
         .spih_sck_o                     ,
         .spih_sck_en_o   ( spim_sck_en ),
@@ -276,5 +280,42 @@ module carfield import carfield_pkg::*;
     pad_functional_pd padinst_hyper_dqio6  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][6]      ), .O( hyper_dq_i[i][6] ), .PAD( pad_hyper_dq[i][6]  ) );
     pad_functional_pd padinst_hyper_dqio7  (.OEN(~hyper_dq_oe[i]  ), .I( hyper_dq_o[i][7]      ), .O( hyper_dq_i[i][7] ), .PAD( pad_hyper_dq[i][7]  ) );
    end
+
+// Reconfigurable L2
+logic l2_ecc_err;
+
+// L2 mapping
+typedef struct packed {
+  int unsigned              idx;
+  logic [Cfg.AddrWidth-1:0] start_addr;
+  logic [Cfg.AddrWidth-1:0] end_addr;
+} l2_map_rule_t;
+
+l2_map_rule_t [L2NumRules-1:0] l2_mapping_rules = '{
+  '{idx: car_l2_pkg::INTERLEAVE, start_addr: L2Port1Base         , end_addr: L2Port1Base + L2MemSize         },
+  '{idx: car_l2_pkg::NONE_INTER, start_addr: L2Port1NonInterlBase, end_addr: L2Port1NonInterlBase + L2MemSize},
+  '{idx: car_l2_pkg::INTERLEAVE, start_addr: L2Port2Base         , end_addr: L2Port2Base + L2MemSize         },
+  '{idx: car_l2_pkg::NONE_INTER, start_addr: L2Port2NonInterlBase, end_addr: L2Port2NonInterlBase + L2MemSize}
+};
+
+car_l2_top #(
+  .NUM_PORT            ( NumL2Ports             ),
+  .AXI_ADDR_WIDTH      ( Cfg.AddrWidth          ),
+  .AXI_DATA_WIDTH      ( Cfg.AxiDataWidth       ),
+  .AXI_ID_WIDTH        ( AxiSlvIdWidth          ),
+  .AXI_USER_WIDTH      ( Cfg.AxiUserWidth       ),
+  .NUM_MAP_RULES       ( L2NumRules             ),
+  .L2_MEM_SIZE_IN_BYTE ( L2MemSize              ),
+  .map_rule_t          ( l2_map_rule_t          ),
+  .axi_req_t           ( carfield_axi_slv_req_t ),
+  .axi_resp_t          ( carfield_axi_slv_rsp_t )
+) i_reconfigrurable_l2 (
+  .clk_i               ( clk_i                           ),
+  .rst_ni              ( rst_ni                          ),
+  .mapping_rules_i     ( l2_mapping_rules                ),
+  .axi_req_i           ( axi_ext_slv_req[NumL2Ports-1:0] ),
+  .axi_resp_o          ( axi_ext_slv_rsp[NumL2Ports-1:0] ),
+  .ecc_error_o         ( l2_ecc_err                      )
+);
 
 endmodule

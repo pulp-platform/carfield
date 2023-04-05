@@ -10,8 +10,9 @@ package:
 dependencies:
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: fadc4b1d3b033e73d8b4dc32b29ec6730005840e } # branch: sim
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 8802df5e112ba9175a9d0fb6fd09aeb3012969e8 } # branch: yt/carfield-ips
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
+  car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: cb2ba8146ca6b136b0e7b81884eb17c72a5d0ec2 } # branch: yt/carfield-integration
 
 workspace:
   package_links:
