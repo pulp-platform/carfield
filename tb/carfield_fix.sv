@@ -12,6 +12,7 @@ module carfield_soc_fixture;
   `include "axi/assign.svh"
 
   import cheshire_pkg::*;
+  import carfield_pkg::*;
 
   /********/
   /* DPI  */
@@ -24,7 +25,7 @@ module carfield_soc_fixture;
   /**********************/
   /* General Parameters */
   /**********************/
-  localparam cheshire_cfg_t DutCfg = DefaultCfg;
+  localparam cheshire_cfg_t DutCfg = CarfieldCfgDefault;
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
   localparam int unsigned AxiStrbWidth = DutCfg.AxiDataWidth/8;
   localparam int unsigned AxiStrbBits  = $clog2(DutCfg.AxiDataWidth/8);

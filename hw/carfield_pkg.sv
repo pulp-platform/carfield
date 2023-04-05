@@ -3,11 +3,34 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Thomas Benz  <tbenz@ethz.ch>
+// Yvan Tortorella <yvan.tortorella@unibo.it>
 
 /// Carfield constants and Cheshire overwrites
 package carfield_pkg;
 
   import cheshire_pkg::*;
+
+  typedef enum byte_bt {
+    L2Port1Idx = 'd0,
+    L2Port2Idx = 'd1
+  } axi_idx_t;
+
+  typedef enum doub_bt {
+    L2Port1Base = 'h0000_0000_7800_0000,
+    L2Port2Base = 'h0000_0000_7820_0000
+  } axi_start_t;
+
+  typedef enum doub_bt {
+    L2Size    = 'h0000_0000_0020_0000
+  } axi_size_t;
+
+  typedef enum doub_bt {
+    L2Port1End = L2Port1Base + L2Size,
+    L2Port2End = L2Port2Base + L2Size
+  } axi_end_t;
+
+  localparam bit [2:0] AxiNumExtSlv = 3'd2     ;
+                                      // L2Ports
 
   localparam cheshire_cfg_t CarfieldCfgDefault = '{
     // CVA6 parameters
@@ -33,6 +56,14 @@ package carfield_pkg;
     RegMaxWriteTxns   : 8,
     RegAmoNumCuts     : 1,
     RegAmoPostCut     : 1,
+    // External AXI ports (at most 8 ports and rules)
+    AxiExtNumMst      : 0,
+    AxiExtNumSlv      : AxiNumExtSlv,
+    AxiExtNumRules    : AxiNumExtSlv,
+    // External AXI region map
+    AxiExtRegionIdx  : '{0,0,0,0,0,0,L2Port2Idx,L2Port1Idx},
+    AxiExtRegionStart: '{0,0,0,0,0,0,L2Port2Base,L2Port1Base},
+    AxiExtRegionEnd  : '{0,0,0,0,0,0,L2Port2End,L2Port1End},
     // RTC
     RtcFreq           : 32768,
     // Features
@@ -88,5 +119,13 @@ package carfield_pkg;
     // All non-set values should be zero
     default: '0
   };
+
+// L2 parameters
+localparam int unsigned NumL2Ports = 2;
+localparam int unsigned L2MemSize = 2**20;
+localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
+                                        // (interleaved, non-interleaved)
+localparam doub_bt L2Port1NonInterlBase = L2Port1Base + L2MemSize;
+localparam doub_bt L2Port2NonInterlBase = L2Port2Base + L2MemSize;
 
 endpackage
