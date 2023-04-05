@@ -11,26 +11,30 @@ package carfield_pkg;
 import cheshire_pkg::*;
 
 typedef enum byte_bt {
-  L2Port1Idx = 'd0,
-  L2Port2Idx = 'd1
+  L2Port1Idx      = 'd0,
+  L2Port2Idx      = 'd1,
+  SafetyIslandIdx = 'd2
 } axi_idx_t;
 
 typedef enum doub_bt {
-  L2Port1Base = 'h0000_0000_7800_0000,
-  L2Port2Base = 'h0000_0000_7820_0000
+  L2Port1Base      = 'h0000_0000_7800_0000,
+  L2Port2Base      = 'h0000_0000_7820_0000,
+  SafetyIslandBase = 'h0000_0000_6000_0000
 } axi_start_t;
 
 typedef enum doub_bt {
-  L2Size    = 'h0000_0000_0020_0000
+  L2Size           = 'h0000_0000_0020_0000,
+  SafetyIslandSize = 'h0000_0000_0080_0000
 } axi_size_t;
 
 typedef enum doub_bt {
-  L2Port1End = L2Port1Base + L2Size,
-  L2Port2End = L2Port2Base + L2Size
+  L2Port1End      = L2Port1Base + L2Size,
+  L2Port2End      = L2Port2Base + L2Size,
+  SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize
 } axi_end_t;
 
-localparam bit [2:0] AxiNumExtSlv = 3'd2;
-                                  // L2Ports
+localparam bit [2:0] AxiNumExtSlv = 3'd2 +  3'd1;
+                                 // L2Ports Safety Island
 
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
@@ -61,9 +65,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiExtNumSlv      : AxiNumExtSlv,
   AxiExtNumRules    : AxiNumExtSlv,
   // External AXI region map
-  AxiExtRegionIdx  : '{0,0,0,0,0,0,L2Port2Idx,L2Port1Idx},
-  AxiExtRegionStart: '{0,0,0,0,0,0,L2Port2Base,L2Port1Base},
-  AxiExtRegionEnd  : '{0,0,0,0,0,0,L2Port2End,L2Port1End},
+  AxiExtRegionIdx  : '{0,0,0,0,0,SafetyIslandIdx,L2Port2Idx,L2Port1Idx},
+  AxiExtRegionStart: '{0,0,0,0,0,SafetyIslandBase,L2Port2Base,L2Port1Base},
+  AxiExtRegionEnd  : '{0,0,0,0,0,SafetyIslandEnd,L2Port2End,L2Port1End},
   // RTC
   RtcFreq           : 32768,
   // Features
