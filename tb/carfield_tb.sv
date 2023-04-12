@@ -9,25 +9,21 @@ module tb_carfield_soc;
 
   carfield_soc_fixture fix();
 
-  string      binary;
-  string      boot_hex;
-  logic [1:0] boot_mode;
-  logic [1:0] preload_mode;
-  logic       test_mode;
-  bit [31:0]  exit_code;
-  int         exit_status = -1;
-   
+  string       binary;
+  string       boot_hex;
+  logic [ 1:0] boot_mode;
+  logic [ 1:0] preload_mode;
+  bit   [31:0] exit_code;
+  int          exit_status = -1;
 
   initial begin
 
     if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
-    if (!$value$plusargs("TESTMODE=%d", test_mode))     test_mode     = 0;
     if (!$value$plusargs("BINARY=%s",   binary)) binary  = "./cheshire/sw/tests/helloworld.spm.elf";
     if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
 
     fix.set_boot_mode(boot_mode);
-    fix.set_test_mode(test_mode);
 
     fix.wait_for_reset();
 

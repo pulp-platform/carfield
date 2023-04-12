@@ -124,12 +124,21 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   default: '0
 };
 
-// L2 parameters
+/*****************/
+/* L2 Parameters */
+/*****************/
 localparam int unsigned NumL2Ports = 2;
 localparam int unsigned L2MemSize = 2**20;
 localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
                                         // (interleaved, non-interleaved)
 localparam doub_bt L2Port1NonInterlBase = L2Port1Base + L2MemSize;
 localparam doub_bt L2Port2NonInterlBase = L2Port2Base + L2MemSize;
+
+/****************************/
+/* Safety Island Parameters */
+/****************************/
+localparam int unsigned LogDepth = 3;
+localparam int unsigned SafetyIslandMemOffset = 'h0020_0000;
+localparam int unsigned SafetyIslandPerOffset = 'h0010_0000;
 
 endpackage

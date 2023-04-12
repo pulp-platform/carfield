@@ -406,7 +406,7 @@ logic safety_jtag_tck ,
       safety_jtag_tms ,
       safety_jtag_trst;
 
-assign safety_jtag_tcl  = '0;
+assign safety_jtag_tck  = '0;
 assign safety_jtag_tdi  = '0;
 assign safety_jtag_tms  = '0;
 assign safety_jtag_trst = '1;
@@ -425,34 +425,47 @@ assign axi_ext_slv_rsp[SafetyIslandIdx] = axi_safety_island_slv_rsp;
 
 assign axi_safety_island_mst_rsp = '0;
 
-safety_island_top #(
-  .BaseAddr          ( SafetyIslandBase       ),
-  .AddrRange         ( SafetyIslandSize       ),
-  .AxiDataWidth      ( Cfg.AxiDataWidth       ),
-  .AxiAddrWidth      ( Cfg.AddrWidth          ),
-  .AxiInputIdWidth   ( AxiSlvIdWidth          ),
-  .AxiUserWidth      ( Cfg.AxiUserWidth       ),
-  .axi_input_req_t   ( carfield_axi_slv_req_t ),
-  .axi_input_resp_t  ( carfield_axi_slv_rsp_t ),
-  .AxiOutputIdWidth  ( Cfg.AxiMstIdWidth      ),
-  .axi_output_req_t  ( carfield_axi_mst_req_t ),
-  .axi_output_resp_t ( carfield_axi_mst_rsp_t )
+safety_island #(
+  .AxiAddrWidth      ( Cfg.AddrWidth              ),
+  .AxiDataWidth      ( Cfg.AxiDataWidth           ),
+  .AxiUserWidth      ( Cfg.AxiUserWidth           ),
+  .AxiSlvIdWidth     ( AxiSlvIdWidth              ),
+  .AxiMstIdWidth     ( Cfg.AxiMstIdWidth          ),
+  .LogDepth          ( LogDepth                   ),
+  .BaseAddr          ( SafetyIslandBase           ),
+  .AddrRange         ( SafetyIslandSize           ),
+  .MemOffset         ( SafetyIslandMemOffset      ),
+  .PerOffset         ( SafetyIslandPerOffset      ),
+  .axi_slv_aw_chan_t ( carfield_axi_slv_aw_chan_t ),
+  .axi_slv_w_chan_t  ( carfield_axi_slv_w_chan_t  ),
+  .axi_slv_b_chan_t  ( carfield_axi_slv_b_chan_t  ),
+  .axi_slv_ar_chan_t ( carfield_axi_slv_ar_chan_t ),
+  .axi_slv_r_chan_t  ( carfield_axi_slv_r_chan_t  ),
+  .axi_slv_req_t     ( carfield_axi_slv_req_t     ),
+  .axi_slv_rsp_t     ( carfield_axi_slv_rsp_t     ),
+  .axi_mst_aw_chan_t ( carfield_axi_mst_aw_chan_t ),
+  .axi_mst_w_chan_t  ( carfield_axi_mst_w_chan_t  ),
+  .axi_mst_b_chan_t  ( carfield_axi_mst_b_chan_t  ),
+  .axi_mst_ar_chan_t ( carfield_axi_mst_ar_chan_t ),
+  .axi_mst_r_chan_t  ( carfield_axi_mst_r_chan_t  ),
+  .axi_mst_req_t     ( carfield_axi_mst_req_t     ),
+  .axi_mst_rsp_t     ( carfield_axi_mst_rsp_t     )
 ) i_safety_island    (
-  .clk_i             ( clk_i                     ),
-  .rst_ni            ( rst_ni                    ),
-  .ref_clk_i         ( clk_i                     ),
-  .test_enable_i     ( '0                        ),
-  .irqs_i            ( '0                        ),
-  .jtag_tck_i        ( safety_jtag_tck           ),
-  .jtag_tdi_i        ( safety_jtag_tdi           ),
-  .jtag_tdo_o        ( safety_jtag_tdo           ),
-  .jtag_tms_i        ( safety_jtag_tms           ),
-  .jtag_trst_i       ( safety_jtag_trst          ),
-  .bootmode_i        ( safety_island_bootmode    ),
-  .axi_input_req_i   ( axi_safety_island_slv_req ),
-  .axi_input_resp_o  ( axi_safety_island_slv_rsp ),
-  .axi_output_req_o  ( axi_safety_island_mst_req ),
-  .axi_output_resp_i ( axi_safety_island_mst_rsp )
+  .clk_i         ( clk_i                     ),
+  .rst_ni        ( rst_ni                    ),
+  .ref_clk_i     ( clk_i                     ),
+  .test_enable_i ( '0                        ),
+  .irqs_i        ( '0                        ),
+  .jtag_tck_i    ( safety_jtag_tck           ),
+  .jtag_tdi_i    ( safety_jtag_tdi           ),
+  .jtag_tdo_o    ( safety_jtag_tdo           ),
+  .jtag_tms_i    ( safety_jtag_tms           ),
+  .jtag_trst_ni  ( safety_jtag_trst          ),
+  .bootmode_i    ( safety_island_bootmode    ),
+  .axi_slv_req_i ( axi_safety_island_slv_req ),
+  .axi_slv_rsp_o ( axi_safety_island_slv_rsp ),
+  .axi_mst_req_o ( axi_safety_island_mst_req ),
+  .axi_mst_rsp_i ( axi_safety_island_mst_rsp )
 );
 
 endmodule
