@@ -14,6 +14,19 @@ testname ?= helloworld
 memtype ?= spm
 elf-bin ?= $(CHS_ROOT)/sw/tests/$(testname).$(memtype).elf
 
+# bender targets
+targets += -t sim
+targets += -t rtl
+targets += -t cv64a6_imafdc_sv39
+targets += -t test
+targets += -t cva6
+targets += -t integer_cluster
+
+# bender defines
+defines += -D FEATURE_ICACHE_STAT
+defines += -D PRIVATE_ICACHE
+defines += -D HIERARCHY_ICACHE_32BIT
+
 ifdef gui
 	vsim-flag :=
 	run_and_exit := run -all
@@ -39,7 +52,7 @@ tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@
 
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim -t sim -t rtl -t cv64a6_imafdc_sv39 -t test -t cva6 --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim $(targets) $(defines) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 car-hw-build: car-hw-clean scripts/carfield_compile.tcl
