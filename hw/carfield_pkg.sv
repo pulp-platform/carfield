@@ -13,28 +13,34 @@ import cheshire_pkg::*;
 typedef enum byte_bt {
   L2Port1Idx      = 'd0,
   L2Port2Idx      = 'd1,
-  SafetyIslandIdx = 'd2
+  SafetyIslandIdx = 'd2,
+  IntClusterIdx   = 'd3
 } axi_idx_t;
 
 typedef enum doub_bt {
   L2Port1Base      = 'h0000_0000_7800_0000,
   L2Port2Base      = 'h0000_0000_7820_0000,
-  SafetyIslandBase = 'h0000_0000_6000_0000
+  SafetyIslandBase = 'h0000_0000_6000_0000,
+  IntClusterBase   = 'h0000_0000_5080_0000
 } axi_start_t;
 
-typedef enum doub_bt {
-  L2Size           = 'h0000_0000_0020_0000,
-  SafetyIslandSize = 'h0000_0000_0080_0000
-} axi_size_t;
+// AXI Slave Sizes
+localparam doub_bt L2Size           = 'h0000_0000_0020_0000;
+localparam doub_bt SafetyIslandSize = 'h0000_0000_0080_0000;
+localparam doub_bt IntClusterSize   = 'h0000_0000_0080_0000;
 
 typedef enum doub_bt {
-  L2Port1End      = L2Port1Base + L2Size,
-  L2Port2End      = L2Port2Base + L2Size,
-  SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize
+  L2Port1End      = L2Port1Base + L2Size               ,
+  L2Port2End      = L2Port2Base + L2Size               ,
+  SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize,
+  IntClusterEnd   = IntClusterBase + IntClusterSize
 } axi_end_t;
 
-localparam bit [2:0] AxiNumExtSlv = 3'd2 +  3'd1;
-                                 // L2Ports Safety Island
+localparam bit [2:0] AxiNumExtSlv = 'd2    + 'd1           + 'd1;
+                                 // L2Ports   Safety Island   Integer Cluster
+
+localparam bit [2:0] AxiNumExtMst = 'd1;
+                                 // Integer Cluster
 
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
@@ -51,7 +57,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AddrWidth         : 48,
   AxiDataWidth      : 64,
   AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
-  AxiMstIdWidth     : 2,
+  AxiMstIdWidth     : 4,
   AxiMaxMstTrans    : 8,
   AxiMaxSlvTrans    : 8,
   AxiUserAmoMsb     : 1,
@@ -61,13 +67,13 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   RegAmoNumCuts     : 1,
   RegAmoPostCut     : 1,
   // External AXI ports (at most 8 ports and rules)
-  AxiExtNumMst      : 0,
+  AxiExtNumMst      : AxiNumExtMst,
   AxiExtNumSlv      : AxiNumExtSlv,
   AxiExtNumRules    : AxiNumExtSlv,
   // External AXI region map
-  AxiExtRegionIdx  : '{0,0,0,0,0,SafetyIslandIdx,L2Port2Idx,L2Port1Idx},
-  AxiExtRegionStart: '{0,0,0,0,0,SafetyIslandBase,L2Port2Base,L2Port1Base},
-  AxiExtRegionEnd  : '{0,0,0,0,0,SafetyIslandEnd,L2Port2End,L2Port1End},
+  AxiExtRegionIdx  : '{0, 0, 0, 0, IntClusterIdx, SafetyIslandIdx, L2Port2Idx, L2Port1Idx},
+  AxiExtRegionStart: '{0, 0, 0, 0, IntClusterBase, SafetyIslandBase, L2Port2Base, L2Port1Base},
+  AxiExtRegionEnd  : '{0, 0, 0, 0, IntClusterEnd, SafetyIslandEnd, L2Port2End, L2Port1End},
   // RTC
   RtcFreq           : 32768,
   // Features
@@ -124,6 +130,12 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   default: '0
 };
 
+/**********************/
+/* General Parameters */
+/**********************/
+localparam AxiNarrowAddrWidth = 32;
+localparam AxiNarrowDataWidth = 32;
+
 /*****************/
 /* L2 Parameters */
 /*****************/
@@ -140,5 +152,39 @@ localparam doub_bt L2Port2NonInterlBase = L2Port2Base + L2MemSize;
 localparam int unsigned LogDepth = 3;
 localparam int unsigned SafetyIslandMemOffset = 'h0020_0000;
 localparam int unsigned SafetyIslandPerOffset = 'h0010_0000;
+
+/******************************/
+/* Integer Cluster Parameters */
+/******************************/
+localparam int unsigned IntClusterNumCores = 8;
+localparam int unsigned IntClusterNumHwpePorts = 0;
+localparam int unsigned IntClusterNumDmas = 4;
+localparam int unsigned IntClusterNumMstPer = 1;
+localparam int unsigned IntClusterNumSlvPer = 10;
+localparam int unsigned IntClusterAlias = 1;
+localparam int unsigned IntClusterAliasBase = 12'h000;
+localparam int unsigned IntClusterTcdmSize = 256*1024;
+localparam int unsigned IntClusterTcdmBanks = 16;
+localparam int unsigned IntClusterHwpePresent = 0;
+localparam int unsigned IntClusterUseHci = 1;
+localparam int unsigned IntClusterSetAssociative = 4;
+localparam int unsigned IntClusterNumCacheBanks = 2;
+localparam int unsigned IntClusterNumCacheLines = 1;
+localparam int unsigned IntClusterCacheSize = 4*1024;
+localparam int unsigned IntClusterDbgStart = 32'h1A110000;
+localparam int unsigned IntClusterRomBoot = 32'h1A000000;
+localparam int unsigned IntClusterBootAddr = L2Port1Base;
+localparam int unsigned IntClusterInstrRdataWidth = 32;
+localparam int unsigned IntClusterFpu = 0;
+localparam int unsigned IntClusterFpuDivSqrt = 0;
+localparam int unsigned IntClusterSharedFpu = 0;
+localparam int unsigned IntClusterSharedFpuDivSqrt = 0;
+localparam int unsigned IntClusterNumAxiMst = 3;
+localparam int unsigned IntClusterNumAxiSlv = 4;
+// Always make sure that CarfieldCfgDefault.AxiMstIdWidth = IntClusterAxiIdInWidth + $clog2(IntClusterNumAxiSlv)!!
+localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 1; // From PULP Cluster
+localparam int unsigned IntClusterNarrowAddrWidth = 32;
+localparam int unsigned IntClusterNarrowDataWidth = 32;
+localparam logic [ 5:0] IntClusterIndex = '0;
 
 endpackage
