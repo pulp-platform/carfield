@@ -14,7 +14,7 @@ dependencies:
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: cb2ba8146ca6b136b0e7b81884eb17c72a5d0ec2 } # branch: yt/carfield-integration
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 170649965a44b5c66c1c1670664b97b8e78bacb5 } # branch: master
-  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: e830f52829fded4b325b974411888d5ba8bf1fdf } # branch: yt/carfield-integration
+  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: f67b5a9de58d67ce0b9bc3dfcd8028cb52325979 } # branch: yt/carfield-integration
 
 workspace:
   package_links:
