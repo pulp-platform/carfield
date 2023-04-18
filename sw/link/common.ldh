@@ -1,0 +1,29 @@
+/* Copyright 2022 ETH Zurich and University of Bologna. */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/* Nicole Narr <narrn@student.ethz.ch> */
+/* Christopher Reinwardt <creinwar@student.ethz.ch> */
+/* Paul Scheffler <paulsc@iis.ee.ethz.ch> */
+
+/* This header defines symbols and rules universal to bare-metal execution */
+
+ENTRY(_start)
+
+MEMORY {
+  /* 1 MiB of on-board L2 scratchpad. */
+  l2 (rwx)    : ORIGIN = 0x78000000, LENGTH = 1M
+}
+
+SECTIONS {
+  /* Keep binaries lean */
+  /DISCARD/ : { *(.riscv.attributes) *(.comment) }
+
+  /* Global and stack pointer */
+  /* By default, keep the calling context (boot ROM) stack pointer */
+  __global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2;
+  __stack_pointer$  = 0;
+
+  /* Further addresses */
+  __base_l2       = ORIGIN(l2);
+}

@@ -6,10 +6,11 @@
 
 ROOT := .
 CHS_ROOT ?= $(ROOT)/cheshire
+CHS_SW_DIR = $(CHS_ROOT)/sw
 SW_ROOT := $(ROOT)/sw
 
-include $(CHS_ROOT)/cheshire.mk
-# include $(SW_ROOT)/sw.mk
+-include $(CHS_ROOT)/cheshire.mk
+include $(SW_ROOT)/sw.mk
 
 testname ?= helloworld
 memtype ?= spm
@@ -22,6 +23,7 @@ targets += -t cv64a6_imafdc_sv39
 targets += -t test
 targets += -t cva6
 targets += -t integer_cluster
+targets += -t cv32e40p_use_ff_regfile
 
 # bender defines
 defines += -D FEATURE_ICACHE_STAT
@@ -36,6 +38,19 @@ else
 	run_and_exit := run_and_exit
 endif
 
+######################
+# Nonfree components #
+######################
+
+CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
+CAR_NONFREE_COMMIT ?= c0d7121d145487950ccb14169b06947848a4d285
+
+car-nonfree-init:
+	git clone $(CAR_NONFREE_REMOTE) nonfree
+	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
+
+-include nonfree/nonfree.mk
+
 tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@
 
@@ -43,11 +58,11 @@ scripts/carfield_compile.tcl:
 	$(BENDER) script vsim $(targets) $(defines) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-hw-build: hw-clean scripts/carfield_compile.tcl
+car-hw-build: car-hw-clean scripts/carfield_compile.tcl
 	vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
-hw-sim:
+car-hw-sim:
 	vsim $(vsim-flag) -do "set BOOTMODE 0; set BINARY $(elf-bin); set TESTBENCH tb_carfield_soc; source scripts/start_carfield.tcl ; add log -r sim:/tb_carfield_soc/*; $(run_and_exit)"
 
-hw-clean:
+car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work
