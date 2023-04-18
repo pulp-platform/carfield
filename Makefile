@@ -21,6 +21,7 @@ targets += -t cv64a6_imafdc_sv39
 targets += -t test
 targets += -t cva6
 targets += -t integer_cluster
+targets += -t cv32e40p_use_ff_regfile
 
 # bender defines
 defines += -D FEATURE_ICACHE_STAT
