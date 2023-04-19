@@ -184,7 +184,7 @@ cheshire_soc #(
   .uart_dtr_no                    ,
   .uart_cts_ni                    ,
   .uart_dsr_ni                    ,
-  .uart_dcd_ni                    ,        
+  .uart_dcd_ni                    ,
   .uart_rin_ni                    ,
   // I2C interface
   .i2c_sda_o                      ,
@@ -373,10 +373,18 @@ typedef struct packed {
 } l2_map_rule_t;
 
 l2_map_rule_t [L2NumRules-1:0] l2_mapping_rules = '{
-  '{idx: car_l2_pkg::INTERLEAVE, start_addr: L2Port1Base         , end_addr: L2Port1Base + L2MemSize         },
-  '{idx: car_l2_pkg::NONE_INTER, start_addr: L2Port1NonInterlBase, end_addr: L2Port1NonInterlBase + L2MemSize},
-  '{idx: car_l2_pkg::INTERLEAVE, start_addr: L2Port2Base         , end_addr: L2Port2Base + L2MemSize         },
-  '{idx: car_l2_pkg::NONE_INTER, start_addr: L2Port2NonInterlBase, end_addr: L2Port2NonInterlBase + L2MemSize}
+  '{idx       : car_l2_pkg::INTERLEAVE  ,
+    start_addr: L2Port1Base             ,
+    end_addr  : L2Port1Base + L2MemSize},
+  '{idx       : car_l2_pkg::NONE_INTER           ,
+    start_addr: L2Port1NonInterlBase             ,
+    end_addr  : L2Port1NonInterlBase + L2MemSize},
+  '{idx       : car_l2_pkg::INTERLEAVE ,
+    start_addr: L2Port2Base            ,
+    end_addr  : L2Port2Base + L2MemSize},
+  '{idx       : car_l2_pkg::NONE_INTER          ,
+    start_addr: L2Port2NonInterlBase            ,
+    end_addr  : L2Port2NonInterlBase + L2MemSize}
 };
 
 car_l2_top #(
@@ -471,34 +479,44 @@ safety_island #(
 // Integer Cluster
 // CDC Parameters
 // Integer Cluster slave parameters
-localparam int unsigned IntClusterAxiSlvAwWidth = (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth         ,
-                                                                                  IntClusterAxiIdInWidth,
-                                                                                  Cfg.AxiUserWidth      );
-localparam int unsigned IntClusterAxiSlvWWidth  = (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
-                                                                                 Cfg.AxiUserWidth);
-localparam int unsigned IntClusterAxiSlvBWidth  = (2**LogDepth)*axi_pkg::b_width(IntClusterAxiIdInWidth,
-                                                                                 Cfg.AxiUserWidth      );
-localparam int unsigned IntClusterAxiSlvArWidth = (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth         ,
-                                                                                  IntClusterAxiIdInWidth,
-                                                                                  Cfg.AxiUserWidth      );
-localparam int unsigned IntClusterAxiSlvRWidth  = (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth      ,
-                                                                                 IntClusterAxiIdInWidth,
-                                                                                 Cfg.AxiUserWidth      );
+localparam int unsigned IntClusterAxiSlvAwWidth =
+                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth         ,
+                                                        IntClusterAxiIdInWidth,
+                                                        Cfg.AxiUserWidth      );
+localparam int unsigned IntClusterAxiSlvWWidth  =
+                        (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
+                                                       Cfg.AxiUserWidth);
+localparam int unsigned IntClusterAxiSlvBWidth  =
+                        (2**LogDepth)*axi_pkg::b_width(IntClusterAxiIdInWidth,
+                                                       Cfg.AxiUserWidth      );
+localparam int unsigned IntClusterAxiSlvArWidth =
+                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth         ,
+                                                        IntClusterAxiIdInWidth,
+                                                        Cfg.AxiUserWidth      );
+localparam int unsigned IntClusterAxiSlvRWidth  =
+                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth      ,
+                                                       IntClusterAxiIdInWidth,
+                                                       Cfg.AxiUserWidth      );
 
 // Integer Cluster Master parameters
-localparam int unsigned IntClusterAxiMstAwWidth = (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth    ,
-                                                                                  Cfg.AxiMstIdWidth,
-                                                                                  Cfg.AxiUserWidth );
-localparam int unsigned IntClusterAxiMstWWidth  = (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
-                                                                                 Cfg.AxiUserWidth);
-localparam int unsigned IntClusterAxiMstBWidth  = (2**LogDepth)*axi_pkg::b_width(Cfg.AxiMstIdWidth,
-                                                                                 Cfg.AxiUserWidth );
-localparam int unsigned IntClusterAxiMstArWidth = (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth    ,
-                                                                                  Cfg.AxiMstIdWidth,
-                                                                                  Cfg.AxiUserWidth );
-localparam int unsigned IntClusterAxiMstRWidth  = (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth ,
-                                                                                 Cfg.AxiMstIdWidth,
-                                                                                 Cfg.AxiUserWidth );
+localparam int unsigned IntClusterAxiMstAwWidth =
+                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth    ,
+                                                        Cfg.AxiMstIdWidth,
+                                                        Cfg.AxiUserWidth );
+localparam int unsigned IntClusterAxiMstWWidth  =
+                        (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
+                                                       Cfg.AxiUserWidth);
+localparam int unsigned IntClusterAxiMstBWidth  =
+                        (2**LogDepth)*axi_pkg::b_width(Cfg.AxiMstIdWidth,
+                                                      Cfg.AxiUserWidth );
+localparam int unsigned IntClusterAxiMstArWidth =
+                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth    ,
+                                                        Cfg.AxiMstIdWidth,
+                                                        Cfg.AxiUserWidth );
+localparam int unsigned IntClusterAxiMstRWidth  =
+                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth ,
+                                                       Cfg.AxiMstIdWidth,
+                                                       Cfg.AxiUserWidth );
 
 // Integer Cluster connection buses
 // Slave side
@@ -695,20 +713,20 @@ pulp_cluster #(
   .base_addr_i                 ( '0                            ),
   .test_mode_i                 ( test_mode_i                   ),
   .cluster_id_i                ( IntClusterIndex               ),
-  .en_sa_boot_i                ( '0                            ), // Connect to Soc Control
-  .fetch_en_i                  ( '0                            ), // Connect to Soc Control
-  .eoc_o                       (                               ), // Connect to Soc Control
-  .busy_o                      (                               ), // Connect to Soc Control
-  .dma_pe_evt_ack_i            ( '0                            ), // Connect to edge propagator
-  .dma_pe_evt_valid_o          (                               ), // Connect to edge propagator
-  .dma_pe_irq_ack_i            ( '1                            ), // Probably also connecto to edge propagator
-  .dma_pe_irq_valid_o          (                               ), // Probably also connecto to edge propagator
-  .dbg_irq_valid_i             ( '0                            ), // Probably also connecto to edge propagator
-  .pf_evt_ack_i                ( '1                            ), // Probably also connecto to edge propagator
-  .pf_evt_valid_o              (                               ), // Probably also connecto to edge propagator
-  .async_cluster_events_wptr_i ( '0                            ), // Probably also connecto to edge propagator
-  .async_cluster_events_rptr_o (                               ), // Probably also connecto to edge propagator
-  .async_cluster_events_data_i ( '0                            ), // Probably also connecto to edge propagator
+  .en_sa_boot_i                ( '0                            ), // To Soc Control
+  .fetch_en_i                  ( '0                            ), // To Soc Control
+  .eoc_o                       (                               ), // To Soc Control
+  .busy_o                      (                               ), // To Soc Control
+  .dma_pe_evt_ack_i            ( '0                            ), // To edge propagator
+  .dma_pe_evt_valid_o          (                               ), // To edge propagator
+  .dma_pe_irq_ack_i            ( '1                            ), // To edge propagator (?)
+  .dma_pe_irq_valid_o          (                               ), // To edge propagator (?)
+  .dbg_irq_valid_i             ( '0                            ), // To edge propagator (?)
+  .pf_evt_ack_i                ( '1                            ), // To edge propagator (?)
+  .pf_evt_valid_o              (                               ), // To edge propagator (?)
+  .async_cluster_events_wptr_i ( '0                            ), // To edge propagator (?)
+  .async_cluster_events_rptr_o (                               ), // To edge propagator (?)
+  .async_cluster_events_data_i ( '0                            ), // To edge propagator (?)
   // AXI4 Slave port
   .async_data_slave_aw_data_i  ( axi_slv_intcluster_aw_data ),
   .async_data_slave_aw_wptr_i  ( axi_slv_intcluster_aw_wptr ),

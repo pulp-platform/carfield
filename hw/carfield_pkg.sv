@@ -133,8 +133,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
 /**********************/
 /* General Parameters */
 /**********************/
-localparam AxiNarrowAddrWidth = 32;
-localparam AxiNarrowDataWidth = 32;
+localparam int unsigned AxiNarrowAddrWidth = 32;
+localparam int unsigned AxiNarrowDataWidth = 32;
 
 /*****************/
 /* L2 Parameters */
@@ -181,8 +181,10 @@ localparam int unsigned IntClusterSharedFpu = 0;
 localparam int unsigned IntClusterSharedFpuDivSqrt = 0;
 localparam int unsigned IntClusterNumAxiMst = 3;
 localparam int unsigned IntClusterNumAxiSlv = 4;
-// Always make sure that CarfieldCfgDefault.AxiMstIdWidth = IntClusterAxiIdInWidth + $clog2(IntClusterNumAxiSlv)!!
-localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 1; // From PULP Cluster
+// Always make sure that CarfieldCfgDefault.AxiMstIdWidth =
+// = IntClusterAxiIdInWidth + $clog2(IntClusterNumAxiSlv)!!
+// IntClusterAxiIdInWidth is fixed from PULP Cluster
+localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 1;
 localparam int unsigned IntClusterNarrowAddrWidth = 32;
 localparam int unsigned IntClusterNarrowDataWidth = 32;
 localparam logic [ 5:0] IntClusterIndex = '0;
