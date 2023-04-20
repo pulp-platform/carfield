@@ -359,11 +359,11 @@ logic l2_ecc_err;
 carfield_axi_slv_req_t [NumL2Ports-1:0] axi_l2_slv_req;
 carfield_axi_slv_rsp_t [NumL2Ports-1:0] axi_l2_slv_rsp;
 
-assign axi_l2_slv_req[L2Port1Idx] = axi_ext_slv_req[L2Port1Idx];
-assign axi_l2_slv_req[L2Port2Idx] = axi_ext_slv_req[L2Port2Idx];
+assign axi_l2_slv_req[L2Port1SlvIdx] = axi_ext_slv_req[L2Port1SlvIdx];
+assign axi_l2_slv_req[L2Port2SlvIdx] = axi_ext_slv_req[L2Port2SlvIdx];
 
-assign axi_ext_slv_rsp[L2Port1Idx] = axi_l2_slv_rsp[L2Port1Idx];
-assign axi_ext_slv_rsp[L2Port2Idx] = axi_l2_slv_rsp[L2Port2Idx];
+assign axi_ext_slv_rsp[L2Port1SlvIdx] = axi_l2_slv_rsp[L2Port1SlvIdx];
+assign axi_ext_slv_rsp[L2Port2SlvIdx] = axi_l2_slv_rsp[L2Port2SlvIdx];
 
 // L2 mapping
 typedef struct packed {
@@ -428,8 +428,8 @@ carfield_axi_slv_rsp_t axi_safety_island_slv_rsp;
 carfield_axi_mst_req_t axi_safety_island_mst_req;
 carfield_axi_mst_rsp_t axi_safety_island_mst_rsp;
 
-assign axi_safety_island_slv_req = axi_ext_slv_req[SafetyIslandIdx];
-assign axi_ext_slv_rsp[SafetyIslandIdx] = axi_safety_island_slv_rsp;
+assign axi_safety_island_slv_req = axi_ext_slv_req[SafetyIslandSlvIdx];
+assign axi_ext_slv_rsp[SafetyIslandSlvIdx] = axi_safety_island_slv_rsp;
 
 assign axi_safety_island_mst_rsp = '0;
 
@@ -500,23 +500,23 @@ localparam int unsigned IntClusterAxiSlvRWidth  =
 
 // Integer Cluster Master parameters
 localparam int unsigned IntClusterAxiMstAwWidth =
-                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth    ,
-                                                        Cfg.AxiMstIdWidth,
-                                                        Cfg.AxiUserWidth );
+                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth          ,
+                                                        IntClusterAxiIdOutWidth,
+                                                        Cfg.AxiUserWidth       );
 localparam int unsigned IntClusterAxiMstWWidth  =
                         (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
                                                        Cfg.AxiUserWidth);
 localparam int unsigned IntClusterAxiMstBWidth  =
-                        (2**LogDepth)*axi_pkg::b_width(Cfg.AxiMstIdWidth,
-                                                      Cfg.AxiUserWidth );
+                        (2**LogDepth)*axi_pkg::b_width(IntClusterAxiIdOutWidth,
+                                                      Cfg.AxiUserWidth        );
 localparam int unsigned IntClusterAxiMstArWidth =
-                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth    ,
-                                                        Cfg.AxiMstIdWidth,
-                                                        Cfg.AxiUserWidth );
+                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth          ,
+                                                        IntClusterAxiIdOutWidth,
+                                                        Cfg.AxiUserWidth       );
 localparam int unsigned IntClusterAxiMstRWidth  =
-                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth ,
-                                                       Cfg.AxiMstIdWidth,
-                                                       Cfg.AxiUserWidth );
+                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth       ,
+                                                       IntClusterAxiIdOutWidth,
+                                                       Cfg.AxiUserWidth       );
 
 // Integer Cluster connection buses
 // Slave side
@@ -534,8 +534,8 @@ carfield_axi_slv_rsp_t axi_intcluster_slv_rsp;
 axi_intcluster_slv_req_t axi_intcluster_ser_slv_req;
 axi_intcluster_slv_rsp_t axi_intcluster_ser_slv_rsp;
 
-assign axi_intcluster_slv_req = axi_ext_slv_req[IntClusterIdx];
-assign axi_ext_slv_rsp[IntClusterIdx] = axi_intcluster_slv_rsp;
+assign axi_intcluster_slv_req = axi_ext_slv_req[IntClusterSlvIdx];
+assign axi_ext_slv_rsp[IntClusterSlvIdx] = axi_intcluster_slv_rsp;
 
 logic [IntClusterAxiSlvAwWidth-1:0] axi_slv_intcluster_aw_data;
 logic [                 LogDepth:0] axi_slv_intcluster_aw_wptr;
@@ -567,7 +567,7 @@ axi_id_serialize #(
   .slv_resp_t             ( carfield_axi_slv_rsp_t    ),
   .mst_req_t              ( axi_intcluster_slv_req_t  ),
   .mst_resp_t             ( axi_intcluster_slv_rsp_t  )
-) i_integer_cluster_axi_id_serializer (
+) i_integer_cluster_axi_slv_id_serializer   (
   .clk_i       ( clk_i                      ),
   .rst_ni      ( rst_ni                     ),
   .slv_req_i   ( axi_intcluster_slv_req     ),
@@ -610,11 +610,22 @@ axi_cdc_src  #(
 );
 
 // Master side
+`AXI_TYPEDEF_ALL_CT(axi_intcluster_mst                 ,
+                    axi_intcluster_mst_req_t           ,
+                    axi_intcluster_mst_rsp_t           ,
+                    logic [Cfg.AddrWidth-1:0]          ,
+                    logic [IntClusterAxiIdOutWidth-1:0],
+                    logic [Cfg.AxiDataWidth-1:0]       ,
+                    logic [(Cfg.AxiDataWidth)/8-1:0]   ,
+                    logic [Cfg.AxiUserWidth-1:0]       )
+
 carfield_axi_mst_req_t axi_intcluster_mst_req;
 carfield_axi_mst_rsp_t axi_intcluster_mst_rsp;
+axi_intcluster_mst_req_t axi_intcluster_ser_mst_req;
+axi_intcluster_mst_rsp_t axi_intcluster_ser_mst_rsp;
 
-// assign axi_ext_mst_req[IntClusterIdx] = axi_intcluster_mst_req;
-// assign axi_intcluster_slv_rsp = axi_ext_mst_rsp[IntClusterIdx];
+assign axi_ext_mst_req[IntClusterMstIdx] = axi_intcluster_mst_req;
+assign axi_intcluster_mst_rsp = axi_ext_mst_rsp[IntClusterMstIdx];
 
 logic [IntClusterAxiMstAwWidth-1:0] axi_mst_intcluster_aw_data;
 logic [                 LogDepth:0] axi_mst_intcluster_aw_wptr;
@@ -632,15 +643,38 @@ logic [ IntClusterAxiMstRWidth-1:0] axi_mst_intcluster_r_data ;
 logic [                 LogDepth:0] axi_mst_intcluster_r_wptr ;
 logic [                 LogDepth:0] axi_mst_intcluster_r_rptr ;
 
+axi_id_serialize #(
+  .AxiSlvPortIdWidth      ( IntClusterAxiIdOutWidth   ),
+  .AxiSlvPortMaxTxns      ( Cfg.AxiMaxSlvTrans        ),
+  .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth         ),
+  .AxiMstPortMaxUniqIds   ( 2**IntClusterAxiIdInWidth ), // Max value
+  .AxiMstPortMaxTxnsPerId ( Cfg.AxiMaxMstTrans        ),
+  .AxiAddrWidth           ( Cfg.AddrWidth             ),
+  .AxiDataWidth           ( Cfg.AxiDataWidth          ),
+  .AxiUserWidth           ( Cfg.AxiUserWidth          ),
+  .AtopSupport            ( 0                         ), // Change me if needed
+  .slv_req_t              ( axi_intcluster_mst_req_t  ),
+  .slv_resp_t             ( axi_intcluster_mst_rsp_t  ),
+  .mst_req_t              ( carfield_axi_mst_req_t    ),
+  .mst_resp_t             ( carfield_axi_mst_rsp_t    )
+) i_integer_cluster_axi_mst_id_serializer   (
+  .clk_i       ( clk_i                      ),
+  .rst_ni      ( rst_ni                     ),
+  .slv_req_i   ( axi_intcluster_ser_mst_req ),
+  .slv_resp_o  ( axi_intcluster_ser_mst_rsp ),
+  .mst_req_o   ( axi_intcluster_mst_req     ),
+  .mst_resp_i  ( axi_intcluster_mst_rsp     )
+);
+
 axi_cdc_dst #(
-  .LogDepth   ( LogDepth                   ),
-  .aw_chan_t  ( carfield_axi_mst_aw_chan_t ),
-  .w_chan_t   ( carfield_axi_mst_w_chan_t  ),
-  .b_chan_t   ( carfield_axi_mst_b_chan_t  ),
-  .ar_chan_t  ( carfield_axi_mst_ar_chan_t ),
-  .r_chan_t   ( carfield_axi_mst_r_chan_t  ),
-  .axi_req_t  ( carfield_axi_mst_req_t     ),
-  .axi_resp_t ( carfield_axi_mst_rsp_t     )
+  .LogDepth   ( LogDepth                     ),
+  .aw_chan_t  ( axi_intcluster_mst_aw_chan_t ),
+  .w_chan_t   ( axi_intcluster_mst_w_chan_t  ),
+  .b_chan_t   ( axi_intcluster_mst_b_chan_t  ),
+  .ar_chan_t  ( axi_intcluster_mst_ar_chan_t ),
+  .r_chan_t   ( axi_intcluster_mst_r_chan_t  ),
+  .axi_req_t  ( axi_intcluster_mst_req_t     ),
+  .axi_resp_t ( axi_intcluster_mst_rsp_t     )
 ) i_intcluster_mst_cdc        (
   // asynchronous slave port
   .async_data_slave_aw_data_i ( axi_mst_intcluster_aw_data ),
@@ -659,10 +693,10 @@ axi_cdc_dst #(
   .async_data_slave_r_wptr_o  ( axi_mst_intcluster_r_wptr  ),
   .async_data_slave_r_rptr_i  ( axi_mst_intcluster_r_rptr  ),
   // synchronous master port
-  .dst_clk_i  ( clk_i                  ),
-  .dst_rst_ni ( rst_ni                 ),
-  .dst_req_o  ( axi_intcluster_mst_req ),
-  .dst_resp_i ( axi_intcluster_mst_rsp )
+  .dst_clk_i  ( clk_i                      ),
+  .dst_rst_ni ( rst_ni                     ),
+  .dst_req_o  ( axi_intcluster_ser_mst_req ),
+  .dst_resp_i ( axi_intcluster_ser_mst_rsp )
 );
 
 pulp_cluster #(
@@ -702,7 +736,7 @@ pulp_cluster #(
   .AXI_DATA_S2C_WIDTH             ( Cfg.AxiDataWidth          ),
   .AXI_USER_WIDTH                 ( Cfg.AxiUserWidth          ),
   .AXI_ID_IN_WIDTH                ( IntClusterAxiIdInWidth    ),
-  .AXI_ID_OUT_WIDTH               ( Cfg.AxiMstIdWidth         ),
+  .AXI_ID_OUT_WIDTH               ( IntClusterAxiIdOutWidth   ),
   .LOG_DEPTH                      ( LogDepth                  ),
   .BaseAddr                       ( IntClusterBase            )
 ) i_integer_cluster            (

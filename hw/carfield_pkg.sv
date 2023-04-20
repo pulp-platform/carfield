@@ -11,17 +11,21 @@ package carfield_pkg;
 import cheshire_pkg::*;
 
 typedef enum byte_bt {
-  L2Port1Idx      = 'd0,
-  L2Port2Idx      = 'd1,
-  SafetyIslandIdx = 'd2,
-  IntClusterIdx   = 'd3
-} axi_idx_t;
+  L2Port1SlvIdx      = 'd0,
+  L2Port2SlvIdx      = 'd1,
+  SafetyIslandSlvIdx = 'd2,
+  IntClusterSlvIdx   = 'd3
+} axi_slv_idx_t;
+
+typedef enum byte_bt {
+  IntClusterMstIdx   = 'd0
+} axi_mst_idx_t;
 
 typedef enum doub_bt {
   L2Port1Base      = 'h0000_0000_7800_0000,
   L2Port2Base      = 'h0000_0000_7820_0000,
   SafetyIslandBase = 'h0000_0000_6000_0000,
-  IntClusterBase   = 'h0000_0000_5080_0000
+  IntClusterBase   = 'h0000_0000_5000_0000
 } axi_start_t;
 
 // AXI Slave Sizes
@@ -57,7 +61,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AddrWidth         : 48,
   AxiDataWidth      : 64,
   AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
-  AxiMstIdWidth     : 4,
+  AxiMstIdWidth     : 2,
   AxiMaxMstTrans    : 8,
   AxiMaxSlvTrans    : 8,
   AxiUserAmoMsb     : 1,
@@ -71,9 +75,18 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiExtNumSlv      : AxiNumExtSlv,
   AxiExtNumRules    : AxiNumExtSlv,
   // External AXI region map
-  AxiExtRegionIdx  : '{0, 0, 0, 0, IntClusterIdx, SafetyIslandIdx, L2Port2Idx, L2Port1Idx},
-  AxiExtRegionStart: '{0, 0, 0, 0, IntClusterBase, SafetyIslandBase, L2Port2Base, L2Port1Base},
-  AxiExtRegionEnd  : '{0, 0, 0, 0, IntClusterEnd, SafetyIslandEnd, L2Port2End, L2Port1End},
+  AxiExtRegionIdx  : '{0, 0, 0, 0, IntClusterSlvIdx  ,
+                                   SafetyIslandSlvIdx,
+                                   L2Port2SlvIdx     ,
+                                   L2Port1SlvIdx     },
+  AxiExtRegionStart: '{0, 0, 0, 0, IntClusterBase  ,
+                                   SafetyIslandBase,
+                                   L2Port2Base     ,
+                                   L2Port1Base     },
+  AxiExtRegionEnd  : '{0, 0, 0, 0, IntClusterEnd  ,
+                                   SafetyIslandEnd,
+                                   L2Port2End     ,
+                                   L2Port1End     },
   // RTC
   RtcFreq           : 32768,
   // Features
@@ -185,6 +198,8 @@ localparam int unsigned IntClusterNumAxiSlv = 4;
 // = IntClusterAxiIdInWidth + $clog2(IntClusterNumAxiSlv)!!
 // IntClusterAxiIdInWidth is fixed from PULP Cluster
 localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 1;
+localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
+                                                  $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterNarrowAddrWidth = 32;
 localparam int unsigned IntClusterNarrowDataWidth = 32;
 localparam logic [ 5:0] IntClusterIndex = '0;

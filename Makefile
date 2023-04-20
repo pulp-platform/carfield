@@ -57,10 +57,10 @@ scripts/carfield_compile.tcl:
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 car-hw-build: car-hw-clean scripts/carfield_compile.tcl
-	vsim -c -do "source scripts/carfield_compile.tcl; exit"
+	questa-2022.3 vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
 car-hw-sim:
-	vsim $(vsim-flag) -do "set BOOTMODE 0; set BINARY $(elf-bin); set TESTBENCH tb_carfield_soc; source scripts/start_carfield.tcl ; add log -r sim:/tb_carfield_soc/*; $(run_and_exit)"
+	questa-2022.3 vsim $(vsim-flag) -do "set BOOTMODE 0; set BINARY $(elf-bin); set TESTBENCH tb_carfield_soc; source scripts/start_carfield.tcl ; add log -r sim:/tb_carfield_soc/* ; $(run_and_exit)"
 
 car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work
