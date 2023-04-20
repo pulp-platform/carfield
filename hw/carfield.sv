@@ -9,10 +9,10 @@
 `include "cheshire/typedef.svh"
 
 /// Top-level implementation of Carfield
-module carfield import carfield_pkg::*;
-                import cheshire_pkg::*;
-                import car_l2_pkg::*;
-                import safety_island_pkg::*;
+module carfield
+  import carfield_pkg::*;
+  import cheshire_pkg::*;
+  import safety_island_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault, // from Cheshire package
   parameter int unsigned HypNumPhys  = 1,
@@ -78,6 +78,9 @@ module carfield import carfield_pkg::*;
   inout  [HypNumPhys-1:0][7:0]                        pad_hyper_dq
 );
 
+/*********************************
+* General parameters and defines *
+**********************************/
 `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
 
 // Generate indices and get maps for all ports
@@ -87,6 +90,46 @@ localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
 // Define needed parameters
 localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
 localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+
+// Slave CDC parameters
+localparam int unsigned CarfieldAxiSlvAwWidth =
+                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth   ,
+                                                        AxiSlvIdWidth   ,
+                                                        Cfg.AxiUserWidth);
+localparam int unsigned CarfieldAxiSlvWWidth  =
+                        (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
+                                                       Cfg.AxiUserWidth);
+localparam int unsigned CarfieldAxiSlvBWidth  =
+                        (2**LogDepth)*axi_pkg::b_width(AxiSlvIdWidth   ,
+                                                       Cfg.AxiUserWidth);
+localparam int unsigned CarfieldAxiSlvArWidth =
+                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth   ,
+                                                        AxiSlvIdWidth   ,
+                                                        Cfg.AxiUserWidth);
+localparam int unsigned CarfieldAxiSlvRWidth  =
+                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth,
+                                                       AxiSlvIdWidth   ,
+                                                       Cfg.AxiUserWidth);
+
+// Master CDC parameters
+localparam int unsigned CarfieldAxiMstAwWidth =
+                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth    ,
+                                                        Cfg.AxiMstIdWidth,
+                                                        Cfg.AxiUserWidth );
+localparam int unsigned CarfieldAxiMstWWidth  =
+                        (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
+                                                       Cfg.AxiUserWidth);
+localparam int unsigned CarfieldAxiMstBWidth  =
+                        (2**LogDepth)*axi_pkg::b_width(Cfg.AxiMstIdWidth,
+                                                      Cfg.AxiUserWidth  );
+localparam int unsigned CarfieldAxiMstArWidth =
+                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth    ,
+                                                        Cfg.AxiMstIdWidth,
+                                                        Cfg.AxiUserWidth );
+localparam int unsigned CarfieldAxiMstRWidth  =
+                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth ,
+                                                       Cfg.AxiMstIdWidth,
+                                                       Cfg.AxiUserWidth );
 
 // Type for address map entries
 typedef struct packed {
@@ -118,18 +161,10 @@ logic        spim_sck_en;
 logic [ 1:0] spim_csb_en;
 logic [ 3:0] spim_sd_en;
 
-logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_n_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_n_wire;
-logic [HypNumPhys-1:0]                  hyper_rwds_o;
-logic [HypNumPhys-1:0]                  hyper_rwds_i;
-logic [HypNumPhys-1:0]                  hyper_rwds_oe;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_i;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_o;
-logic [HypNumPhys-1:0]                  hyper_dq_oe;
-logic [HypNumPhys-1:0]                  hyper_reset_n_wire;
-
-// the SoC
+/***************
+* Carfield IPs *
+***************/
+// Cheshire SoC
 cheshire_soc #(
   .Cfg               ( Cfg                    ),
   .ExtHartinfo       ( '0                     ),
@@ -218,7 +253,18 @@ cheshire_soc #(
   .vga_blue_o  (                 )
 );
 
-// hyperbus memory
+// Hyperbus
+logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_n_wire;
+logic [HypNumPhys-1:0]                  hyper_ck_wire;
+logic [HypNumPhys-1:0]                  hyper_ck_n_wire;
+logic [HypNumPhys-1:0]                  hyper_rwds_o;
+logic [HypNumPhys-1:0]                  hyper_rwds_i;
+logic [HypNumPhys-1:0]                  hyper_rwds_oe;
+logic [HypNumPhys-1:0][7:0]             hyper_dq_i;
+logic [HypNumPhys-1:0][7:0]             hyper_dq_o;
+logic [HypNumPhys-1:0]                  hyper_dq_oe;
+logic [HypNumPhys-1:0]                  hyper_reset_n_wire;
+
 hyperbus #(
   .NumChips         ( HypNumChips            ),
   .NumPhys          ( HypNumPhys             ),
@@ -352,7 +398,7 @@ for (genvar i = 0 ; i<HypNumPhys; i++) begin : gen_hyper_phy
   );
 end
 
-// Reconfigurable L2
+// Reconfigurable L2 Memory
 logic l2_ecc_err;
 
 // L2 connection buses
@@ -365,46 +411,85 @@ assign axi_l2_slv_req[L2Port2SlvIdx] = axi_ext_slv_req[L2Port2SlvIdx];
 assign axi_ext_slv_rsp[L2Port1SlvIdx] = axi_l2_slv_rsp[L2Port1SlvIdx];
 assign axi_ext_slv_rsp[L2Port2SlvIdx] = axi_l2_slv_rsp[L2Port2SlvIdx];
 
-// L2 mapping
-typedef struct packed {
-  int unsigned              idx;
-  logic [Cfg.AddrWidth-1:0] start_addr;
-  logic [Cfg.AddrWidth-1:0] end_addr;
-} l2_map_rule_t;
+logic [NumL2Ports-1:0][CarfieldAxiSlvAwWidth-1:0] axi_slv_l2_aw_data;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_aw_wptr;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_aw_rptr;
+logic [NumL2Ports-1:0][ CarfieldAxiSlvWWidth-1:0] axi_slv_l2_w_data ;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_w_wptr ;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_w_rptr ;
+logic [NumL2Ports-1:0][ CarfieldAxiSlvBWidth-1:0] axi_slv_l2_b_data ;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_b_wptr ;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_b_rptr ;
+logic [NumL2Ports-1:0][CarfieldAxiSlvArWidth-1:0] axi_slv_l2_ar_data;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_ar_wptr;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_ar_rptr;
+logic [NumL2Ports-1:0][ CarfieldAxiSlvRWidth-1:0] axi_slv_l2_r_data ;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_r_wptr ;
+logic [NumL2Ports-1:0][               LogDepth:0] axi_slv_l2_r_rptr ;
 
-l2_map_rule_t [L2NumRules-1:0] l2_mapping_rules = '{
-  '{idx       : car_l2_pkg::INTERLEAVE  ,
-    start_addr: L2Port1Base             ,
-    end_addr  : L2Port1Base + L2MemSize},
-  '{idx       : car_l2_pkg::NONE_INTER           ,
-    start_addr: L2Port1NonInterlBase             ,
-    end_addr  : L2Port1NonInterlBase + L2MemSize},
-  '{idx       : car_l2_pkg::INTERLEAVE ,
-    start_addr: L2Port2Base            ,
-    end_addr  : L2Port2Base + L2MemSize},
-  '{idx       : car_l2_pkg::NONE_INTER          ,
-    start_addr: L2Port2NonInterlBase            ,
-    end_addr  : L2Port2NonInterlBase + L2MemSize}
-};
+for (genvar i = 0; i < NumL2Ports; i++) begin: gen_l2_cdc_fifos
+  axi_cdc_src   #(
+    .LogDepth    ( LogDepth                   ),
+    .aw_chan_t   ( carfield_axi_slv_aw_chan_t ),
+    .w_chan_t    ( carfield_axi_slv_w_chan_t  ),
+    .b_chan_t    ( carfield_axi_slv_b_chan_t  ),
+    .ar_chan_t   ( carfield_axi_slv_ar_chan_t ),
+    .r_chan_t    ( carfield_axi_slv_r_chan_t  ),
+    .axi_req_t   ( carfield_axi_slv_req_t     ),
+    .axi_resp_t  ( carfield_axi_slv_rsp_t     )
+  ) i_l2_slv_cdc (
+    // synchronous slave port
+    .src_clk_i                   ( clk_i              ),
+    .src_rst_ni                  ( rst_ni             ),
+    .src_req_i                   ( axi_l2_slv_req [i] ),
+    .src_resp_o                  ( axi_l2_slv_rsp [i] ),
+    // asynchronous master port
+    .async_data_master_aw_data_o ( axi_slv_l2_aw_data [i] ),
+    .async_data_master_aw_wptr_o ( axi_slv_l2_aw_wptr [i] ),
+    .async_data_master_aw_rptr_i ( axi_slv_l2_aw_rptr [i] ),
+    .async_data_master_w_data_o  ( axi_slv_l2_w_data  [i] ),
+    .async_data_master_w_wptr_o  ( axi_slv_l2_w_wptr  [i] ),
+    .async_data_master_w_rptr_i  ( axi_slv_l2_w_rptr  [i] ),
+    .async_data_master_b_data_i  ( axi_slv_l2_b_data  [i] ),
+    .async_data_master_b_wptr_i  ( axi_slv_l2_b_wptr  [i] ),
+    .async_data_master_b_rptr_o  ( axi_slv_l2_b_rptr  [i] ),
+    .async_data_master_ar_data_o ( axi_slv_l2_ar_data [i] ),
+    .async_data_master_ar_wptr_o ( axi_slv_l2_ar_wptr [i] ),
+    .async_data_master_ar_rptr_i ( axi_slv_l2_ar_rptr [i] ),
+    .async_data_master_r_data_i  ( axi_slv_l2_r_data  [i] ),
+    .async_data_master_r_wptr_i  ( axi_slv_l2_r_wptr  [i] ),
+    .async_data_master_r_rptr_o  ( axi_slv_l2_r_rptr  [i] )
+  );
+end
 
-car_l2_top #(
-  .NUM_PORT            ( NumL2Ports             ),
-  .AXI_ADDR_WIDTH      ( Cfg.AddrWidth          ),
-  .AXI_DATA_WIDTH      ( Cfg.AxiDataWidth       ),
-  .AXI_ID_WIDTH        ( AxiSlvIdWidth          ),
-  .AXI_USER_WIDTH      ( Cfg.AxiUserWidth       ),
-  .NUM_MAP_RULES       ( L2NumRules             ),
-  .L2_MEM_SIZE_IN_BYTE ( L2MemSize              ),
-  .map_rule_t          ( l2_map_rule_t          ),
-  .axi_req_t           ( carfield_axi_slv_req_t ),
-  .axi_resp_t          ( carfield_axi_slv_rsp_t )
+l2_wrapper #(
+  .NumPort      ( NumL2Ports             ),
+  .AxiAddrWidth ( Cfg.AddrWidth          ),
+  .AxiDataWidth ( Cfg.AxiDataWidth       ),
+  .AxiIdWidth   ( AxiSlvIdWidth          ),
+  .AxiUserWidth ( Cfg.AxiUserWidth       ),
+  .LogDepth     ( LogDepth               ),
+  .NumRules     ( L2NumRules             ),
+  .L2MemSize    ( L2MemSize              )
 ) i_reconfigrurable_l2 (
-  .clk_i               ( clk_i            ),
-  .rst_ni              ( rst_ni           ),
-  .mapping_rules_i     ( l2_mapping_rules ),
-  .axi_req_i           ( axi_l2_slv_req   ),
-  .axi_resp_o          ( axi_l2_slv_rsp   ),
-  .ecc_error_o         ( l2_ecc_err       )
+  .clk_i             ( clk_i              ),
+  .rst_ni            ( rst_ni             ),
+  .slvport_ar_data_i ( axi_slv_l2_ar_data ),
+  .slvport_ar_wptr_i ( axi_slv_l2_ar_wptr ),
+  .slvport_ar_rptr_o ( axi_slv_l2_ar_rptr ),
+  .slvport_aw_data_i ( axi_slv_l2_aw_data ),
+  .slvport_aw_wptr_i ( axi_slv_l2_aw_wptr ),
+  .slvport_aw_rptr_o ( axi_slv_l2_aw_rptr ),
+  .slvport_b_data_o  ( axi_slv_l2_b_data  ),
+  .slvport_b_wptr_o  ( axi_slv_l2_b_wptr  ),
+  .slvport_b_rptr_i  ( axi_slv_l2_b_rptr  ),
+  .slvport_r_data_o  ( axi_slv_l2_r_data  ),
+  .slvport_r_wptr_o  ( axi_slv_l2_r_wptr  ),
+  .slvport_r_rptr_i  ( axi_slv_l2_r_rptr  ),
+  .slvport_w_data_i  ( axi_slv_l2_w_data  ),
+  .slvport_w_wptr_i  ( axi_slv_l2_w_wptr  ),
+  .slvport_w_rptr_o  ( axi_slv_l2_w_rptr  ),
+  .ecc_error_o       ( l2_ecc_err         )
 );
 
 // Safety Island
@@ -577,7 +662,7 @@ axi_id_serialize #(
 );
 
 axi_cdc_src  #(
-  .LogDepth   ( LogDepth                   ),
+  .LogDepth   ( LogDepth                     ),
   .aw_chan_t  ( axi_intcluster_slv_aw_chan_t ),
   .w_chan_t   ( axi_intcluster_slv_w_chan_t  ),
   .b_chan_t   ( axi_intcluster_slv_b_chan_t  ),
