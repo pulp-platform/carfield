@@ -14,38 +14,44 @@ typedef enum byte_bt {
   L2Port1SlvIdx      = 'd0,
   L2Port2SlvIdx      = 'd1,
   SafetyIslandSlvIdx = 'd2,
-  IntClusterSlvIdx   = 'd3
+  MailboxSlvIdx      = 'd3,
+  IntClusterSlvIdx   = 'd4
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
-  SafetyIslandMstIdx = 'd0,
-  IntClusterMstIdx   = 'd1
+  SafetyIslandMstIdx   = 'd0,
+  SecurityIslandMstIdx = 'd1,
+  IntClusterMstIdx     = 'd2
 } axi_mst_idx_t;
 
 typedef enum doub_bt {
   L2Port1Base      = 'h0000_0000_7800_0000,
   L2Port2Base      = 'h0000_0000_7820_0000,
   SafetyIslandBase = 'h0000_0000_6000_0000,
+  MailboxBase      = 'h0000_0000_4000_0000,
   IntClusterBase   = 'h0000_0000_5000_0000
 } axi_start_t;
 
 // AXI Slave Sizes
 localparam doub_bt L2Size           = 'h0000_0000_0020_0000;
 localparam doub_bt SafetyIslandSize = 'h0000_0000_0080_0000;
+localparam doub_bt MailboxSize      = 'h0000_0000_0000_1000;
 localparam doub_bt IntClusterSize   = 'h0000_0000_0080_0000;
 
 typedef enum doub_bt {
-  L2Port1End      = L2Port1Base + L2Size               ,
-  L2Port2End      = L2Port2Base + L2Size               ,
+  L2Port1End      = L2Port1Base + L2Size,
+  L2Port2End      = L2Port2Base + L2Size,
   SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize,
+  MailboxEnd      = MailboxBase + MailboxSize,
   IntClusterEnd   = IntClusterBase + IntClusterSize
 } axi_end_t;
 
-localparam bit [2:0] AxiNumExtSlv = 'd2    + 'd1           + 'd1;
-                                 // L2Ports   Safety Island   Integer Cluster
-
-localparam bit [2:0] AxiNumExtMst = 'd1         + 'd1;
-                                 // Safety Island Integer Cluster
+localparam bit [2:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1;
+// L2Ports + Safety Island + Integer Cluster + Mailbox Unit
+localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1;
+// Integer Cluster + Security Island
+localparam bit [2:0] NumExtIntrs = 3'd1;
+// Security Island
 
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
@@ -76,20 +82,25 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiExtNumSlv      : AxiNumExtSlv,
   AxiExtNumRules    : AxiNumExtSlv,
   // External AXI region map
-  AxiExtRegionIdx  : '{0, 0, 0, 0, IntClusterSlvIdx  ,
-                                   SafetyIslandSlvIdx,
-                                   L2Port2SlvIdx     ,
-                                   L2Port1SlvIdx     },
-  AxiExtRegionStart: '{0, 0, 0, 0, IntClusterBase  ,
-                                   SafetyIslandBase,
-                                   L2Port2Base     ,
-                                   L2Port1Base     },
-  AxiExtRegionEnd  : '{0, 0, 0, 0, IntClusterEnd  ,
-                                   SafetyIslandEnd,
-                                   L2Port2End     ,
-                                   L2Port1End     },
+  AxiExtRegionIdx  : '{0, 0, 0, IntClusterSlvIdx   ,
+                                MailboxSlvIdx      ,
+                                SafetyIslandSlvIdx ,
+                                L2Port2SlvIdx      ,
+                                L2Port1SlvIdx      },
+  AxiExtRegionStart: '{0, 0, 0, IntClusterBase   ,
+                                MailboxBase      ,
+                                SafetyIslandBase ,
+                                L2Port2Base      ,
+                                L2Port1Base      },
+  AxiExtRegionEnd  : '{0, 0, 0, IntClusterEnd    ,
+                                MailboxEnd       ,
+                                SafetyIslandEnd  ,
+                                L2Port2End       ,
+                                L2Port1End       },
   // RTC
   RtcFreq           : 32768,
+  // Ext Irq
+  NumExtIntrs       : NumExtIntrs,
   // Features
   Bootrom           : 1,
   Uart              : 1,

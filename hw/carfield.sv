@@ -16,7 +16,10 @@ module carfield
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 1,
-  parameter int unsigned HypNumChips = 1
+  parameter int unsigned HypNumChips = 1,
+  parameter string RomCtrlBootRomInitFile = "",
+  parameter string OtpCtrlMemInitFile     = "",
+  parameter string FlashCtrlMemInitFile   = ""
 ) (
   input   logic                                       clk_i,
   input   logic                                       rst_ni,
@@ -25,16 +28,26 @@ module carfield
   input   logic [1:0]                                 boot_mode_i,
   // CLINT
   input   logic                                       rtc_i,
-  // JTAG Interfacex
+  // JTAG Interfacex Cheshire
   input   logic                                       jtag_tck_i,
   input   logic                                       jtag_trst_ni,
   input   logic                                       jtag_tms_i,
   input   logic                                       jtag_tdi_i,
   output  logic                                       jtag_tdo_o,
   output  logic                                       jtag_tdo_oe_o,
+  // JTAG Interfacex Secure Subsystem
+  input   logic                                       jtag_ot_tck_i,
+  input   logic                                       jtag_ot_trst_ni,
+  input   logic                                       jtag_ot_tms_i,
+  input   logic                                       jtag_ot_tdi_i,
+  output  logic                                       jtag_ot_tdo_o,
+  output  logic                                       jtag_ot_tdo_oe_o,
   // UART Interface
   output logic                                        uart_tx_o,
   input  logic                                        uart_rx_i,
+  // UART Interface cheshire
+  output logic                                        uart_ot_tx_o,
+  input  logic                                        uart_ot_rx_i,
   // UART Modem flow control
   output logic                                        uart_rts_no,
   output logic                                        uart_dtr_no,
@@ -316,6 +329,10 @@ logic        spim_sck_en;
 logic [ 1:0] spim_csb_en;
 logic [ 3:0] spim_sd_en;
 
+// irq for Secure Subsytem and Cheshire
+logic        ibex_mbox_irq;
+logic        ches_mbox_irq;
+
 /***************
 * Carfield IPs *
 ***************/
@@ -453,7 +470,7 @@ cheshire_wrap #(
   .reg_ext_slv_req_o ( ext_reg_req     ),
   .reg_ext_slv_rsp_i ( ext_reg_rsp     ),
   // Interrupts from external devices
-  .intr_ext_i        ( '0        ),
+  .intr_ext_i        ( ches_mbox_irq   ),
   // Interrupts to external harts
   .meip_ext_o        (           ),
   .seip_ext_o        (           ),
@@ -511,7 +528,6 @@ cheshire_wrap #(
   .vga_green_o (                 ),
   .vga_blue_o  (                 )
 );
-
 // Hyperbus
 logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_n_wire;
 logic [HypNumPhys-1:0]                  hyper_ck_wire;
@@ -583,7 +599,7 @@ hyperbus #(
   .rst_phy_ni      ( hyp_rst_phy_ni     ),
   .clk_sys_i       ( clk_i              ),
   .rst_sys_ni      ( rst_ni             ),
-  .test_mode_i     ( test_mode_i        ),
+  .test_mode_i     ( testmode_i         ),
   .axi_req_i       ( dram_req           ),
   .axi_rsp_o       ( dram_rsp           ),
   .reg_req_i       ( ext_reg_req        ),
@@ -913,6 +929,146 @@ pulp_cluster #(
   .async_data_master_b_data_i  ( axi_mst_intcluster_b_data  ),
   .async_data_master_b_wptr_i  ( axi_mst_intcluster_b_wptr  ),
   .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
+);
+
+// Security Island
+
+localparam int unsigned SecIslAxiDataWidth = 32;
+
+secure_subsystem_synth_wrap #(
+  .RomCtrlBootRomInitFile( RomCtrlBootRomInitFile     ),
+  .OtpCtrlMemInitFile    ( OtpCtrlMemInitFile         ),
+  .FlashCtrlMemInitFile  ( FlashCtrlMemInitFile       ),
+  .AxiAddrWidth          ( Cfg.AddrWidth              ),
+  .AxiDataWidth          ( Cfg.AxiDataWidth           ),
+  .AxiUserWidth          ( Cfg.AxiUserWidth           ),
+  .AxiOutIdWidth         ( Cfg.AxiMstIdWidth          ),
+  .AxiOtAddrWidth        ( Cfg.AddrWidth              ),
+  .AxiOtDataWidth        ( SecIslAxiDataWidth         ), // TODO: why is this exposed?
+  .AxiOtUserWidth        ( Cfg.AxiUserWidth           ),
+  .AxiOtOutIdWidth       ( Cfg.AxiMstIdWidth          ),
+  .AsyncAxiOutAwWidth    ( CarfieldAxiMstAwWidth      ),
+  .AsyncAxiOutWWidth     ( CarfieldAxiMstWWidth       ),
+  .AsyncAxiOutBWidth     ( CarfieldAxiMstBWidth       ),
+  .AsyncAxiOutArWidth    ( CarfieldAxiMstArWidth      ),
+  .AsyncAxiOutRWidth     ( CarfieldAxiMstRWidth       ),
+  .axi_out_aw_chan_t     ( carfield_axi_mst_aw_chan_t ),
+  .axi_out_w_chan_t      ( carfield_axi_mst_w_chan_t  ),
+  .axi_out_b_chan_t      ( carfield_axi_mst_b_chan_t  ),
+  .axi_out_ar_chan_t     ( carfield_axi_mst_ar_chan_t ),
+  .axi_out_r_chan_t      ( carfield_axi_mst_r_chan_t  ),
+  .axi_out_req_t         ( carfield_axi_mst_req_t     ),
+  .axi_out_resp_t        ( carfield_axi_mst_rsp_t     ),
+  .axi_ot_out_aw_chan_t  ( carfield_axi_mst_aw_chan_t ),
+  .axi_ot_out_w_chan_t   ( carfield_axi_mst_w_chan_t  ),
+  .axi_ot_out_b_chan_t   ( carfield_axi_mst_b_chan_t  ),
+  .axi_ot_out_ar_chan_t  ( carfield_axi_mst_ar_chan_t ),
+  .axi_ot_out_r_chan_t   ( carfield_axi_mst_r_chan_t  ),
+  .axi_ot_out_req_t      ( carfield_axi_mst_req_t     ),
+  .axi_ot_out_resp_t     ( carfield_axi_mst_rsp_t     )
+) i_security_island (
+  .clk_i            ( clk_i           ),
+  .clk_ref_i        ( clk_i           ),
+  .rst_ni           ( rst_ni          ),
+  .fetch_en_i       ( '1              ),
+  .bootmode_i       ( '0              ),
+  .test_enable_i    ( '0              ),
+  .irq_ibex_i       ( ibex_mbox_irq   ),
+   // JTAG port
+  .jtag_tck_i       ( jtag_ot_tck_i   ),
+  .jtag_tms_i       ( jtag_ot_tms_i   ),
+  .jtag_trst_n_i    ( jtag_ot_trst_ni ),
+  .jtag_tdi_i       ( jtag_ot_tdi_i   ),
+  .jtag_tdo_o       ( jtag_ot_tdo_o   ),
+  .jtag_tdo_oe_o    (                 ),
+   // Asynch axi port
+  .async_axi_out_aw_data_o ( axi_mst_ext_aw_data [SecurityIslandMstIdx] ),
+  .async_axi_out_aw_wptr_o ( axi_mst_ext_aw_wptr [SecurityIslandMstIdx] ),
+  .async_axi_out_aw_rptr_i ( axi_mst_ext_aw_rptr [SecurityIslandMstIdx] ),
+  .async_axi_out_w_data_o  ( axi_mst_ext_w_data  [SecurityIslandMstIdx] ),
+  .async_axi_out_w_wptr_o  ( axi_mst_ext_w_wptr  [SecurityIslandMstIdx] ),
+  .async_axi_out_w_rptr_i  ( axi_mst_ext_w_rptr  [SecurityIslandMstIdx] ),
+  .async_axi_out_b_data_i  ( axi_mst_ext_b_data  [SecurityIslandMstIdx] ),
+  .async_axi_out_b_wptr_i  ( axi_mst_ext_b_wptr  [SecurityIslandMstIdx] ),
+  .async_axi_out_b_rptr_o  ( axi_mst_ext_b_rptr  [SecurityIslandMstIdx] ),
+  .async_axi_out_ar_data_o ( axi_mst_ext_ar_data [SecurityIslandMstIdx] ),
+  .async_axi_out_ar_wptr_o ( axi_mst_ext_ar_wptr [SecurityIslandMstIdx] ),
+  .async_axi_out_ar_rptr_i ( axi_mst_ext_ar_rptr [SecurityIslandMstIdx] ),
+  .async_axi_out_r_data_i  ( axi_mst_ext_r_data  [SecurityIslandMstIdx] ),
+  .async_axi_out_r_wptr_i  ( axi_mst_ext_r_wptr  [SecurityIslandMstIdx] ),
+  .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [SecurityIslandMstIdx] ),
+   // Uart
+  .ibex_uart_rx_i   ( uart_ot_tx_o  ),
+  .ibex_uart_tx_o   ( uart_ot_rx_i  ),
+   // SPI host
+  .spi_host_SCK_o   (               ),
+  .spi_host_CSB_o   (               ),
+  .spi_host_SD_o    (               ),
+  .spi_host_SD_i    ( '0            ),
+  .spi_host_SD_en_o (               )
+);
+
+// Mailbox Unit
+
+`AXI_TYPEDEF_ALL_CT(axi_mbox                ,
+                    axi_mbox_req_t          ,
+                    axi_mbox_rsp_t          ,
+                    logic [Cfg.AddrWidth-1:0],
+                    logic [AxiSlvIdWidth-1:0],
+                    logic [Cfg.AxiDataWidth-1:0],
+                    logic [AxiStrbWidth-1:0],
+                    logic [Cfg.AxiUserWidth-1:0])
+
+axi_mbox_req_t axi_mbox_req;
+axi_mbox_rsp_t axi_mbox_rsp;
+
+axi_cdc_dst #(
+  .LogDepth   ( LogDepth                   ),
+  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+  .axi_req_t  ( carfield_axi_slv_req_t     ),
+  .axi_resp_t ( carfield_axi_slv_rsp_t     )
+) i_mailbox_cdc_dst (
+  // asynchronous slave port
+  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [MailboxSlvIdx] ),
+  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [MailboxSlvIdx] ),
+  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [MailboxSlvIdx] ),
+  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [MailboxSlvIdx] ),
+  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [MailboxSlvIdx] ),
+  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [MailboxSlvIdx] ),
+  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [MailboxSlvIdx] ),
+  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [MailboxSlvIdx] ),
+  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [MailboxSlvIdx] ),
+  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [MailboxSlvIdx] ),
+  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [MailboxSlvIdx] ),
+  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [MailboxSlvIdx] ),
+  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [MailboxSlvIdx] ),
+  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [MailboxSlvIdx] ),
+  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [MailboxSlvIdx] ),
+  // synchronous master port
+  .dst_clk_i                  ( clk_i        ),
+  .dst_rst_ni                 ( rst_ni       ),
+  .dst_req_o                  ( axi_mbox_req ),
+  .dst_resp_i                 ( axi_mbox_rsp )
+);
+
+axi_scmi_mailbox #(
+  .AXI_ADDR_WIDTH     ( Cfg.AddrWidth          ),
+  .AXI_MST_DATA_WIDTH ( Cfg.AxiDataWidth       ),
+  .AXI_ID_WIDTH       ( AxiSlvIdWidth          ),
+  .AXI_USER_WIDTH     ( Cfg.AxiUserWidth       ),
+  .axi_req_t          ( carfield_axi_slv_req_t ),
+  .axi_resp_t         ( carfield_axi_slv_rsp_t )
+) i_scmi_ot_mailbox   (
+  .clk_i              ( clk_i         ),
+  .rst_ni             ( rst_ni        ),
+  .axi_mbox_req       ( axi_mbox_req  ),
+  .axi_mbox_rsp       ( axi_mbox_rsp  ),
+  .doorbell_irq_o     ( ibex_mbox_irq ),
+  .completion_irq_o   ( ches_mbox_irq )
 );
 
 endmodule
