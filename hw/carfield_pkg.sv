@@ -18,7 +18,8 @@ typedef enum byte_bt {
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
-  IntClusterMstIdx   = 'd0
+  SafetyIslandMstIdx = 'd0,
+  IntClusterMstIdx   = 'd1
 } axi_mst_idx_t;
 
 typedef enum doub_bt {
@@ -43,8 +44,8 @@ typedef enum doub_bt {
 localparam bit [2:0] AxiNumExtSlv = 'd2    + 'd1           + 'd1;
                                  // L2Ports   Safety Island   Integer Cluster
 
-localparam bit [2:0] AxiNumExtMst = 'd1;
-                                 // Integer Cluster
+localparam bit [2:0] AxiNumExtMst = 'd1         + 'd1;
+                                 // Safety Island Integer Cluster
 
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
@@ -163,8 +164,10 @@ localparam doub_bt L2Port2NonInterlBase = L2Port2Base + L2MemSize;
 /* Safety Island Parameters */
 /****************************/
 localparam int unsigned LogDepth = 3;
-localparam int unsigned SafetyIslandMemOffset = 'h0020_0000;
-localparam int unsigned SafetyIslandPerOffset = 'h0010_0000;
+localparam int unsigned SafetyIslandMemOffset = 'h0000_0000;
+localparam int unsigned SafetyIslandMemSize   = 'h0020_0000;
+localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
+localparam int unsigned SafetyIslandPerSize   = 'h0010_0000;
 
 /******************************/
 /* Integer Cluster Parameters */
@@ -194,8 +197,6 @@ localparam int unsigned IntClusterSharedFpu = 0;
 localparam int unsigned IntClusterSharedFpuDivSqrt = 0;
 localparam int unsigned IntClusterNumAxiMst = 3;
 localparam int unsigned IntClusterNumAxiSlv = 4;
-// Always make sure that CarfieldCfgDefault.AxiMstIdWidth =
-// = IntClusterAxiIdInWidth + $clog2(IntClusterNumAxiSlv)!!
 // IntClusterAxiIdInWidth is fixed from PULP Cluster
 localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 1;
 localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +

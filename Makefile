@@ -8,6 +8,9 @@ ROOT := .
 CHS_ROOT ?= $(ROOT)/cheshire
 SW_ROOT := $(ROOT)/sw
 
+QUESTA ?= questa-2022.3
+TBENCH ?= tb_carfield_soc
+
 -include $(CHS_ROOT)/cheshire.mk
 
 testname ?= helloworld
@@ -33,7 +36,7 @@ ifdef gui
 	run_and_exit := run -all
 else
 	vsim-flag := -c
-	run_and_exit := run_and_exit
+	run_and_exit := run -all; exit
 endif
 
 ######################
@@ -57,10 +60,10 @@ scripts/carfield_compile.tcl:
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 car-hw-build: car-hw-clean scripts/carfield_compile.tcl
-	questa-2022.3 vsim -c -do "source scripts/carfield_compile.tcl; exit"
+	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
 car-hw-sim:
-	questa-2022.3 vsim $(vsim-flag) -do "set BOOTMODE 0; set BINARY $(elf-bin); set TESTBENCH tb_carfield_soc; source scripts/start_carfield.tcl ; add log -r sim:/tb_carfield_soc/* ; $(run_and_exit)"
+	$(QUESTA) vsim $(vsim-flag) -do "set BOOTMODE 0; set BINARY $(elf-bin); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(run_and_exit)"
 
 car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work

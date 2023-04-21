@@ -27,7 +27,6 @@ sources:
   # Level 0
   - hw/carfield_pkg.sv
   # Level 1
-  - hw/safety_island.sv
   - hw/l2_wrapper.sv
   # Level 2
   - hw/carfield.sv
