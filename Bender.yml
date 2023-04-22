@@ -10,7 +10,7 @@ package:
 dependencies:
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 8046f7d844b1af1d757c6eccd8cd2414123d7b2b } # branch: yt/carfield-ips
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: c13272a6b251fe0c0d1d3b52cd9f569eab547a22 } # branch: master
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: cb2ba8146ca6b136b0e7b81884eb17c72a5d0ec2 } # branch: yt/carfield-integration
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 170649965a44b5c66c1c1670664b97b8e78bacb5 } # branch: master
@@ -27,6 +27,7 @@ sources:
   # Level 0
   - hw/carfield_pkg.sv
   # Level 1
+  - hw/cheshire_wrap.sv
   - hw/l2_wrapper.sv
   # Level 2
   - hw/carfield.sv
