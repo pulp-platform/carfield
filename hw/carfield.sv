@@ -28,14 +28,14 @@ module carfield
   input   logic [1:0]                                 boot_mode_i,
   // CLINT
   input   logic                                       rtc_i,
-  // JTAG Interfacex Cheshire
+  // Cheshire JTAG Interfacex
   input   logic                                       jtag_tck_i,
   input   logic                                       jtag_trst_ni,
   input   logic                                       jtag_tms_i,
   input   logic                                       jtag_tdi_i,
   output  logic                                       jtag_tdo_o,
   output  logic                                       jtag_tdo_oe_o,
-  // JTAG Interfacex Secure Subsystem
+  // Secure Subsystem JTAG Interfacex
   input   logic                                       jtag_ot_tck_i,
   input   logic                                       jtag_ot_trst_ni,
   input   logic                                       jtag_ot_tms_i,
@@ -45,10 +45,10 @@ module carfield
   // UART Interface
   output logic                                        uart_tx_o,
   input  logic                                        uart_rx_i,
-  // UART Interface cheshire
+  // Cheshire UART Interface
   output logic                                        uart_ot_tx_o,
   input  logic                                        uart_ot_rx_i,
-  // UART Modem flow control
+  // Controle Flow UART Modem
   output logic                                        uart_rts_no,
   output logic                                        uart_dtr_no,
   input  logic                                        uart_cts_ni,
@@ -380,7 +380,7 @@ cheshire_wrap #(
   .LogDepth                       ( LogDepth                     ),
   .AxiIn                          ( AxiIn                        ),
   .AxiOut                         ( AxiOut                       )
-) i_cheshire_soc                  (
+) i_cheshire_wrap                 (
   .clk_i                          ,
   .rst_ni                         ,
   .test_mode_i                    ,
@@ -932,9 +932,6 @@ pulp_cluster #(
 );
 
 // Security Island
-
-localparam int unsigned SecIslAxiDataWidth = 32;
-
 secure_subsystem_synth_wrap #(
   .RomCtrlBootRomInitFile( RomCtrlBootRomInitFile     ),
   .OtpCtrlMemInitFile    ( OtpCtrlMemInitFile         ),
@@ -944,7 +941,7 @@ secure_subsystem_synth_wrap #(
   .AxiUserWidth          ( Cfg.AxiUserWidth           ),
   .AxiOutIdWidth         ( Cfg.AxiMstIdWidth          ),
   .AxiOtAddrWidth        ( Cfg.AddrWidth              ),
-  .AxiOtDataWidth        ( SecIslAxiDataWidth         ), // TODO: why is this exposed?
+  .AxiOtDataWidth        ( AxiNarrowDataWidth         ), // TODO: why is this exposed?
   .AxiOtUserWidth        ( Cfg.AxiUserWidth           ),
   .AxiOtOutIdWidth       ( Cfg.AxiMstIdWidth          ),
   .AsyncAxiOutAwWidth    ( CarfieldAxiMstAwWidth      ),
@@ -1008,19 +1005,10 @@ secure_subsystem_synth_wrap #(
   .spi_host_SD_en_o (               )
 );
 
-// Mailbox Unit
+// Security Island Mailbox
 
-`AXI_TYPEDEF_ALL_CT(axi_mbox                ,
-                    axi_mbox_req_t          ,
-                    axi_mbox_rsp_t          ,
-                    logic [Cfg.AddrWidth-1:0],
-                    logic [AxiSlvIdWidth-1:0],
-                    logic [Cfg.AxiDataWidth-1:0],
-                    logic [AxiStrbWidth-1:0],
-                    logic [Cfg.AxiUserWidth-1:0])
-
-axi_mbox_req_t axi_mbox_req;
-axi_mbox_rsp_t axi_mbox_rsp;
+carfield_axi_slv_req_t axi_mbox_req;
+carfield_axi_slv_rsp_t axi_mbox_rsp;
 
 axi_cdc_dst #(
   .LogDepth   ( LogDepth                   ),
@@ -1033,21 +1021,21 @@ axi_cdc_dst #(
   .axi_resp_t ( carfield_axi_slv_rsp_t     )
 ) i_mailbox_cdc_dst (
   // asynchronous slave port
-  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [MailboxSlvIdx] ),
-  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [MailboxSlvIdx] ),
-  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [MailboxSlvIdx] ),
-  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [MailboxSlvIdx] ),
-  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [MailboxSlvIdx] ),
-  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [MailboxSlvIdx] ),
-  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [MailboxSlvIdx] ),
-  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [MailboxSlvIdx] ),
-  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [MailboxSlvIdx] ),
-  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [MailboxSlvIdx] ),
-  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [MailboxSlvIdx] ),
-  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [MailboxSlvIdx] ),
-  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [MailboxSlvIdx] ),
-  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [MailboxSlvIdx] ),
-  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [MailboxSlvIdx] ),
+  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [OTMailboxSlvIdx] ),
+  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [OTMailboxSlvIdx] ),
+  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [OTMailboxSlvIdx] ),
+  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [OTMailboxSlvIdx] ),
+  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [OTMailboxSlvIdx] ),
+  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [OTMailboxSlvIdx] ),
+  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [OTMailboxSlvIdx] ),
+  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [OTMailboxSlvIdx] ),
+  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [OTMailboxSlvIdx] ),
+  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [OTMailboxSlvIdx] ),
+  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [OTMailboxSlvIdx] ),
+  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [OTMailboxSlvIdx] ),
+  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [OTMailboxSlvIdx] ),
+  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [OTMailboxSlvIdx] ),
+  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [OTMailboxSlvIdx] ),
   // synchronous master port
   .dst_clk_i                  ( clk_i        ),
   .dst_rst_ni                 ( rst_ni       ),
