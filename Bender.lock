@@ -87,7 +87,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 8046f7d844b1af1d757c6eccd8cd2414123d7b2b
+    revision: c13272a6b251fe0c0d1d3b52cd9f569eab547a22
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -145,6 +145,12 @@ packages:
     dependencies:
     - common_verification
     - tech_cells_generic
+  common_pads:
+    revision: 4ce2907ab2313e67836e251f6deea67d885aef5f
+    version: 0.0.4
+    source:
+      Git: git@github.com:AlSaqr-platform/common_pads.git
+    dependencies: []
   common_verification:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
@@ -283,6 +289,15 @@ packages:
     source:
       Git: https://github.com/pulp-platform/L2_tcdm_hybrid_interco.git
     dependencies: []
+  mailbox_unit:
+    revision: ce0cb2e7fe48a00fd2ee8b39f675e6c33a5a31d2
+    version: null
+    source:
+      Git: git@github.com:pulp-platform/mailbox_unit.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   mchan:
     revision: a9c71f2d9845a4ca05cf2c6ad089b4753f76fc2e
     version: 1.2.3
@@ -290,6 +305,14 @@ packages:
       Git: https://github.com/pulp-platform/mchan.git
     dependencies:
     - common_cells
+  opentitan:
+    revision: 78e94cf76c133e4426f99c9bb32c5f7c929f13d0
+    version: null
+    source:
+      Git: https://github.com/alsaqr-platform/opentitan.git
+    dependencies:
+    - axi
+    - common_pads
   opentitan_peripherals:
     revision: 2a237bafa523627acd5c50332ad092ef821f4dac
     version: 0.3.1

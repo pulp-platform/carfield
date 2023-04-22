@@ -25,13 +25,25 @@ module carfield_soc_fixture;
   /**********************/
   /* General Parameters */
   /**********************/
-  localparam cheshire_cfg_t DutCfg = CarfieldCfgDefault;
+
+  localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
+
+  localparam RomCtrlBootRomInitFile = "sw/security_island/bootrom/boot_rom.vmem";
+  localparam OtpCtrlMemInitFile     = "sw/security_island/otp/otp-img.mem";
+  localparam FlashCtrlMemInitFile   = ""; //./security_island/sw/bare-metal/alsaqr/hmac_test/hmac_smoketest.vmem";
+
+  localparam   AxiWideBeWidth_ib    = 4;
+  localparam   AxiWideByteOffset_ib = $clog2(AxiWideBeWidth_ib);
+  logic [31:0] ibex_memory [bit [31:0]];
+  int          ibex_sections [bit [31:0]];
+
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
   localparam int unsigned AxiStrbWidth = DutCfg.AxiDataWidth/8;
   localparam int unsigned AxiStrbBits  = $clog2(DutCfg.AxiDataWidth/8);
 
   localparam time ClkPeriodSys    = 5ns;
   localparam time ClkPeriodJtag   = 20ns;
+  localparam time ClkPeriodOtJtag = 20ns;
   localparam time ClkPeriodRtc    = 30518ns;
 
   localparam int unsigned RstCycles = 5;
@@ -71,6 +83,12 @@ module carfield_soc_fixture;
   logic jtag_tdi;
   logic jtag_tdo;
 
+  logic jtag_ot_tck;
+  logic jtag_ot_trst_n;
+  logic jtag_ot_tms;
+  logic jtag_ot_tdi;
+  logic jtag_ot_tdo;
+
   logic uart_tx;
   logic uart_rx;
 
@@ -107,7 +125,10 @@ module carfield_soc_fixture;
   carfield      #(
     .Cfg         ( DutCfg   ),
     .HypNumPhys  ( NumPhys  ),
-    .HypNumChips ( NumChips )
+    .HypNumChips ( NumChips ),
+    .RomCtrlBootRomInitFile ( RomCtrlBootRomInitFile ),
+    .OtpCtrlMemInitFile     ( OtpCtrlMemInitFile     ),
+    .FlashCtrlMemInitFile   ( FlashCtrlMemInitFile   )
   ) i_dut        (
     .clk_i           ( clk                ),
     .rst_ni          ( rst_n              ),
@@ -120,6 +141,12 @@ module carfield_soc_fixture;
     .jtag_tdi_i      ( jtag_tdi           ),
     .jtag_tdo_o      ( jtag_tdo           ),
     .jtag_tdo_oe_o   (                    ),
+    .jtag_ot_tck_i   ( jtag_ot_tck        ),
+    .jtag_ot_trst_ni ( jtag_ot_trst_n     ),
+    .jtag_ot_tms_i   ( jtag_ot_tms        ),
+    .jtag_ot_tdi_i   ( jtag_ot_tdi        ),
+    .jtag_ot_tdo_o   ( jtag_ot_tdo        ),
+    .jtag_ot_tdo_oe_o(                    ),
     .uart_tx_o       ( uart_tx            ),
     .uart_rx_i       ( uart_rx            ),
     .uart_rts_no     (                    ),
@@ -238,8 +265,17 @@ module carfield_soc_fixture;
     .rst_no ( )
   );
 
+  clk_rst_gen #(
+    .ClkPeriod    ( ClkPeriodOtJtag ),
+    .RstClkCycles ( RstCycles )
+  ) i_clk_ot_jtag (
+    .clk_o  ( jtag_ot_tck ),
+    .rst_no ( )
+  );
+
   // Define test bus and driver
   JTAG_DV jtag(jtag_tck);
+  JTAG_DV jtag_ot(jtag_tck);
 
   typedef jtag_test::riscv_dbg #(
     .IrLength ( 5 ),
@@ -247,8 +283,17 @@ module carfield_soc_fixture;
     .TT       ( ClkPeriodJtag * TTest )
   ) riscv_dbg_t;
 
+  typedef jtag_ot_test::riscv_dbg #(
+    .IrLength ( 5 ),
+    .TA       ( ClkPeriodJtag * TAppl ),
+    .TT       ( ClkPeriodJtag * TTest )
+  ) riscv_dbg_ot_t;
+
   riscv_dbg_t::jtag_driver_t  jtag_dv   = new (jtag);
   riscv_dbg_t                 jtag_dbg  = new (jtag_dv);
+
+  riscv_dbg_ot_t::jtag_driver_t  jtag_ot_dv   = new (jtag_ot);
+  riscv_dbg_ot_t                 jtag_ot_dbg  = new (jtag_ot_dv);
 
   // Connect DUT to test bus
   assign jtag_trst_n  = jtag.trst_n;
@@ -256,9 +301,15 @@ module carfield_soc_fixture;
   assign jtag_tdi     = jtag.tdi;
   assign jtag.tdo     = jtag_tdo;
 
+  assign jtag_ot_trst_n  = jtag_ot.trst_n;
+  assign jtag_ot_tms     = jtag_ot.tms;
+  assign jtag_ot_tdi     = jtag_ot.tdi;
+  assign jtag_ot.tdo     = jtag_ot_tdo;
+
   initial begin
     @(negedge rst_n);
     jtag_dbg.reset_master();
+    jtag_ot_dbg.reset_master();
   end
 
   task automatic jtag_write(
@@ -893,6 +944,140 @@ module carfield_soc_fixture;
     exit_code >>= 1;
     if (exit_code) $error("[SLINK] FAILED: return code %0d", exit_code);
     else $display("[SLINK] SUCCESS");
+  endtask
+
+  task debug_ibex_module_init;
+     logic [31:0]  idcode;
+     automatic dm_ot::sbcs_t sbcs = '{
+       sbautoincrement: 1'b1,
+       sbreadondata   : 1'b1,
+       sbaccess       : 3'h2,
+       default        : 1'b0
+     };
+     //dm_ot::dtm_op_status_e op;
+     automatic int dmi_wait_cycles = 10;
+     $info(" JTAG Preloading start time");
+     jtag_ot_dbg.wait_idle(300);
+     jtag_ot_dbg.get_idcode(idcode);
+     // Check Idcode
+     $display(" IDCode = %h", idcode);
+     // Activate Debug Module
+     jtag_ot_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
+     do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+     while (sbcs.sbbusy);
+
+  endtask // debug_module_init
+
+  task jtag_ibex_data_preload;
+     logic [31:0] rdata;
+     automatic dm_ot::sbcs_t sbcs = '{
+       sbautoincrement: 1'b1,
+       sbreadondata   : 1'b1,
+       sbaccess       : 3'h2,
+       default        : 1'b0
+     };
+     automatic int dmi_wait_cycles = 10;
+     debug_ibex_module_init();
+     jtag_ot_dbg.write_dmi(dm_ot::SBCS, sbcs);
+     do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+     while (sbcs.sbbusy);
+     $display("======== Preload data to Ibex SRAM ========");
+     // Start writing to SRAM
+     foreach (ibex_sections[addr]) begin
+       $display("Writing %h with %0d words", addr << 2, ibex_sections[addr]); // word = 8 bytes here
+       jtag_ot_dbg.write_dmi(dm_ot::SBAddress0, (addr << 2));
+       do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+       while (sbcs.sbbusy);
+       for (int i = 0; i < ibex_sections[addr]; i++) begin
+         $display(" -- Word %0d/%0d", i, ibex_sections[addr]);
+         jtag_ot_dbg.write_dmi(dm_ot::SBData0, ibex_memory[addr + i]);
+         // Wait until SBA is free to write next 32 bits
+         do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+         while (sbcs.sbbusy);
+       end
+     end
+    $display("======== Preloading finished ========");
+    // Preloading finished. Can now start executing
+    sbcs.sbreadonaddr = 0;
+    sbcs.sbreadondata = 0;
+    jtag_ot_dbg.write_dmi(dm_ot::SBCS, sbcs);
+
+  endtask // jtag_data_preload
+
+  task jtag_ibex_wakeup;
+    input logic [31:0] start_addr;
+    logic [31:0] dm_status;
+
+    automatic dm_ot::sbcs_t sbcs = '{
+      sbautoincrement: 1'b1,
+      sbreadondata   : 1'b1,
+      sbaccess       : 3'h2,
+      default        : 1'b0
+    };
+    //dm_ot::dtm_op_status_e op;
+    automatic int dmi_wait_cycles = 10;
+    $info("======== Waking up Ibex using JTAG ========");
+    // Initialize the dm module again, otherwise it will not work
+    debug_ibex_module_init();
+    do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+    while (sbcs.sbbusy);
+    // Write PC to Data0 and Data1
+    jtag_ot_dbg.write_dmi(dm_ot::Data0, start_addr);
+    do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+    while (sbcs.sbbusy);
+    // Halt Req
+    jtag_ot_dbg.write_dmi(dm_ot::DMControl, 32'h8000_0001);
+    do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+    while (sbcs.sbbusy);
+    // Wait for CVA6 to be halted
+    do jtag_ot_dbg.read_dmi(dm_ot::DMStatus, dm_status, dmi_wait_cycles);
+    while (!dm_status[8]);
+    // Ensure haltreq, resumereq and ackhavereset all equal to 0
+    jtag_ot_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
+    do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+    while (sbcs.sbbusy);
+    // Register Access Abstract Command
+    jtag_ot_dbg.write_dmi(dm_ot::Command, {8'h0,1'b0,3'h2,1'b0,1'b0,1'b1,1'b1,4'h0,dm_ot::CSR_DPC});
+    do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+    while (sbcs.sbbusy);
+    // Resume req. Exiting from debug mode Ibex CVA6 will jump at the DPC address.
+    // Ensure haltreq, resumereq and ackhavereset all equal to 0
+    jtag_ot_dbg.write_dmi(dm_ot::DMControl, 32'h4000_0001);
+    do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+    while (sbcs.sbbusy);
+    jtag_ot_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
+    do jtag_ot_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
+
+    while (sbcs.sbbusy);
+    $info("======== Wait for Completion ========");
+  endtask // execute_application
+
+  task load_ibex_binary;
+    input string binary;                   // File name
+    logic [31:0] section_addr, section_len;
+    byte         buffer[];
+
+    // Read ELF
+    void'(read_elf(binary));
+    $display("Reading %s", binary);
+
+    while (get_section(section_addr, section_len)) begin
+      // Read Sections
+      automatic int num_words = (section_len + AxiWideBeWidth_ib - 1)/AxiWideBeWidth_ib;
+      $display("Reading section %x with %0d words", section_addr, num_words);
+
+      ibex_sections[section_addr >> AxiWideByteOffset_ib] = num_words;
+      buffer = new[num_words * AxiWideBeWidth_ib];
+      void'(read_section(section_addr, buffer, section_len));
+      for (int i = 0; i < num_words; i++) begin
+        automatic logic [AxiWideBeWidth_ib-1:0][7:0] word = '0;
+        for (int j = 0; j < AxiWideBeWidth_ib; j++) begin
+          word[j] = buffer[i * AxiWideBeWidth_ib + j];
+        end
+        ibex_memory[section_addr/AxiWideBeWidth_ib + i] = word;
+      end
+    end
+
   endtask
 
 endmodule
