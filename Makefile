@@ -89,12 +89,15 @@ scripts/carfield_compile.tcl:
 car-hw-build: car-hw-clean scripts/carfield_compile.tcl
 	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
+.PHONY: car-hw-sim
 car-hw-sim:
 	$(QUESTA) vsim $(VSIM_FLAG) -do "set BOOTMODE $(BOOTMODE); set PRELMODE $(PRELMODE); set BINARY $(BINARY); set VOPTARGS $(VOPTARGS); set IMAGE $(IMAGE); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(RUN_AND_EXIT)"
 
+.PHONY: car-hw-clean
 car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work
 
+.PHONY: car-update-dps
 car-update-deps:
 	$(BENDER) update
 
@@ -108,6 +111,7 @@ car-init: car-checkout-deps tb/hyp_vip spatz-init chs-init
 spatz-init:
 	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
 
+.PHONY: chs-init
 chs-init:
 	$(MAKE) -B chs-hw-all
 	$(MAKE) -B chs-sim-all
