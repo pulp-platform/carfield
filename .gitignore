@@ -6,3 +6,5 @@ scripts/carfield_compile.tcl
 tb/hyp_vip
 transcript
 work/
+*.log
+*.wlf
