@@ -89,8 +89,16 @@ module carfield_soc_fixture;
   logic jtag_ot_tdi;
   logic jtag_ot_tdo;
 
+  logic jtag_safety_island_tck;
+  logic jtag_safety_island_trst_n;
+  logic jtag_safety_island_tms;
+  logic jtag_safety_island_tdi;
+  logic jtag_safety_island_tdo;
+
   logic uart_tx;
   logic uart_rx;
+  logic ot_uart_tx;
+  logic ot_uart_rx;
 
   logic i2c_sda_o;
   logic i2c_sda_i;
@@ -129,60 +137,67 @@ module carfield_soc_fixture;
     .RomCtrlBootRomInitFile ( RomCtrlBootRomInitFile ),
     .OtpCtrlMemInitFile     ( OtpCtrlMemInitFile     ),
     .FlashCtrlMemInitFile   ( FlashCtrlMemInitFile   )
-  ) i_dut        (
-    .clk_i           ( clk                ),
-    .rst_ni          ( rst_n              ),
-    .test_mode_i     ( test_mode          ),
-    .boot_mode_i     ( boot_mode          ),
-    .rtc_i           ( rtc                ),
-    .jtag_tck_i      ( jtag_tck           ),
-    .jtag_trst_ni    ( jtag_trst_n        ),
-    .jtag_tms_i      ( jtag_tms           ),
-    .jtag_tdi_i      ( jtag_tdi           ),
-    .jtag_tdo_o      ( jtag_tdo           ),
-    .jtag_tdo_oe_o   (                    ),
-    .jtag_ot_tck_i   ( jtag_ot_tck        ),
-    .jtag_ot_trst_ni ( jtag_ot_trst_n     ),
-    .jtag_ot_tms_i   ( jtag_ot_tms        ),
-    .jtag_ot_tdi_i   ( jtag_ot_tdi        ),
-    .jtag_ot_tdo_o   ( jtag_ot_tdo        ),
-    .jtag_ot_tdo_oe_o(                    ),
-    .uart_tx_o       ( uart_tx            ),
-    .uart_rx_i       ( uart_rx            ),
-    .uart_rts_no     (                    ),
-    .uart_dtr_no     (                    ),
-    .uart_cts_ni     ( 1'b0               ),
-    .uart_dsr_ni     ( 1'b0               ),
-    .uart_dcd_ni     ( 1'b0               ),
-    .uart_rin_ni     ( 1'b0               ),
-    .i2c_sda_o       ( i2c_sda_o          ),
-    .i2c_sda_i       ( i2c_sda_i          ),
-    .i2c_sda_en_o    ( i2c_sda_en         ),
-    .i2c_scl_o       ( i2c_scl_o          ),
-    .i2c_scl_i       ( i2c_scl_i          ),
-    .i2c_scl_en_o    ( i2c_scl_en         ),
-    .spih_sck_o      ( spih_sck_o         ),
-    .spih_sck_en_o   ( spih_sck_en        ),
-    .spih_csb_o      ( spih_csb_o         ),
-    .spih_csb_en_o   ( spih_csb_en        ),
-    .spih_sd_o       ( spih_sd_o          ),
-    .spih_sd_en_o    ( spih_sd_en         ),
-    .spih_sd_i       ( spih_sd_i          ),
-    .gpio_i          ( '0                 ),
-    .gpio_o          (                    ),
-    .gpio_en_o       (                    ),
-    .slink_rcv_clk_i ( slink_rcv_clk_i    ),
-    .slink_rcv_clk_o ( slink_rcv_clk_o    ),
-    .slink_i         ( slink_i            ),
-    .slink_o         ( slink_o            ),
-    .hyp_clk_phy_i   ( clk                ),
-    .hyp_rst_phy_ni  ( rst_n              ),
-    .pad_hyper_csn   ( hyper_cs_n_wire    ),
-    .pad_hyper_ck    ( hyper_ck_wire      ),
-    .pad_hyper_ckn   ( hyper_ck_n_wire    ),
-    .pad_hyper_rwds  ( hyper_rwds_wire    ),
-    .pad_hyper_reset ( hyper_reset_n_wire ),
-    .pad_hyper_dq    ( hyper_dq_wire      )
+  ) i_dut                       (
+    .clk_i                      ( clk                       ),
+    .rst_ni                     ( rst_n                     ),
+    .test_mode_i                ( test_mode                 ),
+    .boot_mode_i                ( boot_mode                 ),
+    .rtc_i                      ( rtc                       ),
+    .jtag_tck_i                 ( jtag_tck                  ),
+    .jtag_trst_ni               ( jtag_trst_n               ),
+    .jtag_tms_i                 ( jtag_tms                  ),
+    .jtag_tdi_i                 ( jtag_tdi                  ),
+    .jtag_tdo_o                 ( jtag_tdo                  ),
+    .jtag_tdo_oe_o              (                           ),
+    .jtag_ot_tck_i              ( jtag_ot_tck               ),
+    .jtag_ot_trst_ni            ( jtag_ot_trst_n            ),
+    .jtag_ot_tms_i              ( jtag_ot_tms               ),
+    .jtag_ot_tdi_i              ( jtag_ot_tdi               ),
+    .jtag_ot_tdo_o              ( jtag_ot_tdo               ),
+    .jtag_ot_tdo_oe_o           (                           ),
+    .jtag_safety_island_tck_i   ( jtag_safety_island_tck    ),
+    .jtag_safety_island_trst_ni ( jtag_trst_n               ), // Temporary
+    .jtag_safety_island_tms_i   ( '0                        ), // Temporary
+    .jtag_safety_island_tdi_i   ( '0                        ), // Temporary
+    .jtag_safety_island_tdo_o   ( jtag_safety_island_tdo    ),
+    .uart_tx_o                  ( uart_tx                   ),
+    .uart_rx_i                  ( uart_rx                   ),
+    .uart_ot_tx_o               ( ot_uart_tx                ),
+    .uart_ot_rx_i               ( ot_uart_rx                ),
+    .uart_rts_no                (                           ),
+    .uart_dtr_no                (                           ),
+    .uart_cts_ni                ( 1'b0                      ),
+    .uart_dsr_ni                ( 1'b0                      ),
+    .uart_dcd_ni                ( 1'b0                      ),
+    .uart_rin_ni                ( 1'b0                      ),
+    .i2c_sda_o                  ( i2c_sda_o                 ),
+    .i2c_sda_i                  ( i2c_sda_i                 ),
+    .i2c_sda_en_o               ( i2c_sda_en                ),
+    .i2c_scl_o                  ( i2c_scl_o                 ),
+    .i2c_scl_i                  ( i2c_scl_i                 ),
+    .i2c_scl_en_o               ( i2c_scl_en                ),
+    .spih_sck_o                 ( spih_sck_o                ),
+    .spih_sck_en_o              ( spih_sck_en               ),
+    .spih_csb_o                 ( spih_csb_o                ),
+    .spih_csb_en_o              ( spih_csb_en               ),
+    .spih_sd_o                  ( spih_sd_o                 ),
+    .spih_sd_en_o               ( spih_sd_en                ),
+    .spih_sd_i                  ( spih_sd_i                 ),
+    .gpio_i                     ( '0                        ),
+    .gpio_o                     (                           ),
+    .gpio_en_o                  (                           ),
+    .slink_rcv_clk_i            ( slink_rcv_clk_i           ),
+    .slink_rcv_clk_o            ( slink_rcv_clk_o           ),
+    .slink_i                    ( slink_i                   ),
+    .slink_o                    ( slink_o                   ),
+    .hyp_clk_phy_i              ( clk                       ),
+    .hyp_rst_phy_ni             ( rst_n                     ),
+    .pad_hyper_csn              ( hyper_cs_n_wire           ),
+    .pad_hyper_ck               ( hyper_ck_wire             ),
+    .pad_hyper_ckn              ( hyper_ck_n_wire           ),
+    .pad_hyper_rwds             ( hyper_rwds_wire           ),
+    .pad_hyper_reset            ( hyper_reset_n_wire        ),
+    .pad_hyper_dq               ( hyper_dq_wire             )
   );
 
   /******************/
@@ -270,6 +285,14 @@ module carfield_soc_fixture;
     .RstClkCycles ( RstCycles )
   ) i_clk_ot_jtag (
     .clk_o  ( jtag_ot_tck ),
+    .rst_no ( )
+  );
+
+  clk_rst_gen #(
+    .ClkPeriod    ( ClkPeriodOtJtag ),
+    .RstClkCycles ( RstCycles )
+  ) i_clk_safety_island_jtag (
+    .clk_o  ( jtag_safety_island_tck ),
     .rst_no ( )
   );
 

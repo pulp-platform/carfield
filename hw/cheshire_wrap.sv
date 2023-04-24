@@ -161,6 +161,8 @@ module cheshire_wrap
   input  logic [1:0]  boot_mode_i,
   input  logic        rtc_i      ,
   // External AXI LLC (DRAM) port
+  input  logic                  axi_llc_isolate_i,
+  output logic                  axi_llc_isolated_o,
   output logic [LlcArWidth-1:0] llc_mst_ar_data_o,
   output logic [    LogDepth:0] llc_mst_ar_wptr_o,
   input  logic [    LogDepth:0] llc_mst_ar_rptr_i,
@@ -177,6 +179,8 @@ module cheshire_wrap
   output logic [    LogDepth:0] llc_mst_w_wptr_o ,
   input  logic [    LogDepth:0] llc_mst_w_rptr_i ,
   // External AXI slave devices (except the Integer Cluster)
+  input  logic [iomsb(Cfg.AxiExtNumSlv):0]                      axi_ext_slv_isolate_i,
+  output logic [iomsb(Cfg.AxiExtNumSlv):0]                      axi_ext_slv_isolated_o,
   output logic [iomsb(Cfg.AxiExtNumSlv-1):0][ExtSlvArWidth-1:0] axi_ext_slv_ar_data_o,
   output logic [iomsb(Cfg.AxiExtNumSlv-1):0][       LogDepth:0] axi_ext_slv_ar_wptr_o,
   input  logic [iomsb(Cfg.AxiExtNumSlv-1):0][       LogDepth:0] axi_ext_slv_ar_rptr_i,
@@ -304,16 +308,16 @@ module cheshire_wrap
 );
 
 // All AXI slave buses (except the Integer Cluster)
-cheshire_axi_ext_slv_req_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_req;
-cheshire_axi_ext_slv_rsp_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_rsp;
+cheshire_axi_ext_slv_req_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_req, axi_ext_slv_isolated_req;
+cheshire_axi_ext_slv_rsp_t [Cfg.AxiExtNumSlv-1:0] axi_ext_slv_rsp, axi_ext_slv_isolated_rsp;
 
 // All AXI master buses (except the Integer Cluster)
 cheshire_axi_ext_mst_req_t [Cfg.AxiExtNumMst-1:0] axi_ext_mst_req;
 cheshire_axi_ext_mst_rsp_t [Cfg.AxiExtNumMst-1:0] axi_ext_mst_rsp;
 
 // External LLC (DRAM) bus
-cheshire_axi_ext_llc_req_t axi_llc_mst_req;
-cheshire_axi_ext_llc_rsp_t axi_llc_mst_rsp;
+cheshire_axi_ext_llc_req_t axi_llc_mst_req, axi_llc_mst_isolated_req;
+cheshire_axi_ext_llc_rsp_t axi_llc_mst_rsp, axi_llc_mst_isolated_rsp;
 
 cheshire_soc #(
   .Cfg               ( Cfg                        ),
@@ -404,6 +408,27 @@ cheshire_soc #(
 );
 
 for (genvar i = 0; i < Cfg.AxiExtNumSlv - 1; i++) begin: gen_ext_slv_src_cdc
+  axi_isolate              #(
+    .NumPending             ( Cfg.AxiMaxSlvTrans           ),
+    .TerminateTransaction   ( 1                            ),
+    .AtopSupport            ( 1                            ),
+    .AxiAddrWidth           ( Cfg.AddrWidth                ),
+    .AxiDataWidth           ( Cfg.AxiDataWidth             ),
+    .AxiIdWidth             ( ExtSlvIdWidth                ),
+    .AxiUserWidth           ( Cfg.AxiUserWidth             ),
+    .axi_req_t              ( cheshire_axi_ext_slv_req_t   ),
+    .axi_resp_t             ( cheshire_axi_ext_slv_rsp_t   )
+  ) i_axi_ext_slave_isolate (
+    .clk_i                  ( clk_i                        ),
+    .rst_ni                 ( rst_ni                       ),
+    .slv_req_i              ( axi_ext_slv_req          [i] ),
+    .slv_resp_o             ( axi_ext_slv_rsp          [i] ),
+    .mst_req_o              ( axi_ext_slv_isolated_req [i] ),
+    .mst_resp_i             ( axi_ext_slv_isolated_rsp [i] ),
+    .isolate_i              ( axi_ext_slv_isolate_i    [i] ),
+    .isolated_o             ( axi_ext_slv_isolated_o   [i] )
+  );
+
   axi_cdc_src #(
     .LogDepth   ( LogDepth                       ),
     .aw_chan_t  ( cheshire_axi_ext_slv_aw_chan_t ),
@@ -417,8 +442,8 @@ for (genvar i = 0; i < Cfg.AxiExtNumSlv - 1; i++) begin: gen_ext_slv_src_cdc
     // synchronous slave port
     .src_clk_i                   ( clk_i               ),
     .src_rst_ni                  ( rst_ni              ),
-    .src_req_i                   ( axi_ext_slv_req [i] ),
-    .src_resp_o                  ( axi_ext_slv_rsp [i] ),
+    .src_req_i                   ( axi_ext_slv_isolated_req [i] ),
+    .src_resp_o                  ( axi_ext_slv_isolated_rsp [i] ),
     // asynchronous master port
     .async_data_master_aw_data_o ( axi_ext_slv_aw_data_o [i] ),
     .async_data_master_aw_wptr_o ( axi_ext_slv_aw_wptr_o [i] ),
@@ -473,7 +498,28 @@ for (genvar i = 0; i < Cfg.AxiExtNumMst - 1; i++) begin: gen_ext_mst_dst_cdc
   );
 end
 
-// CDC for external LLC connection
+// AXI isolate and CDC for external LLC connection
+axi_isolate              #(
+  .NumPending             ( Cfg.AxiMaxSlvTrans         ),
+  .TerminateTransaction   ( 1                          ),
+  .AtopSupport            ( 1                          ),
+  .AxiAddrWidth           ( Cfg.AddrWidth              ),
+  .AxiDataWidth           ( Cfg.AxiDataWidth           ),
+  .AxiIdWidth             ( LlcIdWidth                 ),
+  .AxiUserWidth           ( Cfg.AxiUserWidth           ),
+  .axi_req_t              ( cheshire_axi_ext_llc_req_t ),
+  .axi_resp_t             ( cheshire_axi_ext_llc_rsp_t )
+) i_axi_llc_isolate       (
+  .clk_i                  ( clk_i                    ),
+  .rst_ni                 ( rst_ni                   ),
+  .slv_req_i              ( axi_llc_mst_req          ),
+  .slv_resp_o             ( axi_llc_mst_rsp          ),
+  .mst_req_o              ( axi_llc_mst_isolated_req ),
+  .mst_resp_i             ( axi_llc_mst_isolated_rsp ),
+  .isolate_i              ( axi_llc_isolate_i        ),
+  .isolated_o             ( axi_llc_isolated_o       )
+);
+
 axi_cdc_src #(
   .LogDepth   ( LogDepth                       ),
   .aw_chan_t  ( cheshire_axi_ext_llc_aw_chan_t ),
@@ -485,10 +531,10 @@ axi_cdc_src #(
   .axi_resp_t ( cheshire_axi_ext_llc_rsp_t     )
 ) i_cheshire_ext_llc_cdc_src   (
   // synchronous slave port
-  .src_clk_i                   ( clk_i           ),
-  .src_rst_ni                  ( rst_ni          ),
-  .src_req_i                   ( axi_llc_mst_req ),
-  .src_resp_o                  ( axi_llc_mst_rsp ),
+  .src_clk_i                   ( clk_i                    ),
+  .src_rst_ni                  ( rst_ni                   ),
+  .src_req_i                   ( axi_llc_mst_isolated_req ),
+  .src_resp_o                  ( axi_llc_mst_isolated_rsp ),
   // asynchronous master port
   .async_data_master_aw_data_o ( llc_mst_aw_data_o ),
   .async_data_master_aw_wptr_o ( llc_mst_aw_wptr_o ),
@@ -508,8 +554,47 @@ axi_cdc_src #(
 );
 
 // Integer Cluster slave bus
-axi_intcluster_slv_req_t axi_intcluster_ser_slv_req;
-axi_intcluster_slv_rsp_t axi_intcluster_ser_slv_rsp;
+axi_intcluster_slv_req_t axi_intcluster_ser_slv_req, axi_intcluster_ser_isolated_slv_req;
+axi_intcluster_slv_rsp_t axi_intcluster_ser_slv_rsp, axi_intcluster_ser_isolated_slv_rsp;
+
+axi_id_remap            #(
+  .AxiSlvPortIdWidth     ( ExtSlvIdWidth              ),
+  .AxiSlvPortMaxUniqIds  ( IntClusterMaxUniqId        ),
+  .AxiMaxTxnsPerId       ( Cfg.AxiMaxSlvTrans         ),
+  .AxiMstPortIdWidth     ( IntClusterAxiIdInWidth     ),
+  .slv_req_t             ( cheshire_axi_ext_slv_req_t ),
+  .slv_resp_t            ( cheshire_axi_ext_slv_rsp_t ),
+  .mst_req_t             ( axi_intcluster_slv_req_t   ),
+  .mst_resp_t            ( axi_intcluster_slv_rsp_t   )
+) i_integer_cluster_axi_slv_id_remap               (
+  .clk_i       ( clk_i                             ),
+  .rst_ni      ( rst_ni                            ),
+  .slv_req_i   ( axi_ext_slv_req[IntClusterSlvIdx] ),
+  .slv_resp_o  ( axi_ext_slv_rsp[IntClusterSlvIdx] ),
+  .mst_req_o   ( axi_intcluster_ser_slv_req        ),
+  .mst_resp_i  ( axi_intcluster_ser_slv_rsp        )
+);
+
+axi_isolate               #(
+  .NumPending              ( Cfg.AxiMaxSlvTrans       ),
+  .TerminateTransaction    ( 1                        ),
+  .AtopSupport             ( 1                        ),
+  .AxiAddrWidth            ( Cfg.AddrWidth            ),
+  .AxiDataWidth            ( Cfg.AxiDataWidth         ),
+  .AxiIdWidth              ( IntClusterAxiIdInWidth   ),
+  .AxiUserWidth            ( Cfg.AxiUserWidth         ),
+  .axi_req_t               ( axi_intcluster_slv_req_t ),
+  .axi_resp_t              ( axi_intcluster_slv_rsp_t )
+) i_axi_intcluster_isolate (
+  .clk_i                   ( clk_i                                    ),
+  .rst_ni                  ( rst_ni                                   ),
+  .slv_req_i               ( axi_intcluster_ser_slv_req               ),
+  .slv_resp_o              ( axi_intcluster_ser_slv_rsp               ),
+  .mst_req_o               ( axi_intcluster_ser_isolated_slv_req      ),
+  .mst_resp_i              ( axi_intcluster_ser_isolated_slv_rsp      ),
+  .isolate_i               ( axi_ext_slv_isolate_i [IntClusterSlvIdx] ),
+  .isolated_o              ( axi_ext_slv_isolated_o[IntClusterSlvIdx] )
+);
 
 axi_cdc_src  #(
   .LogDepth   ( LogDepth                     ),
@@ -522,10 +607,10 @@ axi_cdc_src  #(
   .axi_resp_t ( axi_intcluster_slv_rsp_t     )
 ) i_intcluster_slv_cdc         (
   // synchronous slave port
-  .src_clk_i                   ( clk_i                      ),
-  .src_rst_ni                  ( rst_ni                     ),
-  .src_req_i                   ( axi_intcluster_ser_slv_req ),
-  .src_resp_o                  ( axi_intcluster_ser_slv_rsp ),
+  .src_clk_i                   ( clk_i                               ),
+  .src_rst_ni                  ( rst_ni                              ),
+  .src_req_i                   ( axi_intcluster_ser_isolated_slv_req ),
+  .src_resp_o                  ( axi_intcluster_ser_isolated_slv_rsp ),
   // asynchronous master port
   .async_data_master_aw_data_o ( axi_slv_intcluster_aw_data_o ),
   .async_data_master_aw_wptr_o ( axi_slv_intcluster_aw_wptr_o ),
@@ -542,29 +627,6 @@ axi_cdc_src  #(
   .async_data_master_r_data_i  ( axi_slv_intcluster_r_data_i  ),
   .async_data_master_r_wptr_i  ( axi_slv_intcluster_r_wptr_i  ),
   .async_data_master_r_rptr_o  ( axi_slv_intcluster_r_rptr_o  )
-);
-
-axi_id_serialize #(
-  .AxiSlvPortIdWidth      ( ExtSlvIdWidth              ),
-  .AxiSlvPortMaxTxns      ( Cfg.AxiMaxSlvTrans         ),
-  .AxiMstPortIdWidth      ( IntClusterAxiIdInWidth     ),
-  .AxiMstPortMaxUniqIds   ( 2**IntClusterAxiIdInWidth  ), // Max value
-  .AxiMstPortMaxTxnsPerId ( Cfg.AxiMaxMstTrans         ),
-  .AxiAddrWidth           ( Cfg.AddrWidth              ),
-  .AxiDataWidth           ( Cfg.AxiDataWidth           ),
-  .AxiUserWidth           ( Cfg.AxiUserWidth           ),
-  .AtopSupport            ( 0                          ), // Change me if needed
-  .slv_req_t              ( cheshire_axi_ext_slv_req_t ),
-  .slv_resp_t             ( cheshire_axi_ext_slv_rsp_t ),
-  .mst_req_t              ( axi_intcluster_slv_req_t   ),
-  .mst_resp_t             ( axi_intcluster_slv_rsp_t   )
-) i_integer_cluster_axi_slv_id_serializer          (
-  .clk_i       ( clk_i                             ),
-  .rst_ni      ( rst_ni                            ),
-  .slv_req_i   ( axi_ext_slv_req[IntClusterSlvIdx] ),
-  .slv_resp_o  ( axi_ext_slv_rsp[IntClusterSlvIdx] ),
-  .mst_req_o   ( axi_intcluster_ser_slv_req        ),
-  .mst_resp_i  ( axi_intcluster_ser_slv_rsp        )
 );
 
 // Integer Cluster master bus
@@ -604,21 +666,16 @@ axi_cdc_dst #(
   .dst_resp_i ( axi_intcluster_ser_mst_rsp )
 );
 
-axi_id_serialize #(
-  .AxiSlvPortIdWidth      ( IntClusterAxiIdOutWidth    ),
-  .AxiSlvPortMaxTxns      ( Cfg.AxiMaxSlvTrans         ),
-  .AxiMstPortIdWidth      ( Cfg.AxiMstIdWidth          ),
-  .AxiMstPortMaxUniqIds   ( 2**IntClusterAxiIdInWidth  ), // Max value
-  .AxiMstPortMaxTxnsPerId ( Cfg.AxiMaxMstTrans         ),
-  .AxiAddrWidth           ( Cfg.AddrWidth              ),
-  .AxiDataWidth           ( Cfg.AxiDataWidth           ),
-  .AxiUserWidth           ( Cfg.AxiUserWidth           ),
-  .AtopSupport            ( 0                          ), // Change me if needed
-  .slv_req_t              ( axi_intcluster_mst_req_t   ),
-  .slv_resp_t             ( axi_intcluster_mst_rsp_t   ),
-  .mst_req_t              ( cheshire_axi_ext_mst_req_t ),
-  .mst_resp_t             ( cheshire_axi_ext_mst_rsp_t )
-) i_integer_cluster_axi_mst_id_serializer          (
+axi_id_remap            #(
+  .AxiSlvPortIdWidth     ( IntClusterAxiIdOutWidth    ),
+  .AxiSlvPortMaxUniqIds  ( IntClusterMaxUniqId        ),
+  .AxiMaxTxnsPerId       ( Cfg.AxiMaxMstTrans         ),
+  .AxiMstPortIdWidth     ( Cfg.AxiMstIdWidth          ),
+  .slv_req_t             ( axi_intcluster_mst_req_t   ),
+  .slv_resp_t            ( axi_intcluster_mst_rsp_t   ),
+  .mst_req_t             ( cheshire_axi_ext_mst_req_t ),
+  .mst_resp_t            ( cheshire_axi_ext_mst_rsp_t )
+) i_integer_cluster_axi_mst_id_remap               (
   .clk_i       ( clk_i                             ),
   .rst_ni      ( rst_ni                            ),
   .slv_req_i   ( axi_intcluster_ser_mst_req        ),
