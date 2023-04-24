@@ -8,6 +8,7 @@ ROOT := .
 CHS_ROOT ?= $(ROOT)/cheshire
 SW_ROOT := $(ROOT)/sw
 
+BENDER ?= bender
 QUESTA ?= questa-2022.3
 TBENCH ?= tb_carfield_soc
 
@@ -69,7 +70,7 @@ car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work
 
 car-update-deps:
-	bender update
+	$(BENDER) update
 
 car-init: car-update-deps tb/hyp_vip chs-init
 

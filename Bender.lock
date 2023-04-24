@@ -75,7 +75,7 @@ packages:
     - common_cells
     - register_interface
   car_l2:
-    revision: cb2ba8146ca6b136b0e7b81884eb17c72a5d0ec2
+    revision: 505c35a8df7f042fc8fc07c5dc40bc6412f7b27d
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git
@@ -138,8 +138,8 @@ packages:
     dependencies:
     - hci
   common_cells:
-    revision: 4dc9413990622dcbf4b37a19f792834c800da5c7
-    version: 1.28.0
+    revision: 4ac82b420e46fd0005513ca2283cb3c905e7599a
+    version: 1.29.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -305,6 +305,13 @@ packages:
       Git: https://github.com/pulp-platform/mchan.git
     dependencies:
     - common_cells
+  obi:
+    revision: fed3f7f87285f2754b78211fbe844c5012bab114
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:carfield/obi.git
+    dependencies:
+    - common_cells
   opentitan:
     revision: 78e94cf76c133e4426f99c9bb32c5f7c929f13d0
     version: null
@@ -330,7 +337,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 4f415e06d353ff97c225071e2dfa58a5cdd6b8ec
+    revision: 3eb5ed955d6bf1d47f657669351f0cc45436a75b
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -382,7 +389,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 170649965a44b5c66c1c1670664b97b8e78bacb5
+    revision: 76c2f98f59b120be03ada8928ca178e573c155e4
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
@@ -394,6 +401,7 @@ packages:
     - common_cells
     - cv32e40p
     - fpnew
+    - obi
     - redundancy_cells
     - register_interface
     - riscv-dbg
