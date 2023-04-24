@@ -56,6 +56,14 @@ packages:
     - common_verification
     - register_interface
     - tech_cells_generic
+  axi_node:
+    revision: e2d038004c5b8cec9dd3bb9d23ad0bee72f9d908
+    version: 1.1.4
+    source:
+      Git: git@github.com:pulp-platform/axi_node.git
+    dependencies:
+    - axi
+    - common_cells
   axi_riscv_atomics:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
@@ -222,12 +230,12 @@ packages:
     - hwpe-stream
     - l2_tcdm_hybrid_interco
   hier-icache:
-    revision: 9e53e957f7e0fd88616a5f3fbcc2617fbc3c9d0d
+    revision: a7e3f4e4c7fe607bcd6b9d94db77f612fd6ef6be
     version: null
     source:
       Git: https://github.com/pulp-platform/hier-icache.git
     dependencies:
-    - axi
+    - axi_node
     - axi_slice
     - common_cells
     - icache-intc
@@ -277,7 +285,7 @@ packages:
     revision: 663c3b6d3c2bf63ff25cda46f33c799c647b3985
     version: 1.0.1
     source:
-      Git: https://github.com/pulp-platform/icache-intc.git
+      Git: git@github.com:pulp-platform/icache-intc.git
     dependencies: []
   idma:
     revision: 437ffa9dac5dea0daccfd3e8ae604d4f6ae2cdf1
@@ -413,11 +421,12 @@ packages:
     - tech_cells_generic
     - timer_unit
   scm:
-    revision: 998466d2a3c2d7d572e43d2666d93c4f767d8d60
-    version: 1.1.1
+    revision: f7b51416f3c407e4c31e9c016616d57aae2687bd
+    version: null
     source:
       Git: https://github.com/pulp-platform/scm.git
-    dependencies: []
+    dependencies:
+    - tech_cells_generic
   serial_link:
     revision: f79be97dbd96707b822dd6c2ed7ca87b54bd4378
     version: 1.0.1
