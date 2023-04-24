@@ -86,7 +86,7 @@ scripts/carfield_compile.tcl:
 	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
-car-hw-build: car-hw-clean scripts/carfield_compile.tcl
+car-hw-build: scripts/carfield_compile.tcl
 	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
 .PHONY: car-hw-sim
