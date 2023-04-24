@@ -20,7 +20,7 @@ VOPTARGS ?=
 # Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
 
-# Spatz 
+# Spatz
 SPATZ_ROOT ?= $(ROOT)/spatz
 SPATZ_MAKEDIR := $(SPATZ_ROOT)/hw/system/spatz_cluster
 
@@ -29,22 +29,23 @@ MEMTYPE  ?= spm
 BINARY   ?= $(CHS_ROOT)/sw/tests/$(TESTNAME).$(MEMTYPE).elf
 IMAGE    ?=
 
+# Include bender targets and defines for common usage and synth verification
+# (the following includes are mandatory)
+include bender-common.mk
+include bender-synth.mk
+
 # bender targets
 TARGETS += -t sim
-TARGETS += -t rtl
-TARGETS += -t cv64a6_imafdcsclic_sv39
 TARGETS += -t test
-TARGETS += -t cva6
 TARGETS += -t integer_cluster
 TARGETS += -t cv32e40p_use_ff_regfile
+TARGETS += -t cv64a6_imafdcsclic_sv39
 TARGETS += -t spatz
 TARGETS += -t simulation
+TARGETS += $(common_targs)
 
 # bender defines
-DEFINES += -D FEATURE_ICACHE_STAT
-DEFINES += -D PRIVATE_ICACHE
-DEFINES += -D HIERARCHY_ICACHE_32BIT
-DEFINES += -D TARGET_SPATZ
+DEFINES += $(common_defs)
 
 ifdef gui
 	VSIM_FLAG :=
@@ -59,13 +60,14 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 6c22cff5b6cde5a7d83a5c1b474c8d35d37fd81c
+CAR_NONFREE_COMMIT ?= 6a8cb8ab9382a8722d2f2ef6d85fd6b2865e7fff
 
 car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree
 	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
 
 -include nonfree/nonfree.mk
+-include scripts/spy.mk
 
 ############
 # Build SW #
@@ -105,3 +107,14 @@ chs-init:
 	$(MAKE) -B chs-hw-all
 	$(MAKE) -B chs-sim-all
 	$(MAKE) -B chs-sw-all
+
+############
+# RTL LINT #
+############
+SPYGLASS_TARGS += $(common_targs)
+SPYGLASS_TARGS += $(synth_targs)
+SPYGLASS_DEFS += $(common_defs)
+SPYGLASS_DEFS += $(synth_defs)
+
+lint:
+	$(MAKE) -C scripts lint bender_defs="$(SPYGLASS_DEFS)" bender_targs="$(SPYGLASS_TARGS)" > make.log

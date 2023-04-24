@@ -11,3 +11,5 @@ overrides:
   riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git"         , version: =0.8.0                                 }
   common_cells:       { git: "https://github.com/pulp-platform/common_cells.git"      , version: 1.29.0                                 }
   idma:               { git: "https://github.com/pulp-platform/idma.git"              , rev:     437ffa9                                }
+  hier-icache:        { git: "https://github.com/pulp-platform/hier-icache.git"       , rev: a7e3f4e4c7fe607bcd6b9d94db77f612fd6ef6be   }
+  scm:                { git: "https://github.com/pulp-platform/scm.git"               , rev: f7b51416f3c407e4c31e9c016616d57aae2687bd   }

@@ -1,0 +1,11 @@
+# Copyright 2022 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+current_design carfield_wrap
+test_mode -name "carfield_wrap.test_mode_i" -value "1"
+reset -name "rst_ni" -async -value 0
+reset -name "jtag_trst_ni" -async -value 0
+clock -name "clk_i" -tag sys_clk -domain sys_clk_domain
+clock -name "jtag_tck_i" -tag jtag_clk -domain jtag_clk_domain
+clock -name "rtc_i" -tag rt_clk -domain rt_clk_domain

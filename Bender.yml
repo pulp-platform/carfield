@@ -46,4 +46,7 @@ sources:
       - tb/hyp_vip/s27ks0641.v
       - tb/carfield_fix.sv
       - tb/carfield_tb.sv
-  
+
+  - target: spyglass
+    files:
+      - scripts/spyglass/src/carfield_wrap.sv
