@@ -1,0 +1,61 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+
+// Robert Balas <balasr@iis.ee.ethz.ch>
+
+// Carfield SoC control and status registers
+
+{
+  name: "carfield",
+  clock_primary: "clk_i",
+  bus_interfaces: [
+    { protocol: "reg_iface", direction: "device"}
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "VERSION0",
+      desc: "Version information register",
+      swaccess: "ro",
+      hwaccess: "none",
+      fields: [
+	{ bits: "31:0" }
+      ],
+    },
+    { name: "VERSION1",
+      desc: "Version information register",
+      swaccess: "ro",
+      hwaccess: "none",
+      fields: [
+	{ bits: "31:0" }
+      ],
+    },
+    { name: "GENERIC_SCRATCH0",
+      desc: "Generic scratch register",
+      swaccess: "rw",
+      hwaccess: "none",
+      fields: [
+	{ bits: "31:0" }
+      ],
+    },
+    { name: "GENERIC_SCRATCH1",
+      desc: "Generic scratch registers",
+      swaccess: "rw",
+      hwaccess: "none",
+      fields: [
+	{ bits: "31:0" }
+      ],
+    },
+    { name: "JEDEC_IDCODE",
+      desc: "JEDEC Idcode for carfield",
+      swaccess: "ro",
+      hwaccess: "none",
+      fields: [
+	{ bits: "31:0" }
+      ],
+    },
+  ],
+}

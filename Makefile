@@ -77,11 +77,13 @@ include $(CAR_SW_DIR)/sw.mk
 ##############
 # Simulation #
 ##############
-.PHONY: scripts/carfield_compile.tcl
+hw/carfield_reg_pkg.sv hw/carfield_reg_top.sv: hw/regs/carfield_regs.hjson
+	$(REGGEN) -r $< --outdir $(dir $@)
 
 tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@
 
+.PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
 	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
