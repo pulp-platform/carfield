@@ -6,9 +6,9 @@
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@unibo.it>
 
-ROOT := .
-CHS_ROOT ?= $(ROOT)/cheshire
-CAR_SW_DIR := $(ROOT)/sw
+CAR_ROOT ?= .
+CHS_ROOT ?= $(CAR_ROOT)/cheshire
+CAR_SW_DIR := $(CAR_ROOT)/sw
 
 # Bender
 BENDER   ?= bender
@@ -22,7 +22,7 @@ VOPTARGS ?=
 -include $(CHS_ROOT)/cheshire.mk
 
 # Spatz
-SPATZ_ROOT ?= $(ROOT)/spatz
+SPATZ_ROOT ?= $(CAR_ROOT)/spatz
 SPATZ_MAKEDIR := $(SPATZ_ROOT)/hw/system/spatz_cluster
 
 TESTNAME ?= helloworld
@@ -34,8 +34,8 @@ CHS_IMAGE    ?=
 
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
-include bender-common.mk
-include bender-synth.mk
+include $(CAR_ROOT)/bender-common.mk
+include $(CAR_ROOT)/bender-synth.mk
 
 # bender targets
 TARGETS += -t sim
@@ -62,7 +62,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 143b29e587ece62b3c625048e3000dc43a1a3d3a
+CAR_NONFREE_COMMIT ?= 25c366c6693518a1c3b625ac52df9a3a64688628
 
 car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree
@@ -87,7 +87,7 @@ hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv
 hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv: hw/regs/carfield_regs.hjson
 	$(REGGEN) -r $< --outdir $(dir $@)
 
-tb/hyp_vip:
+$(CAR_ROOT)/tb/hyp_vip:
 	rm -rf $@
 	mkdir $@
 	rm -rf model_tmp && mkdir model_tmp
@@ -124,7 +124,9 @@ car-checkout-deps:
 	$(BENDER) checkout
 	touch Bender.lock
 
-car-init: car-checkout-deps tb/hyp_vip spatz-init chs-init
+car-checkout: car-checkout-deps
+
+car-init: $(CAR_ROOT)/tb/hyp_vip spatz-init chs-init
 
 spatz-init:
 	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
