@@ -16,7 +16,9 @@ typedef enum byte_bt {
   L2Port2SlvIdx      = 'd1,
   SafetyIslandSlvIdx = 'd2,
   OTMailboxSlvIdx    = 'd3,
-  IntClusterSlvIdx   = 'd4
+  EthernetSlvIdx     = 'd4,
+  PeriphsSlvIdx      = 'd5,
+  IntClusterSlvIdx   = 'd6
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
@@ -30,6 +32,8 @@ typedef enum doub_bt {
   L2Port2Base      = 'h0000_0000_7820_0000,
   SafetyIslandBase = 'h0000_0000_6000_0000,
   OTMailboxBase    = 'h0000_0000_4000_0000,
+  EthernetBase     = 'h0000_0000_2000_0000,
+  PeriphsBase      = 'h0000_0000_2000_1000,
   IntClusterBase   = 'h0000_0000_5000_0000
 } axi_start_t;
 
@@ -37,6 +41,8 @@ typedef enum doub_bt {
 localparam doub_bt L2Size           = 'h0000_0000_0020_0000;
 localparam doub_bt SafetyIslandSize = 'h0000_0000_0080_0000;
 localparam doub_bt OTMailboxSize    = 'h0000_0000_0000_1000;
+localparam doub_bt EthernetSize     = 'h0000_0000_0000_1000;
+localparam doub_bt PeriphsSize      = 'h0000_0000_0000_9000;
 localparam doub_bt IntClusterSize   = 'h0000_0000_0080_0000;
 
 typedef enum doub_bt {
@@ -44,11 +50,63 @@ typedef enum doub_bt {
   L2Port2End      = L2Port2Base + L2Size,
   SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize,
   OTMailboxEnd    = OTMailboxBase + OTMailboxSize,
+  EthernetEnd     = EthernetBase + EthernetSize,
+  PeriphsEnd      = PeriphsBase + PeriphsSize,
   IntClusterEnd   = IntClusterBase + IntClusterSize
 } axi_end_t;
 
-// Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox
-localparam bit [2:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1;
+// APB peripherals
+localparam int unsigned NumApbMst = 5;
+
+typedef enum int {
+  SystemTimerIdx   = 'd0,
+  AdvancedTimerIdx = 'd1,
+  SystemWdtIdx     = 'd2,
+  CanIdx           = 'd3,
+  HyperBusIdx      = 'd4
+} carfield_peripherals_e;
+
+// APB start
+typedef enum word_bt {
+  SystemTimerBase   = 'h2000_4000,
+  AdvancedTimerBase = 'h2000_5000,
+  SystemWdtBase     = 'h2000_7000,
+  CanBase           = 'h2000_1000,
+  HyperBusBase      = 'h2000_9000
+} apb_start_t;
+
+// APB Sizes
+localparam word_bt SystemTimerSize   = 'h0000_1000;
+localparam word_bt AdvancedTimerSize = 'h0000_1000;
+localparam word_bt SystemWdtSize     = 'h0000_1000;
+localparam word_bt CanSize           = 'h0000_1000;
+localparam word_bt HyperBusSize      = 'h0000_1000;
+
+typedef enum word_bt {
+  SystemTimerEnd   = SystemTimerBase + SystemTimerSize,
+  AdvancedTimerEnd = AdvancedTimerBase + AdvancedTimerSize,
+  SystemWdtEnd     = SystemWdtBase + SystemWdtSize,
+  CanEnd           = CanBase + CanSize,
+  HyperBusEnd      = HyperBusBase + HyperBusSize
+} apb_end_t;
+
+// Cheshire regbus out
+typedef enum int {
+  PllIdx = 'd0
+} cheshire_reg_out_e;
+
+typedef enum doub_bt {
+  PllBase   = 'h0000_0000_2000_2000
+} reg_start_t;
+
+localparam doub_bt PllSize   = 'h0000_0000_0000_1000;
+
+typedef enum doub_bt {
+  PllEnd   = PllBase + PllSize
+} reg_end_t;
+
+// Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals
+localparam bit [2:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1;
 // Ext Masters: Integer Cluster + Security Island + Safety Island
 localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1;
 // Ext Interrupts: Security Island Mailbox
@@ -85,21 +143,33 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiExtNumSlv      : AxiNumExtSlv,
   AxiExtNumRules    : AxiNumExtSlv,
   // External AXI region map
-  AxiExtRegionIdx  : '{0, 0, 0, IntClusterSlvIdx   ,
-                                OTMailboxSlvIdx    ,
-                                SafetyIslandSlvIdx ,
-                                L2Port2SlvIdx      ,
-                                L2Port1SlvIdx      },
-  AxiExtRegionStart: '{0, 0, 0, IntClusterBase   ,
-                                OTMailboxBase    ,
-                                SafetyIslandBase ,
-                                L2Port2Base      ,
-                                L2Port1Base      },
-  AxiExtRegionEnd  : '{0, 0, 0, IntClusterEnd    ,
-                                OTMailboxEnd     ,
-                                SafetyIslandEnd  ,
-                                L2Port2End       ,
-                                L2Port1End       },
+  AxiExtRegionIdx   : '{0,    IntClusterSlvIdx  ,
+                              PeriphsSlvIdx     ,
+                              EthernetSlvIdx    ,
+                              OTMailboxSlvIdx   ,
+                              SafetyIslandSlvIdx,
+                              L2Port2SlvIdx     ,
+                              L2Port1SlvIdx     },
+  AxiExtRegionStart : '{0,    IntClusterBase  ,
+                              PeriphsBase     ,
+                              EthernetBase    ,
+                              OTMailboxBase   ,
+                              SafetyIslandBase,
+                              L2Port2Base     ,
+                              L2Port1Base     },
+  AxiExtRegionEnd   : '{0,    IntClusterEnd  ,
+                              PeriphsEnd     ,
+                              EthernetEnd    ,
+                              OTMailboxEnd   ,
+                              SafetyIslandEnd,
+                              L2Port2End     ,
+                              L2Port1End     },
+  // External reg slaves (at most 8 ports and rules)
+  RegExtNumSlv      : 1,
+  RegExtNumRules    : 1,
+  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, 0, PllIdx },
+  RegExtRegionStart : '{ 0, 0, 0, 0, 0, 0, 0, PllBase},
+  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, 0, PllEnd },
   // RTC
   RtcFreq           : 32768,
   // Ext Irq
