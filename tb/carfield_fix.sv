@@ -119,9 +119,11 @@ module carfield_soc_fixture;
   wire [NumPhys-1:0][7:0]          pad_hyper_dq;
 
   carfield      #(
-    .Cfg         ( DutCfg   ),
-    .HypNumPhys  ( NumPhys  ),
-    .HypNumChips ( NumChips )
+    .Cfg         ( DutCfg    ),
+    .HypNumPhys  ( NumPhys   ),
+    .HypNumChips ( NumChips  ),
+    .reg_req_t   ( reg_req_t ),
+    .reg_rsp_t   ( reg_rsp_t )
   ) i_dut                       (
     .host_clk_i                 ( clk                       ),
     .periph_clk_i               ( clk                       ),
@@ -151,18 +153,13 @@ module carfield_soc_fixture;
     .uart_rx_i                  ( uart_rx                   ),
     .uart_ot_tx_o               ( ot_uart_tx                ),
     .uart_ot_rx_i               ( ot_uart_rx                ),
-    .uart_rts_no                (                           ),
-    .uart_dtr_no                (                           ),
-    .uart_cts_ni                ( 1'b0                      ),
-    .uart_dsr_ni                ( 1'b0                      ),
-    .uart_dcd_ni                ( 1'b0                      ),
-    .uart_rin_ni                ( 1'b0                      ),
     .i2c_sda_o                  ( i2c_sda_o                 ),
     .i2c_sda_i                  ( i2c_sda_i                 ),
     .i2c_sda_en_o               ( i2c_sda_en                ),
     .i2c_scl_o                  ( i2c_scl_o                 ),
     .i2c_scl_i                  ( i2c_scl_i                 ),
     .i2c_scl_en_o               ( i2c_scl_en                ),
+    // hostd spi
     .spih_sck_o                 ( spih_sck_o                ),
     .spih_sck_en_o              ( spih_sck_en               ),
     .spih_csb_o                 ( spih_csb_o                ),
@@ -170,6 +167,14 @@ module carfield_soc_fixture;
     .spih_sd_o                  ( spih_sd_o                 ),
     .spih_sd_en_o               ( spih_sd_en                ),
     .spih_sd_i                  ( spih_sd_i                 ),
+    // secd spi
+    .spih_ot_sck_o              (                           ),
+    .spih_ot_sck_en_o           (                           ),
+    .spih_ot_csb_o              (                           ),
+    .spih_ot_csb_en_o           (                           ),
+    .spih_ot_sd_o               (                           ),
+    .spih_ot_sd_en_o            (                           ),
+    .spih_ot_sd_i               ( '0                        ),
     .gpio_i                     ( '0                        ),
     .gpio_o                     (                           ),
     .gpio_en_o                  (                           ),
@@ -188,7 +193,11 @@ module carfield_soc_fixture;
     .hyper_dq_i                 ( hyper_dq_i                ),
     .hyper_dq_o                 ( hyper_dq_o                ),
     .hyper_dq_oe_o              ( hyper_dq_oe               ),
-    .hyper_reset_no             ( hyper_reset_n_wire        )
+    .hyper_reset_no             ( hyper_reset_n_wire        ),
+    .pll_cfg_reg_req_o          (                           ),
+    .pll_cfg_reg_rsp_i          ( '0                        ),
+    .padframe_cfg_reg_req_o     (                           ),
+    .padframe_cfg_reg_rsp_i     ( '0                        )
   );
 
   //////////////
@@ -242,7 +251,7 @@ module carfield_soc_fixture;
         .PAD ( pad_hyper_dq[i][j] )
       );
     end
-  end // block: gen_hyper_phy
+  end : gen_hyper_phy
 
   for (genvar i=0; i<NumPhys; i++) begin : hyperrams
     for (genvar j=0; j<NumChips; j++) begin : chips
@@ -380,7 +389,7 @@ module carfield_soc_fixture;
      do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
      while (sbcs.sbbusy);
 
-  endtask // debug_module_init
+  endtask : debug_module_init
 
   task jtag_secd_data_preload;
      logic [31:0] rdata;
@@ -416,7 +425,7 @@ module carfield_soc_fixture;
     sbcs.sbreadondata = 0;
     jtag_secd_dbg.write_dmi(dm_ot::SBCS, sbcs);
 
-  endtask // jtag_data_preload
+  endtask : jtag_data_preload
 
   task jtag_secd_wakeup;
     input logic [31:0] start_addr;
@@ -464,7 +473,7 @@ module carfield_soc_fixture;
 
     while (sbcs.sbbusy);
     $info("======== Wait for Completion ========");
-  endtask // execute_application
+  endtask : execute_application
 
   task load_secd_binary;
     input string binary;                   // File name

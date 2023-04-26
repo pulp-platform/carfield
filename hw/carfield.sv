@@ -8,6 +8,7 @@
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 `include "cheshire/typedef.svh"
+`include "axi/typedef.svh"
 `include "apb/typedef.svh"
 
 /// Top-level implementation of Carfield
@@ -21,7 +22,9 @@ module carfield
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 2,
-  parameter int unsigned HypNumChips = 2
+  parameter int unsigned HypNumChips = 2,
+  parameter type reg_req_t           = logic,
+  parameter type reg_rsp_t           = logic
 ) (
   // host clock
   input   logic                                       host_clk_i,
@@ -33,8 +36,10 @@ module carfield
   input   logic                                       rt_clk_i,
 
   input   logic                                       pwr_on_rst_ni,
+
+  // testmode pin
   input   logic                                       test_mode_i,
-  // Boot mode selection
+  // Cheshire BOOT pins (3 pins)
   input   logic [1:0]                                 boot_mode_i,
   // Cheshire JTAG Interface
   input   logic                                       jtag_tck_i,
@@ -56,27 +61,26 @@ module carfield
   input   logic                                       jtag_safety_island_tms_i,
   input   logic                                       jtag_safety_island_tdi_i,
   output  logic                                       jtag_safety_island_tdo_o,
-  // UART Interface
+  // Secure Subsystem BOOT pins
+  input   logic [1:0]                                 bootmode_ot_i,
+  // unused by safety island -- tdo pad always out mode
+  output  logic                                       jtag_safe_isln_tdo_oe_o,
+  // Safety Island BOOT pins
+  input   logic [1:0]                                 bootmode_safe_isln_i,
+  // Host UART Interface
   output logic                                        uart_tx_o,
   input  logic                                        uart_rx_i,
-  // Cheshire UART Interface
+  // Secure Subsystem UART Interface
   output logic                                        uart_ot_tx_o,
   input  logic                                        uart_ot_rx_i,
-  // Controle Flow UART Modem
-  output logic                                        uart_rts_no,
-  output logic                                        uart_dtr_no,
-  input  logic                                        uart_cts_ni,
-  input  logic                                        uart_dsr_ni,
-  input  logic                                        uart_dcd_ni,
-  input  logic                                        uart_rin_ni,
-  // I2C Interface
+  // Host I2C Interface pins
   output logic                                        i2c_sda_o,
   input  logic                                        i2c_sda_i,
   output logic                                        i2c_sda_en_o,
   output logic                                        i2c_scl_o,
   input  logic                                        i2c_scl_i,
   output logic                                        i2c_scl_en_o,
-  // SPI Host Interface
+  // Host SPI Master Interface
   output logic                                        spih_sck_o,
   output logic                                        spih_sck_en_o,
   output logic [SpihNumCs-1:0]                        spih_csb_o,
@@ -84,7 +88,30 @@ module carfield
   output logic [ 3:0]                                 spih_sd_o,
   output logic [ 3:0]                                 spih_sd_en_o,
   input  logic [ 3:0]                                 spih_sd_i,
-  // GPIO interface
+  // Secure Subsystem QSPI Master Interface
+  output logic                                        spih_ot_sck_o,
+  output logic                                        spih_ot_sck_en_o,
+  output logic                                        spih_ot_csb_o,
+  output logic                                        spih_ot_csb_en_o,
+  output logic [ 3:0]                                 spih_ot_sd_o,
+  output logic [ 3:0]                                 spih_ot_sd_en_o,
+  input  logic [ 3:0]                                 spih_ot_sd_i,
+  // ETHERNET interface
+  input  logic                                        eth_rxck_i,
+  input  logic                                        eth_rxctl_i,
+  input  logic  [ 3:0]                                eth_rxd_i,
+  input  logic                                        eth_md_i,
+  output logic                                        eth_txck_o,
+  output logic                                        eth_txctl_o,
+  output logic  [ 3:0]                                eth_txd_o,
+  output logic                                        eth_md_o,
+  output logic                                        eth_md_oe,
+  output logic                                        eth_mdc_o,
+  output logic                                        eth_rst_n_o,
+  // CAN interface
+  input  logic                                        can_rx_i,
+  output logic                                        can_tx_o,
+  // GPIOs
   input  logic [31:0]                                 gpio_i,
   output logic [31:0]                                 gpio_o,
   output logic [31:0]                                 gpio_en_o,
@@ -96,7 +123,7 @@ module carfield
   // HyperBus clocks
   input  logic                                        hyp_clk_phy_i,
   input  logic                                        hyp_rst_phy_ni,
-  // Physical interace: facing HyperBus
+  // HyperBus interface
   output logic [HypNumPhys-1:0][HypNumChips-1:0]      hyper_cs_no,
   output logic [HypNumPhys-1:0]                       hyper_ck_o,
   output logic [HypNumPhys-1:0]                       hyper_ck_no,
@@ -106,7 +133,13 @@ module carfield
   input  logic [HypNumPhys-1:0][7:0]                  hyper_dq_i,
   output logic [HypNumPhys-1:0][7:0]                  hyper_dq_o,
   output logic [HypNumPhys-1:0]                       hyper_dq_oe_o,
-  output logic [HypNumPhys-1:0]                       hyper_reset_no
+  output logic [HypNumPhys-1:0]                       hyper_reset_no,
+  // PLL configuration
+  output reg_req_t                                    pll_cfg_reg_req_o,
+  input  reg_rsp_t                                    pll_cfg_reg_rsp_i,
+  // padframe configuration
+  output reg_req_t                                    padframe_cfg_reg_req_o,
+  input  reg_rsp_t                                    padframe_cfg_reg_rsp_i
 );
 
 /*********************************
@@ -163,21 +196,18 @@ logic [CheshireNumIntHarts-1:0] safed_hostd_mbox_intr;   // from safety island t
 localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
 localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
 
-// Define needed parameters
+/*****************************/
+/* Wide Parameters: A48, D32 */
+/*****************************/
 localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
 localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
+// Wide AXI types
 typedef logic [       Cfg.AddrWidth-1:0] car_addrw_t;
 typedef logic [    Cfg.AxiDataWidth-1:0] car_dataw_t;
 typedef logic [(Cfg.AxiDataWidth)/8-1:0] car_strb_t;
 typedef logic [    Cfg.AxiUserWidth-1:0] car_usr_t;
 typedef logic [       AxiSlvIdWidth-1:0] car_slv_id_t;
-
-typedef logic [     AxiNarrowAddrWidth-1:0] car_nar_addrw_t;
-typedef logic [     AxiNarrowDataWidth-1:0] car_nar_dataw_t;
-typedef logic [        AxiNarrowStrobe-1:0] car_nar_strb_t;
-typedef logic [ IntClusterAxiIdInWidth-1:0] intclust_idin_t;
-typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
 
 // Slave CDC parameters
 localparam int unsigned CarfieldAxiSlvAwWidth =
@@ -547,12 +577,12 @@ assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
 // TODO: propagate isolated signal from security island to register
 
 // hyperbus reg req/rsp
-carfield_reg_req_t reg_hyper_req;
-carfield_reg_rsp_t reg_hyper_rsp;
+carfield_a32_d32_reg_req_t reg_hyper_req;
+carfield_a32_d32_reg_rsp_t reg_hyper_rsp;
 
 // wdt reg req/rsp
-carfield_reg_req_t reg_wdt_req;
-carfield_reg_rsp_t reg_wdt_rsp;
+carfield_a32_d32_reg_req_t reg_wdt_req;
+carfield_a32_d32_reg_rsp_t reg_wdt_rsp;
 
 // Mailbox unit
 carfield_axi_slv_req_t axi_mbox_req;
@@ -724,12 +754,12 @@ cheshire_wrap #(
   .uart_tx_o                      ,
   .uart_rx_i                      ,
   // UART Modem flow control
-  .uart_rts_no                    ,
-  .uart_dtr_no                    ,
-  .uart_cts_ni                    ,
-  .uart_dsr_ni                    ,
-  .uart_dcd_ni                    ,
-  .uart_rin_ni                    ,
+  .uart_rts_no       (            ),
+  .uart_dtr_no       (            ),
+  .uart_cts_ni       ( '0         ),
+  .uart_dsr_ni       ( '0         ),
+  .uart_dcd_ni       ( '0         ),
+  .uart_rin_ni       ( '0         ),
   // I2C interface
   .i2c_sda_o                      ,
   .i2c_sda_i                      ,
@@ -778,10 +808,10 @@ hyperbus_wrap      #(
   .axi_ar_chan_t    ( carfield_axi_llc_ar_chan_t            ),
   .axi_r_chan_t     ( carfield_axi_llc_r_chan_t             ),
   .axi_aw_chan_t    ( carfield_axi_llc_aw_chan_t            ),
-  .RegAddrWidth     ( Cfg.AddrWidth                         ),
+  .RegAddrWidth     ( AxiNarrowAddrWidth                    ),
   .RegDataWidth     ( AxiNarrowDataWidth                    ),
-  .reg_req_t        ( carfield_reg_req_t                    ),
-  .reg_rsp_t        ( carfield_reg_rsp_t                    ),
+  .reg_req_t        ( carfield_a32_d32_reg_req_t            ),
+  .reg_rsp_t        ( carfield_a32_d32_reg_rsp_t            ),
   .RxFifoLogDepth   ( 32'd2                                 ),
   .TxFifoLogDepth   ( 32'd2                                 ),
   .RstChipBase      ( Cfg.LlcOutRegionStart                 ),
@@ -795,24 +825,24 @@ hyperbus_wrap      #(
   .AxiSlaveWWidth   ( LlcWWidth                             ),
   .AxiMaxTrans      ( Cfg.AxiMaxSlvTrans                    )
 ) i_hyperbus_wrap   (
-  .clk_i               ( hyp_clk_phy_i       ),
-  .rst_ni              ( hyp_rst_phy_ni      ),
-  .test_mode_i         ( test_mode_i         ),
-  .axi_slave_ar_data_i ( llc_ar_data         ),
-  .axi_slave_ar_wptr_i ( llc_ar_wptr         ),
-  .axi_slave_ar_rptr_o ( llc_ar_rptr         ),
-  .axi_slave_aw_data_i ( llc_aw_data         ),
-  .axi_slave_aw_wptr_i ( llc_aw_wptr         ),
-  .axi_slave_aw_rptr_o ( llc_aw_rptr         ),
-  .axi_slave_b_data_o  ( llc_b_data          ),
-  .axi_slave_b_wptr_o  ( llc_b_wptr          ),
-  .axi_slave_b_rptr_i  ( llc_b_rptr          ),
-  .axi_slave_r_data_o  ( llc_r_data          ),
-  .axi_slave_r_wptr_o  ( llc_r_wptr          ),
-  .axi_slave_r_rptr_i  ( llc_r_rptr          ),
-  .axi_slave_w_data_i  ( llc_w_data          ),
-  .axi_slave_w_wptr_i  ( llc_w_wptr          ),
-  .axi_slave_w_rptr_o  ( llc_w_rptr          ),
+  .clk_i               ( hyp_clk_phy_i      ),
+  .rst_ni              ( hyp_rst_phy_ni     ),
+  .test_mode_i         ( test_mode_i        ),
+  .axi_slave_ar_data_i ( llc_ar_data        ),
+  .axi_slave_ar_wptr_i ( llc_ar_wptr        ),
+  .axi_slave_ar_rptr_o ( llc_ar_rptr        ),
+  .axi_slave_aw_data_i ( llc_aw_data        ),
+  .axi_slave_aw_wptr_i ( llc_aw_wptr        ),
+  .axi_slave_aw_rptr_o ( llc_aw_rptr        ),
+  .axi_slave_b_data_o  ( llc_b_data         ),
+  .axi_slave_b_wptr_o  ( llc_b_wptr         ),
+  .axi_slave_b_rptr_i  ( llc_b_rptr         ),
+  .axi_slave_r_data_o  ( llc_r_data         ),
+  .axi_slave_r_wptr_o  ( llc_r_wptr         ),
+  .axi_slave_r_rptr_i  ( llc_r_rptr         ),
+  .axi_slave_w_data_i  ( llc_w_data         ),
+  .axi_slave_w_wptr_i  ( llc_w_wptr         ),
+  .axi_slave_w_rptr_o  ( llc_w_rptr         ),
   .rbus_req_addr_i     ( reg_hyper_req.addr  ),
   .rbus_req_write_i    ( reg_hyper_req.write ),
   .rbus_req_wdata_i    ( reg_hyper_req.wdata ),
@@ -821,16 +851,16 @@ hyperbus_wrap      #(
   .rbus_rsp_rdata_o    ( reg_hyper_rsp.rdata ),
   .rbus_rsp_ready_o    ( reg_hyper_rsp.ready ),
   .rbus_rsp_error_o    ( reg_hyper_rsp.error ),
-  .hyper_cs_no         ( hyper_cs_no         ),
-  .hyper_ck_o          ( hyper_ck_o          ),
-  .hyper_ck_no         ( hyper_ck_no         ),
-  .hyper_rwds_o        ( hyper_rwds_o        ),
-  .hyper_rwds_i        ( hyper_rwds_i        ),
-  .hyper_rwds_oe_o     ( hyper_rwds_oe_o     ),
-  .hyper_dq_i          ( hyper_dq_i          ),
-  .hyper_dq_o          ( hyper_dq_o          ),
-  .hyper_dq_oe_o       ( hyper_dq_oe_o       ),
-  .hyper_reset_no      ( hyper_reset_no      )
+  .hyper_cs_no,
+  .hyper_ck_o,
+  .hyper_ck_no,
+  .hyper_rwds_o,
+  .hyper_rwds_i,
+  .hyper_rwds_oe_o,
+  .hyper_dq_i,
+  .hyper_dq_o,
+  .hyper_dq_oe_o,
+  .hyper_reset_no
 );
 
 // Reconfigurable L2 Memory
@@ -1244,13 +1274,13 @@ secure_subsystem_synth_wrap #(
   .ibex_uart_rx_i   ( uart_ot_tx_o  ),
   .ibex_uart_tx_o   ( uart_ot_rx_i  ),
    // SPI host
-  .spi_host_SCK_o   (               ),
-  .spi_host_SCK_en_o(               ),
-  .spi_host_CSB_o   (               ),
-  .spi_host_CSB_en_o(               ),
-  .spi_host_SD_o    (               ),
-  .spi_host_SD_i    ( '0            ),
-  .spi_host_SD_en_o (               )
+  .spi_host_SCK_o   ( spih_ot_sck_o    ),
+  .spi_host_SCK_en_o( spih_ot_sck_en_o ),
+  .spi_host_CSB_o   ( spih_ot_csb_o    ),
+  .spi_host_CSB_en_o( spih_ot_csb_en_o ),
+  .spi_host_SD_o    ( spih_ot_sd_o     ),
+  .spi_host_SD_i    ( spih_ot_sd_i     ),
+  .spi_host_SD_en_o ( spih_ot_sd_en_o  )
 );
 
 // Security Island Mailbox
@@ -1766,6 +1796,7 @@ apb_to_reg i_apb_to_reg_wdt (
   .reg_o     ( reg_bus_wdt                 )
 );
 
+// crop the address to 32-bit
 assign reg_wdt_req.addr  = reg_bus_wdt.addr;
 assign reg_wdt_req.write = reg_bus_wdt.write;
 assign reg_wdt_req.wdata = reg_bus_wdt.wdata;
@@ -1781,8 +1812,8 @@ tlul_ot_pkg::tl_h2d_t tl_wdt_req;
 tlul_ot_pkg::tl_d2h_t tl_wdt_rsp;
 
 reg_to_tlul #(
-  .req_t             ( carfield_reg_req_t             ),
-  .rsp_t             ( carfield_reg_rsp_t             ),
+  .req_t             ( carfield_a32_d32_reg_req_t     ),
+  .rsp_t             ( carfield_a32_d32_reg_rsp_t     ),
   .tl_h2d_t          ( tlul_ot_pkg::tl_h2d_t          ),
   .tl_d2h_t          ( tlul_ot_pkg::tl_d2h_t          ),
   .tl_a_user_t       ( tlul_ot_pkg::tl_a_user_t       ),
@@ -1874,16 +1905,12 @@ can_top_apb #(
   .s_apb_pwrite     ( apb_mst_req[CanIdx].pwrite  )
 );
 
-// PLL
-// TODO
-reg_err_slv #(
-  .DW      ( AxiNarrowDataWidth ),
-  .ERR_VAL ( 'hBADCAB1E         ),
-  .req_t   ( carfield_reg_req_t ),
-  .rsp_t   ( carfield_reg_rsp_t )
-) i_reg_err_slv_pll (
-  .req_i   ( ext_reg_req[PllIdx] ),
-  .rsp_o   ( ext_reg_rsp[PllIdx] )
-);
+// Propagate PLL cfg interface
+assign pll_cfg_reg_req_o   = ext_reg_req[PllIdx];
+assign ext_reg_rsp[PllIdx] = pll_cfg_reg_rsp_i;
+
+// Propagate padframe cfg interface
+assign padframe_cfg_reg_req_o   = ext_reg_req[PadframeIdx];
+assign ext_reg_rsp[PadframeIdx] = padframe_cfg_reg_rsp_i;
 
 endmodule

@@ -14,7 +14,7 @@ module cheshire_wrap
   import carfield_pkg::*;
   import cheshire_pkg::*;
 #(
-  parameter cheshire_cfg_t Cfg = CarfieldCfgDefault,
+  parameter cheshire_cfg_t Cfg = '0,
   parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts)-1:0] ExtHartinfo = '0,
   parameter type cheshire_axi_ext_llc_ar_chan_t = logic,
   parameter type cheshire_axi_ext_llc_aw_chan_t = logic,

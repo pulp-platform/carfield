@@ -10,6 +10,7 @@ common_targs += -t cva6
 common_targs += -t mchan
 common_targs += -t spatz
 common_targs += -t cv32e40p_use_ff_regfile
+common_targs += -t cv64a6_imafdcsclic_sv39
 
 # bender defines
 common_defs += -D FEATURE_ICACHE_STAT
