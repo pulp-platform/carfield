@@ -9,36 +9,40 @@ module tb_carfield_soc;
 
   carfield_soc_fixture fix();
 
-  string       binary;
+  string       preload_elf;
   string       boot_hex;
   logic [ 1:0] boot_mode;
   logic [ 1:0] preload_mode;
   bit   [31:0] exit_code;
-  int          exit_status = -1;
 
   initial begin
-
+    // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("BOOTMODE=%d", boot_mode))     boot_mode     = 0;
     if (!$value$plusargs("PRELMODE=%d", preload_mode))  preload_mode  = 0;
-    if (!$value$plusargs("BINARY=%s",   binary)) binary  = "./cheshire/sw/tests/helloworld.spm.elf";
-    if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex      = "";
+    if (!$value$plusargs("BINARY=%s",   preload_elf))   preload_elf   = "";
+    if (!$value$plusargs("IMAGE=%s",    boot_hex))      boot_hex = "";
 
-    fix.set_boot_mode(boot_mode);
+    // Set boot mode and preload boot image if there is one
+    fix.chs_vip.set_boot_mode(boot_mode);
+    fix.chs_vip.i2c_eeprom_preload(boot_hex);
+    fix.chs_vip.spih_norflash_preload(boot_hex);
 
-    fix.wait_for_reset();
+    // Wait for reset
+    fix.chs_vip.wait_for_reset();
 
+    // Preload in idle mode or wait for completion in autonomous boot
     if (boot_mode == 0) begin
       // Idle boot: preload with the specified mode
       case (preload_mode)
         0: begin      // JTAG
-          fix.jtag_init();
-          fix.jtag_elf_run(binary);
-          fix.jtag_wait_for_eoc(exit_code);
+          fix.chs_vip.jtag_init();
+          fix.chs_vip.jtag_elf_run(preload_elf);
+          fix.chs_vip.jtag_wait_for_eoc(exit_code);
         end 1: begin  // Serial Link
-          fix.slink_elf_run(binary);
-          fix.slink_wait_for_eoc(exit_code);
+          fix.chs_vip.slink_elf_run(preload_elf);
+          fix.chs_vip.slink_wait_for_eoc(exit_code);
         end 2: begin  // UART
-          fix.uart_debug_elf_run_and_wait(binary, exit_code);
+          fix.chs_vip.uart_debug_elf_run_and_wait(preload_elf, exit_code);
         end default: begin
           $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
         end
@@ -47,13 +51,11 @@ module tb_carfield_soc;
       $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
     end else begin
       // Autonomous boot: Only poll return code
-      fix.jtag_init();
-      fix.jtag_wait_for_eoc(exit_code);
+      fix.chs_vip.jtag_init();
+      fix.chs_vip.jtag_wait_for_eoc(exit_code);
     end
 
-    exit_status = exit_code;     
     $finish;
-    
   end
 
 endmodule

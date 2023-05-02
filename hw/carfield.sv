@@ -5,6 +5,7 @@
 // Thomas Benz     <tbenz@ethz.ch>
 // Luca Valente    <luca.valente@unibo.it>
 // Yvan Tortorella <yvan.tortorella@unibo.it>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 `include "cheshire/typedef.svh"
 
@@ -192,9 +193,6 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 // verilog_lint: waive-stop line-length
 
 // Local DRAM buses and parameter
-carfield_axi_llc_req_t dram_req;
-carfield_axi_llc_rsp_t dram_rsp;
-
 carfield_reg_req_t ext_reg_req;
 carfield_reg_rsp_t ext_reg_rsp;
 
@@ -307,13 +305,6 @@ logic [                 LogDepth:0] axi_mst_intcluster_ar_rptr;
 logic [ IntClusterAxiMstRWidth-1:0] axi_mst_intcluster_r_data ;
 logic [                 LogDepth:0] axi_mst_intcluster_r_wptr ;
 logic [                 LogDepth:0] axi_mst_intcluster_r_rptr ;
-
-// local output enable flipped
-logic        i2c_sda_en;
-logic        i2c_scl_en;
-logic        spim_sck_en;
-logic [ 1:0] spim_csb_en;
-logic [ 3:0] spim_sd_en;
 
 // irq for Secure Subsytem and Cheshire
 logic        ibex_mbox_irq;
@@ -506,17 +497,17 @@ cheshire_wrap #(
   // I2C interface
   .i2c_sda_o                      ,
   .i2c_sda_i                      ,
-  .i2c_sda_en_o    ( i2c_sda_en  ),
+  .i2c_sda_en_o                   ,
   .i2c_scl_o                      ,
   .i2c_scl_i                      ,
-  .i2c_scl_en_o    ( i2c_scl_en  ),
+  .i2c_scl_en_o                   ,
   // SPI host interface
   .spih_sck_o                     ,
-  .spih_sck_en_o   ( spim_sck_en ),
+  .spih_sck_en_o                  ,
   .spih_csb_o                     ,
-  .spih_csb_en_o   ( spim_csb_en ),
+  .spih_csb_en_o                  ,
   .spih_sd_o                      ,
-  .spih_sd_en_o    ( spim_sd_en  ),
+  .spih_sd_en_o                   ,
   .spih_sd_i                      ,
   // GPIO interface
   .gpio_i                         ,
@@ -622,13 +613,6 @@ hyperbus_wrap      #(
   .hyper_dq_oe_o       ( hyper_dq_oe        ),
   .hyper_reset_no      ( hyper_reset_n_wire )
 );
-
-// flip the polarity of the output enables
-assign i2c_sda_en_no    = ~i2c_sda_en;
-assign i2c_scl_en_no    = ~i2c_scl_en;
-assign spim_sck_en_no   = ~spim_sck_en;
-assign spim_csb_en_no   = ~spim_csb_en;
-assign spim_sd_en_no    = ~spim_sd_en;
 
 for (genvar i = 0 ; i<HypNumPhys; i++) begin : gen_hyper_phy
   for (genvar j = 0; j<HypNumChips; j++) begin : gen_hyper_cs
@@ -901,6 +885,8 @@ pulp_cluster #(
 
 // Security Island
 secure_subsystem_synth_wrap #(
+  .OtpCtrlMemInitFile    ( OtpCtrlMemInitFile         ),
+  .RomCtrlBootRomInitFile( RomCtrlBootRomInitFile     ),
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
   .AxiDataWidth          ( Cfg.AxiDataWidth           ),
   .AxiUserWidth          ( Cfg.AxiUserWidth           ),

@@ -31,16 +31,46 @@ To initialize Carfield, do the following:
 
 ## Simulation
 
-Do the following steps to launch a Carfield simulation:
- * `make car-hw-build` to generate the compile scripts for Questasim and compile
-   Carfield.
- * It is also possible to run `make -B scripts/carfield_compile.tcl` to re-generate
-   the compile script when doing hardware modfications.
- * Run `make car-hw-sim testname=<testname> memtype=<memtype>` (e.g.
-   `make car-hw-sim testname=axi_llc memtype=dram`) to run one of the tests
-   available under the Carfield test folder or the Cheshire one.
- * As an alternative, you can run `make car-hw-sim elf-bin=<path/to/compiled.elf>`
-   to run any desired test binary.
+Follow these steps to launch a Carfield simulation:
+
+* Generate the compile scripts for Questasim and compile Carfield.
+
+   ```
+   make car-hw-build
+   ```
+
+  It is also possible to run `make -B scripts/carfield_compile.tcl` to
+  re-generate the compile script after hardware modfications.
+
+* Compile tests for Carfield. Tests resides in `sw/tests`.
+
+  ```
+  make car-sw-all
+  ```
+
+* Simulate a binary in RTL. The current supported bootmodes from Cheshire are:
+
+  | Bootmode | Preload mode | Action |
+  | --- | --- | --- |
+  | 0 | 0 | Passive bootmode, JTAG preload |
+  | 0 | 1 | Passive bootmode, Serial Link preload |
+  | 0 | 2 | Passive bootmode, UART preload |
+  | 1 | - | Autonomous bootmode, SPI SD card |
+  | 2 | - | Autonomous bootmode, SPI flash |
+  | 3 | - | Autonomous bootmode, I2C EEPROM |
+
+  `Bootmode` indicates the available bootmodes in Cheshire, while `Preload mode`
+  indicates the type of preload, if any is needed. For RTL simulation, bootmodes
+  0, 2 and 3 are supported. SPI SD card bootmode is supported on FPGA emulation.
+
+  To launch an RTL simulation with the selected boot and preload modes, type:
+
+  | Bootmode | Command |
+  | --- | --- |
+  | 0 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> BINARY=<binary_path>.car.elf` |
+  | 1, 2, 3 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> IMAGE=<binary_path>.car.memh`  |
+
+  Default is passive bootmode with serial link preload.
 
 ## License
 

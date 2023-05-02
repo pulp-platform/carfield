@@ -3,41 +3,48 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Luca Valente <luca.valente@unibo.it>
+# Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
+# Yvan Tortorella <yvan.tortorella@unibo.it>
 
 ROOT := .
 CHS_ROOT ?= $(ROOT)/cheshire
-SW_ROOT := $(ROOT)/sw
+CAR_SW_DIR := $(ROOT)/sw
 
-BENDER ?= bender
-QUESTA ?= questa-2022.3
-TBENCH ?= tb_carfield_soc
+BENDER   ?= bender
+QUESTA   ?= questa-2022.3
+TBENCH   ?= tb_carfield_soc
+BOOTMODE ?= 0 # default passive bootmode
+PRELMODE ?= 1 # default serial link preload
+VOPTARGS ?=
 
+# Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
 
-testname ?= helloworld
-memtype ?= spm
-elf-bin ?= $(CHS_ROOT)/sw/tests/$(testname).$(memtype).elf
+TESTNAME ?= helloworld
+MEMTYPE  ?= spm
+BINARY   ?= $(CHS_ROOT)/sw/tests/$(TESTNAME).$(MEMTYPE).elf
+IMAGE    ?=
 
 # bender targets
-targets += -t sim
-targets += -t rtl
-targets += -t cv64a6_imafdc_sv39
-targets += -t test
-targets += -t cva6
-targets += -t integer_cluster
-targets += -t cv32e40p_use_ff_regfile
+TARGETS += -t sim
+TARGETS += -t rtl
+TARGETS += -t cv64a6_imafdcsclic_sv39
+TARGETS += -t test
+TARGETS += -t cva6
+TARGETS += -t integer_cluster
+TARGETS += -t cv32e40p_use_ff_regfile
 
 # bender defines
-defines += -D FEATURE_ICACHE_STAT
-defines += -D PRIVATE_ICACHE
-defines += -D HIERARCHY_ICACHE_32BIT
+DEFINES += -D FEATURE_ICACHE_STAT
+DEFINES += -D PRIVATE_ICACHE
+DEFINES += -D HIERARCHY_ICACHE_32BIT
 
 ifdef gui
-	vsim-flag :=
-	run_and_exit := run -all
+	VSIM_FLAG :=
+	RUN_AND_EXIT := run -all
 else
-	vsim-flag := -c
-	run_and_exit := run -all; exit
+	VSIM_FLAG := -c
+	RUN_AND_EXIT := run -all; exit
 endif
 
 ######################
@@ -45,26 +52,36 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= c0d7121d145487950ccb14169b06947848a4d285
+CAR_NONFREE_COMMIT ?= 00b2f7dea3674f60470a66198b32842883ba8f7c
 
-nonfree-init:
+car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree
 	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
 
 -include nonfree/nonfree.mk
 
+############
+# Build SW #
+############
+
+include $(CAR_SW_DIR)/sw.mk
+
+##############
+# Simulation #
+##############
+
 tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@
 
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim $(targets) $(defines) --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 car-hw-build: car-hw-clean scripts/carfield_compile.tcl
 	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
 car-hw-sim:
-	$(QUESTA) vsim $(vsim-flag) -do "set BOOTMODE 0; set BINARY $(elf-bin); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(run_and_exit)"
+	$(QUESTA) vsim $(VSIM_FLAG) -do "set BOOTMODE $(BOOTMODE); set PRELMODE $(PRELMODE); set BINARY $(BINARY); set VOPTARGS $(VOPTARGS); set IMAGE $(IMAGE); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(RUN_AND_EXIT)"
 
 car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work

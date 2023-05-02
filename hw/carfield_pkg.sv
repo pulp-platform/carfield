@@ -4,6 +4,7 @@
 //
 // Thomas Benz  <tbenz@ethz.ch>
 // Yvan Tortorella <yvan.tortorella@unibo.it>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 /// Carfield constants and Cheshire overwrites
 package carfield_pkg;
@@ -214,5 +215,12 @@ localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterMaxUniqId = 1;
 localparam logic [ 5:0] IntClusterIndex = '0;
+
+/******************************/
+/* Security Island Parameters */
+/******************************/
+localparam string RomCtrlBootRomInitFile = "sw/security_island/bootrom/boot_rom.vmem";
+localparam string OtpCtrlMemInitFile     = "sw/security_island/otp/otp-img.mem";
+
 
 endpackage
