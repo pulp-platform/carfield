@@ -313,7 +313,7 @@ packages:
     dependencies:
     - common_cells
   opentitan:
-    revision: 78e94cf76c133e4426f99c9bb32c5f7c929f13d0
+    revision: fa08c257faa56b71e3f7711675269e61d851a353
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
