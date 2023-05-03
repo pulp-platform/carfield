@@ -65,14 +65,9 @@ module l2_wrap
   output logic                            ecc_error_o
 );
 
-`AXI_TYPEDEF_ALL_CT(axi_async               ,
-                    axi_async_req_t         ,
-                    axi_async_rsp_t         ,
-                    logic [AxiAddrWidth-1:0],
-                    logic [  AxiIdWidth-1:0],
-                    logic [AxiDataWidth-1:0],
-                    logic [AxiStrbWidth-1:0],
-                    logic [AxiUserWidth-1:0])
+// verilog_lint: waive-start line-length
+`AXI_TYPEDEF_ALL_CT(axi_async, axi_async_req_t, axi_async_rsp_t, logic [AxiAddrWidth-1:0], logic [  AxiIdWidth-1:0], logic [AxiDataWidth-1:0], logic [AxiStrbWidth-1:0], logic [AxiUserWidth-1:0])
+// verilog_lint: waive-stop line-length
 
 axi_async_req_t [NumPort-1:0] axi_async_req;
 axi_async_rsp_t [NumPort-1:0] axi_async_rsp;

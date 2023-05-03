@@ -16,10 +16,7 @@ module carfield
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 1,
-  parameter int unsigned HypNumChips = 1,
-  parameter string RomCtrlBootRomInitFile = "",
-  parameter string OtpCtrlMemInitFile     = "",
-  parameter string FlashCtrlMemInitFile   = ""
+  parameter int unsigned HypNumChips = 1
 ) (
   input   logic                                       clk_i,
   input   logic                                       rst_ni,
@@ -188,25 +185,11 @@ localparam int unsigned IntClusterAxiMstRWidth  =
                                                        IntClusterAxiIdOutWidth,
                                                        Cfg.AxiUserWidth       );
 
-// Slave Side
-`AXI_TYPEDEF_ALL_CT(axi_intcluster_slv                ,
-                    axi_intcluster_slv_req_t          ,
-                    axi_intcluster_slv_rsp_t          ,
-                    logic [Cfg.AddrWidth-1:0]         ,
-                    logic [IntClusterAxiIdInWidth-1:0],
-                    logic [Cfg.AxiDataWidth-1:0]      ,
-                    logic [(Cfg.AxiDataWidth)/8-1:0]  ,
-                    logic [Cfg.AxiUserWidth-1:0]      )
-
-// Master side
-`AXI_TYPEDEF_ALL_CT(axi_intcluster_mst                 ,
-                    axi_intcluster_mst_req_t           ,
-                    axi_intcluster_mst_rsp_t           ,
-                    logic [Cfg.AddrWidth-1:0]          ,
-                    logic [IntClusterAxiIdOutWidth-1:0],
-                    logic [Cfg.AxiDataWidth-1:0]       ,
-                    logic [(Cfg.AxiDataWidth)/8-1:0]   ,
-                    logic [Cfg.AxiUserWidth-1:0]       )
+// Slave and Master Sides
+// verilog_lint: waive-start line-length
+`AXI_TYPEDEF_ALL_CT(axi_intcluster_slv, axi_intcluster_slv_req_t, axi_intcluster_slv_rsp_t, logic [Cfg.AddrWidth-1:0], logic [IntClusterAxiIdInWidth-1:0], logic [Cfg.AxiDataWidth-1:0], logic [(Cfg.AxiDataWidth)/8-1:0], logic [Cfg.AxiUserWidth-1:0] )
+`AXI_TYPEDEF_ALL_CT(axi_intcluster_mst, axi_intcluster_mst_req_t, axi_intcluster_mst_rsp_t, logic [Cfg.AddrWidth-1:0], logic [IntClusterAxiIdOutWidth-1:0], logic [Cfg.AxiDataWidth-1:0], logic [(Cfg.AxiDataWidth)/8-1:0], logic [Cfg.AxiUserWidth-1:0] )
+// verilog_lint: waive-stop line-length
 
 // Local DRAM buses and parameter
 carfield_axi_llc_req_t dram_req;
@@ -238,8 +221,8 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
                                                        Cfg.AxiUserWidth );
 
 logic                    hyper_isolate_req, hyper_isolated_rsp;
-logic [Cfg.AxiExtNumSlv] slave_isolate_req, slave_isolated_rsp, slave_isolated;
-logic [Cfg.AxiExtNumMst] master_isolated_rsp;
+logic [Cfg.AxiExtNumSlv-1:0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
+logic [Cfg.AxiExtNumMst-1:0] master_isolated_rsp;
 
 logic [LlcArWidth-1:0] llc_ar_data;
 logic [    LogDepth:0] llc_ar_wptr;
@@ -258,38 +241,38 @@ logic [    LogDepth:0] llc_w_wptr;
 logic [    LogDepth:0] llc_w_rptr;
 
 // All AXI Slaves (except the Integer Cluster)
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_aw_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_aw_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_w_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_w_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_b_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_b_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_ar_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_ar_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_r_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_r_rptr ;
 
 // All AXI Slaves (except the Integer Cluster)
-logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_r_rptr ;
+logic [iomsb(Cfg.AxiExtNumMst):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_wptr;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_rptr;
+logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_wptr ;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_rptr ;
+logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_wptr ;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_rptr ;
+logic [iomsb(Cfg.AxiExtNumMst):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_wptr;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_rptr;
+logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_wptr ;
+logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_rptr ;
 
 // Integer Cluster Slave Bus
 logic [IntClusterAxiSlvAwWidth-1:0] axi_slv_intcluster_aw_data;
@@ -918,9 +901,6 @@ pulp_cluster #(
 
 // Security Island
 secure_subsystem_synth_wrap #(
-  .RomCtrlBootRomInitFile( RomCtrlBootRomInitFile     ),
-  .OtpCtrlMemInitFile    ( OtpCtrlMemInitFile         ),
-  .FlashCtrlMemInitFile  ( FlashCtrlMemInitFile       ),
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
   .AxiDataWidth          ( Cfg.AxiDataWidth           ),
   .AxiUserWidth          ( Cfg.AxiUserWidth           ),
