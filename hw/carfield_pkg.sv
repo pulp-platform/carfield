@@ -60,7 +60,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
   Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
   Cva6NrPMPEntries  : 0,
-  Cva6ExtCieLength  : 'h2000_0000,
+  Cva6ExtCieLength  : 'h1000_0000, // [0x2000_0000, 0x7000_0000) is non-CIE,
+                                   // [0x7000_0000, 0x8000_0000) is CIE
+  Cva6ExtCieOnTop   : 1,
   // Harts
   DualCore          : 0,  // Only one core, but rest of config allows for two
   CoreMaxTxnsPerId  : 4,
