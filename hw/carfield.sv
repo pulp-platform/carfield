@@ -8,12 +8,14 @@
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 `include "cheshire/typedef.svh"
+`include "apb/typedef.svh"
 
 /// Top-level implementation of Carfield
 module carfield
   import carfield_pkg::*;
   import cheshire_pkg::*;
   import safety_island_pkg::*;
+  import tlul_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 1,
@@ -193,8 +195,8 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 // verilog_lint: waive-stop line-length
 
 // Local DRAM buses and parameter
-carfield_reg_req_t ext_reg_req;
-carfield_reg_rsp_t ext_reg_rsp;
+carfield_reg_req_t [Cfg.RegExtNumSlv-1:0] ext_reg_req;
+carfield_reg_rsp_t [Cfg.RegExtNumSlv-1:0] ext_reg_rsp;
 
 localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth   +
                                      $clog2(AxiIn.num_in)+
@@ -219,8 +221,8 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
                                                        Cfg.AxiUserWidth );
 
 logic                    hyper_isolate_req, hyper_isolated_rsp;
-logic [Cfg.AxiExtNumSlv-1:0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
-logic [Cfg.AxiExtNumMst-1:0] master_isolated_rsp;
+logic [iomsb(Cfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
+logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
 logic [LlcArWidth-1:0] llc_ar_data;
 logic [    LogDepth:0] llc_ar_wptr;
@@ -239,38 +241,38 @@ logic [    LogDepth:0] llc_w_wptr;
 logic [    LogDepth:0] llc_w_rptr;
 
 // All AXI Slaves (except the Integer Cluster)
-logic [iomsb(Cfg.AxiExtNumSlv):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv):0][               LogDepth:0] axi_slv_ext_r_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_rptr ;
 
 // All AXI Slaves (except the Integer Cluster)
-logic [iomsb(Cfg.AxiExtNumMst):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_rptr ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_wptr;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_rptr;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_w_wptr ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_w_rptr ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_b_wptr ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_b_rptr ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_ar_wptr;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_ar_rptr;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_r_wptr ;
+logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_r_rptr ;
 
 // Integer Cluster Slave Bus
 logic [IntClusterAxiSlvAwWidth-1:0] axi_slv_intcluster_aw_data;
@@ -325,6 +327,14 @@ always_comb begin: assign_isolated_responses
       slave_isolated [i] = slave_isolated_rsp [i];
   end
 end
+
+// hyperbus reg req/rsp
+carfield_reg_req_t reg_hyper_req;
+carfield_reg_rsp_t reg_hyper_rsp;
+
+// wdt reg req/rsp
+carfield_reg_req_t reg_wdt_req;
+carfield_reg_rsp_t reg_wdt_rsp;
 
 /***************
 * Carfield IPs *
@@ -600,8 +610,8 @@ hyperbus_wrap      #(
   .axi_slave_w_data_i  ( llc_w_data         ),
   .axi_slave_w_wptr_i  ( llc_w_wptr         ),
   .axi_slave_w_rptr_o  ( llc_w_rptr         ),
-  .reg_req_i           ( ext_reg_req        ),
-  .reg_rsp_o           ( ext_reg_rsp        ),
+  .reg_req_i           ( reg_hyper_req      ),
+  .reg_rsp_o           ( reg_hyper_rsp      ),
   .hyper_cs_no         ( hyper_cs_n_wire    ),
   .hyper_ck_o          ( hyper_ck_wire      ),
   .hyper_ck_no         ( hyper_ck_n_wire    ),
@@ -1008,6 +1018,484 @@ axi_scmi_mailbox #(
   .axi_mbox_rsp       ( axi_mbox_rsp  ),
   .doorbell_irq_o     ( ibex_mbox_irq ),
   .completion_irq_o   ( ches_mbox_irq )
+);
+
+// Carfield peripherals
+
+// Ethernet
+carfield_axi_slv_req_t axi_ethernet_req;
+carfield_axi_slv_rsp_t axi_ethernet_rsp;
+
+axi_cdc_dst #(
+  .LogDepth   ( LogDepth                   ),
+  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+  .axi_req_t  ( carfield_axi_slv_req_t     ),
+  .axi_resp_t ( carfield_axi_slv_rsp_t     )
+) i_ethernet_cdc_dst (
+  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [EthernetSlvIdx] ),
+  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [EthernetSlvIdx] ),
+  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [EthernetSlvIdx] ),
+  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [EthernetSlvIdx] ),
+  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [EthernetSlvIdx] ),
+  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [EthernetSlvIdx] ),
+  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [EthernetSlvIdx] ),
+  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [EthernetSlvIdx] ),
+  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [EthernetSlvIdx] ),
+  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [EthernetSlvIdx] ),
+  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [EthernetSlvIdx] ),
+  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [EthernetSlvIdx] ),
+  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
+  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
+  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
+  .dst_clk_i                  ( clk_i          ),
+  .dst_rst_ni                 ( rst_ni              ),
+  .dst_req_o                  ( axi_ethernet_req ),
+  .dst_resp_i                 ( axi_ethernet_rsp )
+);
+
+// TODO connect ethernet
+axi_err_slv #(
+ .AxiIdWidth  ( AxiSlvIdWidth          ),
+ .axi_req_t   ( carfield_axi_slv_req_t ),
+ .axi_resp_t  ( carfield_axi_slv_rsp_t ),
+ .Resp        ( axi_pkg::RESP_DECERR   ),
+ .ATOPs       ( 1'b0                   ),
+ .MaxTrans    ( 4                      )
+) i_axi_err_slv_ethernet (
+  .clk_i      ( clk_i                  ),
+  .rst_ni     ( rst_ni                 ),
+  .test_i     ( test_mode_i            ),
+  // slave port
+  .slv_req_i  ( axi_ethernet_req       ),
+  .slv_resp_o ( axi_ethernet_rsp       )
+);
+
+// APB peripherals
+// axi_cdc -> axi_amos -> axi_cut -> axi_to_axilite -> axilite_to_apb -> periph devices
+carfield_axi_slv_req_t axi_d64_a48_peripherals_req;
+carfield_axi_slv_rsp_t axi_d64_a48_peripherals_rsp;
+
+axi_cdc_dst #(
+  .LogDepth   ( LogDepth                   ),
+  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+  .axi_req_t  ( carfield_axi_slv_req_t     ),
+  .axi_resp_t ( carfield_axi_slv_rsp_t     )
+) i_cdc_dst_peripherals (
+  // asynchronous slave port
+  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [PeriphsSlvIdx] ),
+  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [PeriphsSlvIdx] ),
+  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [PeriphsSlvIdx] ),
+  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [PeriphsSlvIdx] ),
+  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [PeriphsSlvIdx] ),
+  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [PeriphsSlvIdx] ),
+  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [PeriphsSlvIdx] ),
+  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [PeriphsSlvIdx] ),
+  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [PeriphsSlvIdx] ),
+  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [PeriphsSlvIdx] ),
+  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [PeriphsSlvIdx] ),
+  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [PeriphsSlvIdx] ),
+  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [PeriphsSlvIdx] ),
+  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [PeriphsSlvIdx] ),
+  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [PeriphsSlvIdx] ),
+  // synchronous master port
+  .dst_clk_i                  ( clk_i                       ),
+  .dst_rst_ni                 ( rst_ni                      ),
+  .dst_req_o                  ( axi_d64_a48_peripherals_req ),
+  .dst_resp_i                 ( axi_d64_a48_peripherals_rsp )
+);
+
+carfield_axi_slv_req_t axi_d64_a48_amo_peripherals_req;
+carfield_axi_slv_rsp_t axi_d64_a48_amo_peripherals_rsp;
+
+// Shim atomics, which are not supported in reg
+// TODO: should we use a filter instead here?
+axi_riscv_atomics_structs #(
+  .AxiAddrWidth     ( Cfg.AddrWidth          ),
+  .AxiDataWidth     ( Cfg.AxiDataWidth       ),
+  .AxiIdWidth       ( AxiSlvIdWidth          ),
+  .AxiUserWidth     ( Cfg.AxiUserWidth       ),
+  .AxiMaxReadTxns   ( Cfg.RegMaxReadTxns     ),
+  .AxiMaxWriteTxns  ( Cfg.RegMaxWriteTxns    ),
+  .AxiUserAsId      ( 1                      ),
+  .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb      ),
+  .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb      ),
+  .RiscvWordWidth   ( 64                     ),
+  .NAxiCuts         ( Cfg.RegAmoNumCuts      ),
+  .axi_req_t        ( carfield_axi_slv_req_t ),
+  .axi_rsp_t        ( carfield_axi_slv_rsp_t )
+) i_atomics_peripherals (
+  .clk_i,
+  .rst_ni,
+  .axi_slv_req_i ( axi_d64_a48_peripherals_req     ),
+  .axi_slv_rsp_o ( axi_d64_a48_peripherals_rsp     ),
+  .axi_mst_req_o ( axi_d64_a48_amo_peripherals_req ),
+  .axi_mst_rsp_i ( axi_d64_a48_amo_peripherals_rsp )
+);
+
+carfield_axi_slv_req_t axi_d64_a48_amo_cut_peripherals_req;
+carfield_axi_slv_rsp_t axi_d64_a48_amo_cut_peripherals_rsp;
+
+axi_cut #(
+  .Bypass     ( ~Cfg.RegAmoPostCut         ),
+  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+  .axi_req_t  ( carfield_axi_slv_req_t     ),
+  .axi_resp_t ( carfield_axi_slv_rsp_t     )
+) i_atomics_cut_peripherals (
+  .clk_i,
+  .rst_ni,
+  .slv_req_i  ( axi_d64_a48_amo_peripherals_req     ),
+  .slv_resp_o ( axi_d64_a48_amo_peripherals_rsp     ),
+  .mst_req_o  ( axi_d64_a48_amo_cut_peripherals_req ),
+  .mst_resp_i ( axi_d64_a48_amo_cut_peripherals_rsp )
+);
+
+// Convert to d32 a48
+`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_a48_slv       ,
+                    carfield_axi_d32_a48_slv_req_t ,
+                    carfield_axi_d32_a48_slv_rsp_t ,
+                    logic [Cfg.AddrWidth-1:0]      ,
+                    logic [AxiSlvIdWidth-1:0]      ,
+                    logic [31:0]                   ,
+                    logic [3:0]                    ,
+                    logic [Cfg.AxiUserWidth-1:0]   )
+
+carfield_axi_d32_a48_slv_req_t axi_d32_a48_peripherals_req;
+carfield_axi_d32_a48_slv_rsp_t axi_d32_a48_peripherals_rsp;
+
+axi_dw_converter #(
+  .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth                  ),
+  .AxiMstPortDataWidth  ( 32                                ),
+  .AxiAddrWidth         ( Cfg.AddrWidth                     ),
+  .AxiIdWidth           ( AxiSlvIdWidth                     ),
+  .aw_chan_t            ( carfield_axi_slv_aw_chan_t        ),
+  .mst_w_chan_t         ( carfield_axi_d32_a48_slv_w_chan_t ),
+  .slv_w_chan_t         ( carfield_axi_slv_w_chan_t         ),
+  .b_chan_t             ( carfield_axi_slv_b_chan_t         ),
+  .ar_chan_t            ( carfield_axi_slv_ar_chan_t        ),
+  .mst_r_chan_t         ( carfield_axi_d32_a48_slv_r_chan_t ),
+  .slv_r_chan_t         ( carfield_axi_slv_r_chan_t         ),
+  .axi_mst_req_t        ( carfield_axi_d32_a48_slv_req_t    ),
+  .axi_mst_resp_t       ( carfield_axi_d32_a48_slv_rsp_t    ),
+  .axi_slv_req_t        ( carfield_axi_slv_req_t            ),
+  .axi_slv_resp_t       ( carfield_axi_slv_rsp_t            )
+) i_axi_dw_converter_peripherals (
+  .clk_i      ( clk_i                               ),
+  .rst_ni     ( rst_ni                              ),
+  .slv_req_i  ( axi_d64_a48_amo_cut_peripherals_req ),
+  .slv_resp_o ( axi_d64_a48_amo_cut_peripherals_rsp ),
+  .mst_req_o  ( axi_d32_a48_peripherals_req         ),
+  .mst_resp_i ( axi_d32_a48_peripherals_rsp         )
+);
+
+// Convert to d32_a32
+`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_a32_slv       ,
+                    carfield_axi_d32_a32_slv_req_t ,
+                    carfield_axi_d32_a32_slv_rsp_t ,
+                    logic [31:0]                   ,
+                    logic [AxiSlvIdWidth-1:0]      ,
+                    logic [31:0]                   ,
+                    logic [3:0]                    ,
+                    logic [Cfg.AxiUserWidth-1:0]   )
+
+carfield_axi_d32_a32_slv_req_t axi_d32_a32_peripherals_req;
+carfield_axi_d32_a32_slv_rsp_t axi_d32_a32_peripherals_rsp;
+
+axi_modify_address #(
+  .slv_req_t  ( carfield_axi_d32_a48_slv_req_t ),
+  .mst_addr_t ( logic [31:0]                   ),
+  .mst_req_t  ( carfield_axi_d32_a32_slv_req_t ),
+  .axi_resp_t ( carfield_axi_d32_a32_slv_rsp_t )
+) i_axi_modify_addr_peripherals (
+  .slv_req_i     ( axi_d32_a48_peripherals_req               ),
+  .slv_resp_o    ( axi_d32_a48_peripherals_rsp               ),
+  .mst_req_o     ( axi_d32_a32_peripherals_req               ),
+  .mst_resp_i    ( axi_d32_a32_peripherals_rsp               ),
+  .mst_aw_addr_i ( axi_d32_a48_peripherals_req.aw.addr[31:0] ),
+  .mst_ar_addr_i ( axi_d32_a48_peripherals_req.ar.addr[31:0] )
+);
+
+// AXI to AXI lite conversion
+`AXI_LITE_TYPEDEF_ALL_CT(carfield_axi_lite_d32_a32           ,
+                         carfield_axi_lite_d32_a32_slv_req_t ,
+                         carfield_axi_lite_d32_a32_slv_rsp_t ,
+                         logic [31:0]                        ,
+                         logic [31:0]                        ,
+                         logic [3:0]                         )
+
+carfield_axi_lite_d32_a32_slv_req_t axi_lite_d32_a32_peripherals_req;
+carfield_axi_lite_d32_a32_slv_rsp_t axi_lite_d32_a32_peripherals_rsp;
+
+axi_to_axi_lite #(
+  .AxiAddrWidth   ( 32                                  ),
+  .AxiDataWidth   ( 32                                  ),
+  .AxiIdWidth     ( AxiSlvIdWidth                       ),
+  .AxiUserWidth   ( Cfg.AxiUserWidth                    ),
+  .AxiMaxWriteTxns( 1                                   ),
+  .AxiMaxReadTxns ( 1                                   ),
+  .FallThrough    ( 1                                   ),
+  .full_req_t     ( carfield_axi_d32_a32_slv_req_t      ),
+  .full_resp_t    ( carfield_axi_d32_a32_slv_rsp_t      ),
+  .lite_req_t     ( carfield_axi_lite_d32_a32_slv_req_t ),
+  .lite_resp_t    ( carfield_axi_lite_d32_a32_slv_rsp_t )
+) i_axi_to_axi_lite_peripherals (
+  .clk_i     ( clk_i                            ),
+  .rst_ni    ( rst_ni                           ),
+  .test_i    ( test_mode_i                      ),
+  .slv_req_i ( axi_d32_a32_peripherals_req      ),
+  .slv_resp_o( axi_d32_a32_peripherals_rsp      ),
+  .mst_req_o ( axi_lite_d32_a32_peripherals_req ),
+  .mst_resp_i( axi_lite_d32_a32_peripherals_rsp )
+);
+
+// Address map rules for peripherals
+
+// Address map of peripheral system
+typedef struct packed {
+    logic [31:0] idx;
+    logic [31:0] start_addr;
+    logic [31:0] end_addr;
+} carfield_addr_map_rule_t;
+
+localparam carfield_addr_map_rule_t [NumApbMst-1:0] PeriphApbAddrMapRule = '{
+ '{ idx: SystemTimerIdx,   start_addr: SystemTimerBase,
+                           end_addr: SystemTimerEnd   }, // 0: System Timer
+ '{ idx: AdvancedTimerIdx, start_addr: AdvancedTimerBase,
+                           end_addr: AdvancedTimerEnd }, // 1: Advanced Timer
+ '{ idx: SystemWdtIdx,     start_addr: SystemWdtBase,
+                           end_addr: SystemWdtEnd     }, // 2: WDT
+ '{ idx: CanIdx,           start_addr: CanBase,
+                           end_addr: CanEnd           }, // 3: Can
+ '{ idx: HyperBusIdx,      start_addr: HyperBusBase,
+                           end_addr: HyperBusEnd      }  // 4: Hyperbus
+};
+
+// APB req/rsp
+`APB_TYPEDEF_REQ_T(carfield_apb_req_t, logic [31:0], logic [31:0], logic [3:0])
+`APB_TYPEDEF_RESP_T(carfield_apb_rsp_t, logic [31:0])
+
+// APB masters
+carfield_apb_req_t [NumApbMst-1:0] apb_mst_req;
+carfield_apb_rsp_t [NumApbMst-1:0] apb_mst_rsp;
+
+axi_lite_to_apb #(
+  .NoApbSlaves     ( NumApbMst                           ),
+  .NoRules         ( NumApbMst                           ),
+  .AddrWidth       ( 32                                  ),
+  .DataWidth       ( 32                                  ),
+  .PipelineRequest ( '0                                  ),
+  .PipelineResponse( '0                                  ),
+  .axi_lite_req_t  ( carfield_axi_lite_d32_a32_slv_req_t ),
+  .axi_lite_resp_t ( carfield_axi_lite_d32_a32_slv_rsp_t ),
+  .apb_req_t       ( carfield_apb_req_t                  ),
+  .apb_resp_t      ( carfield_apb_rsp_t                  ),
+  .rule_t          ( carfield_addr_map_rule_t            )
+) i_axi_lite_to_apb_peripherals (
+  .clk_i          ( clk_i                                ),
+  .rst_ni         ( rst_ni                               ),
+  .axi_lite_req_i ( axi_lite_d32_a32_peripherals_req     ),
+  .axi_lite_resp_o( axi_lite_d32_a32_peripherals_rsp     ),
+  .apb_req_o      ( apb_mst_req                          ),
+  .apb_resp_i     ( apb_mst_rsp                          ),
+  .addr_map_i     ( PeriphApbAddrMapRule                 )
+);
+
+// System timer
+apb_timer_unit #(
+  .APB_ADDR_WIDTH  ( 32 )
+) i_system_timer (
+  .HCLK       ( clk_i                  ),
+  .HRESETn    ( rst_ni                 ),
+  .PADDR      ( apb_mst_req[SystemTimerIdx].paddr   ),
+  .PWDATA     ( apb_mst_req[SystemTimerIdx].pwdata  ),
+  .PWRITE     ( apb_mst_req[SystemTimerIdx].pwrite  ),
+  .PSEL       ( apb_mst_req[SystemTimerIdx].psel    ),
+  .PENABLE    ( apb_mst_req[SystemTimerIdx].penable ),
+  .PRDATA     ( apb_mst_rsp[SystemTimerIdx].prdata  ),
+  .PREADY     ( apb_mst_rsp[SystemTimerIdx].pready  ),
+  .PSLVERR    ( apb_mst_rsp[SystemTimerIdx].pslverr ),
+  .ref_clk_i  ( clk_i                 ),
+  .event_lo_i ( '0                    ),
+  .event_hi_i ( '0                    ),
+  .irq_lo_o   ( /* TODO connect me */ ),
+  .irq_hi_o   ( /* TODO connect me */ ),
+  .busy_o     ( /* TODO connect me */ )
+);
+
+// Advanced Timer
+apb_adv_timer #(
+  .APB_ADDR_WIDTH  ( 32 ),
+  .EXTSIG_NUM      ( 64                     )
+) i_advanced_timer (
+  .HCLK            ( clk_i                  ),
+  .HRESETn         ( rst_ni                 ),
+  .dft_cg_enable_i ( 1'b0                   ),
+  .PADDR           ( apb_mst_req[AdvancedTimerIdx].paddr   ),
+  .PWDATA          ( apb_mst_req[AdvancedTimerIdx].pwdata  ),
+  .PWRITE          ( apb_mst_req[AdvancedTimerIdx].pwrite  ),
+  .PSEL            ( apb_mst_req[AdvancedTimerIdx].psel    ),
+  .PENABLE         ( apb_mst_req[AdvancedTimerIdx].penable ),
+  .PRDATA          ( apb_mst_rsp[AdvancedTimerIdx].prdata  ),
+  .PREADY          ( apb_mst_rsp[AdvancedTimerIdx].pready  ),
+  .PSLVERR         ( apb_mst_rsp[AdvancedTimerIdx].pslverr ),
+  .low_speed_clk_i ( clk_i                  ),
+  .ext_sig_i       ( /* TODO connect me */  ),
+  .events_o        ( /* TODO connect me */  ),
+  .ch_0_o          ( /* TODO connect me */  ),
+  .ch_1_o          ( /* TODO connect me */  ),
+  .ch_2_o          ( /* TODO connect me */  ),
+  .ch_3_o          ( /* TODO connect me */  )
+);
+
+// Watchdog timer
+REG_BUS #(
+  .ADDR_WIDTH (32),
+  .DATA_WIDTH (32)
+) reg_bus_wdt (clk_i);
+
+apb_to_reg i_apb_to_reg_wdt (
+  .clk_i,
+  .rst_ni,
+  .penable_i ( apb_mst_req[SystemWdtIdx].penable ),
+  .pwrite_i  ( apb_mst_req[SystemWdtIdx].pwrite  ),
+  .paddr_i   ( apb_mst_req[SystemWdtIdx].paddr   ),
+  .psel_i    ( apb_mst_req[SystemWdtIdx].psel    ),
+  .pwdata_i  ( apb_mst_req[SystemWdtIdx].pwdata  ),
+  .prdata_o  ( apb_mst_rsp[SystemWdtIdx].prdata  ),
+  .pready_o  ( apb_mst_rsp[SystemWdtIdx].pready  ),
+  .pslverr_o ( apb_mst_rsp[SystemWdtIdx].pslverr ),
+  .reg_o     ( reg_bus_wdt                 )
+);
+
+assign reg_wdt_req.addr  = reg_bus_wdt.addr;
+assign reg_wdt_req.write = reg_bus_wdt.write;
+assign reg_wdt_req.wdata = reg_bus_wdt.wdata;
+assign reg_wdt_req.wstrb = reg_bus_wdt.wstrb;
+assign reg_wdt_req.valid = reg_bus_wdt.valid;
+
+assign reg_bus_wdt.rdata = reg_wdt_rsp.rdata;
+assign reg_bus_wdt.error = reg_wdt_rsp.error;
+assign reg_bus_wdt.ready = reg_wdt_rsp.ready;
+
+// reg to tilelink
+tlul_pkg::tl_h2d_t tl_wdt_req;
+tlul_pkg::tl_d2h_t tl_wdt_rsp;
+
+reg_to_tlul #(
+  .req_t             ( carfield_reg_req_t          ),
+  .rsp_t             ( carfield_reg_rsp_t          ),
+  .tl_h2d_t          ( tlul_pkg::tl_h2d_t          ),
+  .tl_d2h_t          ( tlul_pkg::tl_d2h_t          ),
+  .tl_a_user_t       ( tlul_pkg::tl_a_user_t       ),
+  .tl_a_op_e         ( tlul_pkg::tl_a_op_e         ),
+  .TL_A_USER_DEFAULT ( tlul_pkg::TL_A_USER_DEFAULT ),
+  .PutFullData       ( tlul_pkg::PutFullData       ),
+  .Get               ( tlul_pkg::Get               )
+) i_reg_to_tlul_wdt (
+  .tl_o      ( tl_wdt_req  ),
+  .tl_i      ( tl_wdt_rsp  ),
+  .reg_req_i ( reg_wdt_req ),
+  .reg_rsp_o ( reg_wdt_rsp )
+);
+
+// Wdt
+aon_timer i_watchdog_timer (
+  .clk_i                     ( clk_i                 ),
+  .rst_ni                    ( rst_ni                ),
+  .clk_aon_i                 ( /* TODO connect me */ ),
+  .rst_aon_ni                ( /* TODO connect me */ ),
+  .tl_i                      ( tl_wdt_req            ),
+  .tl_o                      ( tl_wdt_rsp            ),
+  .alert_rx_i                ( /* TODO connect me */ ),
+  .alert_tx_o                ( /* TODO connect me */ ),
+  .lc_escalate_en_i          ( /* TODO connect me */ ),
+  .intr_wkup_timer_expired_o ( /* TODO connect me */ ),
+  .intr_wdog_timer_bark_o    ( /* TODO connect me */ ),
+  .nmi_wdog_timer_bark_o     ( /* TODO connect me */ ),
+  .wkup_req_o                ( /* TODO connect me */ ),
+  .aon_timer_rst_req_o       ( /* TODO connect me */ ),
+  .sleep_mode_i              ( /* TODO connect me */ )
+);
+
+// Hyperbus
+REG_BUS #(
+  .ADDR_WIDTH (32),
+  .DATA_WIDTH (32)
+) reg_bus_hyper (clk_i);
+
+apb_to_reg i_apb_to_reg_hyper (
+  .clk_i,
+  .rst_ni,
+  .penable_i ( apb_mst_req[HyperBusIdx].penable ),
+  .pwrite_i  ( apb_mst_req[HyperBusIdx].pwrite  ),
+  .paddr_i   ( apb_mst_req[HyperBusIdx].paddr   ),
+  .psel_i    ( apb_mst_req[HyperBusIdx].psel    ),
+  .pwdata_i  ( apb_mst_req[HyperBusIdx].pwdata  ),
+  .prdata_o  ( apb_mst_rsp[HyperBusIdx].prdata  ),
+  .pready_o  ( apb_mst_rsp[HyperBusIdx].pready  ),
+  .pslverr_o ( apb_mst_rsp[HyperBusIdx].pslverr ),
+  .reg_o     ( reg_bus_hyper                    )
+);
+
+assign reg_hyper_req.addr  = reg_bus_hyper.addr;
+assign reg_hyper_req.write = reg_bus_hyper.write;
+assign reg_hyper_req.wdata = reg_bus_hyper.wdata;
+assign reg_hyper_req.wstrb = reg_bus_hyper.wstrb;
+assign reg_hyper_req.valid = reg_bus_hyper.valid;
+
+assign reg_bus_hyper.rdata = reg_hyper_rsp.rdata;
+assign reg_bus_hyper.error = reg_hyper_rsp.error;
+assign reg_bus_hyper.ready = reg_hyper_rsp.ready;
+
+// CAN bus
+logic [63:0] can_timestamp;
+assign can_timestamp = '1;
+can_top_apb #(
+  .rx_buffer_size   ( 32                    ),
+  .txt_buffer_count ( 2                     ),
+  .target_technology( 0                     ) // 0 for ASIC or 1 for FPGA
+ ) i_apb_to_can (
+  .aclk             ( clk_i                  ),
+  .arstn            ( rst_ni                 ),
+  .scan_enable      ( 1'b0                   ),
+  .res_n_out        (                        ),
+  .irq              ( /* TODO connect me */  ),
+  .CAN_tx           ( /* TODO connect me */  ),
+  .CAN_rx           ( /* TODO connect me */  ),
+  .timestamp        ( can_timestamp          ),
+  .s_apb_paddr      ( apb_mst_req[CanIdx].paddr   ),
+  .s_apb_penable    ( apb_mst_req[CanIdx].penable ),
+  .s_apb_pprot      ( 3'b000                 ),
+  .s_apb_prdata     ( apb_mst_rsp[CanIdx].prdata  ),
+  .s_apb_pready     ( apb_mst_rsp[CanIdx].pready  ),
+  .s_apb_psel       ( apb_mst_req[CanIdx].psel    ),
+  .s_apb_pslverr    ( apb_mst_rsp[CanIdx].pslverr ),
+  .s_apb_pstrb      ( 4'b1111                ),
+  .s_apb_pwdata     ( apb_mst_req[CanIdx].pwdata  ),
+  .s_apb_pwrite     ( apb_mst_req[CanIdx].pwrite  )
+);
+
+// PLL
+// TODO
+reg_err_slv #(
+  .DW      ( 32 ),
+  .ERR_VAL ( 32'hBADCAB1E ),
+  .req_t   ( carfield_reg_req_t ),
+  .rsp_t   ( carfield_reg_rsp_t )
+) i_reg_err_slv_pll (
+  .req_i   ( ext_reg_req[PllIdx] ),
+  .rsp_o   ( ext_reg_rsp[PllIdx] )
 );
 
 endmodule

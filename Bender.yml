@@ -5,8 +5,8 @@
 package:
   name: carfield
   authors:
-    - "Luca Valente <luca.valente@unibo.it>"    
-    
+    - "Luca Valente <luca.valente@unibo.it>"
+
 dependencies:
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
@@ -17,6 +17,10 @@ dependencies:
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 3eb5ed955d6bf1d47f657669351f0cc45436a75b } # branch: yt/carfield-integration
   opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: fa08c257faa56b71e3f7711675269e61d851a353 } # branch: lowRISC-rebase
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             rev: ce0cb2e7fe48a00fd2ee8b39f675e6c33a5a31d2 } # branch: aottaviano/mailbox-old
+  apb:                { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }
+  timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
+  apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
+  can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 230222cc568b49b39a3385b12edaf680657bc69d }
 
 workspace:
   package_links:

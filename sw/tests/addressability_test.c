@@ -17,36 +17,13 @@
 #define DEFAULT_SEED 0xcaca5a5adeadbeef
 #define FEEDBACK 0x6c0000397f000032
 
-#define assert(expression) \
-    do { \
-	if (!expression) { \
-	    return 1; \
-	} \
-    } while (0)
-
 uint64_t *lfsr_byte_feedback;
-
-/* check first and last address of given address range */
-void probe_first_last(volatile uint64_t *from, volatile uint64_t *to) {
-    // check whether arguments passed make sense
-    assert((uintptr_t)to > (uintptr_t)from);
-
-    // write first
-    axi_write(from, 0xcafedead);
-    // write last
-    axi_write((to - 1), 0xcafecafe);
-
-    // read first
-    assert(axi_read(from) == 0xcafedead);
-    // read last
-    assert(axi_read((to - 1)) == 0xcafecafe);
-}
 
 /* probe address range "samples" time, evenly spaced */
 void probe_range_direct(volatile uintptr_t from, volatile uintptr_t to, int samples) {
     // check whether arguments passed make sense
-    assert(samples > 0);
-    assert(to > from);
+    if ((samples < 0) && (to < from))
+	return 2;
 
     uintptr_t addr = from;
     uintptr_t incr = ((to - from) / samples);
@@ -56,7 +33,8 @@ void probe_range_direct(volatile uintptr_t from, volatile uintptr_t to, int samp
 	uint32_t expected = 0xcafedead + 0xab + i;
 	axi_write(addr, expected);
 	// read
-	assert(expected == axi_read(addr));
+	if (expected != axi_read(addr))
+	    return 1;
 	// increment
 	addr += incr;
     }
@@ -91,8 +69,8 @@ uint64_t lfsr_64bits(uint64_t lfsr, uint64_t *lfsr_byte_feedback) {
 
 void probe_range_lfsr_wrwr(volatile uintptr_t from, volatile uintptr_t to, int samples) {
     // check whether arguments passed make sense
-    assert(samples > 0);
-    assert(to > from);
+    if ((samples < 0) && (to < from))
+	return 2;
 
     uintptr_t addr = from;
     uintptr_t incr = ((to - from) / samples);
@@ -103,7 +81,8 @@ void probe_range_lfsr_wrwr(volatile uintptr_t from, volatile uintptr_t to, int s
 	lfsr = lfsr_64bits(lfsr, lfsr_byte_feedback);
 	axi_write(addr, lfsr);
 	// read
-	assert(lfsr == axi_read(addr));
+	if (lfsr != axi_read(addr))
+	    return 1;
 	// increment
 	addr += incr;
     }
@@ -111,9 +90,9 @@ void probe_range_lfsr_wrwr(volatile uintptr_t from, volatile uintptr_t to, int s
 
 void probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int samples) {
     // check whether arguments passed make sense
-    assert(samples > 0);
-    assert(to > from);
-
+    if ((samples < 0) && (to < from))
+	return 2;
+    
     uintptr_t addr = from;
     uintptr_t incr = ((to - from) / samples);
 
@@ -133,7 +112,8 @@ void probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int s
     for (int i = 0; i < samples; i++) {
 	lfsr = lfsr_64bits(lfsr, lfsr_byte_feedback);
 	// read
-	assert(lfsr == axi_read(addr));
+	if (lfsr != axi_read(addr))
+	    return 1;
 	// increment
 	addr += incr;
     }
@@ -146,12 +126,16 @@ int main(void) {
     // (wrwr)
 
     // L2 shared memory
-    probe_range_lfsr_wrwr((uint64_t *)CAR_L2_SPM_BASE_ADDR, (uint64_t *)CAR_L2_SPM_END_ADDR, N_SAMPLES);
+    probe_range_lfsr_wrwr((uint64_t *)CAR_L2_SPM_PORT1_BASE_ADDR, (uint64_t *)CAR_L2_SPM_PORT1_END_ADDR, N_SAMPLES);
     // Safety Island
     probe_range_lfsr_wrwr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR, (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR,
 			 N_SAMPLES);
     // Integer Cluster
     probe_range_lfsr_wrwr((uint64_t *)CAR_INT_CLUSTER_SPM_BASE_ADDR, (uint64_t *)CAR_INT_CLUSTER_SPM_END_ADDR,
+			  N_SAMPLES);
+
+    // HyperRAM
+    probe_range_lfsr_wrwr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR,
 			  N_SAMPLES);
     // TODO FP Cluster
     // TODO Mailboxes
@@ -160,12 +144,15 @@ int main(void) {
     // writing (wwrr)
 
     // L2 shared memory
-    probe_range_lfsr_wwrr((uint64_t *)CAR_L2_SPM_BASE_ADDR, (uint64_t *)CAR_L2_SPM_END_ADDR, N_SAMPLES);
+    probe_range_lfsr_wwrr((uint64_t *)CAR_L2_SPM_PORT1_BASE_ADDR, (uint64_t *)CAR_L2_SPM_PORT1_END_ADDR, N_SAMPLES);
     // Safety Island
     probe_range_lfsr_wwrr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR, (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR,
 			  N_SAMPLES);
     // Integer Cluster
     probe_range_lfsr_wwrr((uint64_t *)CAR_INT_CLUSTER_SPM_BASE_ADDR, (uint64_t *)CAR_INT_CLUSTER_SPM_END_ADDR,
+			  N_SAMPLES);
+    // HyperRAM
+    probe_range_lfsr_wwrr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR,
 			  N_SAMPLES);
     // TODO FP Cluster
     // TODO Mailboxes

@@ -6,6 +6,13 @@ packages:
       Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
+  apb_adv_timer:
+    revision: c8faec1e1755386d0e0f31a55ebd80612a3dcea9
+    version: 1.0.4
+    source:
+      Git: https://github.com/pulp-platform/apb_adv_timer.git
+    dependencies:
+    - tech_cells_generic
   apb_uart:
     revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
     version: 0.2.1
@@ -74,6 +81,12 @@ packages:
     - axi
     - common_cells
     - register_interface
+  can_bus:
+    revision: 230222cc568b49b39a3385b12edaf680657bc69d
+    version: 0.0.1
+    source:
+      Git: git@github.com:AlSaqr-platform/can_bus.git
+    dependencies: []
   car_l2:
     revision: 505c35a8df7f042fc8fc07c5dc40bc6412f7b27d
     version: null
