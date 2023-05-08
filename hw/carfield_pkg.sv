@@ -18,13 +18,15 @@ typedef enum byte_bt {
   OTMailboxSlvIdx    = 'd3,
   EthernetSlvIdx     = 'd4,
   PeriphsSlvIdx      = 'd5,
-  IntClusterSlvIdx   = 'd6
+  FPClusterSlvIdx    = 'd6,
+  IntClusterSlvIdx   = 'd7
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
   SafetyIslandMstIdx   = 'd0,
   SecurityIslandMstIdx = 'd1,
-  IntClusterMstIdx     = 'd2
+  FPClusterMstIdx      = 'd2,
+  IntClusterMstIdx     = 'd3
 } axi_mst_idx_t;
 
 typedef enum doub_bt {
@@ -34,6 +36,7 @@ typedef enum doub_bt {
   OTMailboxBase    = 'h0000_0000_4000_0000,
   EthernetBase     = 'h0000_0000_2000_0000,
   PeriphsBase      = 'h0000_0000_2000_1000,
+  FPClusterBase    = 'h0000_0000_5100_0000,
   IntClusterBase   = 'h0000_0000_5000_0000
 } axi_start_t;
 
@@ -44,6 +47,7 @@ localparam doub_bt OTMailboxSize    = 'h0000_0000_0000_1000;
 localparam doub_bt EthernetSize     = 'h0000_0000_0000_1000;
 localparam doub_bt PeriphsSize      = 'h0000_0000_0000_9000;
 localparam doub_bt IntClusterSize   = 'h0000_0000_0080_0000;
+localparam doub_bt FPClusterSize    = 'h0000_0000_0080_0000;
 
 typedef enum doub_bt {
   L2Port1End      = L2Port1Base + L2Size,
@@ -52,6 +56,7 @@ typedef enum doub_bt {
   OTMailboxEnd    = OTMailboxBase + OTMailboxSize,
   EthernetEnd     = EthernetBase + EthernetSize,
   PeriphsEnd      = PeriphsBase + PeriphsSize,
+  FPClusterEnd    = FPClusterBase + FPClusterSize,
   IntClusterEnd   = IntClusterBase + IntClusterSize
 } axi_end_t;
 
@@ -105,10 +110,10 @@ typedef enum doub_bt {
   PllEnd   = PllBase + PllSize
 } reg_end_t;
 
-// Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals
-localparam bit [2:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1;
-// Ext Masters: Integer Cluster + Security Island + Safety Island
-localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1;
+// Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals + Floating Point Cluster
+localparam bit [3:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1;
+// Ext Masters: Integer Cluster + Security Island + Safety Island + Floating Point Cluster
+localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1 + 3'd1;
 // Ext Interrupts: Security Island Mailbox
 localparam bit [2:0] NumExtIntrs = 3'd1;
 
@@ -143,21 +148,24 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiExtNumSlv      : AxiNumExtSlv,
   AxiExtNumRules    : AxiNumExtSlv,
   // External AXI region map
-  AxiExtRegionIdx   : '{0,    IntClusterSlvIdx  ,
+  AxiExtRegionIdx   : '{      IntClusterSlvIdx  ,
+                              FPClusterSlvIdx   ,
                               PeriphsSlvIdx     ,
                               EthernetSlvIdx    ,
                               OTMailboxSlvIdx   ,
                               SafetyIslandSlvIdx,
                               L2Port2SlvIdx     ,
                               L2Port1SlvIdx     },
-  AxiExtRegionStart : '{0,    IntClusterBase  ,
+  AxiExtRegionStart : '{      IntClusterBase  ,
+                              FPClusterBase   ,
                               PeriphsBase     ,
                               EthernetBase    ,
                               OTMailboxBase   ,
                               SafetyIslandBase,
                               L2Port2Base     ,
                               L2Port1Base     },
-  AxiExtRegionEnd   : '{0,    IntClusterEnd  ,
+  AxiExtRegionEnd   : '{      IntClusterEnd  ,
+                              FPClusterEnd   ,
                               PeriphsEnd     ,
                               EthernetEnd    ,
                               OTMailboxEnd   ,

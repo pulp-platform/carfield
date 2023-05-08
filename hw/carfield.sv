@@ -893,6 +893,96 @@ pulp_cluster #(
   .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
 );
 
+//Floating Point Spatz Cluster
+spatz_cluster_wrapper #(
+    .AxiAddrWidth             ( Cfg.AddrWidth     ),
+    .AxiDataWidth             ( Cfg.AxiDataWidth  ),
+    .AxiUserWidth             ( Cfg.AxiUserWidth  ),
+    .AxiInIdWidth             ( AxiSlvIdWidth   ),
+    .AxiOutIdWidth            ( Cfg.AxiMstIdWidth ),
+    .LogDepth                 ( LogDepth ),
+
+    // AXI type IN
+    .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
+    .axi_in_req_t             ( carfield_axi_slv_req_t     ),
+
+    .axi_in_aw_chan_t         ( carfield_axi_slv_aw_chan_t ),
+    .axi_in_w_chan_t          ( carfield_axi_slv_w_chan_t  ),
+    .axi_in_b_chan_t          ( carfield_axi_slv_b_chan_t  ),
+    .axi_in_ar_chan_t         ( carfield_axi_slv_ar_chan_t ),
+    .axi_in_r_chan_t          ( carfield_axi_slv_r_chan_t  ),
+
+    // AXI type OUT
+    .axi_out_resp_t           ( carfield_axi_mst_rsp_t     ),
+    .axi_out_req_t            ( carfield_axi_mst_req_t     ),
+
+    .axi_out_aw_chan_t        ( carfield_axi_mst_aw_chan_t ),
+    .axi_out_w_chan_t         ( carfield_axi_mst_w_chan_t  ),
+    .axi_out_b_chan_t         ( carfield_axi_mst_b_chan_t  ),
+    .axi_out_ar_chan_t        ( carfield_axi_mst_ar_chan_t ),
+    .axi_out_r_chan_t         ( carfield_axi_mst_r_chan_t  ),
+    //CDC AXI Slv parameters
+    .AsyncAxiInAwWidth        ( CarfieldAxiSlvAwWidth  ),
+    .AsyncAxiInWWidth         ( CarfieldAxiSlvWWidth   ),
+    .AsyncAxiInBWidth         ( CarfieldAxiSlvBWidth   ),
+    .AsyncAxiInArWidth        ( CarfieldAxiSlvArWidth  ),
+    .AsyncAxiInRWidth         ( CarfieldAxiSlvRWidth   ),
+    //CDC AXI Mst parameters
+    .AsyncAxiOutAwWidth       ( CarfieldAxiMstAwWidth ),
+    .AsyncAxiOutWWidth        ( CarfieldAxiMstWWidth  ),
+    .AsyncAxiOutBWidth        ( CarfieldAxiMstBWidth  ),
+    .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth ),
+    .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
+    )i_fp_cluster_wrapper(
+    .clk_i           ( clk_i                ),
+    .rst_ni          ( rst_ni               ),
+    .testmode_i      ( 1'b0                 ),
+    .scan_enable_i   ( 1'b0                 ),
+    .scan_data_i     ( 1'b0                 ),
+    .scan_data_o     (  /* Unused */        ),
+    .meip_i          ( '0                   ),
+    .msip_i          ( '0                   ),
+    .mtip_i          ( '0                   ),
+    .debug_req_i     ( '0                   ),
+    //AXI Isolate
+    .axi_isolate_i         ( slave_isolate_req [FPClusterSlvIdx]   ),
+    .axi_isolated_o        ( master_isolated_rsp [FPClusterMstIdx] ),
+
+    //AXI FP Cluster Slave Port <- Carfield Master Port
+   .async_axi_in_aw_data_i ( axi_slv_ext_aw_data [FPClusterSlvIdx] ),
+   .async_axi_in_aw_wptr_i ( axi_slv_ext_aw_wptr [FPClusterSlvIdx] ),
+   .async_axi_in_aw_rptr_o ( axi_slv_ext_aw_rptr [FPClusterSlvIdx] ),
+   .async_axi_in_w_data_i  ( axi_slv_ext_w_data  [FPClusterSlvIdx] ),
+   .async_axi_in_w_wptr_i  ( axi_slv_ext_w_wptr  [FPClusterSlvIdx] ),
+   .async_axi_in_w_rptr_o  ( axi_slv_ext_w_rptr  [FPClusterSlvIdx] ),
+   .async_axi_in_b_data_o  ( axi_slv_ext_b_data  [FPClusterSlvIdx] ),
+   .async_axi_in_b_wptr_o  ( axi_slv_ext_b_wptr  [FPClusterSlvIdx] ),
+   .async_axi_in_b_rptr_i  ( axi_slv_ext_b_rptr  [FPClusterSlvIdx] ),
+   .async_axi_in_ar_data_i ( axi_slv_ext_ar_data [FPClusterSlvIdx] ),
+   .async_axi_in_ar_wptr_i ( axi_slv_ext_ar_wptr [FPClusterSlvIdx] ),
+   .async_axi_in_ar_rptr_o ( axi_slv_ext_ar_rptr [FPClusterSlvIdx] ),
+   .async_axi_in_r_data_o  ( axi_slv_ext_r_data  [FPClusterSlvIdx] ),
+   .async_axi_in_r_wptr_o  ( axi_slv_ext_r_wptr  [FPClusterSlvIdx] ),
+   .async_axi_in_r_rptr_i  ( axi_slv_ext_r_rptr  [FPClusterSlvIdx] ),
+   //AXI FP Cluster Master Port -> Carfield Slave Port
+   .async_axi_out_aw_data_o ( axi_mst_ext_aw_data [FPClusterMstIdx] ),
+   .async_axi_out_aw_wptr_o ( axi_mst_ext_aw_wptr [FPClusterMstIdx] ),
+   .async_axi_out_aw_rptr_i ( axi_mst_ext_aw_rptr [FPClusterMstIdx] ),
+   .async_axi_out_w_data_o  ( axi_mst_ext_w_data  [FPClusterMstIdx] ),
+   .async_axi_out_w_wptr_o  ( axi_mst_ext_w_wptr  [FPClusterMstIdx] ),
+   .async_axi_out_w_rptr_i  ( axi_mst_ext_w_rptr  [FPClusterMstIdx] ),
+   .async_axi_out_b_data_i  ( axi_mst_ext_b_data  [FPClusterMstIdx] ),
+   .async_axi_out_b_wptr_i  ( axi_mst_ext_b_wptr  [FPClusterMstIdx] ),
+   .async_axi_out_b_rptr_o  ( axi_mst_ext_b_rptr  [FPClusterMstIdx] ),
+   .async_axi_out_ar_data_o ( axi_mst_ext_ar_data [FPClusterMstIdx] ),
+   .async_axi_out_ar_wptr_o ( axi_mst_ext_ar_wptr [FPClusterMstIdx] ),
+   .async_axi_out_ar_rptr_i ( axi_mst_ext_ar_rptr [FPClusterMstIdx] ),
+   .async_axi_out_r_data_i  ( axi_mst_ext_r_data  [FPClusterMstIdx] ),
+   .async_axi_out_r_wptr_i  ( axi_mst_ext_r_wptr  [FPClusterMstIdx] ),
+   .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [FPClusterMstIdx] ),
+   .cluster_probe_o (        )
+  );
+
 // Security Island
 secure_subsystem_synth_wrap #(
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
