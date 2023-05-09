@@ -92,7 +92,7 @@ void probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int s
     // check whether arguments passed make sense
     if ((samples < 0) && (to < from))
 	return 2;
-    
+
     uintptr_t addr = from;
     uintptr_t incr = ((to - from) / samples);
 
@@ -137,11 +137,15 @@ int main(void) {
     // HyperRAM
     probe_range_lfsr_wrwr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR,
 			  N_SAMPLES);
-    // TODO FP Cluster
+
+    // FP Cluster
+    probe_range_lfsr_wrwr((uint64_t *)CAR_FP_CLUSTER_SPM_BASE_ADDR, (uint64_t *)CAR_FP_CLUSTER_SPM_END_ADDR,
+			  N_SAMPLES);
     // TODO Mailboxes
 
     // Probe an address space with pseudo-random values and read all after
     // writing (wwrr)
+
 
     // L2 shared memory
     probe_range_lfsr_wwrr((uint64_t *)CAR_L2_SPM_PORT1_BASE_ADDR, (uint64_t *)CAR_L2_SPM_PORT1_END_ADDR, N_SAMPLES);
@@ -154,7 +158,9 @@ int main(void) {
     // HyperRAM
     probe_range_lfsr_wwrr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR,
 			  N_SAMPLES);
-    // TODO FP Cluster
+    // FP Cluster
+    probe_range_lfsr_wrwr((uint64_t *)CAR_FP_CLUSTER_SPM_BASE_ADDR, (uint64_t *)CAR_FP_CLUSTER_SPM_END_ADDR,
+			  N_SAMPLES);
     // TODO Mailboxes
 
     return 0;

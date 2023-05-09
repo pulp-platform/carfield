@@ -100,7 +100,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: edab7f39dca8416f413934d40864104c34447276
+    revision: 0a1258dae530b3bae411ce0ab18cd5b4080f1c7d
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -191,10 +191,10 @@ packages:
     dependencies:
     - common_cells
   fpnew:
-    revision: 3116391bf66660f806b45e212b9949c528b4e270
-    version: 0.7.0
+    revision: f231041c610f270ffc03cbdac38739ddb6426572
+    version: null
     source:
-      Git: https://github.com/pulp-platform/fpnew.git
+      Git: https://github.com/pulp-platform/cvfpu.git
     dependencies:
     - common_cells
     - fpu_div_sqrt_mvp
@@ -284,7 +284,7 @@ packages:
     revision: 437ffa9dac5dea0daccfd3e8ae604d4f6ae2cdf1
     version: null
     source:
-      Git: https://github.com/pulp-platform/iDMA.git
+      Git: https://github.com/pulp-platform/idma.git
     dependencies:
     - axi
     - common_cells
@@ -428,6 +428,20 @@ packages:
     - axi
     - common_cells
     - register_interface
+  spatz:
+    revision: fe6af882359be12b3884b9c9a5755a022bb031ff
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:spatz/spatz.git
+    dependencies:
+    - axi
+    - axi_riscv_atomics
+    - common_cells
+    - fpnew
+    - idma
+    - register_interface
+    - riscv-dbg
+    - tech_cells_generic
   tech_cells_generic:
     revision: a9cae21902e75b1434328ecf36f85327ba5717de
     version: 0.2.11

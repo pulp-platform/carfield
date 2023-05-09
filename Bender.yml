@@ -10,7 +10,7 @@ package:
 dependencies:
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: edab7f39dca8416f413934d40864104c34447276 } # branch: master
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 0a1258dae530b3bae411ce0ab18cd5b4080f1c7d } # branch: sm/fp_cluster
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 505c35a8df7f042fc8fc07c5dc40bc6412f7b27d } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 76c2f98f59b120be03ada8928ca178e573c155e4 } # branch: master
@@ -21,10 +21,12 @@ dependencies:
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 230222cc568b49b39a3385b12edaf680657bc69d }
+  spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: fe6af882359be12b3884b9c9a5755a022bb031ff } # branch: main
 
 workspace:
   package_links:
     cheshire: cheshire
+    spatz: spatz
 
 sources:
   # Source files grouped in levels. Files in level 0 have no dependencies on files in this

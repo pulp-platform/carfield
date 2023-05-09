@@ -20,6 +20,10 @@ VOPTARGS ?=
 # Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
 
+# Spatz 
+SPATZ_ROOT ?= $(ROOT)/spatz
+SPATZ_MAKEDIR := $(SPATZ_ROOT)/hw/system/spatz_cluster
+
 TESTNAME ?= helloworld
 MEMTYPE  ?= spm
 BINARY   ?= $(CHS_ROOT)/sw/tests/$(TESTNAME).$(MEMTYPE).elf
@@ -33,11 +37,14 @@ TARGETS += -t test
 TARGETS += -t cva6
 TARGETS += -t integer_cluster
 TARGETS += -t cv32e40p_use_ff_regfile
+TARGETS += -t spatz
+TARGETS += -t simulation
 
 # bender defines
 DEFINES += -D FEATURE_ICACHE_STAT
 DEFINES += -D PRIVATE_ICACHE
 DEFINES += -D HIERARCHY_ICACHE_32BIT
+DEFINES += -D TARGET_SPATZ
 
 ifdef gui
 	VSIM_FLAG :=
@@ -89,7 +96,10 @@ car-hw-clean:
 car-update-deps:
 	$(BENDER) update
 
-car-init: car-update-deps tb/hyp_vip chs-init
+car-init: car-update-deps tb/hyp_vip spatz-init chs-init
+
+spatz-init:
+	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
 
 chs-init:
 	$(MAKE) -B chs-hw-all
