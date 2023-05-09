@@ -158,12 +158,6 @@ packages:
     dependencies:
     - common_verification
     - tech_cells_generic
-  common_pads:
-    revision: 4ce2907ab2313e67836e251f6deea67d885aef5f
-    version: 0.0.4
-    source:
-      Git: git@github.com:AlSaqr-platform/common_pads.git
-    dependencies: []
   common_verification:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
@@ -326,13 +320,12 @@ packages:
     dependencies:
     - common_cells
   opentitan:
-    revision: fa08c257faa56b71e3f7711675269e61d851a353
+    revision: c4a1b1d9bca7ca443a64b9f7f5586afa7a28cc5f
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
     dependencies:
     - axi
-    - common_pads
   opentitan_peripherals:
     revision: 2a237bafa523627acd5c50332ad092ef821f4dac
     version: 0.3.1
@@ -443,8 +436,8 @@ packages:
     dependencies:
     - common_verification
   timer_unit:
-    revision: 3f4ee3e5b3875a473242de5d0c3ebb5a0fe4b8db
-    version: 1.0.2
+    revision: 4c69615c89db9397a9747d6f6d6a36727854f0bc
+    version: 1.0.3
     source:
       Git: https://github.com/pulp-platform/timer_unit.git
     dependencies: []

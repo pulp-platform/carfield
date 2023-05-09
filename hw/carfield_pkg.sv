@@ -288,11 +288,4 @@ localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
 localparam int unsigned IntClusterMaxUniqId = 1;
 localparam logic [ 5:0] IntClusterIndex = '0;
 
-/******************************/
-/* Security Island Parameters */
-/******************************/
-localparam string RomCtrlBootRomInitFile = "sw/security_island/bootrom/boot_rom.vmem";
-localparam string OtpCtrlMemInitFile     = "sw/security_island/otp/otp-img.mem";
-
-
 endpackage

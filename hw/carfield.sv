@@ -895,8 +895,6 @@ pulp_cluster #(
 
 // Security Island
 secure_subsystem_synth_wrap #(
-  .OtpCtrlMemInitFile    ( OtpCtrlMemInitFile         ),
-  .RomCtrlBootRomInitFile( RomCtrlBootRomInitFile     ),
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
   .AxiDataWidth          ( Cfg.AxiDataWidth           ),
   .AxiUserWidth          ( Cfg.AxiUserWidth           ),
