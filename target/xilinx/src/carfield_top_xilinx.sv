@@ -1,5 +1,5 @@
 // add template
-
+`include "cheshire/typedef.svh"
 
 module carfield_top_xilinx
   import carfield_pkg::*;
@@ -9,55 +9,6 @@ module carfield_top_xilinx
   input  logic                                        sys_clk_p,
   input  logic                                        sys_clk_n,
   input  logic                                        cpu_resetn
-
-  //input  logic                                        test_mode_i,
-  //input  logic                                        boot_mode_i,
-
-  //input  logic                                        jtag_tck_i,
-  //input  logic                                        jtag_trst_ni,
-  //input  logic                                        jtag_tms_i,
-  //input  logic                                        jtag_tdi_i,
-  //output logic                                        jtag_tdo_o,
-
-  // Secure Subsystem JTAG Interface
-  //input   logic                                       jtag_ot_tck_i,
-  //input   logic                                       jtag_ot_trst_ni,
-  //input   logic                                       jtag_ot_tms_i,
-  //input   logic                                       jtag_ot_tdi_i,
-  //output  logic                                       jtag_ot_tdo_o,
-  //output  logic                                       jtag_ot_tdo_oe_o,
-  // Safety Island JTAG Interface
-  //input   logic                                       jtag_safety_island_tck_i,
-  //input   logic                                       jtag_safety_island_trst_ni,
-  //input   logic                                       jtag_safety_island_tms_i,
-  //input   logic                                       jtag_safety_island_tdi_i,
-  //output  logic                                       jtag_safety_island_tdo_o,
-  // UART Interface
-  //output logic                                        uart_tx_o,
-  //input  logic                                        uart_rx_i,
-  // Cheshire UART Interface
-  //output logic                                        uart_ot_tx_o,
-  //input  logic                                        uart_ot_rx_i,
-  // Controle Flow UART Modem
-  //output logic                                        uart_rts_no,
-  //output logic                                        uart_dtr_no,
-  //input  logic                                        uart_cts_ni,
-  //input  logic                                        uart_dsr_ni,
-  //input  logic                                        uart_dcd_ni,
-  //input  logic                                        uart_rin_ni,
-  // I2C Interface
-  //output logic                                        i2c_sda_o,
-  //input  logic                                        i2c_sda_i,
-  //output logic                                        i2c_sda_en_o,
-  //output logic                                        i2c_scl_o,
-  //input  logic                                        i2c_scl_i,
-  //output logic                                        i2c_scl_en_o,
-
-  // GPIO interface
-  //input  logic [31:0]                                 gpio_i,
-  //output logic [31:0]                                 gpio_o,
-  //output logic [31:0]                                 gpio_en_o
-
 );
 
   localparam cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault;
@@ -80,8 +31,8 @@ module carfield_top_xilinx
 
 // config for FPGA mapping
 
-ext_reg_req_t               dram_req;
-ext_reg_rsp_t               dram_resp;
+carfield_reg_req_t               dram_req;
+carfield_reg_rsp_t               dram_resp;
 
 logic [LlcArWidth-1:0]                     llc_ar_data;
 logic [    LogDepth:0]                     llc_ar_wptr;
@@ -123,21 +74,16 @@ logic [HypNumPhys-1:0]                     hyper_reset_n_wire;
 
 carfield #(
   .Cfg (carfield_pkg::CarfieldCfgDefault),
-
-  `ifdef TARGET_FPGA
-    .ext_reg_req_t ( carfield_reg_req_t ),
-    .ext_reg_rsp_t ( carfield_reg_rsp_t ),
-    .LlcIdWidth    ( 1 ),
-    .LlcArWidth    ( 1 ),
-    .LlcAwWidth    ( 1 ),          
-    .LlcBWidth     ( 1 ),
-    .LlcRWidth     ( 1 ),
-    .LlcWWidth     ( 1 ),
-  `endif
-
+  .ext_reg_req_t ( carfield_reg_req_t ),
+  .ext_reg_rsp_t ( carfield_reg_rsp_t ),
+  .LlcIdWidth    ( LlcIdWidth ),
+  .LlcArWidth    ( LlcArWidth ),
+  .LlcAwWidth    ( LlcAwWidth ),          
+  .LlcBWidth     ( LlcBWidth  ),
+  .LlcRWidth     ( LlcRWidth  ),
+  .LlcWWidth     ( LlcWWidth  ),
   .HypNumPhys  (1),
   .HypNumChips (1)
-
 ) i_carfield (
   .clk_i (),
   .rst_ni (),

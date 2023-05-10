@@ -89,9 +89,14 @@ car-hw-clean:
 car-update-deps:
 	$(BENDER) update
 
-car-init: car-update-deps tb/hyp_vip chs-init
+car-init: tb/hyp_vip chs-init
 
 chs-init:
 	$(MAKE) -B chs-hw-all
 	$(MAKE) -B chs-sim-all
 	$(MAKE) -B chs-sw-all
+
+#############
+# Emulation #
+#############
+

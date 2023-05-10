@@ -12,6 +12,17 @@ BOARD        ?= vcu128
 XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
 XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
 
+# bender targets
+TARGETS += -t cv64a6_imafdcsclic_sv39
+TARGETS += -t cva6
+TARGETS += -t integer_cluster
+TARGETS += -t cv32e40p_use_ff_regfile
+
+# bender defines
+DEFINES += -D FEATURE_ICACHE_STAT
+DEFINES += -D PRIVATE_ICACHE
+DEFINES += -D HIERARCHY_ICACHE_32BIT
+
 out := out
 bit := $(out)/carfield_top_xilinx.bit
 mcs := $(out)/carfield_top_xilinx.mcs
@@ -34,7 +45,7 @@ VIVADOFLAGS ?= -nojournal -mode gui -source scripts/prologue.tcl
 ip-dir      := xilinx
 ips-names   := xlnx_mig_ddr4 xlnx_sim_clk_gen
 ips         :=
-bender-targets := -t $(BOARD) $(addprefix -t ,$(basename $(ips))) # Used to add defines through bender
+bender-targets := $(TARGETS) -t $(BOARD) $(addprefix -t ,$(basename $(ips))) # Used to add defines through bender
 
 all: $(bit)
 
@@ -74,6 +85,6 @@ rebuild_top:
 
 # Bender
 scripts/add_sources.tcl: ../../Bender.yml
-	$(BENDER) script vivado -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 $(bender-targets) > $@
+	$(BENDER) script vivado -t fpga $(bender-targets) $(DEFINES) > $@
 
 .PHONY: clean sim
