@@ -89,7 +89,7 @@ car-hw-clean:
 car-update-deps:
 	$(BENDER) update
 
-car-init: tb/hyp_vip chs-init
+car-init: car-update-deps tb/hyp_vip chs-init
 
 chs-init:
 	$(MAKE) -B chs-hw-all

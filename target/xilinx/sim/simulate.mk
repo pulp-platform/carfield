@@ -19,9 +19,9 @@ sim/ips/xlnx_mig_ddr4/questa/compile.do:
 	cd sim && $(VIVADOENV_SIM) $(VIVADO) -nojournal -mode batch -source setup_simulation.tcl -tclargs "export_simulation"
 
 scripts/add_sources_vsim.tcl:
-	$(BENDER) script vsim -t sim -t test -t fpga -t cv64a6_imafdcsclic_sv39 -t cva6 $(bender-targets) --vlog-arg="$(VLOG_ARGS)" > $@
+	$(BENDER) script vsim -t sim -t test -t fpga $(bender-targets) $(DEFINES) $(TARGETS) --vlog-arg="$(VLOG_ARGS)" > $@
 
-sim: scripts/add_sources_vsim.tcl
+sim: scripts/add_sources_vsim.tcl $(XILINX_SIMLIB_PATH)/modelsim.ini
 	cd sim && questa-2022.3 vsim -work work -modelsimini $(XILINX_SIMLIB_PATH)/modelsim.ini -do "run_simulation.tcl"
 
 clean-sim:

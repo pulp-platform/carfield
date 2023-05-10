@@ -6,13 +6,6 @@ packages:
       Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
-  apb_adv_timer:
-    revision: c8faec1e1755386d0e0f31a55ebd80612a3dcea9
-    version: 1.0.4
-    source:
-      Git: https://github.com/pulp-platform/apb_adv_timer.git
-    dependencies:
-    - tech_cells_generic
   apb_uart:
     revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
     version: 0.2.1
@@ -94,7 +87,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: edab7f39dca8416f413934d40864104c34447276
+    revision: f5bac979c094fefbfa02286716fc5ef14e52406c
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -152,6 +145,12 @@ packages:
     dependencies:
     - common_verification
     - tech_cells_generic
+  common_pads:
+    revision: 4ce2907ab2313e67836e251f6deea67d885aef5f
+    version: 0.0.4
+    source:
+      Git: git@github.com:AlSaqr-platform/common_pads.git
+    dependencies: []
   common_verification:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
@@ -314,12 +313,13 @@ packages:
     dependencies:
     - common_cells
   opentitan:
-    revision: c4a1b1d9bca7ca443a64b9f7f5586afa7a28cc5f
+    revision: fa08c257faa56b71e3f7711675269e61d851a353
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
     dependencies:
     - axi
+    - common_pads
   opentitan_peripherals:
     revision: 2a237bafa523627acd5c50332ad092ef821f4dac
     version: 0.3.1

@@ -8,7 +8,14 @@ module carfield_top_xilinx
 (
   input  logic                                        sys_clk_p,
   input  logic                                        sys_clk_n,
-  input  logic                                        cpu_resetn
+  input  logic                                        cpu_resetn,
+
+  // Safety Island JTAG Interface
+  input   logic                                       jtag_safety_island_tck_i,
+  input   logic                                       jtag_safety_island_trst_ni,
+  input   logic                                       jtag_safety_island_tms_i,
+  input   logic                                       jtag_safety_island_tdi_i,
+  output  logic                                       jtag_safety_island_tdo_o
 );
 
   localparam cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault;
@@ -107,11 +114,11 @@ carfield #(
   .jtag_ot_tdo_o (),
   .jtag_ot_tdo_oe_o (),
   // Safety Island JTAG Interface
-  .jtag_safety_island_tck_i (),
-  .jtag_safety_island_trst_ni (),
-  .jtag_safety_island_tms_i (),
-  .jtag_safety_island_tdi_i (),
-  .jtag_safety_island_tdo_o (),
+  .jtag_safety_island_tck_i,
+  .jtag_safety_island_trst_ni,
+  .jtag_safety_island_tms_i,
+  .jtag_safety_island_tdi_i,
+  .jtag_safety_island_tdo_o,
   // UART Interface
   .uart_tx_o (),
   .uart_rx_i (),
