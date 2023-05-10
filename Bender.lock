@@ -100,7 +100,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 0a1258dae530b3bae411ce0ab18cd5b4080f1c7d
+    revision: 634aa5bf0a1826f4cb1401e0f8e7545d8f42ce25
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -121,7 +121,7 @@ packages:
     - serial_link
     - tech_cells_generic
   clic:
-    revision: 8df9c5ae1f4a15b5b777c66cfdf41fd44451ffe3
+    revision: ce0d748f28246c0635b225d9c8beb7b76eac8708
     version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
@@ -165,7 +165,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cv32e40p:
-    revision: b26d1d6c5043bc6c535e23bf61b51313c802e44a
+    revision: f67ee07376845b8b8975f86c831c5d17cffcc5cb
     version: null
     source:
       Git: https://github.com/pulp-platform/cv32e40p.git
@@ -174,7 +174,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: 09752c37f63b073c3c17cbe00ad8b5e7cef53712
+    revision: bf806ffa1385876ab70b28df488fafe7ea573a7f
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6
@@ -206,7 +206,7 @@ packages:
     dependencies:
     - common_cells
   fpu_interco:
-    revision: 250b376bb68bd3b4b13c5b8f5ac2155e32152733
+    revision: 7a7899bfee33fcfe9d6166bd3d305cd1fb7118fc
     version: null
     source:
       Git: https://github.com/pulp-platform/fpu_interco.git
@@ -343,7 +343,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 3eb5ed955d6bf1d47f657669351f0cc45436a75b
+    revision: 2376e7d79e77a32863ff845275857a8694f7e225
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -395,7 +395,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 76c2f98f59b120be03ada8928ca178e573c155e4
+    revision: 0c5c15dac99a5cf554102d1c579a8c9c768b5207
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
