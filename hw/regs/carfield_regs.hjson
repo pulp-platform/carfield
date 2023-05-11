@@ -1,15 +1,10 @@
 // Copyright 2023 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
-# PLL register template
-#
-# Parameter (given by Python tool)
-#  - src:    Number of Interrupt Sources
-#  - target: Number of Targets that handle interrupt requests
-#  - prio:   Max value of interrupt priorities
-#  - module_instance_name: Module instance name.
+// Robert Balas <balasr@iis.ee.ethz.ch>
+// Luca Valente <luca.valente@unibo.it>
 {
-  name: "soc_ctrl_regs",
+  name: "carfield",
   clock_primary: "clk_i",
   bus_interfaces: [
     { protocol: "reg_iface", direction: "device" }
@@ -426,5 +421,5 @@
         { bits: "31:0" }
       ],
     }
-], 
- }
+  ],
+}
