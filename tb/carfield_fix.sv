@@ -102,11 +102,13 @@ module carfield_soc_fixture;
     .HypNumPhys  ( NumPhys  ),
     .HypNumChips ( NumChips )
   ) i_dut                       (
-    .clk_i                      ( clk                       ),
-    .rst_ni                     ( rst_n                     ),
+    .host_clk_i                 ( clk                       ),
+    .periph_clk_i               ( clk                       ),
+    .alt_clk_i                  ( clk                       ),
+    .rt_clk_i                   ( rtc                       ),
+    .pwr_on_rst_ni              ( rst_n                     ),
     .test_mode_i                ( test_mode                 ),
     .boot_mode_i                ( boot_mode                 ),
-    .rtc_i                      ( rtc                       ),
     .jtag_tck_i                 ( jtag_tck                  ),
     .jtag_trst_ni               ( jtag_trst_n               ),
     .jtag_tms_i                 ( jtag_tms                  ),
