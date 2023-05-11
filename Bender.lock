@@ -17,7 +17,7 @@ packages:
     revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
     version: 0.2.1
     source:
-      Git: https://github.com/pulp-platform/apb_uart.git
+      Git: https://github.com/pulp-platform/apb_uart
     dependencies:
     - apb
     - register_interface
@@ -49,7 +49,7 @@ packages:
     revision: 559bcbd09a5a884dbe31e2d72fd95d024e357f39
     version: 0.2.1
     source:
-      Git: https://github.com/pulp-platform/axi_llc.git
+      Git: https://github.com/pulp-platform/axi_llc
     dependencies:
     - axi
     - common_cells
@@ -60,7 +60,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
+      Git: https://github.com/pulp-platform/axi_riscv_atomics
     dependencies:
     - axi
     - common_cells
@@ -76,7 +76,7 @@ packages:
     revision: 07be187d1e954d8090031b32d236ad76dc62ce45
     version: 0.1.1
     source:
-      Git: https://github.com/pulp-platform/axi_vga.git
+      Git: https://github.com/pulp-platform/axi_vga
     dependencies:
     - axi
     - common_cells
@@ -100,12 +100,11 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 634aa5bf0a1826f4cb1401e0f8e7545d8f42ce25
+    revision: d80312916267cb2c37dbf9371d9b0a1462918edc
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
     dependencies:
-    - apb
     - apb_uart
     - axi
     - axi_llc
@@ -113,13 +112,13 @@ packages:
     - axi_vga
     - clint
     - common_cells
+    - common_verification
     - cva6
     - idma
     - opentitan_peripherals
     - register_interface
     - riscv-dbg
     - serial_link
-    - tech_cells_generic
   clic:
     revision: ce0d748f28246c0635b225d9c8beb7b76eac8708
     version: null
@@ -132,7 +131,7 @@ packages:
     revision: e1357c1d0edddde458aec58363473605f51e539e
     version: 0.1.0
     source:
-      Git: https://github.com/pulp-platform/clint.git
+      Git: https://github.com/pulp-platform/clint
     dependencies:
     - common_cells
     - register_interface
@@ -330,7 +329,7 @@ packages:
     revision: 2a237bafa523627acd5c50332ad092ef821f4dac
     version: 0.3.1
     source:
-      Git: https://github.com/pulp-platform/opentitan_peripherals.git
+      Git: https://github.com/pulp-platform/opentitan_peripherals
     dependencies:
     - common_cells
     - register_interface
@@ -420,10 +419,10 @@ packages:
       Git: https://github.com/pulp-platform/scm.git
     dependencies: []
   serial_link:
-    revision: 58fb2e2df77f50822fa9a5ac68d55c8e7ac477ef
-    version: 1.0.0
+    revision: f79be97dbd96707b822dd6c2ed7ca87b54bd4378
+    version: 1.0.1
     source:
-      Git: https://github.com/pulp-platform/serial_link.git
+      Git: https://github.com/pulp-platform/serial_link
     dependencies:
     - axi
     - common_cells
