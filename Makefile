@@ -77,6 +77,10 @@ include $(CAR_SW_DIR)/sw.mk
 ##############
 # Simulation #
 ##############
+
+hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv
+	python3 ./scripts/csv_to_json.py --input $< --output $@
+
 hw/carfield_reg_pkg.sv hw/carfield_reg_top.sv: hw/regs/carfield_regs.hjson
 	$(REGGEN) -r $< --outdir $(dir $@)
 

@@ -1,0 +1,42 @@
+Name,Bits,SW Access,HW Access,Default Value,Comment
+VERSION0,32,ro,none,0,Cheshire sha256 commit
+VERSION1,32,ro,none,0,Safety Island sha256 commit
+VERSION2,32,ro,none,0,Security Island sha256 commit
+VERSION3,32,ro,none,0,PULP Cluster sha256 commit
+VERSION4,32,ro,none,0,Spatz CLuster sha256 commit
+BOOT_MODE,3,ro,hrw,0,Boot mode
+JEDEC_IDCODE,32,rw,none,0,JEDEC ID CODE -TODO assign-
+GENERIC_SCRATCH0,32,rw,hrw,0,Scratch
+GENERIC_SCRATCH1,32,rw,hrw,0,Scratch
+HOST_RST,1,ro,hro,0,"Host Domain reset -active high, inverted in HW-"
+PERIPH_RST,1,rw,hro,0,"Periph Domain reset -active high, inverted in HW-"
+SAFETY_ISLAND_RST,1,rw,hro,0,"Safety Island reset -active high, inverted in HW-"
+SECURITY_ISLAND_RST,1,rw,hro,0,"Security Island reset -active high, inverted in HW-"
+PULP_CLUSTER_RST,1,rw,hro,0,"PULP Cluster reset -active high, inverted in HW-"
+SPATZ_CLUSTER_RST,1,rw,hro,0,"Spatz Cluster reset -active high, inverted in HW-"
+HOST_ISOLATE,1,ro,hro,0,Host Domain AXI isolate
+PERIPH_ISOLATE,1,rw,hro,0,Periph Domain  AXI isolate
+SAFETY_ISLAND_ISOLATE,1,rw,hro,0,Safety Island AXI isolate
+SECURITY_ISLAND_ISOLATE,1,rw,hro,0,Security Island AXI isolate
+PULP_CLUSTER_ISOLATE,1,rw,hro,0,PULP Cluster AXI isolate
+SPATZ_CLUSTER_ISOLATE,1,rw,hro,0,Spatz Cluster  AXI isolate
+HOST_ISOLATE_STATUS,1,ro,hwo,0,Host Domain AXI isolate status
+PERIPH_ISOLATE_STATUS,1,rw,hwo,0,Periph Domain AXI isolate status
+SAFETY_ISLAND_ISOLATE_STATUS,1,rw,hwo,0,Safety Island AXI isolate status
+SECURITY_ISLAND_ISOLATE_STATUS,1,rw,hwo,0,Security Island AXI isolate status
+PULP_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,PULP Cluster AXI isolate status
+SPATZ_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,Spatz Cluster AXI isolate status
+HOST_FETCH_ENABLE,1,ro,hro,0,Host Domain AXI isolate status
+SAFETY_ISLAND_FETCH_ENABLE,1,rw,hro,0,Safety Island AXI isolate status
+SECURITY_ISLAND_FETCH_ENABLE,1,rw,hro,0,Security Island AXI isolate status
+PULP_CLUSTER_FETCH_ENABLE,1,rw,hro,0,PULP Cluster AXI isolate status
+SPATZ_CLUSTER_FETCH_ENABLE,1,rw,hro,0,Spatz Cluster AXI isolate status
+HOST_BOOT_ADDR,32,rw,hro,32'h1000,Host boot address
+SAFETY_ISLAND_BOOT_ADDR,32,rw,hro,32'h70000000,Safety Island boot address
+SECURITY_ISLAND_BOOT_ADDR,32,rw,hro,32'h70000000,Security Island boot address
+PULP_CLUSTER_BOOT_ADDR,32,rw,hro,32'h70000000,PULP Cluster boot address
+SPATZ_CLUSTER_BOOT_ADDR,32,rw,hro,32'h70000000,Spatz Cluster boot address
+L2_SRAM_CONFIG0,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
+L2_SRAM_CONFIG1,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
+L2_SRAM_CONFIG2,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
+L2_SRAM_CONFIG3,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
