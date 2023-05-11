@@ -1,3 +1,9 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+#
+# Luca Valente <luca.valente@unibo.it>
+
 import pandas as pd
 import re
 import argparse
@@ -8,16 +14,9 @@ header = """// Copyright 2023 ETH Zurich and University of Bologna.
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 // Robert Balas <balasr@iis.ee.ethz.ch>
-// Luca Valente <luca.valente@unibo.it>x
-# PLL register template
-#
-# Parameter (given by Python tool)
-#  - src:    Number of Interrupt Sources
-#  - target: Number of Targets that handle interrupt requests
-#  - prio:   Max value of interrupt priorities
-#  - module_instance_name: Module instance name.
+// Luca Valente <luca.valente@unibo.it>
 {
-  name: "soc_ctrl_regs",
+  name: "carfield",
   clock_primary: "clk_i",
   bus_interfaces: [
     { protocol: "reg_iface", direction: "device" }
@@ -51,7 +50,7 @@ if args.output_file is None:
    raise Exception('Specify the output file!')
 
 
-f = open(args.output_file, "a")
+f = open(args.output_file, "w")
 f.write(header)
 
 df = pd.read_csv(args.input_file, sep=',' )
@@ -70,5 +69,6 @@ for index, row in df.iterrows():
     s = Template(reg_tlp)
     f.write(s.substitute(name=name,swa=swa,hwa=hwa,rv=defv,bw=num_bits-1,comment=desc))
 
-f.write("], \n }")
+f.write('  ],\n')
+f.write('}\n')
 f.close()
