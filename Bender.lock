@@ -100,7 +100,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: d80312916267cb2c37dbf9371d9b0a1462918edc
+    revision: b8a9bb133355a1c19bd81d00e58f77c4dc6e8ceb
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
