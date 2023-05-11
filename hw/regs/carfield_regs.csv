@@ -31,11 +31,11 @@ SAFETY_ISLAND_FETCH_ENABLE,1,rw,hro,0,Safety Island AXI isolate status
 SECURITY_ISLAND_FETCH_ENABLE,1,rw,hro,0,Security Island AXI isolate status
 PULP_CLUSTER_FETCH_ENABLE,1,rw,hro,0,PULP Cluster AXI isolate status
 SPATZ_CLUSTER_FETCH_ENABLE,1,rw,hro,0,Spatz Cluster AXI isolate status
-HOST_BOOT_ADDR,32,rw,hro,32'h1000,Host boot address
-SAFETY_ISLAND_BOOT_ADDR,32,rw,hro,32'h70000000,Safety Island boot address
-SECURITY_ISLAND_BOOT_ADDR,32,rw,hro,32'h70000000,Security Island boot address
-PULP_CLUSTER_BOOT_ADDR,32,rw,hro,32'h70000000,PULP Cluster boot address
-SPATZ_CLUSTER_BOOT_ADDR,32,rw,hro,32'h70000000,Spatz Cluster boot address
+HOST_BOOT_ADDR,32,rw,hro,0x1000,Host boot address
+SAFETY_ISLAND_BOOT_ADDR,32,rw,hro,0x70000000,Safety Island boot address
+SECURITY_ISLAND_BOOT_ADDR,32,rw,hro,0x70000000,Security Island boot address
+PULP_CLUSTER_BOOT_ADDR,32,rw,hro,0x70000000,PULP Cluster boot address
+SPATZ_CLUSTER_BOOT_ADDR,32,rw,hro,0x70000000,Spatz Cluster boot address
 L2_SRAM_CONFIG0,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
 L2_SRAM_CONFIG1,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
 L2_SRAM_CONFIG2,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-

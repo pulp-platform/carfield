@@ -336,7 +336,7 @@
       desc: "Host boot address",
       swaccess: "rw",
       hwaccess: "hro",
-      resval: "32'h1000",
+      resval: "0x1000",
       fields: [
         { bits: "31:0" }
       ],
@@ -346,7 +346,7 @@
       desc: "Safety Island boot address",
       swaccess: "rw",
       hwaccess: "hro",
-      resval: "32'h70000000",
+      resval: "0x70000000",
       fields: [
         { bits: "31:0" }
       ],
@@ -356,7 +356,7 @@
       desc: "Security Island boot address",
       swaccess: "rw",
       hwaccess: "hro",
-      resval: "32'h70000000",
+      resval: "0x70000000",
       fields: [
         { bits: "31:0" }
       ],
@@ -366,7 +366,7 @@
       desc: "PULP Cluster boot address",
       swaccess: "rw",
       hwaccess: "hro",
-      resval: "32'h70000000",
+      resval: "0x70000000",
       fields: [
         { bits: "31:0" }
       ],
@@ -376,7 +376,7 @@
       desc: "Spatz Cluster boot address",
       swaccess: "rw",
       hwaccess: "hro",
-      resval: "32'h70000000",
+      resval: "0x70000000",
       fields: [
         { bits: "31:0" }
       ],
