@@ -13,6 +13,7 @@
 /// Top-level implementation of Carfield
 module carfield
   import carfield_pkg::*;
+  import carfield_reg_pkg::*;
   import cheshire_pkg::*;
   import safety_island_pkg::*;
   import tlul_ot_pkg::*;
@@ -330,6 +331,10 @@ logic [                 LogDepth:0] axi_mst_intcluster_r_rptr ;
 logic        ibex_mbox_irq;
 logic        ches_mbox_irq;
 
+// soc reg signals
+carfield_reg2hw_t car_regs_reg2hw;
+carfield_hw2reg_t car_regs_hw2reg;
+
 // Clocking and reset strategy
 // We have three clock domains
 // host (host_clk_i), periph (periph_clk_i) and accelerators (alt_clk_i)
@@ -380,7 +385,11 @@ carfield_rstgen #(
 ) i_carfield_rstgen (
   .clks_i({periph_clk_i, alt_clk_i, alt_clk_i, alt_clk_i, alt_clk_i}),
   .pwr_on_rst_ni,
-  .sw_rsts_ni('1), // TODO: connect
+  .sw_rsts_ni(~{car_regs_reg2hw.periph_rst.q,
+                car_regs_reg2hw.safety_island_rst.q,
+                car_regs_reg2hw.security_island_rst.q,
+                car_regs_reg2hw.pulp_cluster_rst.q,
+                car_regs_reg2hw.spatz_cluster_rst.q}),
   .test_mode_i,
   .rsts_no(rsts_n),
   .pwr_on_rsts_no(pwr_on_rsts_n),
@@ -398,6 +407,54 @@ assign safety_pwr_on_rst_n = pwr_on_rsts_n[1];
 assign security_pwr_on_rst_n = pwr_on_rsts_n[2];
 assign pulp_pwr_on_rst_n = pwr_on_rsts_n[3];
 assign spatz_pwr_on_rst_n = pwr_on_rsts_n[4];
+
+//
+// Carfield Control and Status registers
+//
+
+carfield_reg_top #(
+  .reg_req_t(carfield_reg_req_t),
+  .reg_rsp_t(carfield_reg_rsp_t)
+) i_carfield_reg_top (
+  .clk_i (host_clk_i),
+  .rst_ni (host_pwr_on_rst_n),
+  .reg_req_i(ext_reg_req[CarRegsIdx]),
+  .reg_rsp_o(ext_reg_rsp[CarRegsIdx]),
+  .reg2hw (car_regs_reg2hw),
+  .hw2reg (car_regs_hw2reg),
+  .devmode_i (1'b1)
+);
+
+// TODO: these still need to be connected but can't at this point in time since RTL is missing
+// car_regs_reg2hw.host_isolate // dummy
+// car_regs_reg2hw.periph_isolate
+// car_regs_reg2hw.safety_island_isolate
+// car_regs_reg2hw.security_island_isolate
+// car_regs_reg2hw.pulp_cluster_isolate
+// car_regs_reg2hw.spatz_cluster_isolate
+
+// car_regs_reg2hw.host_fetch_enable // dummy (?)
+// car_regs_reg2hw.periph_fetch_enable
+// car_regs_reg2hw.safety_island_fetch_enable
+// car_regs_reg2hw.security_island_fetch_enable
+// car_regs_reg2hw.pulp_cluster_fetch_enable
+// car_regs_reg2hw.spatz_cluster_fetch_enable
+
+// car_regs_reg2hw.host_boot_addr // dummy (?)
+// car_regs_reg2hw.periph_boot_addr
+// car_regs_reg2hw.safety_island_boot_addr
+// car_regs_reg2hw.security_island_boot_addr
+// car_regs_reg2hw.pulp_cluster_boot_addr
+// car_regs_reg2hw.spatz_cluster_boot_addr
+
+// car_regs_reg2hw.l2_sram_config0...x
+
+// car_regs_hw2reg.host_isolate_status // dummy
+// car_regs_hw2reg.periph_isolate_status
+// car_regs_hw2reg.safety_island_isolate_status
+// car_regs_hw2reg.security_island_isolate_status
+// car_regs_hw2reg.pulp_cluster_isolate_status
+// car_regs_hw2reg.spatz_cluster_isolate_status
 
 // Temporary assign
 assign hyper_isolate_req = '0;
