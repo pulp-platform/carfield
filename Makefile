@@ -37,10 +37,9 @@ include bender-synth.mk
 # bender targets
 TARGETS += -t sim
 TARGETS += -t test
+TARGETS += -t rtl
 TARGETS += -t integer_cluster
-TARGETS += -t cv32e40p_use_ff_regfile
 TARGETS += -t cv64a6_imafdcsclic_sv39
-TARGETS += -t spatz
 TARGETS += -t simulation
 TARGETS += $(common_targs)
 
@@ -60,7 +59,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 6a8cb8ab9382a8722d2f2ef6d85fd6b2865e7fff
+CAR_NONFREE_COMMIT ?= 2ad3817a7b84608c8c63485ccd6dcaff0d2a2792
 
 car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree
@@ -78,6 +77,7 @@ include $(CAR_SW_DIR)/sw.mk
 ##############
 # Simulation #
 ##############
+.PHONY: scripts/carfield_compile.tcl
 
 tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@

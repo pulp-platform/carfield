@@ -8,12 +8,10 @@ ROOT        := $(patsubst %/,%, $(dir $(abspath $(lastword $(MAKEFILE_LIST))/../
 
 SNPS_SG     ?= spyglass-2022.06
 
-bender_defs  ?= -D SPYGLASS        \
-                -D SYNTHESIS       \
+bender_defs  ?= -D SYNTHESIS       \
                 -D EXCLUDE_PADFRAME
 
 bender_targs ?= -t asic               \
-                -t spyglass           \
                 -t cva6_test          \
                 -t synthesis          \
                 -t top_level          \
@@ -30,7 +28,7 @@ lint: update gen_script spyglass/sgdc/func.sgdc spyglass/scripts/run_lint.tcl
 
 gen_script: update
 	mkdir -p spyglass/tmp
-	bender script verilator $(bender_targs) $(bender_defs) > spyglass/tmp/files
+	bender script verilator -t spyglass $(bender_targs) -D SPYGLASS $(bender_defs) > spyglass/tmp/files
 
 update:
 	bender update
