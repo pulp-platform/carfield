@@ -110,6 +110,18 @@ localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
 localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
 localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
+typedef logic [       Cfg.AddrWidth-1:0] car_addrw_t;
+typedef logic [    Cfg.AxiDataWidth-1:0] car_dataw_t;
+typedef logic [(Cfg.AxiDataWidth)/8-1:0] car_strb_t;
+typedef logic [    Cfg.AxiUserWidth-1:0] car_usr_t;
+typedef logic [       AxiSlvIdWidth-1:0] car_slv_id_t;
+
+typedef logic [     AxiNarrowAddrWidth-1:0] car_nar_addrw_t;
+typedef logic [     AxiNarrowDataWidth-1:0] car_nar_dataw_t;
+typedef logic [        AxiNarrowStrobe-1:0] car_nar_strb_t;
+typedef logic [ IntClusterAxiIdInWidth-1:0] intclust_idin_t;
+typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
+
 // Slave CDC parameters
 localparam int unsigned CarfieldAxiSlvAwWidth =
                         (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth   ,
@@ -190,8 +202,8 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 
 // Slave and Master Sides
 // verilog_lint: waive-start line-length
-`AXI_TYPEDEF_ALL_CT(axi_intcluster_slv, axi_intcluster_slv_req_t, axi_intcluster_slv_rsp_t, logic [Cfg.AddrWidth-1:0], logic [IntClusterAxiIdInWidth-1:0], logic [Cfg.AxiDataWidth-1:0], logic [(Cfg.AxiDataWidth)/8-1:0], logic [Cfg.AxiUserWidth-1:0] )
-`AXI_TYPEDEF_ALL_CT(axi_intcluster_mst, axi_intcluster_mst_req_t, axi_intcluster_mst_rsp_t, logic [Cfg.AddrWidth-1:0], logic [IntClusterAxiIdOutWidth-1:0], logic [Cfg.AxiDataWidth-1:0], logic [(Cfg.AxiDataWidth)/8-1:0], logic [Cfg.AxiUserWidth-1:0] )
+`AXI_TYPEDEF_ALL_CT(axi_intcluster_slv, axi_intcluster_slv_req_t, axi_intcluster_slv_rsp_t, car_addrw_t, intclust_idin_t, car_dataw_t, car_strb_t, car_usr_t)
+`AXI_TYPEDEF_ALL_CT(axi_intcluster_mst, axi_intcluster_mst_req_t, axi_intcluster_mst_rsp_t, car_addrw_t, intclust_idout_t, car_dataw_t, car_strb_t, car_usr_t)
 // verilog_lint: waive-stop line-length
 
 // Local DRAM buses and parameter
@@ -220,7 +232,7 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
                                       axi_pkg::w_width(Cfg.AxiDataWidth,
                                                        Cfg.AxiUserWidth );
 
-logic                    hyper_isolate_req, hyper_isolated_rsp;
+logic hyper_isolate_req, hyper_isolated_rsp;
 logic [iomsb(Cfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
 logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
@@ -574,7 +586,7 @@ hyperbus_wrap      #(
   .axi_r_chan_t     ( carfield_axi_llc_r_chan_t  ),
   .axi_aw_chan_t    ( carfield_axi_llc_aw_chan_t ),
   .RegAddrWidth     ( Cfg.AddrWidth              ),
-  .RegDataWidth     ( 32'd32                     ),
+  .RegDataWidth     ( AxiNarrowDataWidth         ),
   .reg_req_t        ( carfield_reg_req_t         ),
   .reg_rsp_t        ( carfield_reg_rsp_t         ),
   .RxFifoLogDepth   ( 32'd2                      ),
@@ -756,6 +768,7 @@ safety_island_synth_wrapper #(
   .axi_isolate_i          ( slave_isolate_req [SafetyIslandSlvIdx]   ), // To SoC Bus
   .axi_isolated_o         ( master_isolated_rsp [SafetyIslandMstIdx] ),
   .irqs_i                 ( '0                                       ),
+  .debug_req_o            (                                          ),
   .jtag_tck_i             ( jtag_safety_island_tck_i                 ),
   .jtag_trst_ni           ( jtag_safety_island_trst_ni               ),
   .jtag_tms_i             ( jtag_safety_island_tms_i                 ),
@@ -1139,8 +1152,8 @@ axi_cdc_dst #(
   .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-  .dst_clk_i                  ( clk_i          ),
-  .dst_rst_ni                 ( rst_ni              ),
+  .dst_clk_i                  ( clk_i            ),
+  .dst_rst_ni                 ( rst_ni           ),
   .dst_req_o                  ( axi_ethernet_req ),
   .dst_resp_i                 ( axi_ethernet_rsp )
 );
@@ -1250,21 +1263,16 @@ axi_cut #(
 );
 
 // Convert to d32 a48
-`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_a48_slv       ,
-                    carfield_axi_d32_a48_slv_req_t ,
-                    carfield_axi_d32_a48_slv_rsp_t ,
-                    logic [Cfg.AddrWidth-1:0]      ,
-                    logic [AxiSlvIdWidth-1:0]      ,
-                    logic [31:0]                   ,
-                    logic [3:0]                    ,
-                    logic [Cfg.AxiUserWidth-1:0]   )
+// verilog_lint: waive-start line-length
+`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_a48_slv, carfield_axi_d32_a48_slv_req_t, carfield_axi_d32_a48_slv_rsp_t, car_addrw_t, car_slv_id_t, car_nar_dataw_t, car_nar_strb_t, car_usr_t)
+// verilog_lint: waive-stop line-length
 
 carfield_axi_d32_a48_slv_req_t axi_d32_a48_peripherals_req;
 carfield_axi_d32_a48_slv_rsp_t axi_d32_a48_peripherals_rsp;
 
 axi_dw_converter #(
   .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth                  ),
-  .AxiMstPortDataWidth  ( 32                                ),
+  .AxiMstPortDataWidth  ( AxiNarrowDataWidth                ),
   .AxiAddrWidth         ( Cfg.AddrWidth                     ),
   .AxiIdWidth           ( AxiSlvIdWidth                     ),
   .aw_chan_t            ( carfield_axi_slv_aw_chan_t        ),
@@ -1288,21 +1296,16 @@ axi_dw_converter #(
 );
 
 // Convert to d32_a32
-`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_a32_slv       ,
-                    carfield_axi_d32_a32_slv_req_t ,
-                    carfield_axi_d32_a32_slv_rsp_t ,
-                    logic [31:0]                   ,
-                    logic [AxiSlvIdWidth-1:0]      ,
-                    logic [31:0]                   ,
-                    logic [3:0]                    ,
-                    logic [Cfg.AxiUserWidth-1:0]   )
+// verilog_lint: waive-start line-length
+`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_a32_slv, carfield_axi_d32_a32_slv_req_t, carfield_axi_d32_a32_slv_rsp_t, car_nar_addrw_t, car_slv_id_t, car_nar_dataw_t, car_nar_strb_t, car_usr_t)
+// verilog_lint: waive-stop line-length
 
 carfield_axi_d32_a32_slv_req_t axi_d32_a32_peripherals_req;
 carfield_axi_d32_a32_slv_rsp_t axi_d32_a32_peripherals_rsp;
 
 axi_modify_address #(
   .slv_req_t  ( carfield_axi_d32_a48_slv_req_t ),
-  .mst_addr_t ( logic [31:0]                   ),
+  .mst_addr_t ( car_nar_addrw_t                ),
   .mst_req_t  ( carfield_axi_d32_a32_slv_req_t ),
   .axi_resp_t ( carfield_axi_d32_a32_slv_rsp_t )
 ) i_axi_modify_addr_peripherals (
@@ -1315,19 +1318,16 @@ axi_modify_address #(
 );
 
 // AXI to AXI lite conversion
-`AXI_LITE_TYPEDEF_ALL_CT(carfield_axi_lite_d32_a32           ,
-                         carfield_axi_lite_d32_a32_slv_req_t ,
-                         carfield_axi_lite_d32_a32_slv_rsp_t ,
-                         logic [31:0]                        ,
-                         logic [31:0]                        ,
-                         logic [3:0]                         )
+// verilog_lint: waive-start line-length
+`AXI_LITE_TYPEDEF_ALL_CT(carfield_axi_lite_d32_a32, carfield_axi_lite_d32_a32_slv_req_t, carfield_axi_lite_d32_a32_slv_rsp_t, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
+// verilog_lint: waive-stop line-length
 
 carfield_axi_lite_d32_a32_slv_req_t axi_lite_d32_a32_peripherals_req;
 carfield_axi_lite_d32_a32_slv_rsp_t axi_lite_d32_a32_peripherals_rsp;
 
 axi_to_axi_lite #(
-  .AxiAddrWidth   ( 32                                  ),
-  .AxiDataWidth   ( 32                                  ),
+  .AxiAddrWidth   ( AxiNarrowAddrWidth                  ),
+  .AxiDataWidth   ( AxiNarrowDataWidth                  ),
   .AxiIdWidth     ( AxiSlvIdWidth                       ),
   .AxiUserWidth   ( Cfg.AxiUserWidth                    ),
   .AxiMaxWriteTxns( 1                                   ),
@@ -1352,8 +1352,8 @@ axi_to_axi_lite #(
 // Address map of peripheral system
 typedef struct packed {
     logic [31:0] idx;
-    logic [31:0] start_addr;
-    logic [31:0] end_addr;
+    car_nar_addrw_t start_addr;
+    car_nar_addrw_t end_addr;
 } carfield_addr_map_rule_t;
 
 localparam carfield_addr_map_rule_t [NumApbMst-1:0] PeriphApbAddrMapRule = '{
@@ -1370,8 +1370,8 @@ localparam carfield_addr_map_rule_t [NumApbMst-1:0] PeriphApbAddrMapRule = '{
 };
 
 // APB req/rsp
-`APB_TYPEDEF_REQ_T(carfield_apb_req_t, logic [31:0], logic [31:0], logic [3:0])
-`APB_TYPEDEF_RESP_T(carfield_apb_rsp_t, logic [31:0])
+`APB_TYPEDEF_REQ_T(carfield_apb_req_t, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
+`APB_TYPEDEF_RESP_T(carfield_apb_rsp_t, car_nar_dataw_t)
 
 // APB masters
 carfield_apb_req_t [NumApbMst-1:0] apb_mst_req;
@@ -1380,8 +1380,8 @@ carfield_apb_rsp_t [NumApbMst-1:0] apb_mst_rsp;
 axi_lite_to_apb #(
   .NoApbSlaves     ( NumApbMst                           ),
   .NoRules         ( NumApbMst                           ),
-  .AddrWidth       ( 32                                  ),
-  .DataWidth       ( 32                                  ),
+  .AddrWidth       ( AxiNarrowAddrWidth                  ),
+  .DataWidth       ( AxiNarrowDataWidth                  ),
   .PipelineRequest ( '0                                  ),
   .PipelineResponse( '0                                  ),
   .axi_lite_req_t  ( carfield_axi_lite_d32_a32_slv_req_t ),
@@ -1401,8 +1401,8 @@ axi_lite_to_apb #(
 
 // System timer
 apb_timer_unit #(
-  .APB_ADDR_WIDTH  ( 32 )
-) i_system_timer (
+  .APB_ADDR_WIDTH ( AxiNarrowAddrWidth )
+) i_system_timer  (
   .HCLK       ( clk_i                  ),
   .HRESETn    ( rst_ni                 ),
   .PADDR      ( apb_mst_req[SystemTimerIdx].paddr   ),
@@ -1423,8 +1423,8 @@ apb_timer_unit #(
 
 // Advanced Timer
 apb_adv_timer #(
-  .APB_ADDR_WIDTH  ( 32 ),
-  .EXTSIG_NUM      ( 64                     )
+  .APB_ADDR_WIDTH  ( AxiNarrowAddrWidth ),
+  .EXTSIG_NUM      ( 64                 )
 ) i_advanced_timer (
   .HCLK            ( clk_i                  ),
   .HRESETn         ( rst_ni                 ),
@@ -1448,8 +1448,8 @@ apb_adv_timer #(
 
 // Watchdog timer
 REG_BUS #(
-  .ADDR_WIDTH (32),
-  .DATA_WIDTH (32)
+  .ADDR_WIDTH ( AxiNarrowAddrWidth ),
+  .DATA_WIDTH ( AxiNarrowDataWidth )
 ) reg_bus_wdt (clk_i);
 
 apb_to_reg i_apb_to_reg_wdt (
@@ -1498,28 +1498,28 @@ reg_to_tlul #(
 );
 
 // Wdt
-aon_timer i_watchdog_timer (
+aon_timer i_watchdog_timer   (
   .clk_i                     ( clk_i                 ),
   .rst_ni                    ( rst_ni                ),
-  .clk_aon_i                 ( /* TODO connect me */ ),
-  .rst_aon_ni                ( /* TODO connect me */ ),
+  .clk_aon_i                 ( clk_i                 ),
+  .rst_aon_ni                ( rst_ni                ),
   .tl_i                      ( tl_wdt_req            ),
   .tl_o                      ( tl_wdt_rsp            ),
-  .alert_rx_i                ( /* TODO connect me */ ),
+  .alert_rx_i                ( '0                    ),
   .alert_tx_o                ( /* TODO connect me */ ),
-  .lc_escalate_en_i          ( /* TODO connect me */ ),
+  .lc_escalate_en_i          ( '0                    ),
   .intr_wkup_timer_expired_o ( /* TODO connect me */ ),
   .intr_wdog_timer_bark_o    ( /* TODO connect me */ ),
   .nmi_wdog_timer_bark_o     ( /* TODO connect me */ ),
   .wkup_req_o                ( /* TODO connect me */ ),
   .aon_timer_rst_req_o       ( /* TODO connect me */ ),
-  .sleep_mode_i              ( /* TODO connect me */ )
+  .sleep_mode_i              ( '0                    )
 );
 
 // Hyperbus
 REG_BUS #(
-  .ADDR_WIDTH (32),
-  .DATA_WIDTH (32)
+  .ADDR_WIDTH ( AxiNarrowAddrWidth ),
+  .DATA_WIDTH ( AxiNarrowDataWidth )
 ) reg_bus_hyper (clk_i);
 
 apb_to_reg i_apb_to_reg_hyper (
@@ -1577,8 +1577,8 @@ can_top_apb #(
 // PLL
 // TODO
 reg_err_slv #(
-  .DW      ( 32 ),
-  .ERR_VAL ( 32'hBADCAB1E ),
+  .DW      ( AxiNarrowDataWidth ),
+  .ERR_VAL ( 'hBADCAB1E         ),
   .req_t   ( carfield_reg_req_t ),
   .rsp_t   ( carfield_reg_rsp_t )
 ) i_reg_err_slv_pll (

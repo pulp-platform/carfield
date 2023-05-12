@@ -8,14 +8,14 @@ package:
     - "Luca Valente <luca.valente@unibo.it>"
 
 dependencies:
-  register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: =0.3.8                               }
+  register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev: 46c5ad30fa6e1906a94718c9b7ed9e434badcf5d } # branch: yt/timin-loop
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: b8a9bb133355a1c19bd81d00e58f77c4dc6e8ceb } # branch: main
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 505c35a8df7f042fc8fc07c5dc40bc6412f7b27d } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 0c5c15dac99a5cf554102d1c579a8c9c768b5207 } # branch: master
-  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 2376e7d79e77a32863ff845275857a8694f7e225 } # branch: yt/carfield-integration
-  opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: c4a1b1d9bca7ca443a64b9f7f5586afa7a28cc5f } # branch: lowRISC-rebase
+  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 91ec9e6539e6e6a118756eeba73cb5013b15288f } # branch: yt/carfield-integration
+  opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: 969841978a293f6d7e890557257621c17f4eb44b } # branch: lowRISC-rebase
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             rev: ce0cb2e7fe48a00fd2ee8b39f675e6c33a5a31d2 } # branch: aottaviano/mailbox-old
   apb:                { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }

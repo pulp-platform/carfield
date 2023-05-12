@@ -241,6 +241,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
 /**********************/
 localparam int unsigned AxiNarrowAddrWidth = 32;
 localparam int unsigned AxiNarrowDataWidth = 32;
+localparam int unsigned AxiNarrowStrobe    = AxiNarrowDataWidth/8;
 
 /*****************/
 /* L2 Parameters */
