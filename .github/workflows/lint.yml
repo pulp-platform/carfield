@@ -27,6 +27,7 @@ jobs:
         # Exclude generated headers (no license checker support for optional lines)
         exclude_paths: |
           sw/include/regs/*.h
+          .dir-locals.el
 
   lint-sv:
     runs-on: ubuntu-latest
