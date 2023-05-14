@@ -15,7 +15,7 @@ module carfield
   import carfield_pkg::*;
   import cheshire_pkg::*;
   import safety_island_pkg::*;
-  import tlul_pkg::*;
+  import tlul_ot_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 1,
@@ -1061,7 +1061,9 @@ secure_subsystem_synth_wrap #(
   .ibex_uart_tx_o   ( uart_ot_rx_i  ),
    // SPI host
   .spi_host_SCK_o   (               ),
+  .spi_host_SCK_en_o(               ),
   .spi_host_CSB_o   (               ),
+  .spi_host_CSB_en_o(               ),
   .spi_host_SD_o    (               ),
   .spi_host_SD_i    ( '0            ),
   .spi_host_SD_en_o (               )
@@ -1477,19 +1479,19 @@ assign reg_bus_wdt.error = reg_wdt_rsp.error;
 assign reg_bus_wdt.ready = reg_wdt_rsp.ready;
 
 // reg to tilelink
-tlul_pkg::tl_h2d_t tl_wdt_req;
-tlul_pkg::tl_d2h_t tl_wdt_rsp;
+tlul_ot_pkg::tl_h2d_t tl_wdt_req;
+tlul_ot_pkg::tl_d2h_t tl_wdt_rsp;
 
 reg_to_tlul #(
-  .req_t             ( carfield_reg_req_t          ),
-  .rsp_t             ( carfield_reg_rsp_t          ),
-  .tl_h2d_t          ( tlul_pkg::tl_h2d_t          ),
-  .tl_d2h_t          ( tlul_pkg::tl_d2h_t          ),
-  .tl_a_user_t       ( tlul_pkg::tl_a_user_t       ),
-  .tl_a_op_e         ( tlul_pkg::tl_a_op_e         ),
-  .TL_A_USER_DEFAULT ( tlul_pkg::TL_A_USER_DEFAULT ),
-  .PutFullData       ( tlul_pkg::PutFullData       ),
-  .Get               ( tlul_pkg::Get               )
+  .req_t             ( carfield_reg_req_t             ),
+  .rsp_t             ( carfield_reg_rsp_t             ),
+  .tl_h2d_t          ( tlul_ot_pkg::tl_h2d_t          ),
+  .tl_d2h_t          ( tlul_ot_pkg::tl_d2h_t          ),
+  .tl_a_user_t       ( tlul_ot_pkg::tl_a_user_t       ),
+  .tl_a_op_e         ( tlul_ot_pkg::tl_a_op_e         ),
+  .TL_A_USER_DEFAULT ( tlul_ot_pkg::TL_A_USER_DEFAULT ),
+  .PutFullData       ( tlul_ot_pkg::PutFullData       ),
+  .Get               ( tlul_ot_pkg::Get               )
 ) i_reg_to_tlul_wdt (
   .tl_o      ( tl_wdt_req  ),
   .tl_i      ( tl_wdt_rsp  ),
