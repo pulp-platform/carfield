@@ -98,7 +98,12 @@ car-hw-clean:
 car-update-deps:
 	$(BENDER) update
 
-car-init: car-update-deps tb/hyp_vip spatz-init chs-init
+.PHONY: car-checkout-deps
+car-checkout-deps:
+	$(BENDER) checkout
+	touch Bender.lock
+
+car-init: car-checkout-deps tb/hyp_vip spatz-init chs-init
 
 spatz-init:
 	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom

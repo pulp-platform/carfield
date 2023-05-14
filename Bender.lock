@@ -68,7 +68,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics
+      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
     - axi
     - common_cells
@@ -87,6 +87,14 @@ packages:
       Git: https://github.com/pulp-platform/axi_vga
     dependencies:
     - axi
+    - common_cells
+    - register_interface
+  bus_err_unit:
+    revision: ff19129ed69094422243a76ae71eef45aa6f2c4b
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git
+    dependencies:
     - common_cells
     - register_interface
   can_bus:
@@ -172,7 +180,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cv32e40p:
-    revision: f67ee07376845b8b8975f86c831c5d17cffcc5cb
+    revision: 9b77611a1d0c681f4819798d95422b0b895528a2
     version: null
     source:
       Git: https://github.com/pulp-platform/cv32e40p.git
@@ -320,14 +328,15 @@ packages:
     dependencies:
     - common_cells
   obi:
-    revision: fed3f7f87285f2754b78211fbe844c5012bab114
+    revision: 1285848fe155e7803d409648dac8cd327993b042
     version: null
     source:
-      Git: git@iis-git.ee.ethz.ch:carfield/obi.git
+      Git: https://github.com/pulp-platform/obi.git
     dependencies:
     - common_cells
+    - common_verification
   opentitan:
-    revision: 969841978a293f6d7e890557257621c17f4eb44b
+    revision: 567ae56d23633e2d9738f68ddfdd9b529c87d859
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
@@ -377,7 +386,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   redundancy_cells:
-    revision: d44b90c3d5c6ed228bbc07cac7a8276e361272ee
+    revision: 6e10650b50c7b40f7f81602acf61526330c4d69d
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -405,13 +414,14 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 0c5c15dac99a5cf554102d1c579a8c9c768b5207
+    revision: c03f1d0b7aad5725010f247130e5d13b36c89c04
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
     dependencies:
     - apb
     - axi
+    - bus_err_unit
     - clic
     - cluster_interconnect
     - common_cells
