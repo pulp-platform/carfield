@@ -434,14 +434,9 @@ carfield_reg_top #(
 // car_regs_reg2hw.spatz_cluster_isolate
 
 // car_regs_reg2hw.host_fetch_enable // dummy (?)
-// car_regs_reg2hw.periph_fetch_enable
-// car_regs_reg2hw.safety_island_fetch_enable
-// car_regs_reg2hw.security_island_fetch_enable
-// car_regs_reg2hw.pulp_cluster_fetch_enable
 // car_regs_reg2hw.spatz_cluster_fetch_enable
 
 // car_regs_reg2hw.host_boot_addr // dummy (?)
-// car_regs_reg2hw.periph_boot_addr
 // car_regs_reg2hw.safety_island_boot_addr
 // car_regs_reg2hw.security_island_boot_addr
 // car_regs_reg2hw.pulp_cluster_boot_addr
@@ -830,7 +825,7 @@ safety_island_synth_wrapper #(
   .pwr_on_rst_ni          ( safety_pwr_on_rst_n                      ),
   .test_enable_i          ( '0                                       ),
   .bootmode_i             ( safety_island_bootmode                   ),
-  .fetch_en_i             ( '0                                       ), // To SoC Bus
+  .fetch_en_i             ( car_regs_reg2hw.safety_island_fetch_enable ), // To SoC Bus
   .axi_isolate_i          ( slave_isolate_req [SafetyIslandSlvIdx]   ), // To SoC Bus
   .axi_isolated_o         ( master_isolated_rsp [SafetyIslandMstIdx] ),
   .irqs_i                 ( '0                                       ),
@@ -926,7 +921,7 @@ pulp_cluster #(
   .test_mode_i                 ( test_mode_i                            ),
   .cluster_id_i                ( IntClusterIndex                        ),
   .en_sa_boot_i                ( '0                                     ), // To Soc Control
-  .fetch_en_i                  ( '0                                     ), // To Soc Control
+  .fetch_en_i                  ( car_regs_reg2hw.pulp_cluster_fetch_enable ), // To Soc Control
   .eoc_o                       (                                        ), // To Soc Control
   .busy_o                      (                                        ), // To Soc Control
   .axi_isolate_i               ( slave_isolate_req [IntClusterSlvIdx]   ), // To SoC Control
@@ -1105,7 +1100,7 @@ secure_subsystem_synth_wrap #(
   .rst_ni           ( security_rst_n  ),
   // TODO: add pwr_on_rst (!)
   // TODO: add synth wrapper and isolate stuff like safety island
-  .fetch_en_i       ( '1              ),
+  .fetch_en_i       ( car_regs_reg2hw.security_island_fetch_enable ),
   .bootmode_i       ( '0              ),
   .test_enable_i    ( '0              ),
   .irq_ibex_i       ( ibex_mbox_irq   ),
