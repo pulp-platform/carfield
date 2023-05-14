@@ -428,10 +428,7 @@ carfield_reg_top #(
 // TODO: these still need to be connected but can't at this point in time since RTL is missing
 // car_regs_reg2hw.host_isolate // dummy
 // car_regs_reg2hw.periph_isolate
-// car_regs_reg2hw.safety_island_isolate
 // car_regs_reg2hw.security_island_isolate
-// car_regs_reg2hw.pulp_cluster_isolate
-// car_regs_reg2hw.spatz_cluster_isolate
 
 // car_regs_reg2hw.host_fetch_enable // dummy (?)
 // car_regs_reg2hw.spatz_cluster_fetch_enable
@@ -446,14 +443,20 @@ carfield_reg_top #(
 
 // car_regs_hw2reg.host_isolate_status // dummy
 // car_regs_hw2reg.periph_isolate_status
-// car_regs_hw2reg.safety_island_isolate_status
 // car_regs_hw2reg.security_island_isolate_status
-// car_regs_hw2reg.pulp_cluster_isolate_status
-// car_regs_hw2reg.spatz_cluster_isolate_status
+
 
 // Temporary assign
+// TODO: add ethernet and hyperbus isolate?
 assign hyper_isolate_req = '0;
-assign slave_isolate_req = '0;
+
+
+//
+// Isolate and Isolate status
+//
+assign slave_isolate_req[SafetyIslandSlvIdx] = car_regs_reg2hw.safety_island_isolate.q;
+assign slave_isolate_req[IntClusterSlvIdx]   = car_regs_reg2hw.pulp_cluster_isolate.q;
+assign slave_isolate_req[FPClusterSlvIdx]    = car_regs_reg2hw.spatz_cluster_isolate.q;
 
 always_comb begin: assign_isolated_responses
   slave_isolated = '0;
@@ -466,6 +469,15 @@ always_comb begin: assign_isolated_responses
       slave_isolated [i] = slave_isolated_rsp [i];
   end
 end
+
+assign car_regs_hw2reg.safety_island_isolate_status.d = slave_isolated[SafetyIslandSlvIdx];
+assign car_regs_hw2reg.safety_island_isolate_status.de = 1'b1;
+
+assign car_regs_hw2reg.pulp_cluster_isolate_status.d = slave_isolated[IntClusterSlvIdx];
+assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
+
+assign car_regs_hw2reg.spatz_cluster_isolate_status.d = slave_isolated[FPClusterSlvIdx];
+assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
 
 // hyperbus reg req/rsp
 carfield_reg_req_t reg_hyper_req;
