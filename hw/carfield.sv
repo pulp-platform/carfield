@@ -762,6 +762,7 @@ safety_island_synth_wrapper #(
   .clk_i                  ( clk_i                                    ),
   .ref_clk_i              ( clk_i                                    ),
   .rst_ni                 ( rst_ni                                   ),
+  .pwr_on_rst_ni          ( rst_ni                                   ),
   .test_enable_i          ( '0                                       ),
   .bootmode_i             ( safety_island_bootmode                   ),
   .fetch_en_i             ( '0                                       ), // To SoC Bus
