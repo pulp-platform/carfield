@@ -11,7 +11,7 @@ dependencies:
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev: 46c5ad30fa6e1906a94718c9b7ed9e434badcf5d } # branch: yt/timin-loop
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: b8a9bb133355a1c19bd81d00e58f77c4dc6e8ceb } # branch: main
-  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 80f137ce8904c78602b589918911f388d507e935 }
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 97315ce7eba463e701fcfc671fa0fbdbd7cfd8f4 } # branch: main
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 505c35a8df7f042fc8fc07c5dc40bc6412f7b27d } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: c03f1d0b7aad5725010f247130e5d13b36c89c04 } # branch: master
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 56d64633432a72de8da49c1f0418500a9c173ddb } # branch: yt/carfield-integration

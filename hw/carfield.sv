@@ -18,8 +18,8 @@ module carfield
   import tlul_ot_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
-  parameter int unsigned HypNumPhys  = 1,
-  parameter int unsigned HypNumChips = 1
+  parameter int unsigned HypNumPhys  = 2,
+  parameter int unsigned HypNumChips = 2
 ) (
   input   logic                                       clk_i,
   input   logic                                       rst_ni,
@@ -549,27 +549,6 @@ cheshire_wrap #(
 );
 
 // Hyperbus
-logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_n_wire;
-logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_pen_wire;
-logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_pad_out;
-logic [HypNumPhys-1:0]                  hyper_ck_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_out_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_pen_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_n_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_n_out_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_n_pen_wire;
-logic [HypNumPhys-1:0]                  hyper_rwds_o;
-logic [HypNumPhys-1:0]                  hyper_rwds_i;
-logic [HypNumPhys-1:0]                  hyper_rwds_oe;
-logic [HypNumPhys-1:0]                  hyper_rwds_pen;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_i;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_o;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_pen;
-logic [HypNumPhys-1:0]                  hyper_dq_oe;
-logic [HypNumPhys-1:0]                  hyper_reset_n_wire;
-logic [HypNumPhys-1:0]                  hyper_rst_n_out_wire;
-logic [HypNumPhys-1:0]                  hyper_rst_n_pen_wire;
-
 hyperbus_wrap      #(
   .NumChips         ( HypNumChips                ),
   .NumPhys          ( HypNumPhys                 ),
@@ -602,10 +581,8 @@ hyperbus_wrap      #(
   .AxiSlaveWWidth   ( LlcWWidth                  ),
   .AxiMaxTrans      ( Cfg.AxiMaxSlvTrans         )
 ) i_hyperbus_wrap   (
-  .clk_phy_i           ( hyp_clk_phy_i      ),
-  .rst_phy_ni          ( hyp_rst_phy_ni     ),
-  .clk_i               ( clk_i              ),
-  .rst_ni              ( rst_ni             ),
+  .clk_i               ( hyp_clk_i          ),
+  .rst_ni              ( hyp_rst_ni         ),
   .test_mode_i         ( test_mode_i        ),
   .axi_slave_ar_data_i ( llc_ar_data        ),
   .axi_slave_ar_wptr_i ( llc_ar_wptr        ),
@@ -624,66 +601,14 @@ hyperbus_wrap      #(
   .axi_slave_w_rptr_o  ( llc_w_rptr         ),
   .reg_req_i           ( reg_hyper_req      ),
   .reg_rsp_o           ( reg_hyper_rsp      ),
-  .hyper_cs_no         ( hyper_cs_n_wire    ),
-  .hyper_ck_o          ( hyper_ck_wire      ),
-  .hyper_ck_no         ( hyper_ck_n_wire    ),
-  .hyper_rwds_o        ( hyper_rwds_o       ),
-  .hyper_rwds_i        ( hyper_rwds_i       ),
-  .hyper_rwds_oe_o     ( hyper_rwds_oe      ),
-  .hyper_dq_i          ( hyper_dq_i         ),
-  .hyper_dq_o          ( hyper_dq_o         ),
-  .hyper_dq_oe_o       ( hyper_dq_oe        ),
-  .hyper_reset_no      ( hyper_reset_n_wire )
-);
+  .pad_hyper_csn       ( pad_hyper_csn      ),
+  .pad_hyper_ck        ( pad_hyper_ck       ),
+  .pad_hyper_ckn       ( pad_hyper_ckn      ),
+  .pad_hyper_rwds      ( pad_hyper_rwds     ),
+  .pad_hyper_reset     ( pad_hyper_reset    ),
+  .pad_hyper_dq        ( pad_hyper_dq       )
 
-for (genvar i = 0 ; i<HypNumPhys; i++) begin : gen_hyper_phy
-  for (genvar j = 0; j<HypNumChips; j++) begin : gen_hyper_cs
-    pad_functional_pd padinst_hyper_csno (
-      .OEN ( 1'b0                    ),
-      .I   ( hyper_cs_n_wire[i][j]   ),
-      .O   ( hyper_cs_pad_out[i][j]  ),
-      .PEN ( hyper_cs_pen_wire[i][j] ),
-      .PAD ( pad_hyper_csn[i][j]     )
-    );
-  end
-  pad_functional_pd padinst_hyper_ck (
-    .OEN ( 1'b0                 ),
-    .I   ( hyper_ck_wire[i]     ),
-    .O   ( hyper_ck_out_wire[i] ),
-    .PEN ( hyper_ck_pen_wire[i] ),
-    .PAD ( pad_hyper_ck[i]      )
-  );
-  pad_functional_pd padinst_hyper_ckno   (
-    .OEN ( 1'b0                   ),
-    .I   ( hyper_ck_n_wire[i]     ),
-    .O   ( hyper_ck_n_out_wire[i] ),
-    .PEN ( hyper_ck_n_pen_wire[i] ),
-    .PAD ( pad_hyper_ckn[i]       )
-  );
-  pad_functional_pd padinst_hyper_rwds0  (
-    .OEN (~hyper_rwds_oe[i]  ),
-    .I   ( hyper_rwds_o[i]   ),
-    .O   ( hyper_rwds_i[i]   ),
-    .PEN ( hyper_rwds_pen[i] ),
-    .PAD ( pad_hyper_rwds[i] )
-  );
-  pad_functional_pd padinst_hyper_resetn (
-    .OEN ( 1'b0                    ),
-    .I   ( hyper_reset_n_wire[i]   ),
-    .O   ( hyper_rst_n_out_wire[i] ),
-    .PEN ( hyper_rst_n_pen_wire[i] ),
-    .PAD ( pad_hyper_reset[i]      )
-  );
-  for (genvar j = 0; j < 8; j++) begin : gen_hyper_dq
-    pad_functional_pd padinst_hyper_dqio0  (
-      .OEN (~hyper_dq_oe[i]     ),
-      .I   ( hyper_dq_o[i][j]   ),
-      .O   ( hyper_dq_i[i][j]   ),
-      .PEN ( hyper_dq_pen[i][j] ),
-      .PAD ( pad_hyper_dq[i][j] )
-    );
-  end
-end
+);
 
 // Reconfigurable L2 Memory
 logic l2_ecc_err;

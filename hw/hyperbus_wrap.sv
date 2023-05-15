@@ -40,8 +40,6 @@ module hyperbus_wrap #(
   parameter int unsigned AxiSlaveRWidth  = 0,
   parameter int unsigned AxiSlaveWWidth  = 0
 )(
-  input  logic clk_phy_i     ,
-  input  logic rst_phy_ni    ,
   input  logic clk_i         ,
   input  logic rst_ni        ,
   input  logic test_mode_i   ,
@@ -64,17 +62,13 @@ module hyperbus_wrap #(
   // Reg bus
   input  reg_req_t reg_req_i,
   output reg_rsp_t reg_rsp_o,
-  // Physical interace: facing HyperBus PADs
-  output logic [NumPhys-1:0][NumChips-1:0] hyper_cs_no,
-  output logic [NumPhys-1:0]               hyper_ck_o,
-  output logic [NumPhys-1:0]               hyper_ck_no,
-  output logic [NumPhys-1:0]               hyper_rwds_o,
-  input  logic [NumPhys-1:0]               hyper_rwds_i,
-  output logic [NumPhys-1:0]               hyper_rwds_oe_o,
-  input  logic [NumPhys-1:0][7:0]          hyper_dq_i,
-  output logic [NumPhys-1:0][7:0]          hyper_dq_o,
-  output logic [NumPhys-1:0]               hyper_dq_oe_o,
-  output logic [NumPhys-1:0]               hyper_reset_no
+  // Physical interace: HyperBus PADs
+  inout  [NumPhys-1:0][NumChips-1:0] pad_hyper_csn,
+  inout  [NumPhys-1:0]               pad_hyper_ck,
+  inout  [NumPhys-1:0]               pad_hyper_ckn,
+  inout  [NumPhys-1:0]               pad_hyper_rwds,
+  inout  [NumPhys-1:0]               pad_hyper_reset,
+  inout  [NumPhys-1:0][7:0]          pad_hyper_dq
 );
 
 typedef struct packed {
@@ -119,6 +113,27 @@ axi_cdc_dst      #(
   .dst_resp_i                 ( hyper_rsp )
 );
 
+logic [NumPhys-1:0][NumChips-1:0] hyper_cs_n_wire;
+logic [NumPhys-1:0][NumChips-1:0] hyper_cs_pen_wire;
+logic [NumPhys-1:0][NumChips-1:0] hyper_cs_pad_out;
+logic [NumPhys-1:0]               hyper_ck_wire;
+logic [NumPhys-1:0]               hyper_ck_out_wire;
+logic [NumPhys-1:0]               hyper_ck_pen_wire;
+logic [NumPhys-1:0]               hyper_ck_n_wire;
+logic [NumPhys-1:0]               hyper_ck_n_out_wire;
+logic [NumPhys-1:0]               hyper_ck_n_pen_wire;
+logic [NumPhys-1:0]               hyper_rwds_o;
+logic [NumPhys-1:0]               hyper_rwds_i;
+logic [NumPhys-1:0]               hyper_rwds_oe;
+logic [NumPhys-1:0]               hyper_rwds_pen;
+logic [NumPhys-1:0][7:0]          hyper_dq_i;
+logic [NumPhys-1:0][7:0]          hyper_dq_o;
+logic [NumPhys-1:0][7:0]          hyper_dq_pen;
+logic [NumPhys-1:0]               hyper_dq_oe;
+logic [NumPhys-1:0]               hyper_reset_n_wire;
+logic [NumPhys-1:0]               hyper_rst_n_out_wire;
+logic [NumPhys-1:0]               hyper_rst_n_pen_wire;
+
 hyperbus           #(
   .NumChips         ( NumChips         ),
   .NumPhys          ( NumPhys          ),
@@ -141,25 +156,74 @@ hyperbus           #(
   .PhyStartupCycles ( PhyStartupCycles ),
   .AxiLogDepth      ( AxiLogDepth      )
 ) i_hyperbus        (
-  .clk_phy_i        ( clk_phy_i         ),
-  .rst_phy_ni       ( rst_phy_ni        ),
-  .clk_sys_i        ( clk_i             ),
-  .rst_sys_ni       ( rst_ni            ),
-  .test_mode_i      ( test_mode_i       ),
-  .axi_req_i        ( hyper_req         ),
-  .axi_rsp_o        ( hyper_rsp         ),
-  .reg_req_i        ( reg_req_i         ),
-  .reg_rsp_o        ( reg_rsp_o         ),
-  .hyper_cs_no      ( hyper_cs_no       ),
-  .hyper_ck_o       ( hyper_ck_o        ),
-  .hyper_ck_no      ( hyper_ck_no       ),
-  .hyper_rwds_o     ( hyper_rwds_o      ),
-  .hyper_rwds_i     ( hyper_rwds_i      ),
-  .hyper_rwds_oe_o  ( hyper_rwds_oe_o   ),
-  .hyper_dq_i       ( hyper_dq_i        ),
-  .hyper_dq_o       ( hyper_dq_o        ),
-  .hyper_dq_oe_o    ( hyper_dq_oe_o     ),
-  .hyper_reset_no   ( hyper_reset_no    )
+  .clk_phy_i        ( clk_i              ),
+  .rst_phy_ni       ( rst_ni             ),
+  .clk_sys_i        ( clk_i              ),
+  .rst_sys_ni       ( rst_ni             ),
+  .test_mode_i      ( test_mode_i        ),
+  .axi_req_i        ( hyper_req          ),
+  .axi_rsp_o        ( hyper_rsp          ),
+  .reg_req_i        ( reg_req            ),
+  .reg_rsp_o        ( reg_rsp            ),
+  .hyper_cs_no      ( hyper_cs_n_wire    ),
+  .hyper_ck_o       ( hyper_ck_wire      ),
+  .hyper_ck_no      ( hyper_ck_n_wire    ),
+  .hyper_rwds_o     ( hyper_rwds_o       ),
+  .hyper_rwds_i     ( hyper_rwds_i       ),
+  .hyper_rwds_oe_o  ( hyper_rwds_oe      ),
+  .hyper_dq_i       ( hyper_dq_i         ),
+  .hyper_dq_o       ( hyper_dq_o         ),
+  .hyper_dq_oe_o    ( hyper_dq_oe        ),
+  .hyper_reset_no   ( hyper_reset_n_wire )
 );
+
+for (genvar i = 0 ; i<NumPhys; i++) begin : gen_hyper_phy
+  for (genvar j = 0; j<NumChips; j++) begin : gen_hyper_cs
+    pad_functional_pd padinst_hyper_csno (
+      .OEN ( 1'b0                    ),
+      .I   ( hyper_cs_n_wire[i][j]   ),
+      .O   ( hyper_cs_pad_out[i][j]  ),
+      .PEN ( hyper_cs_pen_wire[i][j] ),
+      .PAD ( pad_hyper_csn[i][j]     )
+    );
+  end
+  pad_functional_pd padinst_hyper_ck (
+    .OEN ( 1'b0                 ),
+    .I   ( hyper_ck_wire[i]     ),
+    .O   ( hyper_ck_out_wire[i] ),
+    .PEN ( hyper_ck_pen_wire[i] ),
+    .PAD ( pad_hyper_ck[i]      )
+  );
+  pad_functional_pd padinst_hyper_ckno   (
+    .OEN ( 1'b0                   ),
+    .I   ( hyper_ck_n_wire[i]     ),
+    .O   ( hyper_ck_n_out_wire[i] ),
+    .PEN ( hyper_ck_n_pen_wire[i] ),
+    .PAD ( pad_hyper_ckn[i]       )
+  );
+  pad_functional_pd padinst_hyper_rwds0  (
+    .OEN (~hyper_rwds_oe[i]  ),
+    .I   ( hyper_rwds_o[i]   ),
+    .O   ( hyper_rwds_i[i]   ),
+    .PEN ( hyper_rwds_pen[i] ),
+    .PAD ( pad_hyper_rwds[i] )
+  );
+  pad_functional_pd padinst_hyper_resetn (
+    .OEN ( 1'b0                    ),
+    .I   ( hyper_reset_n_wire[i]   ),
+    .O   ( hyper_rst_n_out_wire[i] ),
+    .PEN ( hyper_rst_n_pen_wire[i] ),
+    .PAD ( pad_hyper_reset[i]      )
+  );
+  for (genvar j = 0; j < 8; j++) begin : gen_hyper_dq
+    pad_functional_pd padinst_hyper_dqio0  (
+      .OEN (~hyper_dq_oe[i]     ),
+      .I   ( hyper_dq_o[i][j]   ),
+      .O   ( hyper_dq_i[i][j]   ),
+      .PEN ( hyper_dq_pen[i][j] ),
+      .PAD ( pad_hyper_dq[i][j] )
+    );
+  end
+end
 
 endmodule: hyperbus_wrap
