@@ -4,6 +4,8 @@
 //
 // Yvan Tortorella <yvan.tortorella@unibo.it>
 
+`include "register_interface/typedef.svh"
+
 module hyperbus_wrap #(
   parameter int unsigned NumChips        = -1,
   parameter int unsigned NumPhys         = 2,
@@ -24,6 +26,9 @@ module hyperbus_wrap #(
   parameter int unsigned RegDataWidth    = -1,
   parameter type         reg_req_t       = logic,
   parameter type         reg_rsp_t       = logic,
+  parameter type reg_addr_t              = logic [RegAddrWidth-1:0],
+  parameter type reg_data_t              = logic [RegDataWidth-1:0],
+  parameter type reg_strb_t              = logic [RegDataWidth/8-1:0],
   // The below have sensible defaults, but should be set on integration!
   parameter int unsigned RxFifoLogDepth  = 2,
   parameter int unsigned TxFifoLogDepth  = 2,
@@ -60,8 +65,14 @@ module hyperbus_wrap #(
   input  logic [      AxiLogDepth:0] axi_slave_w_wptr_i,
   output logic [      AxiLogDepth:0] axi_slave_w_rptr_o,
   // Reg bus
-  input  reg_req_t reg_req_i,
-  output reg_rsp_t reg_rsp_o,
+  input  reg_addr_t                   rbus_req_addr_i,
+  input  logic                        rbus_req_write_i,
+  input  reg_data_t                   rbus_req_wdata_i,
+  input  reg_strb_t                   rbus_req_wstrb_i,
+  input  logic                        rbus_req_valid_i,
+  output reg_data_t                   rbus_rsp_rdata_o,
+  output logic                        rbus_rsp_ready_o,
+  output logic                        rbus_rsp_error_o,
   // Physical interace: HyperBus PADs
   inout  [NumPhys-1:0][NumChips-1:0] pad_hyper_csn,
   inout  [NumPhys-1:0]               pad_hyper_ck,
@@ -70,6 +81,9 @@ module hyperbus_wrap #(
   inout  [NumPhys-1:0]               pad_hyper_reset,
   inout  [NumPhys-1:0][7:0]          pad_hyper_dq
 );
+
+reg_req_t   reg_req;
+reg_rsp_t   reg_rsp;
 
 typedef struct packed {
   logic [31:0]             idx;
@@ -133,6 +147,15 @@ logic [NumPhys-1:0]               hyper_dq_oe;
 logic [NumPhys-1:0]               hyper_reset_n_wire;
 logic [NumPhys-1:0]               hyper_rst_n_out_wire;
 logic [NumPhys-1:0]               hyper_rst_n_pen_wire;
+
+assign reg_req.addr         = rbus_req_addr_i;
+assign reg_req.write        = rbus_req_write_i;
+assign reg_req.wdata        = rbus_req_wdata_i;
+assign reg_req.wstrb        = rbus_req_wstrb_i;
+assign reg_req.valid        = rbus_req_valid_i;
+assign rbus_rsp_rdata_o     = reg_rsp.rdata;
+assign rbus_rsp_ready_o     = reg_rsp.ready;
+assign rbus_rsp_error_o     = reg_rsp.error;
 
 hyperbus           #(
   .NumChips         ( NumChips         ),
