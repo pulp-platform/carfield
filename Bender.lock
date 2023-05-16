@@ -68,7 +68,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics
+      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
     - axi
     - common_cells
@@ -90,7 +90,7 @@ packages:
     - common_cells
     - register_interface
   bus_err_unit:
-    revision: 47a6436dc4b4b7f4a44f7786033b22c6d01530b2
+    revision: ff19129ed69094422243a76ae71eef45aa6f2c4b
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git
@@ -177,7 +177,7 @@ packages:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
     source:
-      Git: https://github.com/pulp-platform/common_verification
+      Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cv32e40p:
     revision: 9b77611a1d0c681f4819798d95422b0b895528a2

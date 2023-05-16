@@ -22,7 +22,6 @@ dependencies:
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 230222cc568b49b39a3385b12edaf680657bc69d }
   spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: fe6af882359be12b3884b9c9a5755a022bb031ff } # branch: main
-  bus_err_unit:       { git: "git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git",        rev: 47a6436dc4b4b7f4a44f7786033b22c6d01530b2 }
 
 workspace:
   package_links:
