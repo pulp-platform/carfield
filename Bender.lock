@@ -177,7 +177,7 @@ packages:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
     source:
-      Git: https://github.com/pulp-platform/common_verification
+      Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cv32e40p:
     revision: 9b77611a1d0c681f4819798d95422b0b895528a2
@@ -359,7 +359,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 56d64633432a72de8da49c1f0418500a9c173ddb
+    revision: 43bb73f5f239b6d9bade79ef4b5c62756bd58dc4
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git

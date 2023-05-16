@@ -852,6 +852,7 @@ pulp_cluster #(
 ) i_integer_cluster            (
   .clk_i                       ( clk_i                                  ),
   .rst_ni                      ( rst_ni                                 ),
+  .pwr_on_rst_ni               ( rst_ni                                 ),
   .ref_clk_i                   ( clk_i                                  ),
   .pmu_mem_pwdn_i              ( '0                                     ),
   .base_addr_i                 ( '0                                     ),
@@ -868,6 +869,7 @@ pulp_cluster #(
   .dma_pe_irq_ack_i            ( '1                                     ), // To edge propagator (?)
   .dma_pe_irq_valid_o          (                                        ), // To edge propagator (?)
   .dbg_irq_valid_i             ( '0                                     ), // To edge propagator (?)
+  .mbox_irq_i                  ( '0                                     ),
   .pf_evt_ack_i                ( '1                                     ), // To edge propagator (?)
   .pf_evt_valid_o              (                                        ), // To edge propagator (?)
   .async_cluster_events_wptr_i ( '0                                     ), // To edge propagator (?)
