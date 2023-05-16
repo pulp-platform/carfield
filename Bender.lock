@@ -177,7 +177,7 @@ packages:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
     source:
-      Git: https://github.com/pulp-platform/common_verification.git
+      Git: https://github.com/pulp-platform/common_verification
     dependencies: []
   cv32e40p:
     revision: 9b77611a1d0c681f4819798d95422b0b895528a2
@@ -221,7 +221,7 @@ packages:
     dependencies:
     - common_cells
   fpu_interco:
-    revision: 2c11ff8176a8b176f2bdd3fc019db2b7db44debf
+    revision: 0769976fa51bdd820656a01161a4c46b88c59ac5
     version: null
     source:
       Git: https://github.com/pulp-platform/fpu_interco.git
@@ -359,7 +359,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 2fe929632a95e27ebb3f135603835adb60b41fd2
+    revision: 56d64633432a72de8da49c1f0418500a9c173ddb
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
