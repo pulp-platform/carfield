@@ -38,7 +38,7 @@ module carfield_soc_fixture;
   localparam real         TAppl     = 0.1;
   localparam real         TTest     = 0.9;
 
-  localparam int NumPhys  = 1;
+  localparam int NumPhys  = 2;
   localparam int NumChips = 2;
 
   logic       clk;

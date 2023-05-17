@@ -18,8 +18,8 @@ module carfield
   import tlul_ot_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
-  parameter int unsigned HypNumPhys  = 1,
-  parameter int unsigned HypNumChips = 1
+  parameter int unsigned HypNumPhys  = 2,
+  parameter int unsigned HypNumChips = 2
 ) (
   input   logic                                       clk_i,
   input   logic                                       rst_ni,
@@ -549,141 +549,72 @@ cheshire_wrap #(
 );
 
 // Hyperbus
-logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_n_wire;
-logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_pen_wire;
-logic [HypNumPhys-1:0][HypNumChips-1:0] hyper_cs_pad_out;
-logic [HypNumPhys-1:0]                  hyper_ck_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_out_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_pen_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_n_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_n_out_wire;
-logic [HypNumPhys-1:0]                  hyper_ck_n_pen_wire;
-logic [HypNumPhys-1:0]                  hyper_rwds_o;
-logic [HypNumPhys-1:0]                  hyper_rwds_i;
-logic [HypNumPhys-1:0]                  hyper_rwds_oe;
-logic [HypNumPhys-1:0]                  hyper_rwds_pen;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_i;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_o;
-logic [HypNumPhys-1:0][7:0]             hyper_dq_pen;
-logic [HypNumPhys-1:0]                  hyper_dq_oe;
-logic [HypNumPhys-1:0]                  hyper_reset_n_wire;
-logic [HypNumPhys-1:0]                  hyper_rst_n_out_wire;
-logic [HypNumPhys-1:0]                  hyper_rst_n_pen_wire;
-
 hyperbus_wrap      #(
-  .NumChips         ( HypNumChips                ),
-  .NumPhys          ( HypNumPhys                 ),
-  .IsClockODelayed  ( 1'b0                       ),
-  .AxiAddrWidth     ( Cfg.AddrWidth              ),
-  .AxiDataWidth     ( Cfg.AxiDataWidth           ),
-  .AxiIdWidth       ( LlcIdWidth                 ),
-  .AxiUserWidth     ( Cfg.AxiUserWidth           ),
-  .axi_req_t        ( carfield_axi_llc_req_t     ),
-  .axi_rsp_t        ( carfield_axi_llc_rsp_t     ),
-  .axi_w_chan_t     ( carfield_axi_llc_w_chan_t  ),
-  .axi_b_chan_t     ( carfield_axi_llc_b_chan_t  ),
-  .axi_ar_chan_t    ( carfield_axi_llc_ar_chan_t ),
-  .axi_r_chan_t     ( carfield_axi_llc_r_chan_t  ),
-  .axi_aw_chan_t    ( carfield_axi_llc_aw_chan_t ),
-  .RegAddrWidth     ( Cfg.AddrWidth              ),
-  .RegDataWidth     ( AxiNarrowDataWidth         ),
-  .reg_req_t        ( carfield_reg_req_t         ),
-  .reg_rsp_t        ( carfield_reg_rsp_t         ),
-  .RxFifoLogDepth   ( 32'd2                      ),
-  .TxFifoLogDepth   ( 32'd2                      ),
-  .RstChipBase      ( 'h0                        ),
-  .RstChipSpace     ( 'h1_0000                   ),
-  .PhyStartupCycles ( 300 * 200                  ),
-  .AxiLogDepth      ( LogDepth                   ),
-  .AxiSlaveArWidth  ( LlcArWidth                 ),
-  .AxiSlaveAwWidth  ( LlcAwWidth                 ),
-  .AxiSlaveBWidth   ( LlcBWidth                  ),
-  .AxiSlaveRWidth   ( LlcRWidth                  ),
-  .AxiSlaveWWidth   ( LlcWWidth                  ),
-  .AxiMaxTrans      ( Cfg.AxiMaxSlvTrans         )
+  .NumChips         ( HypNumChips                           ),
+  .NumPhys          ( HypNumPhys                            ),
+  .IsClockODelayed  ( 1'b0                                  ),
+  .AxiAddrWidth     ( Cfg.AddrWidth                         ),
+  .AxiDataWidth     ( Cfg.AxiDataWidth                      ),
+  .AxiIdWidth       ( LlcIdWidth                            ),
+  .AxiUserWidth     ( Cfg.AxiUserWidth                      ),
+  .axi_req_t        ( carfield_axi_llc_req_t                ),
+  .axi_rsp_t        ( carfield_axi_llc_rsp_t                ),
+  .axi_w_chan_t     ( carfield_axi_llc_w_chan_t             ),
+  .axi_b_chan_t     ( carfield_axi_llc_b_chan_t             ),
+  .axi_ar_chan_t    ( carfield_axi_llc_ar_chan_t            ),
+  .axi_r_chan_t     ( carfield_axi_llc_r_chan_t             ),
+  .axi_aw_chan_t    ( carfield_axi_llc_aw_chan_t            ),
+  .RegAddrWidth     ( Cfg.AddrWidth                         ),
+  .RegDataWidth     ( AxiNarrowDataWidth                    ),
+  .reg_req_t        ( carfield_reg_req_t                    ),
+  .reg_rsp_t        ( carfield_reg_rsp_t                    ),
+  .RxFifoLogDepth   ( 32'd2                                 ),
+  .TxFifoLogDepth   ( 32'd2                                 ),
+  .RstChipBase      ( Cfg.LlcOutRegionStart                 ),
+  .RstChipSpace     ( HypNumPhys * HypNumChips * 'h800_0000 ),
+  .PhyStartupCycles ( 300 * 200                             ),
+  .AxiLogDepth      ( LogDepth                              ),
+  .AxiSlaveArWidth  ( LlcArWidth                            ),
+  .AxiSlaveAwWidth  ( LlcAwWidth                            ),
+  .AxiSlaveBWidth   ( LlcBWidth                             ),
+  .AxiSlaveRWidth   ( LlcRWidth                             ),
+  .AxiSlaveWWidth   ( LlcWWidth                             ),
+  .AxiMaxTrans      ( Cfg.AxiMaxSlvTrans                    )
 ) i_hyperbus_wrap   (
-  .clk_phy_i           ( hyp_clk_phy_i      ),
-  .rst_phy_ni          ( hyp_rst_phy_ni     ),
-  .clk_i               ( clk_i              ),
-  .rst_ni              ( rst_ni             ),
-  .test_mode_i         ( test_mode_i        ),
-  .axi_slave_ar_data_i ( llc_ar_data        ),
-  .axi_slave_ar_wptr_i ( llc_ar_wptr        ),
-  .axi_slave_ar_rptr_o ( llc_ar_rptr        ),
-  .axi_slave_aw_data_i ( llc_aw_data        ),
-  .axi_slave_aw_wptr_i ( llc_aw_wptr        ),
-  .axi_slave_aw_rptr_o ( llc_aw_rptr        ),
-  .axi_slave_b_data_o  ( llc_b_data         ),
-  .axi_slave_b_wptr_o  ( llc_b_wptr         ),
-  .axi_slave_b_rptr_i  ( llc_b_rptr         ),
-  .axi_slave_r_data_o  ( llc_r_data         ),
-  .axi_slave_r_wptr_o  ( llc_r_wptr         ),
-  .axi_slave_r_rptr_i  ( llc_r_rptr         ),
-  .axi_slave_w_data_i  ( llc_w_data         ),
-  .axi_slave_w_wptr_i  ( llc_w_wptr         ),
-  .axi_slave_w_rptr_o  ( llc_w_rptr         ),
-  .reg_req_i           ( reg_hyper_req      ),
-  .reg_rsp_o           ( reg_hyper_rsp      ),
-  .hyper_cs_no         ( hyper_cs_n_wire    ),
-  .hyper_ck_o          ( hyper_ck_wire      ),
-  .hyper_ck_no         ( hyper_ck_n_wire    ),
-  .hyper_rwds_o        ( hyper_rwds_o       ),
-  .hyper_rwds_i        ( hyper_rwds_i       ),
-  .hyper_rwds_oe_o     ( hyper_rwds_oe      ),
-  .hyper_dq_i          ( hyper_dq_i         ),
-  .hyper_dq_o          ( hyper_dq_o         ),
-  .hyper_dq_oe_o       ( hyper_dq_oe        ),
-  .hyper_reset_no      ( hyper_reset_n_wire )
-);
+  .clk_i               ( hyp_clk_phy_i       ),
+  .rst_ni              ( hyp_rst_phy_ni      ),
+  .test_mode_i         ( test_mode_i         ),
+  .axi_slave_ar_data_i ( llc_ar_data         ),
+  .axi_slave_ar_wptr_i ( llc_ar_wptr         ),
+  .axi_slave_ar_rptr_o ( llc_ar_rptr         ),
+  .axi_slave_aw_data_i ( llc_aw_data         ),
+  .axi_slave_aw_wptr_i ( llc_aw_wptr         ),
+  .axi_slave_aw_rptr_o ( llc_aw_rptr         ),
+  .axi_slave_b_data_o  ( llc_b_data          ),
+  .axi_slave_b_wptr_o  ( llc_b_wptr          ),
+  .axi_slave_b_rptr_i  ( llc_b_rptr          ),
+  .axi_slave_r_data_o  ( llc_r_data          ),
+  .axi_slave_r_wptr_o  ( llc_r_wptr          ),
+  .axi_slave_r_rptr_i  ( llc_r_rptr          ),
+  .axi_slave_w_data_i  ( llc_w_data          ),
+  .axi_slave_w_wptr_i  ( llc_w_wptr          ),
+  .axi_slave_w_rptr_o  ( llc_w_rptr          ),
+  .rbus_req_addr_i     ( reg_hyper_req.addr  ),
+  .rbus_req_write_i    ( reg_hyper_req.write ),
+  .rbus_req_wdata_i    ( reg_hyper_req.wdata ),
+  .rbus_req_wstrb_i    ( reg_hyper_req.wstrb ),
+  .rbus_req_valid_i    ( reg_hyper_req.valid ),
+  .rbus_rsp_rdata_o    ( reg_hyper_rsp.rdata ),
+  .rbus_rsp_ready_o    ( reg_hyper_rsp.ready ),
+  .rbus_rsp_error_o    ( reg_hyper_rsp.error ),
+  .pad_hyper_csn       ( pad_hyper_csn       ),
+  .pad_hyper_ck        ( pad_hyper_ck        ),
+  .pad_hyper_ckn       ( pad_hyper_ckn       ),
+  .pad_hyper_rwds      ( pad_hyper_rwds      ),
+  .pad_hyper_reset     ( pad_hyper_reset     ),
+  .pad_hyper_dq        ( pad_hyper_dq        )
 
-for (genvar i = 0 ; i<HypNumPhys; i++) begin : gen_hyper_phy
-  for (genvar j = 0; j<HypNumChips; j++) begin : gen_hyper_cs
-    pad_functional_pd padinst_hyper_csno (
-      .OEN ( 1'b0                    ),
-      .I   ( hyper_cs_n_wire[i][j]   ),
-      .O   ( hyper_cs_pad_out[i][j]  ),
-      .PEN ( hyper_cs_pen_wire[i][j] ),
-      .PAD ( pad_hyper_csn[i][j]     )
-    );
-  end
-  pad_functional_pd padinst_hyper_ck (
-    .OEN ( 1'b0                 ),
-    .I   ( hyper_ck_wire[i]     ),
-    .O   ( hyper_ck_out_wire[i] ),
-    .PEN ( hyper_ck_pen_wire[i] ),
-    .PAD ( pad_hyper_ck[i]      )
-  );
-  pad_functional_pd padinst_hyper_ckno   (
-    .OEN ( 1'b0                   ),
-    .I   ( hyper_ck_n_wire[i]     ),
-    .O   ( hyper_ck_n_out_wire[i] ),
-    .PEN ( hyper_ck_n_pen_wire[i] ),
-    .PAD ( pad_hyper_ckn[i]       )
-  );
-  pad_functional_pd padinst_hyper_rwds0  (
-    .OEN (~hyper_rwds_oe[i]  ),
-    .I   ( hyper_rwds_o[i]   ),
-    .O   ( hyper_rwds_i[i]   ),
-    .PEN ( hyper_rwds_pen[i] ),
-    .PAD ( pad_hyper_rwds[i] )
-  );
-  pad_functional_pd padinst_hyper_resetn (
-    .OEN ( 1'b0                    ),
-    .I   ( hyper_reset_n_wire[i]   ),
-    .O   ( hyper_rst_n_out_wire[i] ),
-    .PEN ( hyper_rst_n_pen_wire[i] ),
-    .PAD ( pad_hyper_reset[i]      )
-  );
-  for (genvar j = 0; j < 8; j++) begin : gen_hyper_dq
-    pad_functional_pd padinst_hyper_dqio0  (
-      .OEN (~hyper_dq_oe[i]     ),
-      .I   ( hyper_dq_o[i][j]   ),
-      .O   ( hyper_dq_i[i][j]   ),
-      .PEN ( hyper_dq_pen[i][j] ),
-      .PAD ( pad_hyper_dq[i][j] )
-    );
-  end
-end
+);
 
 // Reconfigurable L2 Memory
 logic l2_ecc_err;
