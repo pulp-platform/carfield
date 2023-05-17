@@ -450,7 +450,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: fe6af882359be12b3884b9c9a5755a022bb031ff
+    revision: dbc4c442bd54a538bcafd0d62fec2b608a359dc3
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:spatz/spatz.git

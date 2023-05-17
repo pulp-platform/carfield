@@ -997,6 +997,7 @@ spatz_cluster_wrapper #(
     .AxiInIdWidth             ( AxiSlvIdWidth   ),
     .AxiOutIdWidth            ( Cfg.AxiMstIdWidth ),
     .LogDepth                 ( LogDepth ),
+    .SyncStages               (  ), //by default is 3
 
     // AXI type IN
     .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
@@ -1032,8 +1033,7 @@ spatz_cluster_wrapper #(
     )i_fp_cluster_wrapper(
     .clk_i           ( alt_clk_i            ),
     .rst_ni          ( spatz_rst_n          ),
-  // TODO: add pwr_on_rst (!)
-  // TODO: add synth wrapper and isolate stuff like safety island
+    .pwr_on_rst_ni   ( spatz_pwr_on_rst_n   ),
     .testmode_i      ( 1'b0                 ), // TODO: connect
     .scan_enable_i   ( 1'b0                 ),
     .scan_data_i     ( 1'b0                 ),
