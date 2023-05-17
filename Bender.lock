@@ -273,10 +273,10 @@ packages:
     dependencies:
     - tech_cells_generic
   hyperbus:
-    revision: null
+    revision: f4fb8e2de617603a0cde908d0b245438239b0026
     version: null
     source:
-      Path: /scratch/lvalente/intel16/working_dir/hyperbus
+      Git: https://github.com/pulp-platform/hyperbus.git
     dependencies:
     - axi
     - common_cells

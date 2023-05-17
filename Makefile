@@ -10,7 +10,10 @@ ROOT := .
 CHS_ROOT ?= $(ROOT)/cheshire
 CAR_SW_DIR := $(ROOT)/sw
 
-BENDER   ?= bender
+# Bender
+BENDER_VERSION = 0.27.1
+BENDER_DIR := $(ROOT)
+BENDER   ?= $(BENDER_DIR)/bender
 QUESTA   ?= questa-2022.3
 TBENCH   ?= tb_carfield_soc
 BOOTMODE ?= 0 # default passive bootmode
@@ -69,6 +72,27 @@ car-nonfree-init:
 -include scripts/spy.mk
 
 ############
+#  Bender  #
+############
+
+# Bender
+.PHONY: bender
+bender: $(ROOT)/Bender.local check-bender $(BENDER_DIR)/bender
+
+check-bender: $(BENDER_DIR)/bender
+	@if [ -x $(BENDER_DIR)/bender ]; then \
+		req="bender $(BENDER_VERSION)"; \
+		current="$$($(BENDER_DIR)/bender --version)"; \
+		if [ "$$(printf '%s\n' "$${req}" "$${current}" | sort -V | head -n1)" != "$${req}" ]; then \
+			rm -rf $(BENDER_DIR)/bender; \
+		fi \
+	fi
+
+$(BENDER_DIR)/bender:
+	mkdir -p $(BENDER_DIR) && cd $(BENDER_DIR) && \
+	curl --proto '=https' --tlsv1.2 https://pulp-platform.github.io/bender/init -sSf | sh -s -- $(BENDER_VERSION)
+
+############
 # Build SW #
 ############
 
@@ -82,7 +106,7 @@ include $(CAR_SW_DIR)/sw.mk
 tb/hyp_vip:
 	git clone git@iis-git.ee.ethz.ch:carfield/hyp_vip.git $@
 
-scripts/carfield_compile.tcl:
+scripts/carfield_compile.tcl: bender
 	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
@@ -95,11 +119,11 @@ car-hw-sim:
 car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work
 
-car-update-deps:
+car-update-deps: bender
 	$(BENDER) update
 
 .PHONY: car-checkout-deps
-car-checkout-deps:
+car-checkout-deps: bender
 	$(BENDER) checkout
 	touch Bender.lock
 
