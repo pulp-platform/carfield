@@ -926,7 +926,7 @@ pulp_cluster #(
 ) i_integer_cluster            (
   .clk_i                       ( alt_clk_i                              ),
   .rst_ni                      ( pulp_rst_n                             ),
-  .pwr_on_rst_ni               ( rst_ni                                 ),
+  .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                      ),
   .ref_clk_i                   ( rt_clk_i                               ),
   .pmu_mem_pwdn_i              ( '0                                     ),
   .base_addr_i                 ( '0                                     ),
