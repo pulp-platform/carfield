@@ -178,7 +178,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 L2Port1End     },
   // External reg slaves (at most 8 ports and rules)
   RegExtNumSlv      : 2,
-  RegExtNumRules    : 1,
+  RegExtNumRules    : 2,
   RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, PllIdx,  CarRegsIdx },
   RegExtRegionStart : '{ 0, 0, 0, 0, 0, 0, PllBase, CarRegsBase },
   RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, PllEnd,  CarRegsEnd },
