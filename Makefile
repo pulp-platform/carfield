@@ -113,7 +113,7 @@ scripts/carfield_compile.tcl: bender
 car-hw-build: car-hw-clean scripts/carfield_compile.tcl
 	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
-car-hw-sim:
+car-hw-sim: bender
 	$(QUESTA) vsim $(VSIM_FLAG) -do "set BOOTMODE $(BOOTMODE); set PRELMODE $(PRELMODE); set BINARY $(BINARY); set VOPTARGS $(VOPTARGS); set IMAGE $(IMAGE); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(RUN_AND_EXIT)"
 
 car-hw-clean:
