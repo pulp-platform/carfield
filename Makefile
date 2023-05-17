@@ -10,6 +10,7 @@ ROOT := .
 CHS_ROOT ?= $(ROOT)/cheshire
 CAR_SW_DIR := $(ROOT)/sw
 
+# Bender
 BENDER   ?= bender
 QUESTA   ?= questa-2022.3
 TBENCH   ?= tb_carfield_soc
