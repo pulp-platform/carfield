@@ -13,6 +13,7 @@
 /// Top-level implementation of Carfield
 module carfield
   import carfield_pkg::*;
+  import carfield_reg_pkg::*;
   import cheshire_pkg::*;
   import safety_island_pkg::*;
   import tlul_ot_pkg::*;
@@ -21,13 +22,19 @@ module carfield
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2
 ) (
-  input   logic                                       clk_i,
-  input   logic                                       rst_ni,
+  // host clock
+  input   logic                                       host_clk_i,
+  // peripheral clock
+  input   logic                                       periph_clk_i,
+  // accelerator and island clock
+  input   logic                                       alt_clk_i,
+  // external reference clock for timers (CLINT, islands)
+  input   logic                                       rt_clk_i,
+
+  input   logic                                       pwr_on_rst_ni,
   input   logic                                       test_mode_i,
   // Boot mode selection
   input   logic [1:0]                                 boot_mode_i,
-  // CLINT
-  input   logic                                       rtc_i,
   // Cheshire JTAG Interface
   input   logic                                       jtag_tck_i,
   input   logic                                       jtag_trst_ni,
@@ -324,9 +331,137 @@ logic [                 LogDepth:0] axi_mst_intcluster_r_rptr ;
 logic        ibex_mbox_irq;
 logic        ches_mbox_irq;
 
+// soc reg signals
+carfield_reg2hw_t car_regs_reg2hw;
+carfield_hw2reg_t car_regs_hw2reg;
+
+// Clocking and reset strategy
+// We have three clock domains
+// host (host_clk_i), periph (periph_clk_i) and accelerators (alt_clk_i)
+//
+// and six reset domains
+// host           (contained in host clock domain)
+// periph         (contained in periph clock domain, sw reset 0)
+// safety         (contained in accelerator clock domain, sw reset 1)
+// security       (contained in accelerator clock domain, sw reset 2)
+// pulp_cluster   (contained in accelerator clock domain, sw reset 3)
+// spatz_cluster  (contained in accelerator clock domain, sw reset 4)
+
+logic    periph_rst_n;
+logic    safety_rst_n;
+logic    security_rst_n;
+logic    pulp_rst_n;
+logic    spatz_rst_n;
+
+logic    host_pwr_on_rst_n;
+logic    periph_pwr_on_rst_n;
+logic    safety_pwr_on_rst_n;
+logic    security_pwr_on_rst_n;
+logic    pulp_pwr_on_rst_n;
+logic    spatz_pwr_on_rst_n;
+
+// Reset generation for power-on reset for host domain. For the other domain we
+// get this from carfield_rstgen
+rstgen i_host_rstgen (
+  .clk_i  (host_clk_i),
+  .rst_ni (pwr_on_rst_ni),
+  .test_mode_i,
+  .rst_no (host_pwr_on_rst_n),
+  .init_no () // TODO: connect ?
+);
+
+
+// Reset generation combining software and power-on reset. These are software
+// controllable resets. The matching of clock and reset domain is according to
+// the description above
+
+// Note that each accelerator has two resets: One for the combined
+// software/power-on reset and a power-on reset only
+logic [4:0] pwr_on_rsts_n;
+logic [4:0] rsts_n;
+
+carfield_rstgen #(
+  .NumRstDomains (5)
+) i_carfield_rstgen (
+  .clks_i({periph_clk_i, alt_clk_i, alt_clk_i, alt_clk_i, alt_clk_i}),
+  .pwr_on_rst_ni,
+  .sw_rsts_ni(~{car_regs_reg2hw.periph_rst.q,
+                car_regs_reg2hw.safety_island_rst.q,
+                car_regs_reg2hw.security_island_rst.q,
+                car_regs_reg2hw.pulp_cluster_rst.q,
+                car_regs_reg2hw.spatz_cluster_rst.q}),
+  .test_mode_i,
+  .rsts_no(rsts_n),
+  .pwr_on_rsts_no(pwr_on_rsts_n),
+  .inits_no() // TODO: connect ?
+);
+
+assign periph_rst_n = rsts_n[0];
+assign safety_rst_n = rsts_n[1];
+assign security_rst_n = rsts_n[2];
+assign pulp_rst_n = rsts_n[3];
+assign spatz_rst_n = rsts_n[4];
+
+assign periph_pwr_on_rst_n = pwr_on_rsts_n[0];
+assign safety_pwr_on_rst_n = pwr_on_rsts_n[1];
+assign security_pwr_on_rst_n = pwr_on_rsts_n[2];
+assign pulp_pwr_on_rst_n = pwr_on_rsts_n[3];
+assign spatz_pwr_on_rst_n = pwr_on_rsts_n[4];
+
+//
+// Carfield Control and Status registers
+//
+
+carfield_reg_top #(
+  .reg_req_t(carfield_reg_req_t),
+  .reg_rsp_t(carfield_reg_rsp_t)
+) i_carfield_reg_top (
+  .clk_i (host_clk_i),
+  .rst_ni (host_pwr_on_rst_n),
+  .reg_req_i(ext_reg_req[CarRegsIdx]),
+  .reg_rsp_o(ext_reg_rsp[CarRegsIdx]),
+  .reg2hw (car_regs_reg2hw),
+  .hw2reg (car_regs_hw2reg),
+  .devmode_i (1'b1)
+);
+
+// TODO: these still need to be connected but can't at this point in time since RTL is missing
+// car_regs_reg2hw.host_isolate // dummy
+// car_regs_reg2hw.periph_isolate
+// car_regs_reg2hw.security_island_isolate
+
+// car_regs_reg2hw.host_fetch_enable // dummy (?)
+// car_regs_reg2hw.spatz_cluster_fetch_enable
+
+// car_regs_reg2hw.host_boot_addr // dummy (?)
+// car_regs_reg2hw.safety_island_boot_addr
+// car_regs_reg2hw.security_island_boot_addr
+// car_regs_reg2hw.pulp_cluster_boot_addr
+// car_regs_reg2hw.spatz_cluster_boot_addr
+
+// car_regs_reg2hw.l2_sram_config0...x
+
+// car_regs_hw2reg.host_isolate_status // dummy
+// car_regs_hw2reg.periph_isolate_status
+// car_regs_hw2reg.security_island_isolate_status
+
+
 // Temporary assign
+// TODO: add ethernet and hyperbus isolate?
 assign hyper_isolate_req = '0;
-assign slave_isolate_req = '0;
+
+
+//
+// Isolate and Isolate status
+//
+assign slave_isolate_req[SafetyIslandSlvIdx] = car_regs_reg2hw.safety_island_isolate.q;
+assign slave_isolate_req[IntClusterSlvIdx]   = car_regs_reg2hw.pulp_cluster_isolate.q;
+assign slave_isolate_req[FPClusterSlvIdx]    = car_regs_reg2hw.spatz_cluster_isolate.q;
+assign slave_isolate_req[L2Port1SlvIdx]      = 'd0;
+assign slave_isolate_req[L2Port2SlvIdx]      = 'd0;
+assign slave_isolate_req[OTMailboxSlvIdx]    = 'd0;
+assign slave_isolate_req[EthernetSlvIdx]     = 'd0;
+assign slave_isolate_req[PeriphsSlvIdx]      = 'd0;
 
 always_comb begin: assign_isolated_responses
   slave_isolated = '0;
@@ -340,6 +475,15 @@ always_comb begin: assign_isolated_responses
   end
 end
 
+assign car_regs_hw2reg.safety_island_isolate_status.d = slave_isolated[SafetyIslandSlvIdx];
+assign car_regs_hw2reg.safety_island_isolate_status.de = 1'b1;
+
+assign car_regs_hw2reg.pulp_cluster_isolate_status.d = slave_isolated[IntClusterSlvIdx];
+assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
+
+assign car_regs_hw2reg.spatz_cluster_isolate_status.d = slave_isolated[FPClusterSlvIdx];
+assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
+
 // hyperbus reg req/rsp
 carfield_reg_req_t reg_hyper_req;
 carfield_reg_rsp_t reg_hyper_rsp;
@@ -352,6 +496,7 @@ carfield_reg_rsp_t reg_wdt_rsp;
 * Carfield IPs *
 ***************/
 // Cheshire SoC
+// Host Clock Domain
 cheshire_wrap #(
   .Cfg                            ( Cfg                          ),
   .ExtHartinfo                    ( '0                           ),
@@ -396,11 +541,11 @@ cheshire_wrap #(
   .AxiIn                          ( AxiIn                        ),
   .AxiOut                         ( AxiOut                       )
 ) i_cheshire_wrap                 (
-  .clk_i                          ,
-  .rst_ni                         ,
+  .clk_i              ( host_clk_i         ),
+  .rst_ni             ( host_pwr_on_rst_n  ),
   .test_mode_i                    ,
   .boot_mode_i                    ,
-  .rtc_i                          ,
+  .rtc_i              ( rt_clk_i          ),
   // External AXI LLC (DRAM) port
   .axi_llc_isolate_i  ( hyper_isolate_req  ),
   .axi_llc_isolated_o ( hyper_isolated_rsp ),
@@ -613,10 +758,10 @@ hyperbus_wrap      #(
   .pad_hyper_rwds      ( pad_hyper_rwds      ),
   .pad_hyper_reset     ( pad_hyper_reset     ),
   .pad_hyper_dq        ( pad_hyper_dq        )
-
 );
 
 // Reconfigurable L2 Memory
+// Host Clock Domain
 logic l2_ecc_err;
 
 l2_wrap #(
@@ -630,8 +775,8 @@ l2_wrap #(
   .NumRules     ( L2NumRules             ),
   .L2MemSize    ( L2MemSize              )
 ) i_reconfigrurable_l2 (
-  .clk_i               ( clk_i                                ),
-  .rst_ni              ( rst_ni                               ),
+  .clk_i               ( host_clk_i                           ),
+  .rst_ni              ( host_pwr_on_rst_n                    ),
   .slvport_ar_data_i   ( axi_slv_ext_ar_data [NumL2Ports-1:0] ),
   .slvport_ar_wptr_i   ( axi_slv_ext_ar_wptr [NumL2Ports-1:0] ),
   .slvport_ar_rptr_o   ( axi_slv_ext_ar_rptr [NumL2Ports-1:0] ),
@@ -651,6 +796,7 @@ l2_wrap #(
 );
 
 // Safety Island
+// Alt Clock Domain
 safety_island_pkg::bootmode_e safety_island_bootmode;
 assign safety_island_bootmode = safety_island_pkg::Preloaded;
 
@@ -690,13 +836,13 @@ safety_island_synth_wrapper #(
   .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth      ),
   .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth       )
 ) i_safety_island_wrap    (
-  .clk_i                  ( clk_i                                    ),
-  .ref_clk_i              ( clk_i                                    ),
-  .rst_ni                 ( rst_ni                                   ),
-  .pwr_on_rst_ni          ( rst_ni                                   ),
+  .clk_i                  ( alt_clk_i                                ),
+  .ref_clk_i              ( rt_clk_i                                 ),
+  .rst_ni                 ( safety_rst_n                             ),
+  .pwr_on_rst_ni          ( safety_pwr_on_rst_n                      ),
   .test_enable_i          ( '0                                       ),
   .bootmode_i             ( safety_island_bootmode                   ),
-  .fetch_en_i             ( '0                                       ), // To SoC Bus
+  .fetch_en_i             ( car_regs_reg2hw.safety_island_fetch_enable ), // To SoC Bus
   .axi_isolate_i          ( slave_isolate_req [SafetyIslandSlvIdx]   ), // To SoC Bus
   .axi_isolated_o         ( master_isolated_rsp [SafetyIslandMstIdx] ),
   .irqs_i                 ( '0                                       ),
@@ -740,6 +886,8 @@ safety_island_synth_wrapper #(
   .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [SafetyIslandMstIdx] )
 );
 
+// PULP integer cluster
+// Alt Clock Domain
 pulp_cluster #(
   .NB_CORES                       ( IntClusterNumCores        ),
   .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts    ),
@@ -781,16 +929,16 @@ pulp_cluster #(
   .LOG_DEPTH                      ( LogDepth                  ),
   .BaseAddr                       ( IntClusterBase            )
 ) i_integer_cluster            (
-  .clk_i                       ( clk_i                                  ),
-  .rst_ni                      ( rst_ni                                 ),
-  .pwr_on_rst_ni               ( rst_ni                                 ),
-  .ref_clk_i                   ( clk_i                                  ),
+  .clk_i                       ( alt_clk_i                              ),
+  .rst_ni                      ( pulp_rst_n                             ),
+  .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                      ),
+  .ref_clk_i                   ( rt_clk_i                               ),
   .pmu_mem_pwdn_i              ( '0                                     ),
   .base_addr_i                 ( '0                                     ),
   .test_mode_i                 ( test_mode_i                            ),
   .cluster_id_i                ( IntClusterIndex                        ),
   .en_sa_boot_i                ( '0                                     ), // To Soc Control
-  .fetch_en_i                  ( '0                                     ), // To Soc Control
+  .fetch_en_i                  ( car_regs_reg2hw.pulp_cluster_fetch_enable ), // To Soc Control
   .eoc_o                       (                                        ), // To Soc Control
   .busy_o                      (                                        ), // To Soc Control
   .axi_isolate_i               ( slave_isolate_req [IntClusterSlvIdx]   ), // To SoC Control
@@ -840,7 +988,8 @@ pulp_cluster #(
   .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
 );
 
-//Floating Point Spatz Cluster
+// Floating Point Spatz Cluster
+// Alt Clock Domain
 spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth     ),
     .AxiDataWidth             ( Cfg.AxiDataWidth  ),
@@ -881,9 +1030,11 @@ spatz_cluster_wrapper #(
     .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth ),
     .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
     )i_fp_cluster_wrapper(
-    .clk_i           ( clk_i                ),
-    .rst_ni          ( rst_ni               ),
-    .testmode_i      ( 1'b0                 ),
+    .clk_i           ( alt_clk_i            ),
+    .rst_ni          ( spatz_rst_n          ),
+  // TODO: add pwr_on_rst (!)
+  // TODO: add synth wrapper and isolate stuff like safety island
+    .testmode_i      ( 1'b0                 ), // TODO: connect
     .scan_enable_i   ( 1'b0                 ),
     .scan_data_i     ( 1'b0                 ),
     .scan_data_o     (  /* Unused */        ),
@@ -931,6 +1082,7 @@ spatz_cluster_wrapper #(
   );
 
 // Security Island
+// Alt Clock Domain
 secure_subsystem_synth_wrap #(
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
   .AxiDataWidth          ( Cfg.AxiDataWidth           ),
@@ -960,10 +1112,12 @@ secure_subsystem_synth_wrap #(
   .axi_ot_out_req_t      ( carfield_axi_mst_req_t     ),
   .axi_ot_out_resp_t     ( carfield_axi_mst_rsp_t     )
 ) i_security_island (
-  .clk_i            ( clk_i           ),
-  .clk_ref_i        ( clk_i           ),
-  .rst_ni           ( rst_ni          ),
-  .fetch_en_i       ( '1              ),
+  .clk_i            ( alt_clk_i       ),
+  .clk_ref_i        ( alt_clk_i       ), // TODO: proper ref clock(?)
+  .rst_ni           ( security_rst_n  ),
+  // TODO: add pwr_on_rst (!)
+  // TODO: add synth wrapper and isolate stuff like safety island
+  .fetch_en_i       ( car_regs_reg2hw.security_island_fetch_enable ),
   .bootmode_i       ( '0              ),
   .test_enable_i    ( '0              ),
   .irq_ibex_i       ( ibex_mbox_irq   ),
@@ -1004,10 +1158,12 @@ secure_subsystem_synth_wrap #(
 );
 
 // Security Island Mailbox
+// Host Clock Domain
 
 carfield_axi_slv_req_t axi_mbox_req;
 carfield_axi_slv_rsp_t axi_mbox_rsp;
 
+// TODO: remove this useless CDC. Mailbox is in the host domain
 axi_cdc_dst #(
   .LogDepth   ( LogDepth                   ),
   .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
@@ -1035,10 +1191,10 @@ axi_cdc_dst #(
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [OTMailboxSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [OTMailboxSlvIdx] ),
   // synchronous master port
-  .dst_clk_i                  ( clk_i        ),
-  .dst_rst_ni                 ( rst_ni       ),
-  .dst_req_o                  ( axi_mbox_req ),
-  .dst_resp_i                 ( axi_mbox_rsp )
+  .dst_clk_i                  ( host_clk_i        ),
+  .dst_rst_ni                 ( host_pwr_on_rst_n ),
+  .dst_req_o                  ( axi_mbox_req      ),
+  .dst_resp_i                 ( axi_mbox_rsp      )
 );
 
 axi_scmi_mailbox #(
@@ -1049,17 +1205,17 @@ axi_scmi_mailbox #(
   .axi_req_t          ( carfield_axi_slv_req_t ),
   .axi_resp_t         ( carfield_axi_slv_rsp_t )
 ) i_scmi_ot_mailbox   (
-  .clk_i              ( clk_i         ),
-  .rst_ni             ( rst_ni        ),
-  .axi_mbox_req       ( axi_mbox_req  ),
-  .axi_mbox_rsp       ( axi_mbox_rsp  ),
-  .doorbell_irq_o     ( ibex_mbox_irq ),
-  .completion_irq_o   ( ches_mbox_irq )
+  .clk_i              ( host_clk_i         ),
+  .rst_ni             ( host_pwr_on_rst_n  ),
+  .axi_mbox_req       ( axi_mbox_req       ),
+  .axi_mbox_rsp       ( axi_mbox_rsp       ),
+  .doorbell_irq_o     ( ibex_mbox_irq      ),
+  .completion_irq_o   ( ches_mbox_irq      )
 );
 
 // Carfield peripherals
-
 // Ethernet
+// Peripheral Clock Domain
 carfield_axi_slv_req_t axi_ethernet_req;
 carfield_axi_slv_rsp_t axi_ethernet_rsp;
 
@@ -1088,10 +1244,10 @@ axi_cdc_dst #(
   .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-  .dst_clk_i                  ( clk_i            ),
-  .dst_rst_ni                 ( rst_ni           ),
-  .dst_req_o                  ( axi_ethernet_req ),
-  .dst_resp_i                 ( axi_ethernet_rsp )
+  .dst_clk_i                  ( periph_clk_i        ),
+  .dst_rst_ni                 ( periph_pwr_on_rst_n ),
+  .dst_req_o                  ( axi_ethernet_req    ),
+  .dst_resp_i                 ( axi_ethernet_rsp    )
 );
 
 // TODO connect ethernet
@@ -1103,8 +1259,8 @@ axi_err_slv #(
  .ATOPs       ( 1'b0                   ),
  .MaxTrans    ( 4                      )
 ) i_axi_err_slv_ethernet (
-  .clk_i      ( clk_i                  ),
-  .rst_ni     ( rst_ni                 ),
+  .clk_i      ( periph_clk_i           ),
+  .rst_ni     ( periph_pwr_on_rst_n    ), // TODO: currently not sw resettable no isolate
   .test_i     ( test_mode_i            ),
   // slave port
   .slv_req_i  ( axi_ethernet_req       ),
@@ -1112,6 +1268,7 @@ axi_err_slv #(
 );
 
 // APB peripherals
+// Periph Clock Domain
 // axi_cdc -> axi_amos -> axi_cut -> axi_to_axilite -> axilite_to_apb -> periph devices
 carfield_axi_slv_req_t axi_d64_a48_peripherals_req;
 carfield_axi_slv_rsp_t axi_d64_a48_peripherals_rsp;
@@ -1143,8 +1300,8 @@ axi_cdc_dst #(
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [PeriphsSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [PeriphsSlvIdx] ),
   // synchronous master port
-  .dst_clk_i                  ( clk_i                       ),
-  .dst_rst_ni                 ( rst_ni                      ),
+  .dst_clk_i                  ( periph_clk_i                ),
+  .dst_rst_ni                 ( periph_pwr_on_rst_n         ),
   .dst_req_o                  ( axi_d64_a48_peripherals_req ),
   .dst_resp_i                 ( axi_d64_a48_peripherals_rsp )
 );
@@ -1169,8 +1326,8 @@ axi_riscv_atomics_structs #(
   .axi_req_t        ( carfield_axi_slv_req_t ),
   .axi_rsp_t        ( carfield_axi_slv_rsp_t )
 ) i_atomics_peripherals (
-  .clk_i,
-  .rst_ni,
+  .clk_i         ( periph_clk_i                    ),
+  .rst_ni        ( periph_pwr_on_rst_n             ),
   .axi_slv_req_i ( axi_d64_a48_peripherals_req     ),
   .axi_slv_rsp_o ( axi_d64_a48_peripherals_rsp     ),
   .axi_mst_req_o ( axi_d64_a48_amo_peripherals_req ),
@@ -1190,8 +1347,8 @@ axi_cut #(
   .axi_req_t  ( carfield_axi_slv_req_t     ),
   .axi_resp_t ( carfield_axi_slv_rsp_t     )
 ) i_atomics_cut_peripherals (
-  .clk_i,
-  .rst_ni,
+  .clk_i      ( periph_clk_i                        ),
+  .rst_ni     ( periph_pwr_on_rst_n                 ),
   .slv_req_i  ( axi_d64_a48_amo_peripherals_req     ),
   .slv_resp_o ( axi_d64_a48_amo_peripherals_rsp     ),
   .mst_req_o  ( axi_d64_a48_amo_cut_peripherals_req ),
@@ -1223,8 +1380,8 @@ axi_dw_converter #(
   .axi_slv_req_t        ( carfield_axi_slv_req_t            ),
   .axi_slv_resp_t       ( carfield_axi_slv_rsp_t            )
 ) i_axi_dw_converter_peripherals (
-  .clk_i      ( clk_i                               ),
-  .rst_ni     ( rst_ni                              ),
+  .clk_i      ( periph_clk_i                        ),
+  .rst_ni     ( periph_pwr_on_rst_n                 ),
   .slv_req_i  ( axi_d64_a48_amo_cut_peripherals_req ),
   .slv_resp_o ( axi_d64_a48_amo_cut_peripherals_rsp ),
   .mst_req_o  ( axi_d32_a48_peripherals_req         ),
@@ -1274,8 +1431,8 @@ axi_to_axi_lite #(
   .lite_req_t     ( carfield_axi_lite_d32_a32_slv_req_t ),
   .lite_resp_t    ( carfield_axi_lite_d32_a32_slv_rsp_t )
 ) i_axi_to_axi_lite_peripherals (
-  .clk_i     ( clk_i                            ),
-  .rst_ni    ( rst_ni                           ),
+  .clk_i     ( periph_clk_i                     ),
+  .rst_ni    ( periph_pwr_on_rst_n              ),
   .test_i    ( test_mode_i                      ),
   .slv_req_i ( axi_d32_a32_peripherals_req      ),
   .slv_resp_o( axi_d32_a32_peripherals_rsp      ),
@@ -1326,8 +1483,8 @@ axi_lite_to_apb #(
   .apb_resp_t      ( carfield_apb_rsp_t                  ),
   .rule_t          ( carfield_addr_map_rule_t            )
 ) i_axi_lite_to_apb_peripherals (
-  .clk_i          ( clk_i                                ),
-  .rst_ni         ( rst_ni                               ),
+  .clk_i          ( periph_clk_i                         ),
+  .rst_ni         ( periph_pwr_on_rst_n                  ),
   .axi_lite_req_i ( axi_lite_d32_a32_peripherals_req     ),
   .axi_lite_resp_o( axi_lite_d32_a32_peripherals_rsp     ),
   .apb_req_o      ( apb_mst_req                          ),
@@ -1338,9 +1495,9 @@ axi_lite_to_apb #(
 // System timer
 apb_timer_unit #(
   .APB_ADDR_WIDTH ( AxiNarrowAddrWidth )
-) i_system_timer  (
-  .HCLK       ( clk_i                  ),
-  .HRESETn    ( rst_ni                 ),
+) i_system_timer (
+  .HCLK       ( periph_clk_i                        ),
+  .HRESETn    ( periph_pwr_on_rst_n                 ),
   .PADDR      ( apb_mst_req[SystemTimerIdx].paddr   ),
   .PWDATA     ( apb_mst_req[SystemTimerIdx].pwdata  ),
   .PWRITE     ( apb_mst_req[SystemTimerIdx].pwrite  ),
@@ -1349,7 +1506,7 @@ apb_timer_unit #(
   .PRDATA     ( apb_mst_rsp[SystemTimerIdx].prdata  ),
   .PREADY     ( apb_mst_rsp[SystemTimerIdx].pready  ),
   .PSLVERR    ( apb_mst_rsp[SystemTimerIdx].pslverr ),
-  .ref_clk_i  ( clk_i                 ),
+  .ref_clk_i  ( rt_clk_i              ),
   .event_lo_i ( '0                    ),
   .event_hi_i ( '0                    ),
   .irq_lo_o   ( /* TODO connect me */ ),
@@ -1362,8 +1519,8 @@ apb_adv_timer #(
   .APB_ADDR_WIDTH  ( AxiNarrowAddrWidth ),
   .EXTSIG_NUM      ( 64                 )
 ) i_advanced_timer (
-  .HCLK            ( clk_i                  ),
-  .HRESETn         ( rst_ni                 ),
+  .HCLK            ( periph_clk_i           ),
+  .HRESETn         ( periph_pwr_on_rst_n    ),
   .dft_cg_enable_i ( 1'b0                   ),
   .PADDR           ( apb_mst_req[AdvancedTimerIdx].paddr   ),
   .PWDATA          ( apb_mst_req[AdvancedTimerIdx].pwdata  ),
@@ -1373,7 +1530,7 @@ apb_adv_timer #(
   .PRDATA          ( apb_mst_rsp[AdvancedTimerIdx].prdata  ),
   .PREADY          ( apb_mst_rsp[AdvancedTimerIdx].pready  ),
   .PSLVERR         ( apb_mst_rsp[AdvancedTimerIdx].pslverr ),
-  .low_speed_clk_i ( clk_i                  ),
+  .low_speed_clk_i ( rt_clk_i              ),
   .ext_sig_i       ( /* TODO connect me */  ),
   .events_o        ( /* TODO connect me */  ),
   .ch_0_o          ( /* TODO connect me */  ),
@@ -1386,11 +1543,11 @@ apb_adv_timer #(
 REG_BUS #(
   .ADDR_WIDTH ( AxiNarrowAddrWidth ),
   .DATA_WIDTH ( AxiNarrowDataWidth )
-) reg_bus_wdt (clk_i);
+) reg_bus_wdt (periph_clk_i);
 
 apb_to_reg i_apb_to_reg_wdt (
-  .clk_i,
-  .rst_ni,
+  .clk_i     ( periph_clk_i                      ),
+  .rst_ni    ( periph_pwr_on_rst_n               ),
   .penable_i ( apb_mst_req[SystemWdtIdx].penable ),
   .pwrite_i  ( apb_mst_req[SystemWdtIdx].pwrite  ),
   .paddr_i   ( apb_mst_req[SystemWdtIdx].paddr   ),
@@ -1434,11 +1591,11 @@ reg_to_tlul #(
 );
 
 // Wdt
-aon_timer i_watchdog_timer   (
-  .clk_i                     ( clk_i                 ),
-  .rst_ni                    ( rst_ni                ),
-  .clk_aon_i                 ( clk_i                 ),
-  .rst_aon_ni                ( rst_ni                ),
+aon_timer i_watchdog_timer (
+  .clk_i                     ( periph_clk_i          ),
+  .rst_ni                    ( periph_pwr_on_rst_n   ),
+  .clk_aon_i                 ( rt_clk_i              ),
+  .rst_aon_ni                ( periph_pwr_on_rst_n   ),
   .tl_i                      ( tl_wdt_req            ),
   .tl_o                      ( tl_wdt_rsp            ),
   .alert_rx_i                ( '0                    ),
@@ -1456,11 +1613,11 @@ aon_timer i_watchdog_timer   (
 REG_BUS #(
   .ADDR_WIDTH ( AxiNarrowAddrWidth ),
   .DATA_WIDTH ( AxiNarrowDataWidth )
-) reg_bus_hyper (clk_i);
+) reg_bus_hyper (periph_clk_i);
 
 apb_to_reg i_apb_to_reg_hyper (
-  .clk_i,
-  .rst_ni,
+  .clk_i     ( periph_clk_i                     ),
+  .rst_ni    ( periph_pwr_on_rst_n              ),
   .penable_i ( apb_mst_req[HyperBusIdx].penable ),
   .pwrite_i  ( apb_mst_req[HyperBusIdx].pwrite  ),
   .paddr_i   ( apb_mst_req[HyperBusIdx].paddr   ),
@@ -1490,8 +1647,8 @@ can_top_apb #(
   .txt_buffer_count ( 2                     ),
   .target_technology( 0                     ) // 0 for ASIC or 1 for FPGA
  ) i_apb_to_can (
-  .aclk             ( clk_i                  ),
-  .arstn            ( rst_ni                 ),
+  .aclk             ( periph_clk_i           ),
+  .arstn            ( periph_pwr_on_rst_n    ),
   .scan_enable      ( 1'b0                   ),
   .res_n_out        (                        ),
   .irq              ( /* TODO connect me */  ),

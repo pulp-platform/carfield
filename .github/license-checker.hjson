@@ -16,5 +16,7 @@
         .github/*-matcher.json
         # Exclude generated headers (no support for optional lines)
         sw/include/regs/*.h
+	# Exclude emacs config
+	.dir-locals.el
     ],
 }

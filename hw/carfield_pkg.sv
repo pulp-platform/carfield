@@ -97,17 +97,21 @@ typedef enum word_bt {
 
 // Cheshire regbus out
 typedef enum int {
-  PllIdx = 'd0
+  CarRegsIdx = 'd0,
+  PllIdx     = 'd1
 } cheshire_reg_out_e;
 
 typedef enum doub_bt {
-  PllBase   = 'h0000_0000_2000_2000
+  CarRegsBase = 'h0000_0000_2001_0000,
+  PllBase     = 'h0000_0000_2002_0000
 } reg_start_t;
 
-localparam doub_bt PllSize   = 'h0000_0000_0000_1000;
+localparam doub_bt CarRegsSize = 'h0000_0000_0000_1000;
+localparam doub_bt PllSize     = 'h0000_0000_0000_1000;
 
 typedef enum doub_bt {
-  PllEnd   = PllBase + PllSize
+  CarRegsEnd = CarRegsBase + CarRegsSize,
+  PllEnd     = PllBase + PllSize
 } reg_end_t;
 
 // Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals + Floating Point Cluster
@@ -173,11 +177,11 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 L2Port2End     ,
                                                 L2Port1End     },
   // External reg slaves (at most 8 ports and rules)
-  RegExtNumSlv      : 1,
-  RegExtNumRules    : 1,
-  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, 0, PllIdx },
-  RegExtRegionStart : '{ 0, 0, 0, 0, 0, 0, 0, PllBase},
-  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, 0, PllEnd },
+  RegExtNumSlv      : 2,
+  RegExtNumRules    : 2,
+  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, PllIdx,  CarRegsIdx },
+  RegExtRegionStart : '{ 0, 0, 0, 0, 0, 0, PllBase, CarRegsBase },
+  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, PllEnd,  CarRegsEnd },
   // RTC
   RtcFreq           : 32768,
   // Ext Irq

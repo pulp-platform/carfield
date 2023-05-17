@@ -1,0 +1,425 @@
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Robert Balas <balasr@iis.ee.ethz.ch>
+// Luca Valente <luca.valente@unibo.it>
+{
+  name: "carfield",
+  clock_primary: "clk_i",
+  bus_interfaces: [
+    { protocol: "reg_iface", direction: "device" }
+  ],
+  regwidth: "32",
+  registers :[
+
+    { name: "VERSION0",
+      desc: "Cheshire sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION1",
+      desc: "Safety Island sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION2",
+      desc: "Security Island sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION3",
+      desc: "PULP Cluster sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION4",
+      desc: "Spatz CLuster sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "BOOT_MODE",
+      desc: "Boot mode",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      resval: "0",
+      fields: [
+        { bits: "2:0" }
+      ],
+    }
+
+    { name: "JEDEC_IDCODE",
+      desc: "JEDEC ID CODE -TODO assign-",
+      swaccess: "rw",
+      hwaccess: "none",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "GENERIC_SCRATCH0",
+      desc: "Scratch",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "GENERIC_SCRATCH1",
+      desc: "Scratch",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "HOST_RST",
+      desc: "Host Domain reset -active high, inverted in HW-",
+      swaccess: "ro",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_RST",
+      desc: "Periph Domain reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_RST",
+      desc: "Safety Island reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_RST",
+      desc: "Security Island reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_RST",
+      desc: "PULP Cluster reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_RST",
+      desc: "Spatz Cluster reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "HOST_ISOLATE",
+      desc: "Host Domain AXI isolate",
+      swaccess: "ro",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_ISOLATE",
+      desc: "Periph Domain  AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_ISOLATE",
+      desc: "Safety Island AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_ISOLATE",
+      desc: "Security Island AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_ISOLATE",
+      desc: "PULP Cluster AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_ISOLATE",
+      desc: "Spatz Cluster  AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "HOST_ISOLATE_STATUS",
+      desc: "Host Domain AXI isolate status",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_ISOLATE_STATUS",
+      desc: "Periph Domain AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_ISOLATE_STATUS",
+      desc: "Safety Island AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_ISOLATE_STATUS",
+      desc: "Security Island AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_ISOLATE_STATUS",
+      desc: "PULP Cluster AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_ISOLATE_STATUS",
+      desc: "Spatz Cluster AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "HOST_FETCH_ENABLE",
+      desc: "Host Domain AXI isolate status",
+      swaccess: "ro",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_FETCH_ENABLE",
+      desc: "Safety Island AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_FETCH_ENABLE",
+      desc: "Security Island AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_FETCH_ENABLE",
+      desc: "PULP Cluster AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_FETCH_ENABLE",
+      desc: "Spatz Cluster AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "HOST_BOOT_ADDR",
+      desc: "Host boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x1000",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_BOOT_ADDR",
+      desc: "Safety Island boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_BOOT_ADDR",
+      desc: "Security Island boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_BOOT_ADDR",
+      desc: "PULP Cluster boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_BOOT_ADDR",
+      desc: "Spatz Cluster boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "L2_SRAM_CONFIG0",
+      desc: "L2 RAM cfg pins -margin adjustments-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "L2_SRAM_CONFIG1",
+      desc: "L2 RAM cfg pins -margin adjustments-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "L2_SRAM_CONFIG2",
+      desc: "L2 RAM cfg pins -margin adjustments-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "L2_SRAM_CONFIG3",
+      desc: "L2 RAM cfg pins -margin adjustments-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+  ],
+}
