@@ -457,6 +457,11 @@ assign hyper_isolate_req = '0;
 assign slave_isolate_req[SafetyIslandSlvIdx] = car_regs_reg2hw.safety_island_isolate.q;
 assign slave_isolate_req[IntClusterSlvIdx]   = car_regs_reg2hw.pulp_cluster_isolate.q;
 assign slave_isolate_req[FPClusterSlvIdx]    = car_regs_reg2hw.spatz_cluster_isolate.q;
+assign slave_isolate_req[L2Port1SlvIdx]      = 'd0;
+assign slave_isolate_req[L2Port2SlvIdx]      = 'd0;
+assign slave_isolate_req[OTMailboxSlvIdx]    = 'd0;
+assign slave_isolate_req[EthernetSlvIdx]     = 'd0;
+assign slave_isolate_req[PeriphsSlvIdx]      = 'd0;
 
 always_comb begin: assign_isolated_responses
   slave_isolated = '0;
