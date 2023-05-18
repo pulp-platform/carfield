@@ -454,6 +454,7 @@ assign hyper_isolate_req = '0;
 //
 // Isolate and Isolate status
 //
+// TODO: Add registers to control missing isolate signals
 assign slave_isolate_req[SafetyIslandSlvIdx] = car_regs_reg2hw.safety_island_isolate.q;
 assign slave_isolate_req[IntClusterSlvIdx]   = car_regs_reg2hw.pulp_cluster_isolate.q;
 assign slave_isolate_req[FPClusterSlvIdx]    = car_regs_reg2hw.spatz_cluster_isolate.q;
@@ -462,6 +463,7 @@ assign slave_isolate_req[L2Port2SlvIdx]      = 'd0;
 assign slave_isolate_req[OTMailboxSlvIdx]    = 'd0;
 assign slave_isolate_req[EthernetSlvIdx]     = 'd0;
 assign slave_isolate_req[PeriphsSlvIdx]      = 'd0;
+assign secd_isolate_req                      = 'd0;
 
 always_comb begin: assign_isolated_responses
   slave_isolated = '0;
@@ -470,6 +472,8 @@ always_comb begin: assign_isolated_responses
       slave_isolated [i] = slave_isolated_rsp [i] & master_isolated_rsp [SafetyIslandMstIdx];
     else if (i == IntClusterSlvIdx)
       slave_isolated [i] = slave_isolated_rsp [i] & master_isolated_rsp [IntClusterMstIdx];
+    else if (i == FPClusterSlvIdx)
+      slave_isolated [i] = slave_isolated_rsp [i] & master_isolated_rsp [FPClusterMstIdx];
     else
       slave_isolated [i] = slave_isolated_rsp [i];
   end
@@ -483,6 +487,8 @@ assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
 
 assign car_regs_hw2reg.spatz_cluster_isolate_status.d = slave_isolated[FPClusterSlvIdx];
 assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
+
+// TODO: propagate isolated signal from security island to register
 
 // hyperbus reg req/rsp
 carfield_reg_req_t reg_hyper_req;
@@ -1112,10 +1118,9 @@ secure_subsystem_synth_wrap #(
   .axi_ot_out_resp_t     ( carfield_axi_mst_rsp_t     )
 ) i_security_island (
   .clk_i            ( alt_clk_i       ),
-  .clk_ref_i        ( alt_clk_i       ), // TODO: proper ref clock(?)
+  .clk_ref_i        ( rt_clk_i        ),
   .rst_ni           ( security_rst_n  ),
-  // TODO: add pwr_on_rst (!)
-  // TODO: add synth wrapper and isolate stuff like safety island
+  .pwr_on_rst_ni    ( security_pwr_on_rst_n ),
   .fetch_en_i       ( car_regs_reg2hw.security_island_fetch_enable ),
   .bootmode_i       ( '0              ),
   .test_enable_i    ( '0              ),
@@ -1143,6 +1148,8 @@ secure_subsystem_synth_wrap #(
   .async_axi_out_r_data_i  ( axi_mst_ext_r_data  [SecurityIslandMstIdx] ),
   .async_axi_out_r_wptr_i  ( axi_mst_ext_r_wptr  [SecurityIslandMstIdx] ),
   .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [SecurityIslandMstIdx] ),
+  .axi_isolate_i    ( secd_isolate_req                           ),
+  .axi_isolated_o   ( master_isolated_rsp [SecurityIslandMstIdx] ),
    // Uart
   .ibex_uart_rx_i   ( uart_ot_tx_o  ),
   .ibex_uart_tx_o   ( uart_ot_rx_i  ),

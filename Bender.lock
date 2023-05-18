@@ -336,7 +336,7 @@ packages:
     - common_cells
     - common_verification
   opentitan:
-    revision: 567ae56d23633e2d9738f68ddfdd9b529c87d859
+    revision: ed1e7f1d53e28de556a3b02bc1bd1b855f51af15
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
