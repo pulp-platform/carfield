@@ -997,7 +997,6 @@ spatz_cluster_wrapper #(
     .AxiInIdWidth             ( AxiSlvIdWidth   ),
     .AxiOutIdWidth            ( Cfg.AxiMstIdWidth ),
     .LogDepth                 ( LogDepth ),
-    .SyncStages               (  ), //by default is 3
 
     // AXI type IN
     .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
