@@ -60,14 +60,13 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= a5351b2b161e896592b596492bff1abfac367aca
+CAR_NONFREE_COMMIT ?= 185ca77030bd9053b4a26c9cc0aa4d8d439d1cea
 
 car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree
 	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
 
 -include nonfree/nonfree.mk
--include scripts/spy.mk
 
 ############
 # Build SW #
