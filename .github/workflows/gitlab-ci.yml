@@ -18,3 +18,4 @@ jobs:
           domain: iis-git.ee.ethz.ch
           repo: github-mirror/carfield
           token: ${{ secrets.GITLAB_TOKEN }}
+          poll-count: 2160
