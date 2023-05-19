@@ -7,15 +7,15 @@
 # hard-coded to Genesys 2 for the moment
 
 ## Contraints files selection
-#switch $::env(BOARD) {
-#  "genesys2" - "kc705" - "vc707" - "vcu128" {
-#    import_files -fileset constrs_1 -norecurse constraints/$::env(BOARD).xdc
-#    import_files -fileset constrs_1 -norecurse constraints/carfield.xdc
-#  }
-#  default {
-#      exit 1
-#  }
-#}
+switch $::env(BOARD) {
+  "genesys2" - "kc705" - "vc707" - "vcu128" {
+    import_files -fileset constrs_1 -norecurse constraints/$::env(BOARD).xdc
+    import_files -fileset constrs_1 -norecurse constraints/carfield.xdc
+  }
+  default {
+      exit 1
+  }
+}
 
 # Ips selection
 switch $::env(BOARD) {
@@ -23,9 +23,8 @@ switch $::env(BOARD) {
     set ips { "xilinx/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.srcs/sources_1/ip/xlnx_mig_7_ddr3/xlnx_mig_7_ddr3.xci" }
   }
   "vcu128" {
-    set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" \
-              "xilinx/xlnx_sim_clk_gen/xlnx_sim_clk_gen.srcs/sources_1/ip/xlnx_sim_clk_gen/xlnx_sim_clk_gen.xci" \
-            }
+    set ips { "xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci" }
+    import_ip xilinx/xlnx_mig_ddr4/xlnx_mig_ddr4.srcs/sources_1/ip/xlnx_mig_ddr4/xlnx_mig_ddr4.xci
   }
   default {
     set ips {}

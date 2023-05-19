@@ -43,8 +43,8 @@ endif
 VIVADOFLAGS ?= -nojournal -mode gui -source scripts/prologue.tcl
 
 ip-dir      := xilinx
-ips-names   := xlnx_mig_ddr4 xlnx_sim_clk_gen
-ips         :=
+ips-names   := xlnx_mig_ddr4
+ips         := $(addsuffix .xci ,$(basename $(ips-names)))
 bender-targets := $(TARGETS) -t $(BOARD) $(addprefix -t ,$(basename $(ips))) # Used to add defines through bender
 
 all: $(bit)

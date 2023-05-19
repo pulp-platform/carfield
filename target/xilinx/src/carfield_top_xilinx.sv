@@ -1,26 +1,47 @@
-// add template
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Yann Picod <ypicod@ethz.ch>
+
 `include "cheshire/typedef.svh"
+`include "phy_definitions.svh"
 
 module carfield_top_xilinx
   import carfield_pkg::*;
   import cheshire_pkg::*;
- // import safety_island_pkg::*;
+  import safety_island_pkg::*;
 (
-  input  logic                                        sys_clk_p,
-  input  logic                                        sys_clk_n,
-  input  logic                                        cpu_resetn,
+  `DDR4_INTF
+
+  input logic         cpu_resetn
 
   // Safety Island JTAG Interface
-  input   logic                                       jtag_safety_island_tck_i,
-  input   logic                                       jtag_safety_island_trst_ni,
-  input   logic                                       jtag_safety_island_tms_i,
-  input   logic                                       jtag_safety_island_tdi_i,
-  output  logic                                       jtag_safety_island_tdo_o
+  //input  logic                                        jtag_safety_island_tck_i,
+  //input  logic                                        jtag_safety_island_tms_i,
+  //input  logic                                        jtag_safety_island_tdi_i,
+  //output logic                                        jtag_safety_island_tdo_o,
+  //output logic                                        jtag_vdd_o,
+  //output logic                                        jtag_gnd_o
 );
+
+
 
   localparam cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault;
 
   `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
+
+  logic cpu_reset;
+  assign cpu_reset  = ~cpu_resetn;
+
+  wire dram_clock_out_1;
+  wire dram_sync_reset;
+  wire soc_clk;
+
+  logic rst_n;
+
+  carfield_axi_llc_req_t axi_llc_mst_req;
+  carfield_axi_llc_rsp_t axi_llc_mst_rsp;
 
   // Generate indices and get maps for all ports
   localparam axi_in_t     AxiIn       = gen_axi_in(Cfg);
@@ -38,8 +59,8 @@ module carfield_top_xilinx
 
 // config for FPGA mapping
 
-carfield_reg_req_t               dram_req;
-carfield_reg_rsp_t               dram_resp;
+carfield_reg_req_t dram_req;
+carfield_reg_rsp_t dram_resp;
 
 logic [LlcArWidth-1:0]                     llc_ar_data;
 logic [    LogDepth:0]                     llc_ar_wptr;
@@ -68,11 +89,87 @@ logic [HypNumPhys-1:0][7:0]                hyper_dq_o;
 logic [HypNumPhys-1:0]                     hyper_dq_oe;
 logic [HypNumPhys-1:0]                     hyper_reset_n_wire;
 
-  //////////
-  // DRAM //
-  //////////
 
-// add DRAM instance
+  ///////////////////
+  // GPIOs         // 
+  ///////////////////
+
+  // Tie off signals if no switches on the board
+`ifndef USE_SWITCHES
+  logic       test_mode_i;
+  logic [1:0] boot_mode_i;
+  assign testmode_i  = '0;
+  assign boot_mode_i = 2'b10;
+`endif
+
+  // Give VDD and GND to JTAG
+`ifdef USE_JTAG_VDDGND
+  assign jtag_vdd_o  = '1;
+  assign jtag_gnd_o  = '0;
+`endif
+`ifndef USE_JTAG_TRSTN
+   //logic jtag_safety_island_trst_ni;
+   //assign jtag_safety_island_trst_ni = '1;
+`endif
+
+///////////////////
+// Clock Divider // 
+///////////////////
+
+clk_int_div #(
+  .DIV_VALUE_WIDTH        ( 4                ),
+  .DEFAULT_DIV_VALUE      ( `DDR_CLK_DIVIDER ),
+  .ENABLE_CLOCK_IN_RESET  ( 1'b0             )
+) i_sys_clk_div (
+  .clk_i                  ( dram_clock_out_1 ),
+  .rst_ni                 ( ~dram_sync_reset ),
+  .en_i                   ( 1'b1             ),
+  .test_mode_en_i         ( testmode_i       ),
+  .div_i                  ( `DDR_CLK_DIVIDER ),
+  .div_valid_i            ( 1'b0             ),
+  .div_ready_o            (                  ),
+  .clk_o                  ( soc_clk          ),
+  .cycl_count_o           (                  )
+);
+
+/////////////////////
+// Reset Generator //
+/////////////////////
+
+rstgen i_rstgen_main (
+  .clk_i                  ( soc_clk          ),
+  .rst_ni                 ( ~dram_sync_reset ),
+  .test_mode_i            ( testmode_i       ),
+  .rst_no                 ( rst_n            ),
+  .init_no                (                  ) // keep open
+);
+
+//////////////
+// DRAM MIG //
+//////////////
+
+dram_wrapper #(
+  .axi_soc_aw_chan_t      ( carfield_axi_llc_aw_chan_t ),
+  .axi_soc_w_chan_t       ( carfield_axi_llc_w_chan_t  ),
+  .axi_soc_b_chan_t       ( carfield_axi_llc_b_chan_t  ),
+  .axi_soc_ar_chan_t      ( carfield_axi_llc_ar_chan_t ),
+  .axi_soc_r_chan_t       ( carfield_axi_llc_r_chan_t  ),
+  .axi_soc_req_t          ( carfield_axi_llc_req_t     ),
+  .axi_soc_resp_t         ( carfield_axi_llc_rsp_t     )
+) i_dram_wrapper (
+  // Rst
+  .sys_rst_i              ( cpu_reset         ),
+  .soc_resetn_i           ( rst_n             ),
+  .soc_clk_i              ( soc_clk           ),
+  // Clk rst out
+  .dram_clk_o             ( dram_clock_out_1  ),
+  .dram_rst_o             ( dram_sync_reset   ),
+  // Axi
+  .soc_req_i              ( axi_llc_mst_req   ),
+  .soc_rsp_o              ( axi_llc_mst_rsp   ),
+  // Phy
+  .*
+);
 
 
   //////////////////
@@ -92,11 +189,11 @@ carfield #(
   .HypNumPhys  (1),
   .HypNumChips (1)
 ) i_carfield (
-  .clk_i (),
-  .rst_ni (),
-  .test_mode_i(),
+  .clk_i                  (soc_clk),
+  .rst_ni                 (rst_n),
+  .test_mode_i,
   // Boot mode selection
-  .boot_mode_i (),
+  .boot_mode_i,
   // CLINT
   .rtc_i (),
   // Cheshire JTAG Interface
@@ -114,11 +211,11 @@ carfield #(
   .jtag_ot_tdo_o (),
   .jtag_ot_tdo_oe_o (),
   // Safety Island JTAG Interface
-  .jtag_safety_island_tck_i,
-  .jtag_safety_island_trst_ni,
-  .jtag_safety_island_tms_i,
-  .jtag_safety_island_tdi_i,
-  .jtag_safety_island_tdo_o,
+  .jtag_safety_island_tck_i (),
+  .jtag_safety_island_trst_ni (),
+  .jtag_safety_island_tms_i (),
+  .jtag_safety_island_tdi_i (),
+  .jtag_safety_island_tdo_o (),
   // UART Interface
   .uart_tx_o (),
   .uart_rx_i (),

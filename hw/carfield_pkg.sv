@@ -11,6 +11,12 @@ package carfield_pkg;
 
 import cheshire_pkg::*;
 
+typedef struct packed {
+  bit SafetyIsland;
+  bit SecurityIsland;
+  bit IntCluster;
+} domain_cfg_t;
+
 typedef enum byte_bt {
   L2Port1SlvIdx      = 'd0,
   L2Port2SlvIdx      = 'd1,
@@ -53,6 +59,15 @@ localparam bit [2:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1;
 localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1;
 // Ext Interrupts: Security Island Mailbox
 localparam bit [2:0] NumExtIntrs = 3'd1;
+
+// Domains
+localparam domain_cfg_t DomainCfgDefault = '{
+  SafetyIsland      : 0,
+  SecurityIsland    : 0,
+  IntCluster        : 0,
+  // All non-set values should be zero
+  default: '0
+};
 
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
