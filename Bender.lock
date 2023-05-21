@@ -68,7 +68,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
+      Git: https://github.com/pulp-platform/axi_riscv_atomics
     dependencies:
     - axi
     - common_cells
@@ -396,7 +396,7 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: 46c5ad30fa6e1906a94718c9b7ed9e434badcf5d
+    revision: 19163bb5191d2669a8cbc267cdd4ce8e60f20746
     version: null
     source:
       Git: https://github.com/pulp-platform/register_interface.git
@@ -414,7 +414,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: c03f1d0b7aad5725010f247130e5d13b36c89c04
+    revision: 67f0b4ef4c3b08fcd423bc5e70db144b196cd2d1
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
