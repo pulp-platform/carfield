@@ -11,6 +11,15 @@ package carfield_pkg;
 
 import cheshire_pkg::*;
 
+typedef enum int {
+  PeriphRstDomainIdx     = 'd0,
+  SafedRstDomainIdx      = 'd1,
+  SecdRstDomainIdx       = 'd2,
+  IntClusterRstDomainIdx = 'd3,
+  FPClusterRstDomainIdx  = 'd4,
+  L2RstDomainIdx         = 'd5
+} carfield_rst_domains_e;
+
 typedef enum byte_bt {
   L2Port1SlvIdx      = 'd0,
   L2Port2SlvIdx      = 'd1,
