@@ -786,7 +786,7 @@ l2_wrap #(
   .LogDepth     ( LogDepth               ),
   .NumRules     ( L2NumRules             ),
   .L2MemSize    ( L2MemSize              )
-) i_reconfigrurable_l2 (
+) i_reconfigurable_l2 (
   .clk_i               ( host_clk_i                           ), // TODO: which clock domain? is
                                                                  // hostd clock domain feasible?
   .rst_ni              ( l2_rst_n                             ),
