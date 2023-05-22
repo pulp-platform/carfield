@@ -195,6 +195,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   Dma               : 1,
   SerialLink        : 1,
   Vga               : 1,
+  AxiRt             : 1,
   // Debug
   DbgIdCode         : CheshireIdCode,
   DbgMaxReqs        : 4,
@@ -236,6 +237,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   DmaConfAmoPostCut   : 1,
   // GPIOs
   GpioInputSyncs    : 1,
+  // AXI RT
+  AxiRtNumPending   : 16,
+  AxiRtWBufferDepth : 16,
   // All non-set values should be zero
   default: '0
 };
