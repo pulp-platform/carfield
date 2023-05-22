@@ -8,3 +8,4 @@ transcript
 work/
 *.log
 *.wlf
+/.venv/

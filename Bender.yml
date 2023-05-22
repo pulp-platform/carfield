@@ -57,3 +57,10 @@ sources:
   - target: spyglass
     files:
       - scripts/spyglass/src/carfield_wrap.sv
+
+vendor_package:
+  - name: reggen
+    target_dir: "utils"
+    upstream: { git: "https://github.com/pulp-platform/register_interface.git", rev: "19163bb5191d2669a8cbc267cdd4ce8e60f20746"}
+    mapping:
+      - { from: 'vendor/lowrisc_opentitan/util', to: 'reggen'}
