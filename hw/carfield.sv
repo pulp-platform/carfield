@@ -17,6 +17,7 @@ module carfield
   import cheshire_pkg::*;
   import safety_island_pkg::*;
   import tlul_ot_pkg::*;
+  import spatz_cluster_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 2,
@@ -108,6 +109,46 @@ module carfield
 * General parameters and defines *
 **********************************/
 `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
+
+// Mailbox unit
+
+localparam int unsigned CheshireNumIntHarts = 1 + Cfg.DualCore;
+
+localparam int unsigned MailboxesHostd      = 4 * CheshireNumIntHarts;
+localparam int unsigned MailboxesFPCluster  =
+               spatz_cluster_pkg::NumCores * (CheshireNumIntHarts + 1);
+localparam int unsigned MailboxesIntCluster = CheshireNumIntHarts + 1;
+localparam int unsigned MailboxesSafed      = CheshireNumIntHarts + 3;
+localparam int unsigned MailboxesSecd       = CheshireNumIntHarts + 1;
+// verilog_lint: waive-start line-length
+localparam int unsigned NumMailboxes = MailboxesHostd + MailboxesFPCluster + MailboxesIntCluster + MailboxesSafed + MailboxesSecd;
+// verilog_lint: waive-stop line-length
+
+// Interrupt lines
+logic [NumMailboxes-1:0] snd_mbox_intrs, rcv_mbox_intrs;
+
+// Floating point cluster (Spatz cluster)
+
+// from hostd to spatz cluster
+logic [spatz_cluster_pkg::NumCores-1:0][CheshireNumIntHarts-1:0] hostd_spatzcl_mbox_intr;
+// from safety island to spatz cluster
+logic [spatz_cluster_pkg::NumCores-1:0] safed_spatzcl_mbox_intr;
+// Integer cluster (PULP cluster)
+logic [CheshireNumIntHarts-1:0] hostd_pulpcl_mbox_intr;  // from hostd to pulp cluster
+logic                   safed_pulpcl_mbox_intr;  // from safety island to pulp cluster
+// Security island
+logic                   safed_secd_mbox_intr;    // from safety island to security island
+logic [CheshireNumIntHarts-1:0] hostd_secd_mbox_intr;    // from (dual) cva6 to security island
+// Safety island
+logic                   spatzcl_safed_mbox_intr; // from spatz cluster to safety island
+logic                   pulpcl_safed_mbox_intr;  // from pulp cluster to safety island
+logic                   secd_safed_mbox_intr;    // from security island to safety island
+logic [CheshireNumIntHarts-1:0] hostd_safed_mbox_intr;   // from hostd to safety island
+// Host domain
+logic [CheshireNumIntHarts-1:0] spatzcl_hostd_mbox_intr; // from spatz cluster to host domain
+logic [CheshireNumIntHarts-1:0] pulpcl_hostd_mbox_intr;  // from pulp cluster to hostd domain
+logic [CheshireNumIntHarts-1:0] secd_hostd_mbox_intr;    // from security island to host domain
+logic [CheshireNumIntHarts-1:0] safed_hostd_mbox_intr;   // from safety island to host domain
 
 // Generate indices and get maps for all ports
 localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
@@ -327,10 +368,6 @@ logic [ IntClusterAxiMstRWidth-1:0] axi_mst_intcluster_r_data ;
 logic [                 LogDepth:0] axi_mst_intcluster_r_wptr ;
 logic [                 LogDepth:0] axi_mst_intcluster_r_rptr ;
 
-// irq for Secure Subsytem and Cheshire
-logic        ibex_mbox_irq;
-logic        ches_mbox_irq;
-
 // soc reg signals
 carfield_reg2hw_t car_regs_reg2hw;
 carfield_hw2reg_t car_regs_hw2reg;
@@ -460,7 +497,7 @@ assign slave_isolate_req[IntClusterSlvIdx]   = car_regs_reg2hw.pulp_cluster_isol
 assign slave_isolate_req[FPClusterSlvIdx]    = car_regs_reg2hw.spatz_cluster_isolate.q;
 assign slave_isolate_req[L2Port1SlvIdx]      = 'd0;
 assign slave_isolate_req[L2Port2SlvIdx]      = 'd0;
-assign slave_isolate_req[OTMailboxSlvIdx]    = 'd0;
+assign slave_isolate_req[MailboxSlvIdx]      = 'd0;
 assign slave_isolate_req[EthernetSlvIdx]     = 'd0;
 assign slave_isolate_req[PeriphsSlvIdx]      = 'd0;
 assign secd_isolate_req                      = 'd0;
@@ -497,6 +534,10 @@ carfield_reg_rsp_t reg_hyper_rsp;
 // wdt reg req/rsp
 carfield_reg_req_t reg_wdt_req;
 carfield_reg_rsp_t reg_wdt_rsp;
+
+// Mailbox unit
+carfield_axi_slv_req_t axi_mbox_req;
+carfield_axi_slv_rsp_t axi_mbox_rsp;
 
 /***************
 * Carfield IPs *
@@ -636,16 +677,19 @@ cheshire_wrap #(
   .axi_mst_intcluster_r_data_o  ( axi_mst_intcluster_r_data  ),
   .axi_mst_intcluster_r_wptr_o  ( axi_mst_intcluster_r_wptr  ),
   .axi_mst_intcluster_r_rptr_i  ( axi_mst_intcluster_r_rptr  ),
+  // Mailboxes
+  .axi_mbox_slv_req_o ( axi_mbox_req  ),
+  .axi_mbox_slv_rsp_i ( axi_mbox_rsp  ),
   // External reg demux slaves
   .reg_ext_slv_req_o ( ext_reg_req     ),
   .reg_ext_slv_rsp_i ( ext_reg_rsp     ),
   // Interrupts from external devices
-  .intr_ext_i        ( ches_mbox_irq   ),
+  .intr_ext_i        ( /* TODO: connect me */ ),
   // Interrupts to external harts
-  .meip_ext_o        (           ),
-  .seip_ext_o        (           ),
-  .mtip_ext_o        (           ),
-  .msip_ext_o        (           ),
+  .meip_ext_o        ( /* TODO: connect me */ ),
+  .seip_ext_o        ( /* Unused */ ), // Unused
+  .mtip_ext_o        ( /* TODO: connect me */ ),
+  .msip_ext_o        ( /* Unused */ ), // We use mailboxes for this
   // Debug interface to external harts
   .dbg_active_o      (           ),
   .dbg_ext_req_o     (           ),
@@ -803,10 +847,22 @@ l2_wrap #(
 
 // Safety Island
 // Alt Clock Domain
+logic [SafetyIslandCfg.NumInterrupts-1:0] safed_intrs;
+
+// TODO: propagate to top
 safety_island_pkg::bootmode_e safety_island_bootmode;
 assign safety_island_bootmode = safety_island_pkg::Preloaded;
 
+assign safed_intrs  = {
+  59'h0,
+  spatzcl_safed_mbox_intr, // from spatzcl
+  pulpcl_safed_mbox_intr,  // from pulpcl
+  secd_safed_mbox_intr,    // from secd
+  hostd_safed_mbox_intr    // from hostd
+};
+
 safety_island_synth_wrapper #(
+  .SafetyIslandCfg          ( SafetyIslandCfg            ),
   .AxiAddrWidth             ( Cfg.AddrWidth              ),
   .AxiDataWidth             ( Cfg.AxiDataWidth           ),
   .AxiUserWidth             ( Cfg.AxiUserWidth           ),
@@ -894,6 +950,9 @@ safety_island_synth_wrapper #(
 
 // PULP integer cluster
 // Alt Clock Domain
+
+logic pulpcl_mbox_intr;
+
 pulp_cluster #(
   .NB_CORES                       ( IntClusterNumCores        ),
   .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts    ),
@@ -954,7 +1013,7 @@ pulp_cluster #(
   .dma_pe_irq_ack_i            ( '1                                     ), // To edge propagator (?)
   .dma_pe_irq_valid_o          (                                        ), // To edge propagator (?)
   .dbg_irq_valid_i             ( '0                                     ), // To edge propagator (?)
-  .mbox_irq_i                  ( '0                                     ),
+  .mbox_irq_i                  ( pulpcl_mbox_intr                       ), // from hostd or safed
   .pf_evt_ack_i                ( '1                                     ), // To edge propagator (?)
   .pf_evt_valid_o              (                                        ), // To edge propagator (?)
   .async_cluster_events_wptr_i ( '0                                     ), // To edge propagator (?)
@@ -996,6 +1055,10 @@ pulp_cluster #(
 
 // Floating Point Spatz Cluster
 // Alt Clock Domain
+
+// Spatz cluster interrupts
+logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_msi, spatz_cl_mti;
+
 spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth     ),
     .AxiDataWidth             ( Cfg.AxiDataWidth  ),
@@ -1043,9 +1106,9 @@ spatz_cluster_wrapper #(
     .scan_enable_i   ( 1'b0                 ),
     .scan_data_i     ( 1'b0                 ),
     .scan_data_o     (  /* Unused */        ),
-    .meip_i          ( '0                   ),
-    .msip_i          ( '0                   ),
-    .mtip_i          ( '0                   ),
+    .meip_i          ( '0 /* TODO: connect me */ ), // Needed?
+    .msip_i          ( spatzcl_msi               ),
+    .mtip_i          ( '0 /* TODO: connect me */ ), // from hostd
     .debug_req_i     ( '0                   ),
     //AXI Isolate
     .axi_isolate_i         ( slave_isolate_req [FPClusterSlvIdx]   ),
@@ -1124,7 +1187,7 @@ secure_subsystem_synth_wrap #(
   .fetch_en_i       ( car_regs_reg2hw.security_island_fetch_enable ),
   .bootmode_i       ( '0              ),
   .test_enable_i    ( '0              ),
-  .irq_ibex_i       ( ibex_mbox_irq   ),
+  .irq_ibex_i       ( secd_mbox_intr  ), // from hostd or safed
    // JTAG port
   .jtag_tck_i       ( jtag_ot_tck_i   ),
   .jtag_tms_i       ( jtag_ot_tms_i   ),
@@ -1166,57 +1229,132 @@ secure_subsystem_synth_wrap #(
 // Security Island Mailbox
 // Host Clock Domain
 
-carfield_axi_slv_req_t axi_mbox_req;
-carfield_axi_slv_rsp_t axi_mbox_rsp;
+// Convert to 32-bit datawidth
+// verilog_lint: waive-start line-length
+`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_slv, carfield_axi_d32_slv_req_t, carfield_axi_d32_slv_rsp_t, logic [Cfg.AddrWidth-1:0], logic [AxiSlvIdWidth-1:0], logic [31:0], logic [3:0], logic [Cfg.AxiUserWidth-1:0])
+// verilog_lint: waive-stop line-length
 
-// TODO: remove this useless CDC. Mailbox is in the host domain
-axi_cdc_dst #(
-  .LogDepth   ( LogDepth                   ),
-  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
-  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
-  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
-  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
-  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
-  .axi_req_t  ( carfield_axi_slv_req_t     ),
-  .axi_resp_t ( carfield_axi_slv_rsp_t     )
-) i_mailbox_cdc_dst (
-  // asynchronous slave port
-  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [OTMailboxSlvIdx] ),
-  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [OTMailboxSlvIdx] ),
-  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [OTMailboxSlvIdx] ),
-  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [OTMailboxSlvIdx] ),
-  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [OTMailboxSlvIdx] ),
-  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [OTMailboxSlvIdx] ),
-  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [OTMailboxSlvIdx] ),
-  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [OTMailboxSlvIdx] ),
-  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [OTMailboxSlvIdx] ),
-  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [OTMailboxSlvIdx] ),
-  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [OTMailboxSlvIdx] ),
-  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [OTMailboxSlvIdx] ),
-  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [OTMailboxSlvIdx] ),
-  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [OTMailboxSlvIdx] ),
-  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [OTMailboxSlvIdx] ),
-  // synchronous master port
-  .dst_clk_i                  ( host_clk_i        ),
-  .dst_rst_ni                 ( host_pwr_on_rst_n ),
-  .dst_req_o                  ( axi_mbox_req      ),
-  .dst_resp_i                 ( axi_mbox_rsp      )
+carfield_axi_d32_slv_req_t axi_d32_mbox_req;
+carfield_axi_d32_slv_rsp_t axi_d32_mbox_rsp;
+
+axi_dw_converter #(
+  .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth              ),
+  .AxiMstPortDataWidth  ( 32                            ),
+  .AxiAddrWidth         ( Cfg.AddrWidth                 ),
+  .AxiIdWidth           ( AxiSlvIdWidth                 ),
+  .aw_chan_t            ( carfield_axi_slv_aw_chan_t    ),
+  .mst_w_chan_t         ( carfield_axi_d32_slv_w_chan_t ),
+  .slv_w_chan_t         ( carfield_axi_slv_w_chan_t     ),
+  .b_chan_t             ( carfield_axi_slv_b_chan_t     ),
+  .ar_chan_t            ( carfield_axi_slv_ar_chan_t    ),
+  .mst_r_chan_t         ( carfield_axi_d32_slv_r_chan_t ),
+  .slv_r_chan_t         ( carfield_axi_slv_r_chan_t     ),
+  .axi_mst_req_t        ( carfield_axi_d32_slv_req_t    ),
+  .axi_mst_resp_t       ( carfield_axi_d32_slv_rsp_t    ),
+  .axi_slv_req_t        ( carfield_axi_slv_req_t        ),
+  .axi_slv_resp_t       ( carfield_axi_slv_rsp_t        )
+) i_axi_dw_converter_mailbox (
+  .clk_i      ( clk_i            ),
+  .rst_ni     ( rst_ni           ),
+  .slv_req_i  ( axi_mbox_req     ),
+  .slv_resp_o ( axi_mbox_rsp     ),
+  .mst_req_o  ( axi_d32_mbox_req ),
+  .mst_resp_i ( axi_d32_mbox_rsp )
 );
 
-axi_scmi_mailbox #(
-  .AXI_ADDR_WIDTH     ( Cfg.AddrWidth          ),
-  .AXI_MST_DATA_WIDTH ( Cfg.AxiDataWidth       ),
-  .AXI_ID_WIDTH       ( AxiSlvIdWidth          ),
-  .AXI_USER_WIDTH     ( Cfg.AxiUserWidth       ),
-  .axi_req_t          ( carfield_axi_slv_req_t ),
-  .axi_resp_t         ( carfield_axi_slv_rsp_t )
-) i_scmi_ot_mailbox   (
-  .clk_i              ( host_clk_i         ),
-  .rst_ni             ( host_pwr_on_rst_n  ),
-  .axi_mbox_req       ( axi_mbox_req       ),
-  .axi_mbox_rsp       ( axi_mbox_rsp       ),
-  .doorbell_irq_o     ( ibex_mbox_irq      ),
-  .completion_irq_o   ( ches_mbox_irq      )
+// AXI to AXI lite conversion
+
+// verilog_lint: waive-start line-length
+`AXI_LITE_TYPEDEF_ALL_CT(carfield_axi_lite_d32, carfield_axi_lite_d32_slv_req_t, carfield_axi_lite_d32_slv_rsp_t, logic [Cfg.AddrWidth-1:0], logic [31:0], logic [3:0])
+// verilog_lint: waive-stop line-length
+
+carfield_axi_lite_d32_slv_req_t axi_lite_d32_mbox_req;
+carfield_axi_lite_d32_slv_rsp_t axi_lite_d32_mbox_rsp;
+
+axi_to_axi_lite #(
+  .AxiAddrWidth   ( Cfg.AddrWidth                   ),
+  .AxiDataWidth   ( 32                              ),
+  .AxiIdWidth     ( AxiSlvIdWidth                   ),
+  .AxiUserWidth   ( Cfg.AxiUserWidth                ),
+  .AxiMaxWriteTxns( 1                               ),
+  .AxiMaxReadTxns ( 1                               ),
+  .FallThrough    ( 1                               ),
+  .full_req_t     ( carfield_axi_d32_slv_req_t      ),
+  .full_resp_t    ( carfield_axi_d32_slv_rsp_t      ),
+  .lite_req_t     ( carfield_axi_lite_d32_slv_req_t ),
+  .lite_resp_t    ( carfield_axi_lite_d32_slv_rsp_t )
+) i_axi_to_axi_lite_mailbox (
+  .clk_i     ( clk_i                 ),
+  .rst_ni    ( rst_ni                ),
+  .test_i    ( '0                    ),
+  .slv_req_i ( axi_d32_mbox_req      ),
+  .slv_resp_o( axi_d32_mbox_rsp      ),
+  .mst_req_o ( axi_lite_d32_mbox_req ),
+  .mst_resp_i( axi_lite_d32_mbox_rsp )
+);
+
+// Mailboxes
+// Assign interrupts from the mailbox unit
+
+// verilog_lint: waive-start line-length
+for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_spatz_harts
+  assign safed_spatzcl_mbox_intr[i] = snd_mbox_intrs[i];
+  for (genvar j = 0; j < CheshireNumIntHarts; j++ ) begin :  gen_spatzcl_mbox_intrs_host_harts
+    assign hostd_spatzcl_mbox_intr[i][j] = snd_mbox_intrs[spatz_cluster_pkg::NumCores + (spatz_cluster_pkg::NumCores * j) + i];
+  end
+end
+
+for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_hostd_spatzcl_mbox_intrs
+  assign hostd_pulpcl_mbox_intr [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 0*CheshireNumIntHarts + i];
+  assign hostd_secd_mbox_intr   [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 1*CheshireNumIntHarts + i];
+  assign hostd_safed_mbox_intr  [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 2*CheshireNumIntHarts + i];
+  assign spatzcl_hostd_mbox_intr[i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 3*CheshireNumIntHarts + i];
+  assign pulpcl_hostd_mbox_intr [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 4*CheshireNumIntHarts + i];
+  assign secd_hostd_mbox_intr   [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 5*CheshireNumIntHarts + i];
+  assign safed_hostd_mbox_intr  [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 6*CheshireNumIntHarts + i];
+end
+
+assign safed_pulpcl_mbox_intr  = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 0];
+assign safed_secd_mbox_intr    = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 1];
+assign spatzcl_safed_mbox_intr = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 2];
+assign pulpcl_safed_mbox_intr  = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 3];
+assign secd_safed_mbox_intr    = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 4];
+// verilog_lint: waive-stop line-length
+
+// Logic `or` on interrupts coming from different harts of the host domain
+logic [spatz_cluster_pkg::NumCores-1:0] hostd_spatzcl_mbox_intr_ored;
+logic hostd_pulpcl_mbox_intr_ored;
+logic hostd_secd_mbox_intr_ored;
+
+// Floating point cluster
+for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_or
+  assign hostd_spatzcl_mbox_intr_ored[i] = |hostd_spatzcl_mbox_intr[i];
+end
+// Integer cluster
+assign hostd_pulpcl_mbox_intr_ored  = |hostd_pulpcl_mbox_intr ;
+// Security island
+assign hostd_secd_mbox_intr_ored    = |hostd_secd_mbox_intr   ;
+
+// For the FP cluster SW interrupt in machine mode (msi), OR together interrupts coming from the
+// host domain and the safe domain
+assign spatzcl_msi = hostd_spatzcl_mbox_intr_ored | safed_spatzcl_mbox_intr;
+// For the integer cluster, OR together interrupts coming from the host domain and the safe domain
+assign pulpcl_mbox_intr = hostd_pulpcl_mbox_intr_ored | safed_pulpcl_mbox_intr;
+// For the security island, OR together interrupts coming from the host domain and the safe domain
+assign secd_mbox_intr = hostd_secd_mbox_intr_ored | safed_secd_mbox_intr;
+
+axi_lite_mailbox_unit #(
+  .AXI_ADDR_WIDTH  ( Cfg.AddrWidth                   ),
+  .axi_lite_req_t  ( carfield_axi_lite_d32_slv_req_t ),
+  .axi_lite_resp_t ( carfield_axi_lite_d32_slv_rsp_t ),
+  .NumMbox          ( NumMailboxes                   )
+) i_mailbox_unit (
+  .clk_i            ( clk_i                  ),
+  .rst_ni           ( rst_ni                 ),
+  .axi_lite_req_i   ( axi_lite_d32_mbox_req  ),
+  .axi_lite_rsp_o   ( axi_lite_d32_mbox_rsp  ),
+  .snd_irq_o        ( snd_mbox_intrs         ),
+  .rcv_irq_o        ( rcv_mbox_intrs         )
 );
 
 // Carfield peripherals

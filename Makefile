@@ -62,7 +62,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 611363805ddf75e70f5a12dcb90c273c36d3b78d
+CAR_NONFREE_COMMIT ?= 6ee2a1c59bb8fdea9f77c0a2993f2e6a57c9bde0
 
 car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree

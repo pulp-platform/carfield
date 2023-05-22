@@ -6,6 +6,8 @@
 // Yvan Tortorella <yvan.tortorella@unibo.it>
 
 `include "cheshire/typedef.svh"
+ `include "axi/typedef.svh"
+ `include "axi/assign.svh"
 
 module cheshire_wrap
   import axi_pkg::*;
@@ -244,6 +246,9 @@ module cheshire_wrap
   output logic [ IntClusterAxiMstRWidth-1:0] axi_mst_intcluster_r_data_o ,
   output logic [                 LogDepth:0] axi_mst_intcluster_r_wptr_o ,
   input  logic [                 LogDepth:0] axi_mst_intcluster_r_rptr_i ,
+  // Mailboxes
+  output cheshire_axi_ext_slv_req_t axi_mbox_slv_req_o,
+  input  cheshire_axi_ext_slv_rsp_t axi_mbox_slv_rsp_i,
   // External reg demux slaves
   output cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_o,
   input  cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_i,
@@ -307,17 +312,21 @@ module cheshire_wrap
   output logic [Cfg.VgaBlueWidth -1:0] vga_blue_o
 );
 
-// All AXI slave buses (except the Integer Cluster)
+// All AXI slave buses
 cheshire_axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req, axi_ext_slv_isolated_req;
 cheshire_axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp, axi_ext_slv_isolated_rsp;
 
-// All AXI master buses (except the Integer Cluster)
+// All AXI master buses
 cheshire_axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req;
 cheshire_axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp;
 
 // External LLC (DRAM) bus
 cheshire_axi_ext_llc_req_t axi_llc_mst_req, axi_llc_mst_isolated_req;
 cheshire_axi_ext_llc_rsp_t axi_llc_mst_rsp, axi_llc_mst_isolated_rsp;
+
+// Feedthrough mailbox req/rsp: same clock domain of cheshire (no CDCs)
+`AXI_ASSIGN_REQ_STRUCT(axi_mbox_slv_req_o, axi_ext_slv_req[MailboxSlvIdx])
+`AXI_ASSIGN_RESP_STRUCT(axi_ext_slv_rsp[MailboxSlvIdx], axi_mbox_slv_rsp_i)
 
 cheshire_soc #(
   .Cfg               ( Cfg                        ),
@@ -407,7 +416,8 @@ cheshire_soc #(
   .vga_blue_o
 );
 
-for (genvar i = 0; i < Cfg.AxiExtNumSlv - 1; i++) begin: gen_ext_slv_src_cdc
+// Cheshire's AXI master cdc and isolate generation, but integer cluster and mailboxes
+for (genvar i = 0; i < Cfg.AxiExtNumSlv - 2; i++) begin: gen_ext_slv_src_cdc
   axi_isolate              #(
     .NumPending             ( Cfg.AxiMaxSlvTrans           ),
     .TerminateTransaction   ( 1                            ),
@@ -463,6 +473,7 @@ for (genvar i = 0; i < Cfg.AxiExtNumSlv - 1; i++) begin: gen_ext_slv_src_cdc
   );
 end
 
+// Cheshire's AXI slave cdc and isolate generation, but integer cluster
 for (genvar i = 0; i < Cfg.AxiExtNumMst - 1; i++) begin: gen_ext_mst_dst_cdc
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
