@@ -27,8 +27,10 @@ SPATZ_MAKEDIR := $(SPATZ_ROOT)/hw/system/spatz_cluster
 
 TESTNAME ?= helloworld
 MEMTYPE  ?= spm
-BINARY   ?= $(CHS_ROOT)/sw/tests/$(TESTNAME).$(MEMTYPE).elf
-IMAGE    ?=
+CHS_BINARY   ?= $(CHS_ROOT)/sw/tests/hostd/$(TESTNAME).car.$(MEMTYPE).elf
+SECD_BINARY  ?= # TODO: secd sw root
+SAFED_BINARY ?= # TODo: safed sw root
+CHS_IMAGE    ?=
 
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
@@ -60,7 +62,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 185ca77030bd9053b4a26c9cc0aa4d8d439d1cea
+CAR_NONFREE_COMMIT ?= 611363805ddf75e70f5a12dcb90c273c36d3b78d
 
 car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree
@@ -97,7 +99,7 @@ car-hw-build: scripts/carfield_compile.tcl
 
 .PHONY: car-hw-sim
 car-hw-sim:
-	$(QUESTA) vsim $(VSIM_FLAG) -do "set BOOTMODE $(BOOTMODE); set PRELMODE $(PRELMODE); set BINARY $(BINARY); set VOPTARGS $(VOPTARGS); set IMAGE $(IMAGE); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(RUN_AND_EXIT)"
+	$(QUESTA) vsim $(VSIM_FLAG) -do "set BOOTMODE $(BOOTMODE); set PRELMODE $(PRELMODE); set CHS_BINARY $(CHS_BINARY); set SECD_BINARY $(SECD_BINARY); set SAFED_BINARY $(SAFED_BINARY); set VOPTARGS $(VOPTARGS); set CHS_IMAGE $(CHS_IMAGE); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(RUN_AND_EXIT)"
 
 .PHONY: car-hw-clean
 car-hw-clean:

@@ -57,8 +57,8 @@ $(foreach link,$(patsubst $(CAR_LD_DIR)/%.ld,%,$(wildcard $(CAR_LD_DIR)/*.ld)),$
 # Tests #
 #########
 
-CAR_SW_TEST_SRCS_S	= $(wildcard $(CAR_SW_DIR)/tests/*.S)
-CAR_SW_TEST_SRCS_C	= $(wildcard $(CAR_SW_DIR)/tests/*.c)
+CAR_SW_TEST_SRCS_S	= $(wildcard $(CAR_SW_DIR)/tests/hostd/*.S)
+CAR_SW_TEST_SRCS_C	= $(wildcard $(CAR_SW_DIR)/tests/hostd/*.c)
 
 CAR_SW_TEST_DRAM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.dump) $(CAR_SW_TEST_SRCS_C:.c=.car.dram.dump)
 CAR_SW_TEST_SPM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.spm.dump)  $(CAR_SW_TEST_SRCS_C:.c=.car.spm.dump)
