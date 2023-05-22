@@ -11,7 +11,7 @@ package:
 
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   rev: 19163bb5191d2669a8cbc267cdd4ce8e60f20746 } # branch: main
-  axi:                { git: https://github.com/pulp-platform/axi.git,                  version: =0.39.0-beta.4                       }
+  axi:                { git: https://github.com/pulp-platform/axi.git,                  rev: 5e85c7e5ee38a797b9ef6bbed0cf0d4fde473c67 } # branch: axi_rt-tbenz
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 403cffb66f769dac4ff2e2f269574778340a2389 } # branch: axi_rt-tbenz
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: f4fb8e2de617603a0cde908d0b245438239b0026 } # branch: main
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 505c35a8df7f042fc8fc07c5dc40bc6412f7b27d } # branch: main
