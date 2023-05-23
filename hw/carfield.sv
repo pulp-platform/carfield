@@ -787,7 +787,7 @@ l2_wrap #(
   .NumRules     ( L2NumRules             ),
   .L2MemSize    ( L2MemSize              )
 ) i_reconfigurable_l2 (
-  .clk_i               ( host_clk_i                           ), // TODO: which clock domain? is
+  .clk_i               ( alt_clk_i                            ), // TODO: which clock domain? is
                                                                  // hostd clock domain feasible?
   .rst_ni              ( l2_rst_n                             ),
   .pwr_on_rst_ni       ( l2_pwr_on_rst_n                      ),
@@ -1044,7 +1044,7 @@ spatz_cluster_wrapper #(
     .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth ),
     .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
     )i_fp_cluster_wrapper(
-    .clk_i           ( alt_clk_i            ),
+    .clk_i           ( host_clk_i           ),
     .rst_ni          ( spatz_rst_n          ),
     .pwr_on_rst_ni   ( spatz_pwr_on_rst_n   ),
     .testmode_i      ( 1'b0                 ), // TODO: connect
