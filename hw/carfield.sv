@@ -112,6 +112,7 @@ module carfield
 
 // Mailbox unit
 
+// verilog_lint: waive-start line-length
 localparam int unsigned CheshireNumIntHarts = 1 + Cfg.DualCore;
 localparam int unsigned SafedNumIntHarts = 1;
 localparam int unsigned SecdNumIntHarts = 1;
@@ -125,7 +126,6 @@ localparam int unsigned MailboxesFPCluster  =
 localparam int unsigned MailboxesIntCluster = CheshireNumIntHarts + SafedNumIntHarts;
 localparam int unsigned MailboxesSafed      = CheshireNumIntHarts + SecdNumIntHarts + IntClusterNumIrq + FPClusterNumIrq;
 localparam int unsigned MailboxesSecd       = CheshireNumIntHarts + SafedNumIntHarts;
-// verilog_lint: waive-start line-length
 localparam int unsigned NumMailboxes = MailboxesHostd + MailboxesFPCluster + MailboxesIntCluster + MailboxesSafed + MailboxesSecd;
 // verilog_lint: waive-stop line-length
 
