@@ -176,7 +176,7 @@ module carfield_soc_fixture;
         s27ks0641 #(
           /*.mem_file_name ( "s27ks0641.mem"    ),*/
           .TimingModel ( "S27KS0641DPBHI020"    )
-        ) i_s27ks0641  (
+        ) dut (
           .DQ7      ( hyper_dq_wire[i][7]      ),
           .DQ6      ( hyper_dq_wire[i][6]      ),
           .DQ5      ( hyper_dq_wire[i][5]      ),
@@ -193,6 +193,18 @@ module carfield_soc_fixture;
         );
       end
     end
+  endgenerate
+
+  generate
+     for (genvar p=0; p<NumPhys; p++) begin : sdf_annotation
+        for (genvar l=0; l<NumChips; l++) begin : sdf_annotation
+           initial begin
+              automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
+              $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
+              $display("Mem (%d,%d)",p,l);
+           end
+       end
+     end
   endgenerate
 
   //////////////////
