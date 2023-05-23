@@ -286,6 +286,8 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
                                                        Cfg.AxiUserWidth );
 
 logic hyper_isolate_req, hyper_isolated_rsp;
+logic secd_isolate_req;
+
 logic [iomsb(Cfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
 logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
@@ -1156,6 +1158,8 @@ spatz_cluster_wrapper #(
 
 // Security Island
 // Alt Clock Domain
+logic secd_mbox_intr;
+
 secure_subsystem_synth_wrap #(
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
   .AxiDataWidth          ( Cfg.AxiDataWidth           ),
@@ -1259,8 +1263,8 @@ axi_dw_converter #(
   .axi_slv_req_t        ( carfield_axi_slv_req_t        ),
   .axi_slv_resp_t       ( carfield_axi_slv_rsp_t        )
 ) i_axi_dw_converter_mailbox (
-  .clk_i      ( clk_i            ),
-  .rst_ni     ( rst_ni           ),
+  .clk_i      ( host_clk_i       ),
+  .rst_ni     ( host_pwr_on_rst_n ),
   .slv_req_i  ( axi_mbox_req     ),
   .slv_resp_o ( axi_mbox_rsp     ),
   .mst_req_o  ( axi_d32_mbox_req ),
@@ -1289,8 +1293,8 @@ axi_to_axi_lite #(
   .lite_req_t     ( carfield_axi_lite_d32_slv_req_t ),
   .lite_resp_t    ( carfield_axi_lite_d32_slv_rsp_t )
 ) i_axi_to_axi_lite_mailbox (
-  .clk_i     ( clk_i                 ),
-  .rst_ni    ( rst_ni                ),
+  .clk_i     ( host_clk_i            ),
+  .rst_ni    ( host_pwr_on_rst_n     ),
   .test_i    ( '0                    ),
   .slv_req_i ( axi_d32_mbox_req      ),
   .slv_resp_o( axi_d32_mbox_rsp      ),
@@ -1390,8 +1394,8 @@ axi_lite_mailbox_unit #(
   .axi_lite_resp_t ( carfield_axi_lite_d32_slv_rsp_t ),
   .NumMbox          ( NumMailboxes                   )
 ) i_mailbox_unit (
-  .clk_i            ( clk_i                  ),
-  .rst_ni           ( rst_ni                 ),
+  .clk_i            ( host_clk_i             ),
+  .rst_ni           ( host_pwr_on_rst_n      ),
   .axi_lite_req_i   ( axi_lite_d32_mbox_req  ),
   .axi_lite_rsp_o   ( axi_lite_d32_mbox_rsp  ),
   .snd_irq_o        ( snd_mbox_intrs         ),
