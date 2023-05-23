@@ -113,13 +113,18 @@ module carfield
 // Mailbox unit
 
 localparam int unsigned CheshireNumIntHarts = 1 + Cfg.DualCore;
+localparam int unsigned SafedNumIntHarts = 1;
+localparam int unsigned SecdNumIntHarts = 1;
+localparam int unsigned IntClusterNumIrq = 1;
+localparam int unsigned FPClusterNumIrq = 1;
 
+// Number of receiving side mailboxes per subsystem
 localparam int unsigned MailboxesHostd      = 4 * CheshireNumIntHarts;
 localparam int unsigned MailboxesFPCluster  =
-               spatz_cluster_pkg::NumCores * (CheshireNumIntHarts + 1);
-localparam int unsigned MailboxesIntCluster = CheshireNumIntHarts + 1;
-localparam int unsigned MailboxesSafed      = CheshireNumIntHarts + 3;
-localparam int unsigned MailboxesSecd       = CheshireNumIntHarts + 1;
+               spatz_cluster_pkg::NumCores * (CheshireNumIntHarts + SafedNumIntHarts);
+localparam int unsigned MailboxesIntCluster = CheshireNumIntHarts + SafedNumIntHarts;
+localparam int unsigned MailboxesSafed      = CheshireNumIntHarts + SecdNumIntHarts + IntClusterNumIrq + FPClusterNumIrq;
+localparam int unsigned MailboxesSecd       = CheshireNumIntHarts + SafedNumIntHarts;
 // verilog_lint: waive-start line-length
 localparam int unsigned NumMailboxes = MailboxesHostd + MailboxesFPCluster + MailboxesIntCluster + MailboxesSafed + MailboxesSecd;
 // verilog_lint: waive-stop line-length
@@ -135,14 +140,14 @@ logic [spatz_cluster_pkg::NumCores-1:0][CheshireNumIntHarts-1:0] hostd_spatzcl_m
 logic [spatz_cluster_pkg::NumCores-1:0] safed_spatzcl_mbox_intr;
 // Integer cluster (PULP cluster)
 logic [CheshireNumIntHarts-1:0] hostd_pulpcl_mbox_intr;  // from hostd to pulp cluster
-logic                   safed_pulpcl_mbox_intr;  // from safety island to pulp cluster
+logic                           safed_pulpcl_mbox_intr;  // from safety island to pulp cluster
 // Security island
-logic                   safed_secd_mbox_intr;    // from safety island to security island
+logic                           safed_secd_mbox_intr;    // from safety island to security island
 logic [CheshireNumIntHarts-1:0] hostd_secd_mbox_intr;    // from (dual) cva6 to security island
 // Safety island
-logic                   spatzcl_safed_mbox_intr; // from spatz cluster to safety island
-logic                   pulpcl_safed_mbox_intr;  // from pulp cluster to safety island
-logic                   secd_safed_mbox_intr;    // from security island to safety island
+logic                           spatzcl_safed_mbox_intr; // from spatz cluster to safety island
+logic                           pulpcl_safed_mbox_intr;  // from pulp cluster to safety island
+logic                           secd_safed_mbox_intr;    // from security island to safety island
 logic [CheshireNumIntHarts-1:0] hostd_safed_mbox_intr;   // from hostd to safety island
 // Host domain
 logic [CheshireNumIntHarts-1:0] spatzcl_hostd_mbox_intr; // from spatz cluster to host domain
@@ -1057,7 +1062,7 @@ pulp_cluster #(
 // Alt Clock Domain
 
 // Spatz cluster interrupts
-logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_msi, spatz_cl_mti;
+logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr, spatz_cl_mti;
 
 spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth     ),
@@ -1107,7 +1112,7 @@ spatz_cluster_wrapper #(
     .scan_data_i     ( 1'b0                 ),
     .scan_data_o     (  /* Unused */        ),
     .meip_i          ( '0 /* TODO: connect me */ ), // Needed?
-    .msip_i          ( spatzcl_msi               ),
+    .msip_i          ( spatzcl_mbox_intr         ),
     .mtip_i          ( '0 /* TODO: connect me */ ), // from hostd
     .debug_req_i     ( '0                   ),
     //AXI Isolate
@@ -1297,6 +1302,10 @@ axi_to_axi_lite #(
 // Assign interrupts from the mailbox unit
 
 // verilog_lint: waive-start line-length
+
+//
+// hostd mailboxes
+//
 for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_spatz_harts
   assign safed_spatzcl_mbox_intr[i] = snd_mbox_intrs[i];
   for (genvar j = 0; j < CheshireNumIntHarts; j++ ) begin :  gen_spatzcl_mbox_intrs_host_harts
@@ -1304,21 +1313,51 @@ for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mb
   end
 end
 
-for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_hostd_spatzcl_mbox_intrs
-  assign hostd_pulpcl_mbox_intr [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 0*CheshireNumIntHarts + i];
-  assign hostd_secd_mbox_intr   [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 1*CheshireNumIntHarts + i];
-  assign hostd_safed_mbox_intr  [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 2*CheshireNumIntHarts + i];
-  assign spatzcl_hostd_mbox_intr[i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 3*CheshireNumIntHarts + i];
-  assign pulpcl_hostd_mbox_intr [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 4*CheshireNumIntHarts + i];
-  assign secd_hostd_mbox_intr   [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 5*CheshireNumIntHarts + i];
-  assign safed_hostd_mbox_intr  [i] = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 6*CheshireNumIntHarts + i];
+localparam int unsigned HostdMboxOffset = (spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts);
+for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_hostd_mbox_intrs
+  // hostd sender
+  assign hostd_pulpcl_mbox_intr [i] = snd_mbox_intrs[HostdMboxOffset + 0*CheshireNumIntHarts + i];
+  assign hostd_secd_mbox_intr   [i] = snd_mbox_intrs[HostdMboxOffset + 1*CheshireNumIntHarts + i];
+  assign hostd_safed_mbox_intr  [i] = snd_mbox_intrs[HostdMboxOffset + 2*CheshireNumIntHarts + i];
 end
 
-assign safed_pulpcl_mbox_intr  = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 0];
-assign safed_secd_mbox_intr    = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 1];
-assign spatzcl_safed_mbox_intr = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 2];
-assign pulpcl_safed_mbox_intr  = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 3];
-assign secd_safed_mbox_intr    = snd_mbox_intrs[(spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts) + 7*CheshireNumIntHarts + 4];
+//
+// Spatzcl
+//
+localparam int unsigned SpatzMboxOffset = HostdMboxOffset + 3*CheshireNumIntHarts;
+for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_spatzcl_mbox_intrs
+  assign spatzcl_hostd_mbox_intr[i] = snd_mbox_intrs[SpatzMboxOffset + i];
+end
+assign spatzcl_safed_mbox_intr = snd_mbox_intrs[SpatzMboxOffset + CheshireNumIntHarts];
+
+//
+//  Pulpcl
+//
+localparam int unsigned PulpclMboxOffset = SpatzMboxOffset + CheshireNumIntHarts + 1;
+for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_pulpcl_mbox_intrs
+  assign pulpcl_hostd_mbox_intr [i] = snd_mbox_intrs[PulpclMboxOffset + i];
+end
+assign pulpcl_safed_mbox_intr  = snd_mbox_intrs[PulpclMboxOffset + CheshireNumIntHarts];
+
+//
+// Secd
+//
+localparam int unsigned SecdMboxOffset = PulpclMboxOffset + CheshireNumIntHarts + 1;
+for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_secd_mbox_intrs
+  assign secd_hostd_mbox_intr   [i] = snd_mbox_intrs[SecdMboxOffset + i];
+end
+assign secd_safed_mbox_intr    = snd_mbox_intrs[SecdMboxOffset + CheshireNumIntHarts];
+
+//
+// Safed
+//
+localparam int unsigned SafedMboxOffset = SecdMboxOffset + CheshireNumIntHarts + 1;
+for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_safed_mbox_intr
+  assign safed_hostd_mbox_intr  [i] = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 1];
+end
+assign safed_secd_mbox_intr    = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 0];
+assign safed_pulpcl_mbox_intr  = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 1];
+
 // verilog_lint: waive-stop line-length
 
 // Logic `or` on interrupts coming from different harts of the host domain
@@ -1335,13 +1374,15 @@ assign hostd_pulpcl_mbox_intr_ored  = |hostd_pulpcl_mbox_intr ;
 // Security island
 assign hostd_secd_mbox_intr_ored    = |hostd_secd_mbox_intr   ;
 
-// For the FP cluster SW interrupt in machine mode (msi), OR together interrupts coming from the
+// For the spatz FP cluster SW interrupt in machine mode (msi), OR together interrupts coming from the
 // host domain and the safe domain
-assign spatzcl_msi = hostd_spatzcl_mbox_intr_ored | safed_spatzcl_mbox_intr;
-// For the integer cluster, OR together interrupts coming from the host domain and the safe domain
+assign spatzcl_mbox_intr = hostd_spatzcl_mbox_intr_ored | safed_spatzcl_mbox_intr;
+// For the integer cluster. OR together interrupts coming from the host domain and the safe domain
 assign pulpcl_mbox_intr = hostd_pulpcl_mbox_intr_ored | safed_pulpcl_mbox_intr;
-// For the security island, OR together interrupts coming from the host domain and the safe domain
+// For the security island. OR together interrupts coming from the host domain and the safe domain
 assign secd_mbox_intr = hostd_secd_mbox_intr_ored | safed_secd_mbox_intr;
+// For the host domain
+// TODO: add
 
 axi_lite_mailbox_unit #(
   .AXI_ADDR_WIDTH  ( Cfg.AddrWidth                   ),
