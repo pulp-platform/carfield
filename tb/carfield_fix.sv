@@ -117,7 +117,7 @@ module carfield_soc_fixture;
   wire [NumPhys-1:0]               pad_hyper_rwds;
   wire [NumPhys-1:0]               pad_hyper_reset;
   wire [NumPhys-1:0][7:0]          pad_hyper_dq;
-  
+
   carfield      #(
     .Cfg         ( DutCfg   ),
     .HypNumPhys  ( NumPhys  ),
@@ -243,43 +243,39 @@ module carfield_soc_fixture;
       );
     end
   end // block: gen_hyper_phy
-  
-  generate
-    for (genvar i=0; i<NumPhys; i++) begin : hyperrams
-      for (genvar j=0; j<NumChips; j++) begin : chips
-        s27ks0641 #(
-          /*.mem_file_name ( "s27ks0641.mem"    ),*/
-          .TimingModel ( "S27KS0641DPBHI020"    )
-        ) dut (
-          .DQ7      ( pad_hyper_dq[i][7]  ),
-          .DQ6      ( pad_hyper_dq[i][6]  ),
-          .DQ5      ( pad_hyper_dq[i][5]  ),
-          .DQ4      ( pad_hyper_dq[i][4]  ),
-          .DQ3      ( pad_hyper_dq[i][3]  ),
-          .DQ2      ( pad_hyper_dq[i][2]  ),
-          .DQ1      ( pad_hyper_dq[i][1]  ),
-          .DQ0      ( pad_hyper_dq[i][0]  ),
-          .RWDS     ( pad_hyper_rwds[i]   ),
-          .CSNeg    ( pad_hyper_csn[i][j] ),
-          .CK       ( pad_hyper_ck[i]     ),
-          .CKNeg    ( pad_hyper_ckn[i]    ),
-          .RESETNeg ( pad_hyper_reset[i]  )
-        );
-      end
-    end
-  endgenerate
 
-  generate
-     for (genvar p=0; p<NumPhys; p++) begin : sdf_annotation
-        for (genvar l=0; l<NumChips; l++) begin : sdf_annotation
-           initial begin
-              automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
-              $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
-              $display("Mem (%d,%d)",p,l);
-           end
-       end
-     end
-  endgenerate
+  for (genvar i=0; i<NumPhys; i++) begin : hyperrams
+    for (genvar j=0; j<NumChips; j++) begin : chips
+      s27ks0641 #(
+        /*.mem_file_name ( "s27ks0641.mem"    ),*/
+        .TimingModel ( "S27KS0641DPBHI020"    )
+      ) dut (
+        .DQ7      ( pad_hyper_dq[i][7]  ),
+        .DQ6      ( pad_hyper_dq[i][6]  ),
+        .DQ5      ( pad_hyper_dq[i][5]  ),
+        .DQ4      ( pad_hyper_dq[i][4]  ),
+        .DQ3      ( pad_hyper_dq[i][3]  ),
+        .DQ2      ( pad_hyper_dq[i][2]  ),
+        .DQ1      ( pad_hyper_dq[i][1]  ),
+        .DQ0      ( pad_hyper_dq[i][0]  ),
+        .RWDS     ( pad_hyper_rwds[i]   ),
+        .CSNeg    ( pad_hyper_csn[i][j] ),
+        .CK       ( pad_hyper_ck[i]     ),
+        .CKNeg    ( pad_hyper_ckn[i]    ),
+        .RESETNeg ( pad_hyper_reset[i]  )
+      );
+    end
+  end
+
+  for (genvar p=0; p<NumPhys; p++) begin : sdf_annotation
+     for (genvar l=0; l<NumChips; l++) begin : sdf_annotation
+        initial begin
+           automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
+           $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
+           $display("Mem (%d,%d)",p,l);
+        end
+    end
+  end
 
   //////////////////
   // Cheshire VIP //

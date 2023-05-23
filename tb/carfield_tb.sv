@@ -14,6 +14,8 @@
 
 module tb_carfield_soc;
 
+  import uvm_pkg::*;
+
   carfield_soc_fixture fix();
 
   string      chs_preload_elf;
@@ -23,6 +25,8 @@ module tb_carfield_soc;
   logic [1:0] boot_mode;
   logic [1:0] preload_mode;
   bit [31:0]  exit_code;
+  bit         is_dram;
+
 
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
@@ -55,6 +59,12 @@ module tb_carfield_soc;
           end
           // TODO: Safety Island
           // Cheshire
+          is_dram = uvm_re_match("dram",chs_preload_elf);
+          if(~is_dram) begin
+            $display("Wait the hyperram");
+            repeat(120000)
+              @(posedge fix.clk);
+          end
           fix.chs_vip.jtag_init();
           fix.chs_vip.jtag_elf_run(chs_preload_elf);
           fix.chs_vip.jtag_wait_for_eoc(exit_code);
