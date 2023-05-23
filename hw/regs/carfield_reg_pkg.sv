@@ -51,6 +51,10 @@ package carfield_reg_pkg;
 
   typedef struct packed {
     logic        q;
+  } carfield_reg2hw_l2_rst_reg_t;
+
+  typedef struct packed {
+    logic        q;
   } carfield_reg2hw_host_isolate_reg_t;
 
   typedef struct packed {
@@ -176,15 +180,16 @@ package carfield_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    carfield_reg2hw_boot_mode_reg_t boot_mode; // [371:369]
-    carfield_reg2hw_generic_scratch0_reg_t generic_scratch0; // [368:337]
-    carfield_reg2hw_generic_scratch1_reg_t generic_scratch1; // [336:305]
-    carfield_reg2hw_host_rst_reg_t host_rst; // [304:304]
-    carfield_reg2hw_periph_rst_reg_t periph_rst; // [303:303]
-    carfield_reg2hw_safety_island_rst_reg_t safety_island_rst; // [302:302]
-    carfield_reg2hw_security_island_rst_reg_t security_island_rst; // [301:301]
-    carfield_reg2hw_pulp_cluster_rst_reg_t pulp_cluster_rst; // [300:300]
-    carfield_reg2hw_spatz_cluster_rst_reg_t spatz_cluster_rst; // [299:299]
+    carfield_reg2hw_boot_mode_reg_t boot_mode; // [372:370]
+    carfield_reg2hw_generic_scratch0_reg_t generic_scratch0; // [369:338]
+    carfield_reg2hw_generic_scratch1_reg_t generic_scratch1; // [337:306]
+    carfield_reg2hw_host_rst_reg_t host_rst; // [305:305]
+    carfield_reg2hw_periph_rst_reg_t periph_rst; // [304:304]
+    carfield_reg2hw_safety_island_rst_reg_t safety_island_rst; // [303:303]
+    carfield_reg2hw_security_island_rst_reg_t security_island_rst; // [302:302]
+    carfield_reg2hw_pulp_cluster_rst_reg_t pulp_cluster_rst; // [301:301]
+    carfield_reg2hw_spatz_cluster_rst_reg_t spatz_cluster_rst; // [300:300]
+    carfield_reg2hw_l2_rst_reg_t l2_rst; // [299:299]
     carfield_reg2hw_host_isolate_reg_t host_isolate; // [298:298]
     carfield_reg2hw_periph_isolate_reg_t periph_isolate; // [297:297]
     carfield_reg2hw_safety_island_isolate_reg_t safety_island_isolate; // [296:296]
@@ -236,32 +241,33 @@ package carfield_reg_pkg;
   parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_RST_OFFSET = 8'h 30;
   parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_RST_OFFSET = 8'h 34;
   parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_RST_OFFSET = 8'h 38;
-  parameter logic [BlockAw-1:0] CARFIELD_HOST_ISOLATE_OFFSET = 8'h 3c;
-  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_ISOLATE_OFFSET = 8'h 40;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_ISOLATE_OFFSET = 8'h 44;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_ISOLATE_OFFSET = 8'h 48;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_ISOLATE_OFFSET = 8'h 4c;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_ISOLATE_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] CARFIELD_HOST_ISOLATE_STATUS_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_ISOLATE_STATUS_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_ISOLATE_STATUS_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_ISOLATE_STATUS_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_ISOLATE_STATUS_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_ISOLATE_STATUS_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] CARFIELD_HOST_FETCH_ENABLE_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_FETCH_ENABLE_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] CARFIELD_HOST_BOOT_ADDR_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_BOOT_ADDR_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_BOOT_ADDR_OFFSET = 8'h 88;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_BOOT_ADDR_OFFSET = 8'h 8c;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR_OFFSET = 8'h 90;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG0_OFFSET = 8'h 94;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG1_OFFSET = 8'h 98;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG2_OFFSET = 8'h 9c;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG3_OFFSET = 8'h a0;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_RST_OFFSET = 8'h 3c;
+  parameter logic [BlockAw-1:0] CARFIELD_HOST_ISOLATE_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_ISOLATE_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_ISOLATE_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_ISOLATE_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_ISOLATE_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_ISOLATE_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] CARFIELD_HOST_ISOLATE_STATUS_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_ISOLATE_STATUS_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_ISOLATE_STATUS_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_ISOLATE_STATUS_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_ISOLATE_STATUS_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_ISOLATE_STATUS_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] CARFIELD_HOST_FETCH_ENABLE_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_FETCH_ENABLE_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] CARFIELD_HOST_BOOT_ADDR_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_BOOT_ADDR_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_BOOT_ADDR_OFFSET = 8'h 8c;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_BOOT_ADDR_OFFSET = 8'h 90;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG0_OFFSET = 8'h 98;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG1_OFFSET = 8'h 9c;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG2_OFFSET = 8'h a0;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG3_OFFSET = 8'h a4;
 
   // Register index
   typedef enum int {
@@ -280,6 +286,7 @@ package carfield_reg_pkg;
     CARFIELD_SECURITY_ISLAND_RST,
     CARFIELD_PULP_CLUSTER_RST,
     CARFIELD_SPATZ_CLUSTER_RST,
+    CARFIELD_L2_RST,
     CARFIELD_HOST_ISOLATE,
     CARFIELD_PERIPH_ISOLATE,
     CARFIELD_SAFETY_ISLAND_ISOLATE,
@@ -309,7 +316,7 @@ package carfield_reg_pkg;
   } carfield_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CARFIELD_PERMIT [41] = '{
+  parameter logic [3:0] CARFIELD_PERMIT [42] = '{
     4'b 1111, // index[ 0] CARFIELD_VERSION0
     4'b 1111, // index[ 1] CARFIELD_VERSION1
     4'b 1111, // index[ 2] CARFIELD_VERSION2
@@ -325,32 +332,33 @@ package carfield_reg_pkg;
     4'b 0001, // index[12] CARFIELD_SECURITY_ISLAND_RST
     4'b 0001, // index[13] CARFIELD_PULP_CLUSTER_RST
     4'b 0001, // index[14] CARFIELD_SPATZ_CLUSTER_RST
-    4'b 0001, // index[15] CARFIELD_HOST_ISOLATE
-    4'b 0001, // index[16] CARFIELD_PERIPH_ISOLATE
-    4'b 0001, // index[17] CARFIELD_SAFETY_ISLAND_ISOLATE
-    4'b 0001, // index[18] CARFIELD_SECURITY_ISLAND_ISOLATE
-    4'b 0001, // index[19] CARFIELD_PULP_CLUSTER_ISOLATE
-    4'b 0001, // index[20] CARFIELD_SPATZ_CLUSTER_ISOLATE
-    4'b 0001, // index[21] CARFIELD_HOST_ISOLATE_STATUS
-    4'b 0001, // index[22] CARFIELD_PERIPH_ISOLATE_STATUS
-    4'b 0001, // index[23] CARFIELD_SAFETY_ISLAND_ISOLATE_STATUS
-    4'b 0001, // index[24] CARFIELD_SECURITY_ISLAND_ISOLATE_STATUS
-    4'b 0001, // index[25] CARFIELD_PULP_CLUSTER_ISOLATE_STATUS
-    4'b 0001, // index[26] CARFIELD_SPATZ_CLUSTER_ISOLATE_STATUS
-    4'b 0001, // index[27] CARFIELD_HOST_FETCH_ENABLE
-    4'b 0001, // index[28] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE
-    4'b 0001, // index[29] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE
-    4'b 0001, // index[30] CARFIELD_PULP_CLUSTER_FETCH_ENABLE
-    4'b 0001, // index[31] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE
-    4'b 1111, // index[32] CARFIELD_HOST_BOOT_ADDR
-    4'b 1111, // index[33] CARFIELD_SAFETY_ISLAND_BOOT_ADDR
-    4'b 1111, // index[34] CARFIELD_SECURITY_ISLAND_BOOT_ADDR
-    4'b 1111, // index[35] CARFIELD_PULP_CLUSTER_BOOT_ADDR
-    4'b 1111, // index[36] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR
-    4'b 1111, // index[37] CARFIELD_L2_SRAM_CONFIG0
-    4'b 1111, // index[38] CARFIELD_L2_SRAM_CONFIG1
-    4'b 1111, // index[39] CARFIELD_L2_SRAM_CONFIG2
-    4'b 1111  // index[40] CARFIELD_L2_SRAM_CONFIG3
+    4'b 0001, // index[15] CARFIELD_L2_RST
+    4'b 0001, // index[16] CARFIELD_HOST_ISOLATE
+    4'b 0001, // index[17] CARFIELD_PERIPH_ISOLATE
+    4'b 0001, // index[18] CARFIELD_SAFETY_ISLAND_ISOLATE
+    4'b 0001, // index[19] CARFIELD_SECURITY_ISLAND_ISOLATE
+    4'b 0001, // index[20] CARFIELD_PULP_CLUSTER_ISOLATE
+    4'b 0001, // index[21] CARFIELD_SPATZ_CLUSTER_ISOLATE
+    4'b 0001, // index[22] CARFIELD_HOST_ISOLATE_STATUS
+    4'b 0001, // index[23] CARFIELD_PERIPH_ISOLATE_STATUS
+    4'b 0001, // index[24] CARFIELD_SAFETY_ISLAND_ISOLATE_STATUS
+    4'b 0001, // index[25] CARFIELD_SECURITY_ISLAND_ISOLATE_STATUS
+    4'b 0001, // index[26] CARFIELD_PULP_CLUSTER_ISOLATE_STATUS
+    4'b 0001, // index[27] CARFIELD_SPATZ_CLUSTER_ISOLATE_STATUS
+    4'b 0001, // index[28] CARFIELD_HOST_FETCH_ENABLE
+    4'b 0001, // index[29] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE
+    4'b 0001, // index[30] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE
+    4'b 0001, // index[31] CARFIELD_PULP_CLUSTER_FETCH_ENABLE
+    4'b 0001, // index[32] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE
+    4'b 1111, // index[33] CARFIELD_HOST_BOOT_ADDR
+    4'b 1111, // index[34] CARFIELD_SAFETY_ISLAND_BOOT_ADDR
+    4'b 1111, // index[35] CARFIELD_SECURITY_ISLAND_BOOT_ADDR
+    4'b 1111, // index[36] CARFIELD_PULP_CLUSTER_BOOT_ADDR
+    4'b 1111, // index[37] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR
+    4'b 1111, // index[38] CARFIELD_L2_SRAM_CONFIG0
+    4'b 1111, // index[39] CARFIELD_L2_SRAM_CONFIG1
+    4'b 1111, // index[40] CARFIELD_L2_SRAM_CONFIG2
+    4'b 1111  // index[41] CARFIELD_L2_SRAM_CONFIG3
   };
 
 endpackage

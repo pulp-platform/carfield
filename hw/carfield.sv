@@ -339,13 +339,16 @@ carfield_hw2reg_t car_regs_hw2reg;
 // We have three clock domains
 // host (host_clk_i), periph (periph_clk_i) and accelerators (alt_clk_i)
 //
-// and six reset domains
-// host           (contained in host clock domain)
-// periph         (contained in periph clock domain, sw reset 0)
-// safety         (contained in accelerator clock domain, sw reset 1)
-// security       (contained in accelerator clock domain, sw reset 2)
-// pulp_cluster   (contained in accelerator clock domain, sw reset 3)
-// spatz_cluster  (contained in accelerator clock domain, sw reset 4)
+// and seven reset domains
+// host             (contained in host clock domain)
+// periph           (contained in periph clock domain,      sw reset 0)
+// safety           (contained in accelerator clock domain, sw reset 1)
+// security         (contained in accelerator clock domain, sw reset 2)
+// pulp_cluster     (contained in accelerator clock domain, sw reset 3)
+// spatz_cluster    (contained in accelerator clock domain, sw reset 4)
+// shared l2 memory (contained in host clock domain,        sw reset 5)
+
+localparam int unsigned NumRstDomains = 6;
 
 logic    periph_rst_n;
 logic    safety_rst_n;
@@ -377,36 +380,39 @@ rstgen i_host_rstgen (
 
 // Note that each accelerator has two resets: One for the combined
 // software/power-on reset and a power-on reset only
-logic [4:0] pwr_on_rsts_n;
-logic [4:0] rsts_n;
+logic [NumRstDomains-1:0] pwr_on_rsts_n;
+logic [NumRstDomains-1:0] rsts_n;
 
 carfield_rstgen #(
-  .NumRstDomains (5)
+  .NumRstDomains (NumRstDomains)
 ) i_carfield_rstgen (
-  .clks_i({periph_clk_i, alt_clk_i, alt_clk_i, alt_clk_i, alt_clk_i}),
+  .clks_i({periph_clk_i, alt_clk_i, alt_clk_i, alt_clk_i, host_clk_i, alt_clk_i}),
   .pwr_on_rst_ni,
   .sw_rsts_ni(~{car_regs_reg2hw.periph_rst.q,
                 car_regs_reg2hw.safety_island_rst.q,
                 car_regs_reg2hw.security_island_rst.q,
                 car_regs_reg2hw.pulp_cluster_rst.q,
-                car_regs_reg2hw.spatz_cluster_rst.q}),
+                car_regs_reg2hw.spatz_cluster_rst.q,
+                car_regs_reg2hw.l2_rst.q}),
   .test_mode_i,
   .rsts_no(rsts_n),
   .pwr_on_rsts_no(pwr_on_rsts_n),
   .inits_no() // TODO: connect ?
 );
 
-assign periph_rst_n = rsts_n[0];
-assign safety_rst_n = rsts_n[1];
-assign security_rst_n = rsts_n[2];
-assign pulp_rst_n = rsts_n[3];
-assign spatz_rst_n = rsts_n[4];
+assign periph_rst_n   = rsts_n[PeriphRstDomainIdx];
+assign safety_rst_n   = rsts_n[SafedRstDomainIdx];
+assign security_rst_n = rsts_n[SecdRstDomainIdx];
+assign pulp_rst_n     = rsts_n[IntClusterRstDomainIdx];
+assign spatz_rst_n    = rsts_n[FPClusterRstDomainIdx];
+assign l2_rst_n       = rsts_n[L2RstDomainIdx];
 
-assign periph_pwr_on_rst_n = pwr_on_rsts_n[0];
-assign safety_pwr_on_rst_n = pwr_on_rsts_n[1];
-assign security_pwr_on_rst_n = pwr_on_rsts_n[2];
-assign pulp_pwr_on_rst_n = pwr_on_rsts_n[3];
-assign spatz_pwr_on_rst_n = pwr_on_rsts_n[4];
+assign periph_pwr_on_rst_n   = pwr_on_rsts_n[PeriphRstDomainIdx];
+assign safety_pwr_on_rst_n   = pwr_on_rsts_n[SafedRstDomainIdx];
+assign security_pwr_on_rst_n = pwr_on_rsts_n[SecdRstDomainIdx];
+assign pulp_pwr_on_rst_n     = pwr_on_rsts_n[IntClusterRstDomainIdx];
+assign spatz_pwr_on_rst_n    = pwr_on_rsts_n[FPClusterRstDomainIdx];
+assign l2_pwr_on_rst_n       = pwr_on_rsts_n[L2RstDomainIdx];
 
 //
 // Carfield Control and Status registers
@@ -780,9 +786,11 @@ l2_wrap #(
   .LogDepth     ( LogDepth               ),
   .NumRules     ( L2NumRules             ),
   .L2MemSize    ( L2MemSize              )
-) i_reconfigrurable_l2 (
-  .clk_i               ( host_clk_i                           ),
-  .rst_ni              ( host_pwr_on_rst_n                    ),
+) i_reconfigurable_l2 (
+  .clk_i               ( alt_clk_i                            ), // TODO: which clock domain? is
+                                                                 // hostd clock domain feasible?
+  .rst_ni              ( l2_rst_n                             ),
+  .pwr_on_rst_ni       ( l2_pwr_on_rst_n                      ),
   .slvport_ar_data_i   ( axi_slv_ext_ar_data [NumL2Ports-1:0] ),
   .slvport_ar_wptr_i   ( axi_slv_ext_ar_wptr [NumL2Ports-1:0] ),
   .slvport_ar_rptr_o   ( axi_slv_ext_ar_rptr [NumL2Ports-1:0] ),
@@ -1036,7 +1044,7 @@ spatz_cluster_wrapper #(
     .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth ),
     .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
     )i_fp_cluster_wrapper(
-    .clk_i           ( alt_clk_i            ),
+    .clk_i           ( host_clk_i           ),
     .rst_ni          ( spatz_rst_n          ),
     .pwr_on_rst_ni   ( spatz_pwr_on_rst_n   ),
     .testmode_i      ( 1'b0                 ), // TODO: connect

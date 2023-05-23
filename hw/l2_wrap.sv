@@ -47,6 +47,7 @@ module l2_wrap
 )(
   input  logic                            clk_i            ,
   input  logic                            rst_ni           ,
+  input  logic                            pwr_on_rst_ni    ,
   input  logic [NumPort-1:0][ArWidth-1:0] slvport_ar_data_i,
   input  logic [NumPort-1:0][ LogDepth:0] slvport_ar_wptr_i,
   output logic [NumPort-1:0][ LogDepth:0] slvport_ar_rptr_o,
@@ -101,7 +102,7 @@ for (genvar i = 0; i < NumPort; i++) begin: gen_cdc_fifos
     .async_data_slave_r_rptr_i  ( slvport_r_rptr_i  [i] ),
     // synchronous master port
     .dst_clk_i  ( clk_i             ),
-    .dst_rst_ni ( rst_ni            ),
+    .dst_rst_ni ( pwr_on_rst_ni     ),
     .dst_req_o  ( axi_async_req [i] ),
     .dst_resp_i ( axi_async_rsp [i] )
   );

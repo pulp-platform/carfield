@@ -162,6 +162,16 @@
       ],
     }
 
+    { name: "L2_RST",
+      desc: "L2 reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
     { name: "HOST_ISOLATE",
       desc: "Host Domain AXI isolate",
       swaccess: "ro",
