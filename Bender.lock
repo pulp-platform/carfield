@@ -312,8 +312,8 @@ packages:
       Git: https://github.com/pulp-platform/L2_tcdm_hybrid_interco.git
     dependencies: []
   mailbox_unit:
-    revision: ce0cb2e7fe48a00fd2ee8b39f675e6c33a5a31d2
-    version: null
+    revision: aa169bd4a4e1d736ce67a8ad08b5ddd922f06e60
+    version: 1.1.0
     source:
       Git: git@github.com:pulp-platform/mailbox_unit.git
     dependencies:

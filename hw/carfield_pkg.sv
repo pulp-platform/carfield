@@ -10,6 +10,7 @@
 package carfield_pkg;
 
 import cheshire_pkg::*;
+import safety_island_pkg::*;
 
 typedef enum int {
   PeriphRstDomainIdx     = 'd0,
@@ -24,11 +25,11 @@ typedef enum byte_bt {
   L2Port1SlvIdx      = 'd0,
   L2Port2SlvIdx      = 'd1,
   SafetyIslandSlvIdx = 'd2,
-  OTMailboxSlvIdx    = 'd3,
-  EthernetSlvIdx     = 'd4,
-  PeriphsSlvIdx      = 'd5,
-  FPClusterSlvIdx    = 'd6,
-  IntClusterSlvIdx   = 'd7
+  EthernetSlvIdx     = 'd3,
+  PeriphsSlvIdx      = 'd4,
+  FPClusterSlvIdx    = 'd5,
+  IntClusterSlvIdx   = 'd6,
+  MailboxSlvIdx      = 'd7
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
@@ -42,31 +43,31 @@ typedef enum doub_bt {
   L2Port1Base      = 'h0000_0000_7800_0000,
   L2Port2Base      = 'h0000_0000_7820_0000,
   SafetyIslandBase = 'h0000_0000_6000_0000,
-  OTMailboxBase    = 'h0000_0000_4000_0000,
   EthernetBase     = 'h0000_0000_2000_0000,
   PeriphsBase      = 'h0000_0000_2000_1000,
   FPClusterBase    = 'h0000_0000_5100_0000,
-  IntClusterBase   = 'h0000_0000_5000_0000
+  IntClusterBase   = 'h0000_0000_5000_0000,
+  MailboxBase      = 'h0000_0000_4000_0000
 } axi_start_t;
 
 // AXI Slave Sizes
 localparam doub_bt L2Size           = 'h0000_0000_0020_0000;
 localparam doub_bt SafetyIslandSize = 'h0000_0000_0080_0000;
-localparam doub_bt OTMailboxSize    = 'h0000_0000_0000_1000;
 localparam doub_bt EthernetSize     = 'h0000_0000_0000_1000;
 localparam doub_bt PeriphsSize      = 'h0000_0000_0000_9000;
 localparam doub_bt IntClusterSize   = 'h0000_0000_0080_0000;
 localparam doub_bt FPClusterSize    = 'h0000_0000_0080_0000;
+localparam doub_bt MailboxSize      = 'h0000_0000_0000_1000;
 
 typedef enum doub_bt {
   L2Port1End      = L2Port1Base + L2Size,
   L2Port2End      = L2Port2Base + L2Size,
   SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize,
-  OTMailboxEnd    = OTMailboxBase + OTMailboxSize,
   EthernetEnd     = EthernetBase + EthernetSize,
   PeriphsEnd      = PeriphsBase + PeriphsSize,
   FPClusterEnd    = FPClusterBase + FPClusterSize,
-  IntClusterEnd   = IntClusterBase + IntClusterSize
+  IntClusterEnd   = IntClusterBase + IntClusterSize,
+  MailboxEnd      = MailboxBase + MailboxSize
 } axi_end_t;
 
 // APB peripherals
@@ -130,6 +131,34 @@ localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1 + 3'd1;
 // Ext Interrupts: Security Island Mailbox
 localparam bit [2:0] NumExtIntrs = 3'd1;
 
+// Safety island configuration
+localparam safety_island_cfg_t SafetyIslandCfg = '{
+    HartId:             32'd8,
+    BankNumBytes:       32'h0001_0000,
+    // JTAG ID code:
+    // LSB                        [0]:     1'h1
+    // PULP Platform Manufacturer [11:1]:  11'h6d9
+    // Part Number                [27:12]: 16'h0000 --> TBD!
+    // Version                    [31:28]: 4'h1
+    PulpJtagIdCode:     32'h1_0000_db3,
+    NumTimers:          1,
+    UseClic:            1,
+    ClicIntCtlBits:     8,
+    UseSSClic:          0,
+    UseUSClic:          0,
+    UseFastIrq:         1,
+    UseFpu:             1,
+    UseIntegerCluster:  1,
+    UseXPulp:           1,
+    UseZfinx:           1,
+    UseTCLS:            1,
+    NumInterrupts:      64,
+    NumMhpmCounters:    1,
+    // All non-set values should be zero
+    default: '0
+};
+
+// Cheshire configuration
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
   Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
@@ -165,7 +194,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 FPClusterSlvIdx   ,
                                                 PeriphsSlvIdx     ,
                                                 EthernetSlvIdx    ,
-                                                OTMailboxSlvIdx   ,
+                                                MailboxSlvIdx     ,
                                                 SafetyIslandSlvIdx,
                                                 L2Port2SlvIdx     ,
                                                 L2Port1SlvIdx     },
@@ -173,7 +202,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 FPClusterBase   ,
                                                 PeriphsBase     ,
                                                 EthernetBase    ,
-                                                OTMailboxBase   ,
+                                                MailboxBase     ,
                                                 SafetyIslandBase,
                                                 L2Port2Base     ,
                                                 L2Port1Base     },
@@ -181,7 +210,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 FPClusterEnd   ,
                                                 PeriphsEnd     ,
                                                 EthernetEnd    ,
-                                                OTMailboxEnd   ,
+                                                MailboxEnd     ,
                                                 SafetyIslandEnd,
                                                 L2Port2End     ,
                                                 L2Port1End     },

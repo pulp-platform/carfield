@@ -246,8 +246,8 @@ module carfield_soc_fixture;
   localparam time    ClkPeriodSecdJtag    = 20ns;
   localparam         AxiWideBeWidth_ib    = 4;
   localparam         AxiWideByteOffset_ib = $clog2(AxiWideBeWidth_ib);
-  logic [31:0]       ibex_memory   [bit [31:0]];
-  int                ibex_sections [bit [31:0]];
+  logic [31:0]       secd_memory   [bit [31:0]];
+  int                secd_sections [bit [31:0]];
 
   clk_rst_gen #(
     .ClkPeriod    ( ClkPeriodSecdJtag ),
@@ -278,7 +278,7 @@ module carfield_soc_fixture;
     jtag_secd_dbg.reset_master();
   end
 
-  task debug_ibex_module_init;
+  task debug_secd_module_init;
      logic [31:0]  idcode;
      automatic dm_ot::sbcs_t sbcs = '{
        sbautoincrement: 1'b1,
@@ -300,7 +300,7 @@ module carfield_soc_fixture;
 
   endtask // debug_module_init
 
-  task jtag_ibex_data_preload;
+  task jtag_secd_data_preload;
      logic [31:0] rdata;
      automatic dm_ot::sbcs_t sbcs = '{
        sbautoincrement: 1'b1,
@@ -309,20 +309,20 @@ module carfield_soc_fixture;
        default        : 1'b0
      };
      automatic int dmi_wait_cycles = 10;
-     debug_ibex_module_init();
+     debug_secd_module_init();
      jtag_secd_dbg.write_dmi(dm_ot::SBCS, sbcs);
      do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
      while (sbcs.sbbusy);
-     $display("======== Preload data to Ibex SRAM ========");
+     $display("======== Preload data to Secd SRAM ========");
      // Start writing to SRAM
-     foreach (ibex_sections[addr]) begin
-       $display("Writing %h with %0d words", addr << 2, ibex_sections[addr]); // word = 8 bytes here
+     foreach (secd_sections[addr]) begin
+       $display("Writing %h with %0d words", addr << 2, secd_sections[addr]); // word = 8 bytes here
        jtag_secd_dbg.write_dmi(dm_ot::SBAddress0, (addr << 2));
        do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
        while (sbcs.sbbusy);
-       for (int i = 0; i < ibex_sections[addr]; i++) begin
-         $display(" -- Word %0d/%0d", i, ibex_sections[addr]);
-         jtag_secd_dbg.write_dmi(dm_ot::SBData0, ibex_memory[addr + i]);
+       for (int i = 0; i < secd_sections[addr]; i++) begin
+         $display(" -- Word %0d/%0d", i, secd_sections[addr]);
+         jtag_secd_dbg.write_dmi(dm_ot::SBData0, secd_memory[addr + i]);
          // Wait until SBA is free to write next 32 bits
          do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
          while (sbcs.sbbusy);
@@ -336,7 +336,7 @@ module carfield_soc_fixture;
 
   endtask // jtag_data_preload
 
-  task jtag_ibex_wakeup;
+  task jtag_secd_wakeup;
     input logic [31:0] start_addr;
     logic [31:0] dm_status;
 
@@ -348,9 +348,9 @@ module carfield_soc_fixture;
     };
     //dm_ot::dtm_op_status_e op;
     automatic int dmi_wait_cycles = 10;
-    $info("======== Waking up Ibex using JTAG ========");
+    $info("======== Waking up Secd using JTAG ========");
     // Initialize the dm module again, otherwise it will not work
-    debug_ibex_module_init();
+    debug_secd_module_init();
     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
     // Write PC to Data0 and Data1
@@ -372,7 +372,7 @@ module carfield_soc_fixture;
     jtag_secd_dbg.write_dmi(dm_ot::Command, {8'h0,1'b0,3'h2,1'b0,1'b0,1'b1,1'b1,4'h0,dm_ot::CSR_DPC});
     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
     while (sbcs.sbbusy);
-    // Resume req. Exiting from debug mode Ibex CVA6 will jump at the DPC address.
+    // Resume req. Exiting from debug mode Secd CVA6 will jump at the DPC address.
     // Ensure haltreq, resumereq and ackhavereset all equal to 0
     jtag_secd_dbg.write_dmi(dm_ot::DMControl, 32'h4000_0001);
     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
@@ -384,7 +384,7 @@ module carfield_soc_fixture;
     $info("======== Wait for Completion ========");
   endtask // execute_application
 
-  task load_ibex_binary;
+  task load_secd_binary;
     input string binary;                   // File name
     logic [31:0] section_addr, section_len;
     byte         buffer[];
@@ -398,7 +398,7 @@ module carfield_soc_fixture;
       automatic int num_words = (section_len + AxiWideBeWidth_ib - 1)/AxiWideBeWidth_ib;
       $display("Reading section %x with %0d words", section_addr, num_words);
 
-      ibex_sections[section_addr >> AxiWideByteOffset_ib] = num_words;
+      secd_sections[section_addr >> AxiWideByteOffset_ib] = num_words;
       buffer = new[num_words * AxiWideBeWidth_ib];
       void'(read_section(section_addr, buffer, section_len));
       for (int i = 0; i < num_words; i++) begin
@@ -406,7 +406,7 @@ module carfield_soc_fixture;
         for (int j = 0; j < AxiWideBeWidth_ib; j++) begin
           word[j] = buffer[i * AxiWideBeWidth_ib + j];
         end
-        ibex_memory[section_addr/AxiWideBeWidth_ib + i] = word;
+        secd_memory[section_addr/AxiWideBeWidth_ib + i] = word;
       end
     end
 

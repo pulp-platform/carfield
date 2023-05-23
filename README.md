@@ -67,8 +67,8 @@ Follow these steps to launch a Carfield simulation:
 
   | Bootmode | Command |
   | --- | --- |
-  | 0 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> BINARY=<binary_path>.car.elf` |
-  | 1, 2, 3 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> IMAGE=<binary_path>.car.memh`  |
+  | 0 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> CHS_BINARY=<chs_binary_path>.car.elf SECD_BINARY=<secd_binary_path> SAFED_BINARY=<safed_binary_path>`  |
+  | 1, 2, 3 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> CHS_IMAGE=<chs_binary_path>.car.memh`  |
 
   Default is passive bootmode with serial link preload.
 
