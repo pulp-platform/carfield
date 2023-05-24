@@ -1,0 +1,4 @@
+*.a
+*.dump
+*.elf
+*.memh
