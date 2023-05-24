@@ -114,7 +114,7 @@ typedef struct packed {
   logic [AxiAddrWidth-1:0] end_addr;
 } map_rule_t;
 
-map_rule_t [NumRules-1:0] mapping_rules = '{
+localparam map_rule_t [NumRules-1:0] MappingRules = '{
   '{idx       : car_l2_pkg::INTERLEAVE  ,
     start_addr: L2Port1Base             ,
     end_addr  : L2Port1Base + L2MemSize},
@@ -143,7 +143,7 @@ car_l2_top #(
 ) i_l2_top             (
   .clk_i               ( clk_i           ),
   .rst_ni              ( rst_ni          ),
-  .mapping_rules_i     ( mapping_rules   ),
+  .mapping_rules_i     ( MappingRules    ),
   .axi_req_i           ( axi_async_req   ),
   .axi_resp_o          ( axi_async_rsp   ),
   .ecc_error_o         ( ecc_error_o     )
