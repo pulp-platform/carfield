@@ -67,6 +67,7 @@ CAR_NONFREE_COMMIT ?= ec465674ff7f9fea686c65fc46b136c2b919fffc
 car-nonfree-init:
 	git clone $(CAR_NONFREE_REMOTE) nonfree
 	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
+	cd nonfree/intel16 && icdesign intel16 -update all -nogui
 
 -include nonfree/nonfree.mk
 
