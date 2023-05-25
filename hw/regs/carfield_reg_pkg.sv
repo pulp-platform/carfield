@@ -98,6 +98,10 @@ package carfield_reg_pkg;
   } carfield_reg2hw_spatz_cluster_clk_en_reg_t;
 
   typedef struct packed {
+    logic        q;
+  } carfield_reg2hw_l2_clk_en_reg_t;
+
+  typedef struct packed {
     logic [1:0]  q;
   } carfield_reg2hw_periph_clk_sel_reg_t;
 
@@ -116,6 +120,10 @@ package carfield_reg_pkg;
   typedef struct packed {
     logic [1:0]  q;
   } carfield_reg2hw_spatz_cluster_clk_sel_reg_t;
+
+  typedef struct packed {
+    logic [1:0]  q;
+  } carfield_reg2hw_l2_clk_sel_reg_t;
 
   typedef struct packed {
     logic [23:0] q;
@@ -141,6 +149,11 @@ package carfield_reg_pkg;
     logic [23:0] q;
     logic        qe;
   } carfield_reg2hw_spatz_cluster_clk_div_value_reg_t;
+
+  typedef struct packed {
+    logic [23:0] q;
+    logic        qe;
+  } carfield_reg2hw_l2_clk_div_value_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -245,37 +258,40 @@ package carfield_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    carfield_reg2hw_boot_mode_reg_t boot_mode; // [512:510]
-    carfield_reg2hw_generic_scratch0_reg_t generic_scratch0; // [509:478]
-    carfield_reg2hw_generic_scratch1_reg_t generic_scratch1; // [477:446]
-    carfield_reg2hw_host_rst_reg_t host_rst; // [445:445]
-    carfield_reg2hw_periph_rst_reg_t periph_rst; // [444:444]
-    carfield_reg2hw_safety_island_rst_reg_t safety_island_rst; // [443:443]
-    carfield_reg2hw_security_island_rst_reg_t security_island_rst; // [442:442]
-    carfield_reg2hw_pulp_cluster_rst_reg_t pulp_cluster_rst; // [441:441]
-    carfield_reg2hw_spatz_cluster_rst_reg_t spatz_cluster_rst; // [440:440]
-    carfield_reg2hw_l2_rst_reg_t l2_rst; // [439:439]
-    carfield_reg2hw_host_isolate_reg_t host_isolate; // [438:438]
-    carfield_reg2hw_periph_isolate_reg_t periph_isolate; // [437:437]
-    carfield_reg2hw_safety_island_isolate_reg_t safety_island_isolate; // [436:436]
-    carfield_reg2hw_security_island_isolate_reg_t security_island_isolate; // [435:435]
-    carfield_reg2hw_pulp_cluster_isolate_reg_t pulp_cluster_isolate; // [434:434]
-    carfield_reg2hw_spatz_cluster_isolate_reg_t spatz_cluster_isolate; // [433:433]
-    carfield_reg2hw_periph_clk_en_reg_t periph_clk_en; // [432:432]
-    carfield_reg2hw_safety_island_clk_en_reg_t safety_island_clk_en; // [431:431]
-    carfield_reg2hw_security_island_clk_en_reg_t security_island_clk_en; // [430:430]
-    carfield_reg2hw_pulp_cluster_clk_en_reg_t pulp_cluster_clk_en; // [429:429]
-    carfield_reg2hw_spatz_cluster_clk_en_reg_t spatz_cluster_clk_en; // [428:428]
-    carfield_reg2hw_periph_clk_sel_reg_t periph_clk_sel; // [427:426]
-    carfield_reg2hw_safety_island_clk_sel_reg_t safety_island_clk_sel; // [425:424]
-    carfield_reg2hw_security_island_clk_sel_reg_t security_island_clk_sel; // [423:422]
-    carfield_reg2hw_pulp_cluster_clk_sel_reg_t pulp_cluster_clk_sel; // [421:420]
-    carfield_reg2hw_spatz_cluster_clk_sel_reg_t spatz_cluster_clk_sel; // [419:418]
-    carfield_reg2hw_periph_clk_div_value_reg_t periph_clk_div_value; // [417:393]
-    carfield_reg2hw_safety_island_clk_div_value_reg_t safety_island_clk_div_value; // [392:368]
-    carfield_reg2hw_security_island_clk_div_value_reg_t security_island_clk_div_value; // [367:343]
-    carfield_reg2hw_pulp_cluster_clk_div_value_reg_t pulp_cluster_clk_div_value; // [342:318]
-    carfield_reg2hw_spatz_cluster_clk_div_value_reg_t spatz_cluster_clk_div_value; // [317:293]
+    carfield_reg2hw_boot_mode_reg_t boot_mode; // [540:538]
+    carfield_reg2hw_generic_scratch0_reg_t generic_scratch0; // [537:506]
+    carfield_reg2hw_generic_scratch1_reg_t generic_scratch1; // [505:474]
+    carfield_reg2hw_host_rst_reg_t host_rst; // [473:473]
+    carfield_reg2hw_periph_rst_reg_t periph_rst; // [472:472]
+    carfield_reg2hw_safety_island_rst_reg_t safety_island_rst; // [471:471]
+    carfield_reg2hw_security_island_rst_reg_t security_island_rst; // [470:470]
+    carfield_reg2hw_pulp_cluster_rst_reg_t pulp_cluster_rst; // [469:469]
+    carfield_reg2hw_spatz_cluster_rst_reg_t spatz_cluster_rst; // [468:468]
+    carfield_reg2hw_l2_rst_reg_t l2_rst; // [467:467]
+    carfield_reg2hw_host_isolate_reg_t host_isolate; // [466:466]
+    carfield_reg2hw_periph_isolate_reg_t periph_isolate; // [465:465]
+    carfield_reg2hw_safety_island_isolate_reg_t safety_island_isolate; // [464:464]
+    carfield_reg2hw_security_island_isolate_reg_t security_island_isolate; // [463:463]
+    carfield_reg2hw_pulp_cluster_isolate_reg_t pulp_cluster_isolate; // [462:462]
+    carfield_reg2hw_spatz_cluster_isolate_reg_t spatz_cluster_isolate; // [461:461]
+    carfield_reg2hw_periph_clk_en_reg_t periph_clk_en; // [460:460]
+    carfield_reg2hw_safety_island_clk_en_reg_t safety_island_clk_en; // [459:459]
+    carfield_reg2hw_security_island_clk_en_reg_t security_island_clk_en; // [458:458]
+    carfield_reg2hw_pulp_cluster_clk_en_reg_t pulp_cluster_clk_en; // [457:457]
+    carfield_reg2hw_spatz_cluster_clk_en_reg_t spatz_cluster_clk_en; // [456:456]
+    carfield_reg2hw_l2_clk_en_reg_t l2_clk_en; // [455:455]
+    carfield_reg2hw_periph_clk_sel_reg_t periph_clk_sel; // [454:453]
+    carfield_reg2hw_safety_island_clk_sel_reg_t safety_island_clk_sel; // [452:451]
+    carfield_reg2hw_security_island_clk_sel_reg_t security_island_clk_sel; // [450:449]
+    carfield_reg2hw_pulp_cluster_clk_sel_reg_t pulp_cluster_clk_sel; // [448:447]
+    carfield_reg2hw_spatz_cluster_clk_sel_reg_t spatz_cluster_clk_sel; // [446:445]
+    carfield_reg2hw_l2_clk_sel_reg_t l2_clk_sel; // [444:443]
+    carfield_reg2hw_periph_clk_div_value_reg_t periph_clk_div_value; // [442:418]
+    carfield_reg2hw_safety_island_clk_div_value_reg_t safety_island_clk_div_value; // [417:393]
+    carfield_reg2hw_security_island_clk_div_value_reg_t security_island_clk_div_value; // [392:368]
+    carfield_reg2hw_pulp_cluster_clk_div_value_reg_t pulp_cluster_clk_div_value; // [367:343]
+    carfield_reg2hw_spatz_cluster_clk_div_value_reg_t spatz_cluster_clk_div_value; // [342:318]
+    carfield_reg2hw_l2_clk_div_value_reg_t l2_clk_div_value; // [317:293]
     carfield_reg2hw_host_fetch_enable_reg_t host_fetch_enable; // [292:292]
     carfield_reg2hw_safety_island_fetch_enable_reg_t safety_island_fetch_enable; // [291:291]
     carfield_reg2hw_security_island_fetch_enable_reg_t security_island_fetch_enable; // [290:290]
@@ -339,30 +355,33 @@ package carfield_reg_pkg;
   parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_CLK_EN_OFFSET = 8'h 78;
   parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_CLK_EN_OFFSET = 8'h 7c;
   parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_CLK_EN_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_CLK_SEL_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_CLK_SEL_OFFSET = 8'h 88;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_CLK_SEL_OFFSET = 8'h 8c;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_CLK_SEL_OFFSET = 8'h 90;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_CLK_SEL_OFFSET = 8'h 94;
-  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_CLK_DIV_VALUE_OFFSET = 8'h 98;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_CLK_DIV_VALUE_OFFSET = 8'h 9c;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_CLK_DIV_VALUE_OFFSET = 8'h a0;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_CLK_DIV_VALUE_OFFSET = 8'h a4;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_CLK_DIV_VALUE_OFFSET = 8'h a8;
-  parameter logic [BlockAw-1:0] CARFIELD_HOST_FETCH_ENABLE_OFFSET = 8'h ac;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE_OFFSET = 8'h b0;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE_OFFSET = 8'h b4;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_FETCH_ENABLE_OFFSET = 8'h b8;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE_OFFSET = 8'h bc;
-  parameter logic [BlockAw-1:0] CARFIELD_HOST_BOOT_ADDR_OFFSET = 8'h c0;
-  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_BOOT_ADDR_OFFSET = 8'h c4;
-  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_BOOT_ADDR_OFFSET = 8'h c8;
-  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_BOOT_ADDR_OFFSET = 8'h cc;
-  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR_OFFSET = 8'h d0;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG0_OFFSET = 8'h d4;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG1_OFFSET = 8'h d8;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG2_OFFSET = 8'h dc;
-  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG3_OFFSET = 8'h e0;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_CLK_EN_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_CLK_SEL_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_CLK_SEL_OFFSET = 8'h 8c;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_CLK_SEL_OFFSET = 8'h 90;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_CLK_SEL_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_CLK_SEL_OFFSET = 8'h 98;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_CLK_SEL_OFFSET = 8'h 9c;
+  parameter logic [BlockAw-1:0] CARFIELD_PERIPH_CLK_DIV_VALUE_OFFSET = 8'h a0;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_CLK_DIV_VALUE_OFFSET = 8'h a4;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_CLK_DIV_VALUE_OFFSET = 8'h a8;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_CLK_DIV_VALUE_OFFSET = 8'h ac;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_CLK_DIV_VALUE_OFFSET = 8'h b0;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_CLK_DIV_VALUE_OFFSET = 8'h b4;
+  parameter logic [BlockAw-1:0] CARFIELD_HOST_FETCH_ENABLE_OFFSET = 8'h b8;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE_OFFSET = 8'h bc;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE_OFFSET = 8'h c0;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_FETCH_ENABLE_OFFSET = 8'h c4;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE_OFFSET = 8'h c8;
+  parameter logic [BlockAw-1:0] CARFIELD_HOST_BOOT_ADDR_OFFSET = 8'h cc;
+  parameter logic [BlockAw-1:0] CARFIELD_SAFETY_ISLAND_BOOT_ADDR_OFFSET = 8'h d0;
+  parameter logic [BlockAw-1:0] CARFIELD_SECURITY_ISLAND_BOOT_ADDR_OFFSET = 8'h d4;
+  parameter logic [BlockAw-1:0] CARFIELD_PULP_CLUSTER_BOOT_ADDR_OFFSET = 8'h d8;
+  parameter logic [BlockAw-1:0] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR_OFFSET = 8'h dc;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG0_OFFSET = 8'h e0;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG1_OFFSET = 8'h e4;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG2_OFFSET = 8'h e8;
+  parameter logic [BlockAw-1:0] CARFIELD_L2_SRAM_CONFIG3_OFFSET = 8'h ec;
 
   // Register index
   typedef enum int {
@@ -399,16 +418,19 @@ package carfield_reg_pkg;
     CARFIELD_SECURITY_ISLAND_CLK_EN,
     CARFIELD_PULP_CLUSTER_CLK_EN,
     CARFIELD_SPATZ_CLUSTER_CLK_EN,
+    CARFIELD_L2_CLK_EN,
     CARFIELD_PERIPH_CLK_SEL,
     CARFIELD_SAFETY_ISLAND_CLK_SEL,
     CARFIELD_SECURITY_ISLAND_CLK_SEL,
     CARFIELD_PULP_CLUSTER_CLK_SEL,
     CARFIELD_SPATZ_CLUSTER_CLK_SEL,
+    CARFIELD_L2_CLK_SEL,
     CARFIELD_PERIPH_CLK_DIV_VALUE,
     CARFIELD_SAFETY_ISLAND_CLK_DIV_VALUE,
     CARFIELD_SECURITY_ISLAND_CLK_DIV_VALUE,
     CARFIELD_PULP_CLUSTER_CLK_DIV_VALUE,
     CARFIELD_SPATZ_CLUSTER_CLK_DIV_VALUE,
+    CARFIELD_L2_CLK_DIV_VALUE,
     CARFIELD_HOST_FETCH_ENABLE,
     CARFIELD_SAFETY_ISLAND_FETCH_ENABLE,
     CARFIELD_SECURITY_ISLAND_FETCH_ENABLE,
@@ -426,7 +448,7 @@ package carfield_reg_pkg;
   } carfield_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CARFIELD_PERMIT [57] = '{
+  parameter logic [3:0] CARFIELD_PERMIT [60] = '{
     4'b 1111, // index[ 0] CARFIELD_VERSION0
     4'b 1111, // index[ 1] CARFIELD_VERSION1
     4'b 1111, // index[ 2] CARFIELD_VERSION2
@@ -460,30 +482,33 @@ package carfield_reg_pkg;
     4'b 0001, // index[30] CARFIELD_SECURITY_ISLAND_CLK_EN
     4'b 0001, // index[31] CARFIELD_PULP_CLUSTER_CLK_EN
     4'b 0001, // index[32] CARFIELD_SPATZ_CLUSTER_CLK_EN
-    4'b 0001, // index[33] CARFIELD_PERIPH_CLK_SEL
-    4'b 0001, // index[34] CARFIELD_SAFETY_ISLAND_CLK_SEL
-    4'b 0001, // index[35] CARFIELD_SECURITY_ISLAND_CLK_SEL
-    4'b 0001, // index[36] CARFIELD_PULP_CLUSTER_CLK_SEL
-    4'b 0001, // index[37] CARFIELD_SPATZ_CLUSTER_CLK_SEL
-    4'b 0111, // index[38] CARFIELD_PERIPH_CLK_DIV_VALUE
-    4'b 0111, // index[39] CARFIELD_SAFETY_ISLAND_CLK_DIV_VALUE
-    4'b 0111, // index[40] CARFIELD_SECURITY_ISLAND_CLK_DIV_VALUE
-    4'b 0111, // index[41] CARFIELD_PULP_CLUSTER_CLK_DIV_VALUE
-    4'b 0111, // index[42] CARFIELD_SPATZ_CLUSTER_CLK_DIV_VALUE
-    4'b 0001, // index[43] CARFIELD_HOST_FETCH_ENABLE
-    4'b 0001, // index[44] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE
-    4'b 0001, // index[45] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE
-    4'b 0001, // index[46] CARFIELD_PULP_CLUSTER_FETCH_ENABLE
-    4'b 0001, // index[47] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE
-    4'b 1111, // index[48] CARFIELD_HOST_BOOT_ADDR
-    4'b 1111, // index[49] CARFIELD_SAFETY_ISLAND_BOOT_ADDR
-    4'b 1111, // index[50] CARFIELD_SECURITY_ISLAND_BOOT_ADDR
-    4'b 1111, // index[51] CARFIELD_PULP_CLUSTER_BOOT_ADDR
-    4'b 1111, // index[52] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR
-    4'b 1111, // index[53] CARFIELD_L2_SRAM_CONFIG0
-    4'b 1111, // index[54] CARFIELD_L2_SRAM_CONFIG1
-    4'b 1111, // index[55] CARFIELD_L2_SRAM_CONFIG2
-    4'b 1111  // index[56] CARFIELD_L2_SRAM_CONFIG3
+    4'b 0001, // index[33] CARFIELD_L2_CLK_EN
+    4'b 0001, // index[34] CARFIELD_PERIPH_CLK_SEL
+    4'b 0001, // index[35] CARFIELD_SAFETY_ISLAND_CLK_SEL
+    4'b 0001, // index[36] CARFIELD_SECURITY_ISLAND_CLK_SEL
+    4'b 0001, // index[37] CARFIELD_PULP_CLUSTER_CLK_SEL
+    4'b 0001, // index[38] CARFIELD_SPATZ_CLUSTER_CLK_SEL
+    4'b 0001, // index[39] CARFIELD_L2_CLK_SEL
+    4'b 0111, // index[40] CARFIELD_PERIPH_CLK_DIV_VALUE
+    4'b 0111, // index[41] CARFIELD_SAFETY_ISLAND_CLK_DIV_VALUE
+    4'b 0111, // index[42] CARFIELD_SECURITY_ISLAND_CLK_DIV_VALUE
+    4'b 0111, // index[43] CARFIELD_PULP_CLUSTER_CLK_DIV_VALUE
+    4'b 0111, // index[44] CARFIELD_SPATZ_CLUSTER_CLK_DIV_VALUE
+    4'b 0111, // index[45] CARFIELD_L2_CLK_DIV_VALUE
+    4'b 0001, // index[46] CARFIELD_HOST_FETCH_ENABLE
+    4'b 0001, // index[47] CARFIELD_SAFETY_ISLAND_FETCH_ENABLE
+    4'b 0001, // index[48] CARFIELD_SECURITY_ISLAND_FETCH_ENABLE
+    4'b 0001, // index[49] CARFIELD_PULP_CLUSTER_FETCH_ENABLE
+    4'b 0001, // index[50] CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE
+    4'b 1111, // index[51] CARFIELD_HOST_BOOT_ADDR
+    4'b 1111, // index[52] CARFIELD_SAFETY_ISLAND_BOOT_ADDR
+    4'b 1111, // index[53] CARFIELD_SECURITY_ISLAND_BOOT_ADDR
+    4'b 1111, // index[54] CARFIELD_PULP_CLUSTER_BOOT_ADDR
+    4'b 1111, // index[55] CARFIELD_SPATZ_CLUSTER_BOOT_ADDR
+    4'b 1111, // index[56] CARFIELD_L2_SRAM_CONFIG0
+    4'b 1111, // index[57] CARFIELD_L2_SRAM_CONFIG1
+    4'b 1111, // index[58] CARFIELD_L2_SRAM_CONFIG2
+    4'b 1111  // index[59] CARFIELD_L2_SRAM_CONFIG3
   };
 
 endpackage

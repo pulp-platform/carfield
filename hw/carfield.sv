@@ -139,7 +139,8 @@ module carfield
   input  reg_rsp_t                                    pll_cfg_reg_rsp_i,
   // padframe configuration
   output reg_req_t                                    padframe_cfg_reg_req_o,
-  input  reg_rsp_t                                    padframe_cfg_reg_rsp_i
+  input  reg_rsp_t                                    padframe_cfg_reg_rsp_i,
+  output carfield_debug_sigs_t                        debug_signals_o
 );
 
 /*********************************
@@ -414,19 +415,20 @@ carfield_reg2hw_t car_regs_reg2hw;
 carfield_hw2reg_t car_regs_hw2reg;
 
 // Clocking and reset strategy
-// We have three clock domains
-// host (host_clk_i), periph (periph_clk_i) and accelerators (alt_clk_i)
+// We have three clock sources that are multiplexed to 6 domains. The default assignment after
+// hard reset is:
+// periph (periph_clk_i) and accelerators (alt_clk_i)
 //
-// and seven reset domains
-// host             (contained in host clock domain)
-// periph           (contained in periph clock domain,      sw reset 0)
-// safety           (contained in accelerator clock domain, sw reset 1)
-// security         (contained in accelerator clock domain, sw reset 2)
-// pulp_cluster     (contained in accelerator clock domain, sw reset 3)
-// spatz_cluster    (contained in accelerator clock domain, sw reset 4)
-// shared l2 memory (contained in host clock domain,        sw reset 5)
-
-localparam int unsigned NumRstDomains = 6;
+// The host is statically always assigned to host_clk_i.
+//
+// Furthermore we have six reset domains:
+// host             (contained in host clock domain, POR only, no SW reset)
+// periph           (sw reset 0)
+// safety           (sw reset 1)
+// security         (sw reset 2)
+// pulp_cluster     (sw reset 3)
+// spatz_cluster    (sw reset 4)
+// shared_l2_memory (sw reset 5)
 
 logic    periph_rst_n;
 logic    safety_rst_n;
@@ -443,6 +445,115 @@ logic    pulp_pwr_on_rst_n;
 logic    spatz_pwr_on_rst_n;
 logic    l2_pwr_on_rst_n;
 
+logic  periph_clk;
+logic  safety_clk;
+logic  security_clk;
+logic  pulp_clk;
+logic  spatz_clk;
+logic  l2_clk;
+
+
+
+// Clock Multiplexing for each sub block
+  localparam int unsigned DOMAIN_CLK_DIV_VALUE_WIDTH = 24;
+  typedef logic [DOMAIN_CLK_DIV_VALUE_WIDTH-1:0] domain_clk_div_value_t;
+  logic [NumDomains-1:0] domain_clk;
+  logic [NumDomains-1:0] domain_clk_en;
+  logic [NumDomains-1:0] domain_clk_gated;
+  logic [NumDomains-1:0][1:0] domain_clk_sel;
+
+  logic [NumDomains-1:0] domain_clk_div_changed;
+  logic [NumDomains-1:0] domain_clk_div_decoupled_valid, domain_clk_div_decoupled_ready;
+  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value;
+  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_decoupled;
+  logic [NumDomains-1:0] domain_clk_div_valid_synced, domain_clk_div_ready_synced;
+  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_synced;
+
+  // Note that each accelerator has two resets: One for the combined
+  // software/power-on reset and a power-on reset only
+  logic [NumDomains-1:0] pwr_on_rsts_n;
+  logic [NumDomains-1:0] rsts_n;
+
+
+  // Each of the 5 clock gateable domains (periph, safety island, security island, spatz and pulp
+  // cluster) have the following clock distribution scheme:
+  // 1. For each domain the user selects one of 3 different clock sources (host clock, alt clock and
+  //    per clock). Each of these main clocks are either supplied externally, by a dedicated PLL per
+  //    clock source or by a single PLL that supplies all three clock sources. The configuration of
+  //    the clock source is handled by the external PLL wrapper configuration registers.
+  // 2. The selected clock source for the domain is fed into a default-bypassed arbitrary integer
+  //    clock divider with 50% duty cycle. This allows to use different integer clock divisions for
+  //    every target domain to use different clock frequencies.
+  // 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
+
+for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
+  clk_mux_glitch_free #(
+    .NUM_INPUTS(3)
+  ) i_clk_mux (
+    .clks_i       ( {periph_clk_i, alt_clk_i, host_clk_i} ),
+    .test_clk_i   ( 1'b0                                  ),
+    .test_en_i    ( 1'b0                                  ),
+    .async_rstn_i ( host_pwr_on_rst_n                     ),
+    .async_sel_i  ( domain_clk_sel[i]                     ),
+    .clk_o        ( domain_clk[i]                         )
+  );
+
+  // The register file does not support back pressure directly. I.e the hardware side cannot tell
+  // the regfile that a reg value cannot be written at the moment. This is a problem since the clk
+  // divider input of the clk_int_div module will stall the transaction until it is safe to change
+  // the clock division factor. The stream_deposit module converts between these two protocols
+  // (write-pulse only protocol <-> ready-valid protocol). See the documentation in the header of
+  // the module for more details.
+  lossy_valid_to_stream #(
+    .T(domain_clk_div_value_t)
+  ) i_decouple (
+    .clk_i   ( host_clk_i                        ), // Connected to host clock since the soc_ctr
+                                                    // regs are clocked with it
+    .rst_ni  ( host_pwr_on_rst_n                 ), // See above
+    .valid_i ( domain_clk_div_changed[i]         ),
+    .data_i  ( domain_clk_div_value[i]           ),
+    .valid_o ( domain_clk_div_decoupled_valid[i] ),
+    .ready_i ( domain_clk_div_decoupled_ready[i] ),
+    .data_o  ( domain_clk_div_value_decoupled[i] )
+  );
+
+  // We have to synchronize the division value into the clock domain of the undivided source clock.
+  cdc_4phase #(
+    .T(domain_clk_div_value_t)
+  ) i_cdc (
+    .src_rst_ni  ( host_pwr_on_rst_n                 ),
+    .src_clk_i   ( host_clk_i                        ),
+    .src_data_i  ( domain_clk_div_value_decoupled[i] ),
+    .src_valid_i ( domain_clk_div_decoupled_valid[i] ),
+    .src_ready_o ( domain_clk_div_decoupled_ready[i] ),
+    .dst_rst_ni  ( pwr_on_rsts_n[i]                  ), // Use POR-only on both sides. Partial reset
+                                                        // problem for SW-reset is thus not
+                                                        // possible.
+    .dst_clk_i   ( domain_clk[i]                     ),
+    .dst_data_o  ( domain_clk_div_value_synced[i]    ),
+    .dst_valid_o ( domain_clk_div_valid_synced[i]    ),
+    .dst_ready_i ( domain_clk_div_ready_synced[i]    )
+  );
+
+  clk_int_div #(
+    .DIV_VALUE_WIDTH(DOMAIN_CLK_DIV_VALUE_WIDTH),
+    .DEFAULT_DIV_VALUE(1)
+  ) i_clk_div (
+    .clk_i          ( domain_clk[i]                  ),
+    .rst_ni         ( pwr_on_rsts_n[i]               ), // Only reset during power-on. Software
+                                                        // resets will not affect it.
+    .en_i           ( domain_clk_en[i]               ),
+    .test_mode_en_i ( test_mode_i                    ),
+    .div_i          ( domain_clk_div_value_synced[i] ),
+    .div_valid_i    ( domain_clk_div_valid_synced[i] ),
+    .div_ready_o    ( domain_clk_div_ready_synced[i] ),
+    .clk_o          ( domain_clk_gated[i]            ),
+    .cycl_count_o  (                                ) // Not needed
+  );
+end
+
+
+
 // Reset generation for power-on reset for host domain. For the other domain we
 // get this from carfield_rstgen
 rstgen i_host_rstgen (
@@ -458,15 +569,10 @@ rstgen i_host_rstgen (
 // controllable resets. The matching of clock and reset domain is according to
 // the description above
 
-// Note that each accelerator has two resets: One for the combined
-// software/power-on reset and a power-on reset only
-logic [NumRstDomains-1:0] pwr_on_rsts_n;
-logic [NumRstDomains-1:0] rsts_n;
-
 carfield_rstgen #(
-  .NumRstDomains (NumRstDomains)
+  .NumRstDomains (NumDomains)
 ) i_carfield_rstgen (
-  .clks_i({periph_clk_i, alt_clk_i, alt_clk_i, alt_clk_i, host_clk_i, alt_clk_i}),
+  .clks_i(domain_clk),
   .pwr_on_rst_ni,
   .sw_rsts_ni(~{car_regs_reg2hw.periph_rst.q,
                 car_regs_reg2hw.safety_island_rst.q,
@@ -480,19 +586,60 @@ carfield_rstgen #(
   .inits_no() // TODO: connect ?
 );
 
-assign periph_rst_n   = rsts_n[PeriphRstDomainIdx];
-assign safety_rst_n   = rsts_n[SafedRstDomainIdx];
-assign security_rst_n = rsts_n[SecdRstDomainIdx];
-assign pulp_rst_n     = rsts_n[IntClusterRstDomainIdx];
-assign spatz_rst_n    = rsts_n[FPClusterRstDomainIdx];
-assign l2_rst_n       = rsts_n[L2RstDomainIdx];
+// Assign vectorized reset and clock signals to friendly-named domain signals and registers
+assign periph_rst_n   = rsts_n[PeriphDomainIdx];
+assign safety_rst_n   = rsts_n[SafedDomainIdx];
+assign security_rst_n = rsts_n[SecdDomainIdx];
+assign pulp_rst_n     = rsts_n[IntClusterDomainIdx];
+assign spatz_rst_n    = rsts_n[FPClusterDomainIdx];
+assign l2_rst_n       = rsts_n[L2DomainIdx];
 
-assign periph_pwr_on_rst_n   = pwr_on_rsts_n[PeriphRstDomainIdx];
-assign safety_pwr_on_rst_n   = pwr_on_rsts_n[SafedRstDomainIdx];
-assign security_pwr_on_rst_n = pwr_on_rsts_n[SecdRstDomainIdx];
-assign pulp_pwr_on_rst_n     = pwr_on_rsts_n[IntClusterRstDomainIdx];
-assign spatz_pwr_on_rst_n    = pwr_on_rsts_n[FPClusterRstDomainIdx];
-assign l2_pwr_on_rst_n       = pwr_on_rsts_n[L2RstDomainIdx];
+assign periph_pwr_on_rst_n   = pwr_on_rsts_n[PeriphDomainIdx];
+assign safety_pwr_on_rst_n   = pwr_on_rsts_n[SafedDomainIdx];
+assign security_pwr_on_rst_n = pwr_on_rsts_n[SecdDomainIdx];
+assign pulp_pwr_on_rst_n     = pwr_on_rsts_n[IntClusterDomainIdx];
+assign spatz_pwr_on_rst_n    = pwr_on_rsts_n[FPClusterDomainIdx];
+assign l2_pwr_on_rst_n       = pwr_on_rsts_n[L2DomainIdx];
+
+assign periph_clk   = domain_clk_gated[PeriphDomainIdx];
+assign safety_clk   = domain_clk_gated[SafedDomainIdx];
+assign security_clk = domain_clk_gated[SecdDomainIdx];
+assign pulp_clk     = domain_clk_gated[IntClusterDomainIdx];
+assign spatz_clk    = domain_clk_gated[FPClusterDomainIdx];
+assign l2_clk       = domain_clk_gated[L2DomainIdx];
+
+assign domain_clk_sel[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_sel.q;
+assign domain_clk_sel[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_sel.q;
+assign domain_clk_sel[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_sel.q;
+assign domain_clk_sel[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_sel.q;
+assign domain_clk_sel[FPClusterDomainIdx]  = car_regs_reg2hw.spatz_cluster_clk_sel.q;
+assign domain_clk_sel[L2DomainIdx]         = car_regs_reg2hw.l2_clk_sel.q;
+
+assign domain_clk_div_value[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_div_value.q;
+assign domain_clk_div_value[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_div_value.q;
+assign domain_clk_div_value[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_div_value.q;
+assign domain_clk_div_value[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_div_value.q;
+assign domain_clk_div_value[FPClusterDomainIdx]  = car_regs_reg2hw.spatz_cluster_clk_div_value.q;
+assign domain_clk_div_value[L2DomainIdx]         = car_regs_reg2hw.l2_clk_div_value.q;
+
+assign domain_clk_div_changed[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_div_value.qe;
+assign domain_clk_div_changed[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_div_value.qe;
+assign domain_clk_div_changed[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_div_value.qe;
+assign domain_clk_div_changed[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_div_value.qe;
+assign domain_clk_div_changed[FPClusterDomainIdx]  = car_regs_reg2hw.spatz_cluster_clk_div_value.qe;
+assign domain_clk_div_changed[L2DomainIdx]         = car_regs_reg2hw.l2_clk_div_value.qe;
+
+assign domain_clk_en[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_en.q;
+assign domain_clk_en[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_en.q;
+assign domain_clk_en[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_en.q;
+assign domain_clk_en[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_en.q;
+assign domain_clk_en[FPClusterDomainIdx]  = car_regs_reg2hw.spatz_cluster_clk_en.q;
+assign domain_clk_en[L2DomainIdx]         = car_regs_reg2hw.l2_clk_en.q;
+
+// Assign debug signals
+assign debug_signals_o.domain_clk    = domain_clk_gated;
+assign debug_signals_o.domain_rsts_n = rsts_n;
+
 
 //
 // Carfield Control and Status registers
@@ -878,8 +1025,7 @@ l2_wrap #(
   .NumRules     ( L2NumRules             ),
   .L2MemSize    ( L2MemSize              )
 ) i_reconfigurable_l2 (
-  .clk_i               ( alt_clk_i                            ), // TODO: which clock domain? is
-                                                                 // hostd clock domain feasible?
+  .clk_i               ( l2_clk                               ),
   .rst_ni              ( l2_rst_n                             ),
   .pwr_on_rst_ni       ( l2_pwr_on_rst_n                      ),
   .slvport_ar_data_i   ( axi_slv_ext_ar_data [NumL2Ports-1:0] ),
@@ -901,7 +1047,6 @@ l2_wrap #(
 );
 
 // Safety Island
-// Alt Clock Domain
 logic [SafetyIslandCfg.NumInterrupts-1:0] safed_intrs;
 
 // TODO: propagate to top
@@ -953,7 +1098,7 @@ safety_island_synth_wrapper #(
   .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth      ),
   .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth       )
 ) i_safety_island_wrap    (
-  .clk_i                  ( alt_clk_i                                ),
+  .clk_i                  ( safety_clk                               ),
   .ref_clk_i              ( rt_clk_i                                 ),
   .rst_ni                 ( safety_rst_n                             ),
   .pwr_on_rst_ni          ( safety_pwr_on_rst_n                      ),
@@ -1004,7 +1149,6 @@ safety_island_synth_wrapper #(
 );
 
 // PULP integer cluster
-// Alt Clock Domain
 
 logic pulpcl_mbox_intr;
 
@@ -1049,7 +1193,7 @@ pulp_cluster #(
   .LOG_DEPTH                      ( LogDepth                  ),
   .BaseAddr                       ( IntClusterBase            )
 ) i_integer_cluster            (
-  .clk_i                       ( alt_clk_i                              ),
+  .clk_i                       ( pulp_clk                               ),
   .rst_ni                      ( pulp_rst_n                             ),
   .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                      ),
   .ref_clk_i                   ( rt_clk_i                               ),
@@ -1109,7 +1253,6 @@ pulp_cluster #(
 );
 
 // Floating Point Spatz Cluster
-// Alt Clock Domain
 
 // Spatz cluster interrupts
 logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr, spatz_cl_mti;
@@ -1154,7 +1297,7 @@ spatz_cluster_wrapper #(
     .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth ),
     .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
     )i_fp_cluster_wrapper(
-    .clk_i           ( host_clk_i           ),
+    .clk_i           ( spatz_clk            ),
     .rst_ni          ( spatz_rst_n          ),
     .pwr_on_rst_ni   ( spatz_pwr_on_rst_n   ),
     .testmode_i      ( 1'b0                 ), // TODO: connect
@@ -1205,7 +1348,6 @@ spatz_cluster_wrapper #(
   );
 
 // Security Island
-// Alt Clock Domain
 logic secd_mbox_intr;
 
 secure_subsystem_synth_wrap #(
@@ -1237,7 +1379,7 @@ secure_subsystem_synth_wrap #(
   .axi_ot_out_req_t      ( carfield_axi_mst_req_t     ),
   .axi_ot_out_resp_t     ( carfield_axi_mst_rsp_t     )
 ) i_security_island (
-  .clk_i            ( alt_clk_i       ),
+  .clk_i            ( security_clk    ),
   .clk_ref_i        ( rt_clk_i        ),
   .rst_ni           ( security_rst_n  ),
   .pwr_on_rst_ni    ( security_pwr_on_rst_n ),
@@ -1481,7 +1623,7 @@ axi_cdc_dst #(
   .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-  .dst_clk_i                  ( periph_clk_i        ),
+  .dst_clk_i                  ( periph_clk          ),
   .dst_rst_ni                 ( periph_pwr_on_rst_n ),
   .dst_req_o                  ( axi_ethernet_req    ),
   .dst_resp_i                 ( axi_ethernet_rsp    )
@@ -1496,7 +1638,7 @@ axi_err_slv #(
  .ATOPs       ( 1'b0                   ),
  .MaxTrans    ( 4                      )
 ) i_axi_err_slv_ethernet (
-  .clk_i      ( periph_clk_i           ),
+  .clk_i      ( periph_clk             ),
   .rst_ni     ( periph_pwr_on_rst_n    ), // TODO: currently not sw resettable no isolate
   .test_i     ( test_mode_i            ),
   // slave port
@@ -1537,7 +1679,7 @@ axi_cdc_dst #(
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [PeriphsSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [PeriphsSlvIdx] ),
   // synchronous master port
-  .dst_clk_i                  ( periph_clk_i                ),
+  .dst_clk_i                  ( periph_clk                  ),
   .dst_rst_ni                 ( periph_pwr_on_rst_n         ),
   .dst_req_o                  ( axi_d64_a48_peripherals_req ),
   .dst_resp_i                 ( axi_d64_a48_peripherals_rsp )
@@ -1563,7 +1705,7 @@ axi_riscv_atomics_structs #(
   .axi_req_t        ( carfield_axi_slv_req_t ),
   .axi_rsp_t        ( carfield_axi_slv_rsp_t )
 ) i_atomics_peripherals (
-  .clk_i         ( periph_clk_i                    ),
+  .clk_i         ( periph_clk                      ),
   .rst_ni        ( periph_pwr_on_rst_n             ),
   .axi_slv_req_i ( axi_d64_a48_peripherals_req     ),
   .axi_slv_rsp_o ( axi_d64_a48_peripherals_rsp     ),
@@ -1584,7 +1726,7 @@ axi_cut #(
   .axi_req_t  ( carfield_axi_slv_req_t     ),
   .axi_resp_t ( carfield_axi_slv_rsp_t     )
 ) i_atomics_cut_peripherals (
-  .clk_i      ( periph_clk_i                        ),
+  .clk_i      ( periph_clk                          ),
   .rst_ni     ( periph_pwr_on_rst_n                 ),
   .slv_req_i  ( axi_d64_a48_amo_peripherals_req     ),
   .slv_resp_o ( axi_d64_a48_amo_peripherals_rsp     ),
@@ -1617,7 +1759,7 @@ axi_dw_converter #(
   .axi_slv_req_t        ( carfield_axi_slv_req_t            ),
   .axi_slv_resp_t       ( carfield_axi_slv_rsp_t            )
 ) i_axi_dw_converter_peripherals (
-  .clk_i      ( periph_clk_i                        ),
+  .clk_i      ( periph_clk                          ),
   .rst_ni     ( periph_pwr_on_rst_n                 ),
   .slv_req_i  ( axi_d64_a48_amo_cut_peripherals_req ),
   .slv_resp_o ( axi_d64_a48_amo_cut_peripherals_rsp ),
@@ -1668,7 +1810,7 @@ axi_to_axi_lite #(
   .lite_req_t     ( carfield_axi_lite_d32_a32_slv_req_t ),
   .lite_resp_t    ( carfield_axi_lite_d32_a32_slv_rsp_t )
 ) i_axi_to_axi_lite_peripherals (
-  .clk_i     ( periph_clk_i                     ),
+  .clk_i     ( periph_clk                       ),
   .rst_ni    ( periph_pwr_on_rst_n              ),
   .test_i    ( test_mode_i                      ),
   .slv_req_i ( axi_d32_a32_peripherals_req      ),
@@ -1720,7 +1862,7 @@ axi_lite_to_apb #(
   .apb_resp_t      ( carfield_apb_rsp_t                  ),
   .rule_t          ( carfield_addr_map_rule_t            )
 ) i_axi_lite_to_apb_peripherals (
-  .clk_i          ( periph_clk_i                         ),
+  .clk_i          ( periph_clk                           ),
   .rst_ni         ( periph_pwr_on_rst_n                  ),
   .axi_lite_req_i ( axi_lite_d32_a32_peripherals_req     ),
   .axi_lite_resp_o( axi_lite_d32_a32_peripherals_rsp     ),
@@ -1733,7 +1875,7 @@ axi_lite_to_apb #(
 apb_timer_unit #(
   .APB_ADDR_WIDTH ( AxiNarrowAddrWidth )
 ) i_system_timer (
-  .HCLK       ( periph_clk_i                        ),
+  .HCLK       ( periph_clk                          ),
   .HRESETn    ( periph_pwr_on_rst_n                 ),
   .PADDR      ( apb_mst_req[SystemTimerIdx].paddr   ),
   .PWDATA     ( apb_mst_req[SystemTimerIdx].pwdata  ),
@@ -1756,7 +1898,7 @@ apb_adv_timer #(
   .APB_ADDR_WIDTH  ( AxiNarrowAddrWidth ),
   .EXTSIG_NUM      ( 64                 )
 ) i_advanced_timer (
-  .HCLK            ( periph_clk_i           ),
+  .HCLK            ( periph_clk             ),
   .HRESETn         ( periph_pwr_on_rst_n    ),
   .dft_cg_enable_i ( 1'b0                   ),
   .PADDR           ( apb_mst_req[AdvancedTimerIdx].paddr   ),
@@ -1780,10 +1922,10 @@ apb_adv_timer #(
 REG_BUS #(
   .ADDR_WIDTH ( AxiNarrowAddrWidth ),
   .DATA_WIDTH ( AxiNarrowDataWidth )
-) reg_bus_wdt (periph_clk_i);
+) reg_bus_wdt (periph_clk);
 
 apb_to_reg i_apb_to_reg_wdt (
-  .clk_i     ( periph_clk_i                      ),
+  .clk_i     ( periph_clk                        ),
   .rst_ni    ( periph_pwr_on_rst_n               ),
   .penable_i ( apb_mst_req[SystemWdtIdx].penable ),
   .pwrite_i  ( apb_mst_req[SystemWdtIdx].pwrite  ),
@@ -1830,7 +1972,7 @@ reg_to_tlul #(
 
 // Wdt
 aon_timer i_watchdog_timer (
-  .clk_i                     ( periph_clk_i          ),
+  .clk_i                     ( periph_clk            ),
   .rst_ni                    ( periph_pwr_on_rst_n   ),
   .clk_aon_i                 ( rt_clk_i              ),
   .rst_aon_ni                ( periph_pwr_on_rst_n   ),
@@ -1851,10 +1993,10 @@ aon_timer i_watchdog_timer (
 REG_BUS #(
   .ADDR_WIDTH ( AxiNarrowAddrWidth ),
   .DATA_WIDTH ( AxiNarrowDataWidth )
-) reg_bus_hyper (periph_clk_i);
+) reg_bus_hyper (periph_clk);
 
 apb_to_reg i_apb_to_reg_hyper (
-  .clk_i     ( periph_clk_i                     ),
+  .clk_i     ( periph_clk                       ),
   .rst_ni    ( periph_pwr_on_rst_n              ),
   .penable_i ( apb_mst_req[HyperBusIdx].penable ),
   .pwrite_i  ( apb_mst_req[HyperBusIdx].pwrite  ),
@@ -1885,7 +2027,7 @@ can_top_apb #(
   .txt_buffer_count ( 2                     ),
   .target_technology( 0                     ) // 0 for ASIC or 1 for FPGA
  ) i_apb_to_can (
-  .aclk             ( periph_clk_i           ),
+  .aclk             ( periph_clk             ),
   .arstn            ( periph_pwr_on_rst_n    ),
   .scan_enable      ( 1'b0                   ),
   .res_n_out        (                        ),
@@ -1912,5 +2054,6 @@ assign ext_reg_rsp[PllIdx] = pll_cfg_reg_rsp_i;
 // Propagate padframe cfg interface
 assign padframe_cfg_reg_req_o   = ext_reg_req[PadframeIdx];
 assign ext_reg_rsp[PadframeIdx] = padframe_cfg_reg_rsp_i;
+
 
 endmodule

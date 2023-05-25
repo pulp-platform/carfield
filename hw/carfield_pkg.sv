@@ -15,13 +15,13 @@ import cheshire_pkg::*;
 import safety_island_pkg::*;
 
 typedef enum int {
-  PeriphRstDomainIdx     = 'd0,
-  SafedRstDomainIdx      = 'd1,
-  SecdRstDomainIdx       = 'd2,
-  IntClusterRstDomainIdx = 'd3,
-  FPClusterRstDomainIdx  = 'd4,
-  L2RstDomainIdx         = 'd5
-} carfield_rst_domains_e;
+  PeriphDomainIdx     = 'd0,
+  SafedDomainIdx      = 'd1,
+  SecdDomainIdx       = 'd2,
+  IntClusterDomainIdx = 'd3,
+  FPClusterDomainIdx  = 'd4,
+  L2DomainIdx         = 'd5
+} carfield_domains_e;
 
 typedef enum byte_bt {
   L2Port1SlvIdx      = 'd0,
@@ -358,5 +358,20 @@ typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
 
 // Narrow reg types
 `REG_BUS_TYPEDEF_ALL(carfield_a32_d32_reg, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
+
+
+//////////////////////////////
+// Debug Signal Port Struct //
+//////////////////////////////
+
+
+// 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz & pulp_cluster
+localparam int unsigned NumDomains = 6;
+
+
+typedef struct packed {
+  logic [NumDomains-1:0] domain_clk;
+  logic [NumDomains-1:0] domain_rsts_n;
+} carfield_debug_sigs_t;
 
 endpackage
