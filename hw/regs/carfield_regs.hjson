@@ -17,6 +17,7 @@
       swaccess: "ro",
       hwaccess: "none",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -27,6 +28,7 @@
       swaccess: "ro",
       hwaccess: "none",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -37,6 +39,7 @@
       swaccess: "ro",
       hwaccess: "none",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -47,6 +50,7 @@
       swaccess: "ro",
       hwaccess: "none",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -57,6 +61,7 @@
       swaccess: "ro",
       hwaccess: "none",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -67,6 +72,7 @@
       swaccess: "ro",
       hwaccess: "hrw",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "2:0" }
       ],
@@ -77,6 +83,7 @@
       swaccess: "rw",
       hwaccess: "none",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -87,6 +94,7 @@
       swaccess: "rw",
       hwaccess: "hrw",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -97,6 +105,7 @@
       swaccess: "rw",
       hwaccess: "hrw",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -107,6 +116,7 @@
       swaccess: "ro",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -117,6 +127,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -127,6 +138,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -137,6 +149,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -147,6 +160,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -157,6 +171,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -167,6 +182,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -177,6 +193,7 @@
       swaccess: "ro",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -187,6 +204,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -197,6 +215,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -207,6 +226,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -217,6 +237,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -227,6 +248,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -237,6 +259,7 @@
       swaccess: "ro",
       hwaccess: "hwo",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -247,6 +270,7 @@
       swaccess: "rw",
       hwaccess: "hwo",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -257,6 +281,7 @@
       swaccess: "rw",
       hwaccess: "hwo",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -267,6 +292,7 @@
       swaccess: "rw",
       hwaccess: "hwo",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -277,6 +303,7 @@
       swaccess: "rw",
       hwaccess: "hwo",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -287,56 +314,227 @@
       swaccess: "rw",
       hwaccess: "hwo",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
     }
 
+    { name: "PERIPH_CLK_EN",
+      desc: "Periph Domain clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_CLK_EN",
+      desc: "Safety Island clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_CLK_EN",
+      desc: "Security Island clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_CLK_EN",
+      desc: "PULP Cluster clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_CLK_EN",
+      desc: "Spatz Cluster clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_CLK_SEL",
+      desc: "Periph Domain pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "2",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_CLK_SEL",
+      desc: "Safety Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_CLK_SEL",
+      desc: "Security Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_CLK_SEL",
+      desc: "PULP Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_CLK_SEL",
+      desc: "Spatz Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "PERIPH_CLK_DIV_VALUE",
+      desc: "Periph Domain clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_CLK_DIV_VALUE",
+      desc: "Safety Island clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_CLK_DIV_VALUE",
+      desc: "Security Island clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_CLK_DIV_VALUE",
+      desc: "PULP Cluster clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_CLK_DIV_VALUE",
+      desc: "Spatz Cluster clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
     { name: "HOST_FETCH_ENABLE",
-      desc: "Host Domain AXI isolate status",
+      desc: "Host Domain fetch enable",
       swaccess: "ro",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
     }
 
     { name: "SAFETY_ISLAND_FETCH_ENABLE",
-      desc: "Safety Island AXI isolate status",
+      desc: "Safety Island fetch enable",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
     }
 
     { name: "SECURITY_ISLAND_FETCH_ENABLE",
-      desc: "Security Island AXI isolate status",
+      desc: "Security Island fetch enable",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
     }
 
     { name: "PULP_CLUSTER_FETCH_ENABLE",
-      desc: "PULP Cluster AXI isolate status",
+      desc: "PULP Cluster fetch enable",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
     }
 
     { name: "SPATZ_CLUSTER_FETCH_ENABLE",
-      desc: "Spatz Cluster AXI isolate status",
+      desc: "Spatz Cluster fetch enable",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "0:0" }
       ],
@@ -347,6 +545,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0x1000",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -357,6 +556,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0x70000000",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -367,6 +567,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0x70000000",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -377,6 +578,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0x70000000",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -387,6 +589,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0x70000000",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -397,6 +600,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -407,6 +611,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -417,6 +622,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
@@ -427,6 +633,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
+      hwqe: "0",
       fields: [
         { bits: "31:0" }
       ],
