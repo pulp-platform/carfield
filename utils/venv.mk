@@ -226,7 +226,7 @@ endif
 
 $(VENV):
 	$(PY) -m venv $(VENVDIR)
-	$(VENV)/python -m pip install --upgrade pip setuptools wheel
+	$(VENV)/python -m pip install --upgrade pip setuptools wheel --no-cache-dir
 
 $(VENV)/$(MARKER): $(VENVDEPENDS) | $(VENV)
 ifneq ($(strip $(REQUIREMENTS_TXT)),)
