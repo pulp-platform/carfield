@@ -403,6 +403,7 @@ logic    safety_rst_n;
 logic    security_rst_n;
 logic    pulp_rst_n;
 logic    spatz_rst_n;
+logic    l2_rst_n;
 
 logic    host_pwr_on_rst_n;
 logic    periph_pwr_on_rst_n;
@@ -410,6 +411,7 @@ logic    safety_pwr_on_rst_n;
 logic    security_pwr_on_rst_n;
 logic    pulp_pwr_on_rst_n;
 logic    spatz_pwr_on_rst_n;
+logic    l2_pwr_on_rst_n;
 
 // Reset generation for power-on reset for host domain. For the other domain we
 // get this from carfield_rstgen
