@@ -170,8 +170,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   Cva6ExtCieOnTop   : 1,
   // Harts
   DualCore          : 0,  // Only one core, but rest of config allows for two
+  CoreMaxTxns       : 8,
   CoreMaxTxnsPerId  : 4,
-  CoreMaxUniqIds    : 4,
   // Interconnect
   AddrWidth         : 48,
   AxiDataWidth      : 64,
