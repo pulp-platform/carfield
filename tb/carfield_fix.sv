@@ -90,12 +90,33 @@ module carfield_soc_fixture;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
-  wire  [NumPhys-1:0][NumChips-1:0] hyper_cs_n_wire;
-  wire  [NumPhys-1:0]               hyper_ck_wire;
-  wire  [NumPhys-1:0]               hyper_ck_n_wire;
-  wire  [NumPhys-1:0]               hyper_rwds_wire;
-  wire  [NumPhys-1:0][7:0]          hyper_dq_wire;
-  wire  [NumPhys-1:0]               hyper_reset_n_wire;
+  logic [NumPhys-1:0][NumChips-1:0] hyper_cs_n_wire;
+  logic [NumPhys-1:0][NumChips-1:0] hyper_cs_pen_wire;
+  logic [NumPhys-1:0][NumChips-1:0] hyper_cs_pad_out;
+  logic [NumPhys-1:0]               hyper_ck_wire;
+  logic [NumPhys-1:0]               hyper_ck_out_wire;
+  logic [NumPhys-1:0]               hyper_ck_pen_wire;
+  logic [NumPhys-1:0]               hyper_ck_n_wire;
+  logic [NumPhys-1:0]               hyper_ck_n_out_wire;
+  logic [NumPhys-1:0]               hyper_ck_n_pen_wire;
+  logic [NumPhys-1:0]               hyper_rwds_o;
+  logic [NumPhys-1:0]               hyper_rwds_i;
+  logic [NumPhys-1:0]               hyper_rwds_oe;
+  logic [NumPhys-1:0]               hyper_rwds_pen;
+  logic [NumPhys-1:0][7:0]          hyper_dq_i;
+  logic [NumPhys-1:0][7:0]          hyper_dq_o;
+  logic [NumPhys-1:0][7:0]          hyper_dq_pen;
+  logic [NumPhys-1:0]               hyper_dq_oe;
+  logic [NumPhys-1:0]               hyper_reset_n_wire;
+  logic [NumPhys-1:0]               hyper_rst_n_out_wire;
+  logic [NumPhys-1:0]               hyper_rst_n_pen_wire;
+
+  wire [NumPhys-1:0][NumChips-1:0] pad_hyper_csn;
+  wire [NumPhys-1:0]               pad_hyper_ck;
+  wire [NumPhys-1:0]               pad_hyper_ckn;
+  wire [NumPhys-1:0]               pad_hyper_rwds;
+  wire [NumPhys-1:0]               pad_hyper_reset;
+  wire [NumPhys-1:0][7:0]          pad_hyper_dq;
 
   carfield      #(
     .Cfg         ( DutCfg   ),
@@ -158,42 +179,103 @@ module carfield_soc_fixture;
     .slink_o                    ( slink_o                   ),
     .hyp_clk_phy_i              ( clk                       ),
     .hyp_rst_phy_ni             ( rst_n                     ),
-    .pad_hyper_csn              ( hyper_cs_n_wire           ),
-    .pad_hyper_ck               ( hyper_ck_wire             ),
-    .pad_hyper_ckn              ( hyper_ck_n_wire           ),
-    .pad_hyper_rwds             ( hyper_rwds_wire           ),
-    .pad_hyper_reset            ( hyper_reset_n_wire        ),
-    .pad_hyper_dq               ( hyper_dq_wire             )
+    .hyper_cs_no                ( hyper_cs_n_wire           ),
+    .hyper_ck_o                 ( hyper_ck_wire             ),
+    .hyper_ck_no                ( hyper_ck_n_wire           ),
+    .hyper_rwds_o               ( hyper_rwds_o              ),
+    .hyper_rwds_i               ( hyper_rwds_i              ),
+    .hyper_rwds_oe_o            ( hyper_rwds_oe             ),
+    .hyper_dq_i                 ( hyper_dq_i                ),
+    .hyper_dq_o                 ( hyper_dq_o                ),
+    .hyper_dq_oe_o              ( hyper_dq_oe               ),
+    .hyper_reset_no             ( hyper_reset_n_wire        )
   );
 
   //////////////
   // HyperRam //
   //////////////
 
-  generate
-    for (genvar i=0; i<NumPhys; i++) begin : hyperrams
-      for (genvar j=0; j<NumChips; j++) begin : chips
-        s27ks0641 #(
-          /*.mem_file_name ( "s27ks0641.mem"    ),*/
-          .TimingModel ( "S27KS0641DPBHI020"    )
-        ) i_s27ks0641  (
-          .DQ7      ( hyper_dq_wire[i][7]      ),
-          .DQ6      ( hyper_dq_wire[i][6]      ),
-          .DQ5      ( hyper_dq_wire[i][5]      ),
-          .DQ4      ( hyper_dq_wire[i][4]      ),
-          .DQ3      ( hyper_dq_wire[i][3]      ),
-          .DQ2      ( hyper_dq_wire[i][2]      ),
-          .DQ1      ( hyper_dq_wire[i][1]      ),
-          .DQ0      ( hyper_dq_wire[i][0]      ),
-          .RWDS     ( hyper_rwds_wire[i]       ),
-          .CSNeg    ( hyper_cs_n_wire[i][j]    ),
-          .CK       ( hyper_ck_wire[i]         ),
-          .CKNeg    ( hyper_ck_n_wire[i]       ),
-          .RESETNeg ( hyper_reset_n_wire[i]    )
-        );
-      end
+  for (genvar i = 0 ; i<NumPhys; i++) begin : gen_hyper_phy
+    for (genvar j = 0; j<NumChips; j++) begin : gen_hyper_cs
+      pad_functional_pd padinst_hyper_csno (
+        .OEN ( 1'b0                    ),
+        .I   ( hyper_cs_n_wire[i][j]   ),
+        .O   ( hyper_cs_pad_out[i][j]  ),
+        .PEN ( hyper_cs_pen_wire[i][j] ),
+        .PAD ( pad_hyper_csn[i][j]     )
+      );
     end
-  endgenerate
+    pad_functional_pd padinst_hyper_ck (
+      .OEN ( 1'b0                 ),
+      .I   ( hyper_ck_wire[i]     ),
+      .O   ( hyper_ck_out_wire[i] ),
+      .PEN ( hyper_ck_pen_wire[i] ),
+      .PAD ( pad_hyper_ck[i]      )
+    );
+    pad_functional_pd padinst_hyper_ckno   (
+      .OEN ( 1'b0                   ),
+      .I   ( hyper_ck_n_wire[i]     ),
+      .O   ( hyper_ck_n_out_wire[i] ),
+      .PEN ( hyper_ck_n_pen_wire[i] ),
+      .PAD ( pad_hyper_ckn[i]       )
+    );
+    pad_functional_pd padinst_hyper_rwds0  (
+      .OEN (~hyper_rwds_oe[i]  ),
+      .I   ( hyper_rwds_o[i]   ),
+      .O   ( hyper_rwds_i[i]   ),
+      .PEN ( hyper_rwds_pen[i] ),
+      .PAD ( pad_hyper_rwds[i] )
+    );
+    pad_functional_pd padinst_hyper_resetn (
+      .OEN ( 1'b0                    ),
+      .I   ( hyper_reset_n_wire[i]   ),
+      .O   ( hyper_rst_n_out_wire[i] ),
+      .PEN ( hyper_rst_n_pen_wire[i] ),
+      .PAD ( pad_hyper_reset[i]      )
+    );
+    for (genvar j = 0; j < 8; j++) begin : gen_hyper_dq
+      pad_functional_pd padinst_hyper_dqio0  (
+        .OEN (~hyper_dq_oe[i]     ),
+        .I   ( hyper_dq_o[i][j]   ),
+        .O   ( hyper_dq_i[i][j]   ),
+        .PEN ( hyper_dq_pen[i][j] ),
+        .PAD ( pad_hyper_dq[i][j] )
+      );
+    end
+  end // block: gen_hyper_phy
+
+  for (genvar i=0; i<NumPhys; i++) begin : hyperrams
+    for (genvar j=0; j<NumChips; j++) begin : chips
+      s27ks0641 #(
+        /*.mem_file_name ( "s27ks0641.mem"    ),*/
+        .TimingModel ( "S27KS0641DPBHI020"    )
+      ) dut (
+        .DQ7      ( pad_hyper_dq[i][7]  ),
+        .DQ6      ( pad_hyper_dq[i][6]  ),
+        .DQ5      ( pad_hyper_dq[i][5]  ),
+        .DQ4      ( pad_hyper_dq[i][4]  ),
+        .DQ3      ( pad_hyper_dq[i][3]  ),
+        .DQ2      ( pad_hyper_dq[i][2]  ),
+        .DQ1      ( pad_hyper_dq[i][1]  ),
+        .DQ0      ( pad_hyper_dq[i][0]  ),
+        .RWDS     ( pad_hyper_rwds[i]   ),
+        .CSNeg    ( pad_hyper_csn[i][j] ),
+        .CK       ( pad_hyper_ck[i]     ),
+        .CKNeg    ( pad_hyper_ckn[i]    ),
+        .RESETNeg ( pad_hyper_reset[i]  )
+      );
+    end
+  end
+
+  for (genvar p=0; p<NumPhys; p++) begin : sdf_annotation
+     for (genvar l=0; l<NumChips; l++) begin : sdf_annotation
+        initial begin
+           automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
+           $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
+           $display("Mem (%d,%d)",p,l);
+        end
+    end
+  end
 
   //////////////////
   // Cheshire VIP //

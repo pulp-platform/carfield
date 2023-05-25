@@ -97,12 +97,16 @@ module carfield
   input  logic                                        hyp_clk_phy_i,
   input  logic                                        hyp_rst_phy_ni,
   // Physical interace: facing HyperBus
-  inout  [HypNumPhys-1:0][HypNumChips-1:0]            pad_hyper_csn,
-  inout  [HypNumPhys-1:0]                             pad_hyper_ck,
-  inout  [HypNumPhys-1:0]                             pad_hyper_ckn,
-  inout  [HypNumPhys-1:0]                             pad_hyper_rwds,
-  inout  [HypNumPhys-1:0]                             pad_hyper_reset,
-  inout  [HypNumPhys-1:0][7:0]                        pad_hyper_dq
+  output logic [HypNumPhys-1:0][HypNumChips-1:0]      hyper_cs_no,
+  output logic [HypNumPhys-1:0]                       hyper_ck_o,
+  output logic [HypNumPhys-1:0]                       hyper_ck_no,
+  output logic [HypNumPhys-1:0]                       hyper_rwds_o,
+  input  logic [HypNumPhys-1:0]                       hyper_rwds_i,
+  output logic [HypNumPhys-1:0]                       hyper_rwds_oe_o,
+  input  logic [HypNumPhys-1:0][7:0]                  hyper_dq_i,
+  output logic [HypNumPhys-1:0][7:0]                  hyper_dq_o,
+  output logic [HypNumPhys-1:0]                       hyper_dq_oe_o,
+  output logic [HypNumPhys-1:0]                       hyper_reset_no
 );
 
 /*********************************
@@ -815,12 +819,16 @@ hyperbus_wrap      #(
   .rbus_rsp_rdata_o    ( reg_hyper_rsp.rdata ),
   .rbus_rsp_ready_o    ( reg_hyper_rsp.ready ),
   .rbus_rsp_error_o    ( reg_hyper_rsp.error ),
-  .pad_hyper_csn       ( pad_hyper_csn       ),
-  .pad_hyper_ck        ( pad_hyper_ck        ),
-  .pad_hyper_ckn       ( pad_hyper_ckn       ),
-  .pad_hyper_rwds      ( pad_hyper_rwds      ),
-  .pad_hyper_reset     ( pad_hyper_reset     ),
-  .pad_hyper_dq        ( pad_hyper_dq        )
+  .hyper_cs_no         ( hyper_cs_no         ),
+  .hyper_ck_o          ( hyper_ck_o          ),
+  .hyper_ck_no         ( hyper_ck_no         ),
+  .hyper_rwds_o        ( hyper_rwds_o        ),
+  .hyper_rwds_i        ( hyper_rwds_i        ),
+  .hyper_rwds_oe_o     ( hyper_rwds_oe_o     ),
+  .hyper_dq_i          ( hyper_dq_i          ),
+  .hyper_dq_o          ( hyper_dq_o          ),
+  .hyper_dq_oe_o       ( hyper_dq_oe_o       ),
+  .hyper_reset_no      ( hyper_reset_no      )
 );
 
 // Reconfigurable L2 Memory
