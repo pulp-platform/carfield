@@ -1413,8 +1413,8 @@ secure_subsystem_synth_wrap #(
   .axi_isolate_i    ( secd_isolate_req                           ),
   .axi_isolated_o   ( master_isolated_rsp [SecurityIslandMstIdx] ),
    // Uart
-  .ibex_uart_rx_i   ( uart_ot_tx_o  ),
-  .ibex_uart_tx_o   ( uart_ot_rx_i  ),
+  .ibex_uart_rx_i   ( uart_ot_rx_i  ),
+  .ibex_uart_tx_o   ( uart_ot_tx_o  ),
    // SPI host
   .spi_host_SCK_o   ( spih_ot_sck_o    ),
   .spi_host_SCK_en_o( spih_ot_sck_en_o ),
