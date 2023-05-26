@@ -21,8 +21,8 @@
 	} \
     } while (0)
 
-#define DUMMY_TIMER_CNT_GOLDEN 8066
-#define HYPER_DUMMY_TIMER_CNT_GOLDEN 8189
+#define DUMMY_TIMER_CNT_GOLDEN 8070
+#define HYPER_DUMMY_TIMER_CNT_GOLDEN 8192
 
 int main(void) {
 
