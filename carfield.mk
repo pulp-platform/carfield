@@ -163,7 +163,7 @@ car-checkout-deps:
 
 car-checkout: car-checkout-deps
 
-car-init: $(CAR_ROOT)/tb/hyp_vip spatz-init chs-init
+car-init: $(CAR_ROOT)/tb/hyp_vip car-checkout spatz-init chs-init
 
 spatz-init:
 	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
