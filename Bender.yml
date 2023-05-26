@@ -10,7 +10,7 @@ package:
     - "Robert Balas <balasr@iis.ee.ethz.ch>"
 
 dependencies:
-  register_interface: { git: https://github.com/pulp-platform/register_interface.git,   rev: 19163bb5191d2669a8cbc267cdd4ce8e60f20746 } # branch: main
+  register_interface: { git: https://github.com/pulp-platform/register_interface.git,   rev: 2bb08879bc2ceabe2b6a0dc283753048a739e27b } # branch: main until newer version tag later than v0.4.0
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.9                        } # overridden in Bender.local to use axi-rt feature
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 9f0234c1a40cd332f2b502cbbb5f98bd242b29ba } # branch: main
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 4d4d5d05959c83238a6fbf2537c15d411ca11b4b } # branch: main
