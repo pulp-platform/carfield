@@ -389,7 +389,7 @@ module carfield_soc_fixture;
      do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
      while (sbcs.sbbusy);
 
-  endtask : debug_module_init
+  endtask
 
   task jtag_secd_data_preload;
      logic [31:0] rdata;
@@ -425,7 +425,7 @@ module carfield_soc_fixture;
     sbcs.sbreadondata = 0;
     jtag_secd_dbg.write_dmi(dm_ot::SBCS, sbcs);
 
-  endtask : jtag_data_preload
+  endtask
 
   task jtag_secd_wakeup;
     input logic [31:0] start_addr;
@@ -473,7 +473,7 @@ module carfield_soc_fixture;
 
     while (sbcs.sbbusy);
     $info("======== Wait for Completion ========");
-  endtask : execute_application
+  endtask
 
   task load_secd_binary;
     input string binary;                   // File name
