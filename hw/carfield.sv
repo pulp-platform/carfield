@@ -537,7 +537,8 @@ for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
 
   clk_int_div #(
     .DIV_VALUE_WIDTH(DOMAIN_CLK_DIV_VALUE_WIDTH),
-    .DEFAULT_DIV_VALUE(1)
+    .DEFAULT_DIV_VALUE(1),
+    .ENABLE_CLOCK_IN_RESET(1)
   ) i_clk_div (
     .clk_i          ( domain_clk[i]                  ),
     .rst_ni         ( pwr_on_rsts_n[i]               ), // Only reset during power-on. Software
