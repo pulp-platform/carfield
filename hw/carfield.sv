@@ -455,8 +455,8 @@ logic  l2_clk;
 
 
 // Clock Multiplexing for each sub block
-  localparam int unsigned DOMAIN_CLK_DIV_VALUE_WIDTH = 24;
-  typedef logic [DOMAIN_CLK_DIV_VALUE_WIDTH-1:0] domain_clk_div_value_t;
+  localparam int unsigned DomainClkDivValueWidth = 24;
+  typedef logic [DomainClkDivValueWidth-1:0] domain_clk_div_value_t;
   logic [NumDomains-1:0] domain_clk;
   logic [NumDomains-1:0] domain_clk_en;
   logic [NumDomains-1:0] domain_clk_gated;
@@ -536,7 +536,7 @@ for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
   );
 
   clk_int_div #(
-    .DIV_VALUE_WIDTH(DOMAIN_CLK_DIV_VALUE_WIDTH),
+    .DIV_VALUE_WIDTH(DomainClkDivValueWidth),
     .DEFAULT_DIV_VALUE(1),
     .ENABLE_CLOCK_IN_RESET(1)
   ) i_clk_div (
@@ -588,6 +588,8 @@ carfield_rstgen #(
 );
 
 // Assign vectorized reset and clock signals to friendly-named domain signals and registers
+
+// verilog_lint: waive-start line-length
 assign periph_rst_n   = rsts_n[PeriphDomainIdx];
 assign safety_rst_n   = rsts_n[SafedDomainIdx];
 assign security_rst_n = rsts_n[SecdDomainIdx];
@@ -640,7 +642,7 @@ assign domain_clk_en[L2DomainIdx]         = car_regs_reg2hw.l2_clk_en.q;
 // Assign debug signals
 assign debug_signals_o.domain_clk    = domain_clk_gated;
 assign debug_signals_o.domain_rsts_n = rsts_n;
-
+// verilog_lint: waive-stop line-length
 
 //
 // Carfield Control and Status registers
