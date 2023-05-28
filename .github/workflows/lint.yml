@@ -28,6 +28,7 @@ jobs:
         exclude_paths: |
           sw/include/regs/*.h
           .dir-locals.el
+          utils/*
 
   lint-sv:
     runs-on: ubuntu-latest
