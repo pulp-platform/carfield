@@ -6,6 +6,8 @@
 // Yvan Tortorella <yvan.tortorella@unibo.it>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
+`include "cheshire/typedef.svh"
+
 /// Carfield constants and Cheshire overwrites
 package carfield_pkg;
 
@@ -13,13 +15,13 @@ import cheshire_pkg::*;
 import safety_island_pkg::*;
 
 typedef enum int {
-  PeriphRstDomainIdx     = 'd0,
-  SafedRstDomainIdx      = 'd1,
-  SecdRstDomainIdx       = 'd2,
-  IntClusterRstDomainIdx = 'd3,
-  FPClusterRstDomainIdx  = 'd4,
-  L2RstDomainIdx         = 'd5
-} carfield_rst_domains_e;
+  PeriphDomainIdx     = 'd0,
+  SafedDomainIdx      = 'd1,
+  SecdDomainIdx       = 'd2,
+  IntClusterDomainIdx = 'd3,
+  FPClusterDomainIdx  = 'd4,
+  L2DomainIdx         = 'd5
+} carfield_domains_e;
 
 typedef enum byte_bt {
   L2Port1SlvIdx      = 'd0,
@@ -107,21 +109,25 @@ typedef enum word_bt {
 
 // Cheshire regbus out
 typedef enum int {
-  CarRegsIdx = 'd0,
-  PllIdx     = 'd1
+  CarRegsIdx  = 'd0,
+  PllIdx      = 'd1,
+  PadframeIdx = 'd2
 } cheshire_reg_out_e;
 
 typedef enum doub_bt {
-  CarRegsBase = 'h0000_0000_2001_0000,
-  PllBase     = 'h0000_0000_2002_0000
+  CarRegsBase  = 'h0000_0000_2001_0000,
+  PllBase      = 'h0000_0000_2002_0000,
+  PadframeBase = 'h0000_0000_200a_0000
 } reg_start_t;
 
-localparam doub_bt CarRegsSize = 'h0000_0000_0000_1000;
-localparam doub_bt PllSize     = 'h0000_0000_0000_1000;
+localparam doub_bt CarRegsSize  = 'h0000_0000_0000_1000;
+localparam doub_bt PllSize      = 'h0000_0000_0000_1000;
+localparam doub_bt PadframeSize = 'h0000_0000_0000_1000;
 
 typedef enum doub_bt {
   CarRegsEnd = CarRegsBase + CarRegsSize,
-  PllEnd     = PllBase + PllSize
+  PllEnd     = PllBase + PllSize,
+  PadframeEnd = PadframeBase + PadframeSize
 } reg_end_t;
 
 // Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals + Floating Point Cluster
@@ -215,11 +221,11 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 L2Port2End     ,
                                                 L2Port1End     },
   // External reg slaves (at most 8 ports and rules)
-  RegExtNumSlv      : 2,
-  RegExtNumRules    : 2,
-  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, PllIdx,  CarRegsIdx },
-  RegExtRegionStart : '{ 0, 0, 0, 0, 0, 0, PllBase, CarRegsBase },
-  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, PllEnd,  CarRegsEnd },
+  RegExtNumSlv      : 3,
+  RegExtNumRules    : 3,
+  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, PadframeIdx,  PllIdx,  CarRegsIdx  },
+  RegExtRegionStart : '{ 0, 0, 0, 0, 0, PadframeBase, PllBase, CarRegsBase },
+  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, PadframeEnd,  PllEnd,  CarRegsEnd  },
   // RTC
   RtcFreq           : 32768,
   // Ext Irq
@@ -282,13 +288,6 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   default: '0
 };
 
-/**********************/
-/* General Parameters */
-/**********************/
-localparam int unsigned AxiNarrowAddrWidth = 32;
-localparam int unsigned AxiNarrowDataWidth = 32;
-localparam int unsigned AxiNarrowStrobe    = AxiNarrowDataWidth/8;
-
 /*****************/
 /* L2 Parameters */
 /*****************/
@@ -342,5 +341,37 @@ localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterMaxUniqId = 1;
 localparam logic [ 5:0] IntClusterIndex = '0;
+
+/*******************************/
+/* Narrow Parameters: A32, D32 */
+/*******************************/
+localparam int unsigned AxiNarrowAddrWidth = 32;
+localparam int unsigned AxiNarrowDataWidth = 32;
+localparam int unsigned AxiNarrowStrobe    = AxiNarrowDataWidth/8;
+
+// Narrow AXI types
+typedef logic [     AxiNarrowAddrWidth-1:0] car_nar_addrw_t;
+typedef logic [     AxiNarrowDataWidth-1:0] car_nar_dataw_t;
+typedef logic [        AxiNarrowStrobe-1:0] car_nar_strb_t;
+typedef logic [ IntClusterAxiIdInWidth-1:0] intclust_idin_t;
+typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
+
+// Narrow reg types
+`REG_BUS_TYPEDEF_ALL(carfield_a32_d32_reg, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
+
+
+//////////////////////////////
+// Debug Signal Port Struct //
+//////////////////////////////
+
+
+// 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz & pulp_cluster
+localparam int unsigned NumDomains = 6;
+
+
+typedef struct packed {
+  logic [NumDomains-1:0] domain_clk;
+  logic [NumDomains-1:0] domain_rsts_n;
+} carfield_debug_sigs_t;
 
 endpackage

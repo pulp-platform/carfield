@@ -31,6 +31,7 @@ reg_tlp = """
       swaccess: "$swa",
       hwaccess: "$hwa",
       resval: "$rv",
+      hwqe: "$hwqe",
       fields: [
         { bits: "$bw:0" }
       ],
@@ -64,10 +65,11 @@ for index, row in df.iterrows():
     num_bits = row['Bits']
     swa = row['SW Access']
     hwa = row['HW Access']
+    hwqe = row['HWQE Access']
     defv = row['Default Value']
     desc = row['Comment']
     s = Template(reg_tlp)
-    f.write(s.substitute(name=name,swa=swa,hwa=hwa,rv=defv,bw=num_bits-1,comment=desc))
+    f.write(s.substitute(name=name,swa=swa,hwa=hwa,hwqe=hwqe,rv=defv,bw=num_bits-1,comment=desc))
 
 f.write('  ],\n')
 f.write('}\n')

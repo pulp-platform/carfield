@@ -1,43 +1,61 @@
-Name,Bits,SW Access,HW Access,Default Value,Comment
-VERSION0,32,ro,none,0,Cheshire sha256 commit
-VERSION1,32,ro,none,0,Safety Island sha256 commit
-VERSION2,32,ro,none,0,Security Island sha256 commit
-VERSION3,32,ro,none,0,PULP Cluster sha256 commit
-VERSION4,32,ro,none,0,Spatz CLuster sha256 commit
-BOOT_MODE,3,ro,hrw,0,Boot mode
-JEDEC_IDCODE,32,rw,none,0,JEDEC ID CODE -TODO assign-
-GENERIC_SCRATCH0,32,rw,hrw,0,Scratch
-GENERIC_SCRATCH1,32,rw,hrw,0,Scratch
-HOST_RST,1,ro,hro,0,"Host Domain reset -active high, inverted in HW-"
-PERIPH_RST,1,rw,hro,0,"Periph Domain reset -active high, inverted in HW-"
-SAFETY_ISLAND_RST,1,rw,hro,0,"Safety Island reset -active high, inverted in HW-"
-SECURITY_ISLAND_RST,1,rw,hro,0,"Security Island reset -active high, inverted in HW-"
-PULP_CLUSTER_RST,1,rw,hro,0,"PULP Cluster reset -active high, inverted in HW-"
-SPATZ_CLUSTER_RST,1,rw,hro,0,"Spatz Cluster reset -active high, inverted in HW-"
-L2_RST,1,rw,hro,0,"L2 reset -active high, inverted in HW-"
-HOST_ISOLATE,1,ro,hro,0,Host Domain AXI isolate
-PERIPH_ISOLATE,1,rw,hro,0,Periph Domain  AXI isolate
-SAFETY_ISLAND_ISOLATE,1,rw,hro,0,Safety Island AXI isolate
-SECURITY_ISLAND_ISOLATE,1,rw,hro,0,Security Island AXI isolate
-PULP_CLUSTER_ISOLATE,1,rw,hro,0,PULP Cluster AXI isolate
-SPATZ_CLUSTER_ISOLATE,1,rw,hro,0,Spatz Cluster  AXI isolate
-HOST_ISOLATE_STATUS,1,ro,hwo,0,Host Domain AXI isolate status
-PERIPH_ISOLATE_STATUS,1,rw,hwo,0,Periph Domain AXI isolate status
-SAFETY_ISLAND_ISOLATE_STATUS,1,rw,hwo,0,Safety Island AXI isolate status
-SECURITY_ISLAND_ISOLATE_STATUS,1,rw,hwo,0,Security Island AXI isolate status
-PULP_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,PULP Cluster AXI isolate status
-SPATZ_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,Spatz Cluster AXI isolate status
-HOST_FETCH_ENABLE,1,ro,hro,0,Host Domain AXI isolate status
-SAFETY_ISLAND_FETCH_ENABLE,1,rw,hro,0,Safety Island AXI isolate status
-SECURITY_ISLAND_FETCH_ENABLE,1,rw,hro,0,Security Island AXI isolate status
-PULP_CLUSTER_FETCH_ENABLE,1,rw,hro,0,PULP Cluster AXI isolate status
-SPATZ_CLUSTER_FETCH_ENABLE,1,rw,hro,0,Spatz Cluster AXI isolate status
-HOST_BOOT_ADDR,32,rw,hro,0x1000,Host boot address
-SAFETY_ISLAND_BOOT_ADDR,32,rw,hro,0x70000000,Safety Island boot address
-SECURITY_ISLAND_BOOT_ADDR,32,rw,hro,0x70000000,Security Island boot address
-PULP_CLUSTER_BOOT_ADDR,32,rw,hro,0x70000000,PULP Cluster boot address
-SPATZ_CLUSTER_BOOT_ADDR,32,rw,hro,0x70000000,Spatz Cluster boot address
-L2_SRAM_CONFIG0,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
-L2_SRAM_CONFIG1,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
-L2_SRAM_CONFIG2,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
-L2_SRAM_CONFIG3,32,rw,hro,0,L2 RAM cfg pins -margin adjustments-
+Name,Bits,SW Access,HW Access,HWQE Access,Default Value,Comment
+VERSION0,32,ro,none,0,0,Cheshire sha256 commit
+VERSION1,32,ro,none,0,0,Safety Island sha256 commit
+VERSION2,32,ro,none,0,0,Security Island sha256 commit
+VERSION3,32,ro,none,0,0,PULP Cluster sha256 commit
+VERSION4,32,ro,none,0,0,Spatz CLuster sha256 commit
+BOOT_MODE,3,ro,hrw,0,0,Boot mode
+JEDEC_IDCODE,32,rw,none,0,0,JEDEC ID CODE -TODO assign-
+GENERIC_SCRATCH0,32,rw,hrw,0,0,Scratch
+GENERIC_SCRATCH1,32,rw,hrw,0,0,Scratch
+HOST_RST,1,ro,hro,0,0,"Host Domain reset -active high, inverted in HW-"
+PERIPH_RST,1,rw,hro,0,0,"Periph Domain reset -active high, inverted in HW-"
+SAFETY_ISLAND_RST,1,rw,hro,0,0,"Safety Island reset -active high, inverted in HW-"
+SECURITY_ISLAND_RST,1,rw,hro,0,0,"Security Island reset -active high, inverted in HW-"
+PULP_CLUSTER_RST,1,rw,hro,0,0,"PULP Cluster reset -active high, inverted in HW-"
+SPATZ_CLUSTER_RST,1,rw,hro,0,0,"Spatz Cluster reset -active high, inverted in HW-"
+L2_RST,1,rw,hro,0,0,"L2 reset -active high, inverted in HW-"
+HOST_ISOLATE,1,ro,hro,0,0,Host Domain AXI isolate
+PERIPH_ISOLATE,1,rw,hro,0,0,Periph Domain  AXI isolate
+SAFETY_ISLAND_ISOLATE,1,rw,hro,0,0,Safety Island AXI isolate
+SECURITY_ISLAND_ISOLATE,1,rw,hro,0,0,Security Island AXI isolate
+PULP_CLUSTER_ISOLATE,1,rw,hro,0,0,PULP Cluster AXI isolate
+SPATZ_CLUSTER_ISOLATE,1,rw,hro,0,0,Spatz Cluster  AXI isolate
+HOST_ISOLATE_STATUS,1,ro,hwo,0,0,Host Domain AXI isolate status
+PERIPH_ISOLATE_STATUS,1,rw,hwo,0,0,Periph Domain AXI isolate status
+SAFETY_ISLAND_ISOLATE_STATUS,1,rw,hwo,0,0,Safety Island AXI isolate status
+SECURITY_ISLAND_ISOLATE_STATUS,1,rw,hwo,0,0,Security Island AXI isolate status
+PULP_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,0,PULP Cluster AXI isolate status
+SPATZ_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,0,Spatz Cluster AXI isolate status
+PERIPH_CLK_EN,1,rw,hro,0,1,Periph Domain clk gate enable
+SAFETY_ISLAND_CLK_EN,1,rw,hro,0,1,Safety Island clk gate enable
+SECURITY_ISLAND_CLK_EN,1,rw,hro,0,1,Security Island clk gate enable
+PULP_CLUSTER_CLK_EN,1,rw,hro,0,1,PULP Cluster clk gate enable
+SPATZ_CLUSTER_CLK_EN,1,rw,hro,0,1,Spatz Cluster clk gate enable
+L2_CLK_EN,1,rw,hro,0,1,Shared L2 memory clk gate enable
+PERIPH_CLK_SEL,2,rw,hro,0,2,"Periph Domain pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
+SAFETY_ISLAND_CLK_SEL,2,rw,hro,0,1,"Safety Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
+SECURITY_ISLAND_CLK_SEL,2,rw,hro,0,1,"Security Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
+PULP_CLUSTER_CLK_SEL,2,rw,hro,0,1,"PULP Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
+SPATZ_CLUSTER_CLK_SEL,2,rw,hro,0,1,"Spatz Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
+L2_CLK_SEL,2,rw,hro,0,0,"L2 Memory pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
+PERIPH_CLK_DIV_VALUE,24,rw,hro,1,1,Periph Domain clk divider value
+SAFETY_ISLAND_CLK_DIV_VALUE,24,rw,hro,1,1,Safety Island clk divider value
+SECURITY_ISLAND_CLK_DIV_VALUE,24,rw,hro,1,1,Security Island clk divider value
+PULP_CLUSTER_CLK_DIV_VALUE,24,rw,hro,1,1,PULP Cluster clk divider value
+SPATZ_CLUSTER_CLK_DIV_VALUE,24,rw,hro,1,1,Spatz Cluster clk divider value
+L2_CLK_DIV_VALUE,24,rw,hro,1,1,L2 Memory clk divider value
+HOST_FETCH_ENABLE,1,ro,hro,0,0,Host Domain fetch enable
+SAFETY_ISLAND_FETCH_ENABLE,1,rw,hro,0,0,Safety Island fetch enable
+SECURITY_ISLAND_FETCH_ENABLE,1,rw,hro,0,0,Security Island fetch enable
+PULP_CLUSTER_FETCH_ENABLE,1,rw,hro,0,0,PULP Cluster fetch enable
+SPATZ_CLUSTER_FETCH_ENABLE,1,rw,hro,0,0,Spatz Cluster fetch enable
+HOST_BOOT_ADDR,32,rw,hro,0,0x1000,Host boot address
+SAFETY_ISLAND_BOOT_ADDR,32,rw,hro,0,0x70000000,Safety Island boot address
+SECURITY_ISLAND_BOOT_ADDR,32,rw,hro,0,0x70000000,Security Island boot address
+PULP_CLUSTER_BOOT_ADDR,32,rw,hro,0,0x70000000,PULP Cluster boot address
+SPATZ_CLUSTER_BOOT_ADDR,32,rw,hro,0,0x70000000,Spatz Cluster boot address
+L2_SRAM_CONFIG0,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
+L2_SRAM_CONFIG1,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
+L2_SRAM_CONFIG2,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
+L2_SRAM_CONFIG3,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-

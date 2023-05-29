@@ -171,16 +171,16 @@ hyperbus           #(
   .axi_rsp_o        ( hyper_rsp          ),
   .reg_req_i        ( reg_req            ),
   .reg_rsp_o        ( reg_rsp            ),
-  .hyper_cs_no      ( hyper_cs_no        ),
-  .hyper_ck_o       ( hyper_ck_o         ),
-  .hyper_ck_no      ( hyper_ck_no        ),
-  .hyper_rwds_o     ( hyper_rwds_o       ),
-  .hyper_rwds_i     ( hyper_rwds_i       ),
-  .hyper_rwds_oe_o  ( hyper_rwds_oe_o    ),
-  .hyper_dq_i       ( hyper_dq_i         ),
-  .hyper_dq_o       ( hyper_dq_o         ),
-  .hyper_dq_oe_o    ( hyper_dq_oe_o      ),
-  .hyper_reset_no   ( hyper_reset_no     )
+  .hyper_cs_no,
+  .hyper_ck_o,
+  .hyper_ck_no,
+  .hyper_rwds_o,
+  .hyper_rwds_i,
+  .hyper_rwds_oe_o,
+  .hyper_dq_i,
+  .hyper_dq_o,
+  .hyper_dq_oe_o,
+  .hyper_reset_no
 );
 
 endmodule: hyperbus_wrap
