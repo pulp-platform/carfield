@@ -20,14 +20,13 @@ To handle project dependencies, you can use
 To initialize Carfield, do the following:
  * Export the `RISCV` environment variable to the RISC-V toolchain. To work on IIS machines,
  do `export RISCV=/usr/pack/riscv-1.0-kgf/riscv64-gcc-11.2.0`.
- * Execute the commands:
+ * Execute the command:
 
    ```
-   make car-checkout-deps
    make car-init
    ```
 
-   They will take care of:
+   It will take care of:
 
    ** Clone all the Carfield dependencies;
    ** Initialize the [Cheshire SoC](https://github.com/pulp-platform/cheshire). This can be
