@@ -52,7 +52,7 @@ Follow these steps to launch a Carfield simulation:
 * Compile tests for Carfield. Tests resides in `sw/tests`.
 
   ```
-  make car-sw-all
+  make car-sw-build
   ```
 
 * Simulate a binary in RTL. The current supported bootmodes from Cheshire are:
