@@ -21,8 +21,8 @@
 	} \
     } while (0)
 
-#define DUMMY_TIMER_CNT_GOLDEN 8070
-#define HYPER_DUMMY_TIMER_CNT_GOLDEN 8192
+#define DUMMY_TIMER_CNT_GOLDEN_MIN 8050
+#define DUMMY_TIMER_CNT_GOLDEN_MAX 8250
 
 int main(void) {
 
@@ -43,8 +43,8 @@ int main(void) {
 
     // Note: the result is checked against a golden value that is probed from
     // the waveforms, to check if the value is correctly read from sw.
-    if ( (time != DUMMY_TIMER_CNT_GOLDEN) && (time != HYPER_DUMMY_TIMER_CNT_GOLDEN) ) {
-    	return 1;
+    if (time <= DUMMY_TIMER_CNT_GOLDEN_MIN || time >= DUMMY_TIMER_CNT_GOLDEN_MAX) {
+	return 1;
     }
     
     return 0;

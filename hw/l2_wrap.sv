@@ -19,6 +19,11 @@ module l2_wrap
   parameter int unsigned AxiUserWidth = 1,
   parameter int unsigned AxiMaxTrans  = 8,
   parameter int unsigned LogDepth     = 3,
+  parameter int unsigned L2MaxReadTxns  = 8,
+  parameter int unsigned L2MaxWriteTxns = 8,
+  parameter int unsigned AxiUserAmoMsb  = 1,
+  parameter int unsigned AxiUserAmoLsb  = 0,
+  parameter int unsigned L2AmoNumCuts   = 1,
   /// Mapping rules
   parameter int unsigned NumRules   = car_l2_pkg::NUM_MAP_TYPES * NumPort,
   /// L2 Memory settings
@@ -138,6 +143,13 @@ car_l2_top #(
   .NUM_MAP_RULES       ( NumRules        ),
   .L2_MEM_SIZE_IN_BYTE ( L2MemSize       ),
   .map_rule_t          ( map_rule_t      ),
+  .ATM_MAX_READ_TXN    ( L2MaxReadTxns   ),
+  .ATM_MAX_WRIT_TXN    ( L2MaxWriteTxns  ),
+  .ATM_USER_AS_ID      ( 1               ),
+  .ATM_USER_ID_MSB     ( AxiUserAmoMsb   ),
+  .ATM_USER_ID_LSB     ( AxiUserAmoLsb   ),
+  .ATM_RISCV_WORD      ( 64              ),
+  .ATM_NUM_CUTS        ( L2AmoNumCuts    ),
   .axi_req_t           ( axi_async_req_t ),
   .axi_resp_t          ( axi_async_rsp_t )
 ) i_l2_top             (

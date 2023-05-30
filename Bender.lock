@@ -104,12 +104,13 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   car_l2:
-    revision: 505c35a8df7f042fc8fc07c5dc40bc6412f7b27d
+    revision: 08503a05307ef556ed5439619c70c039ff93d77a
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git
     dependencies:
     - axi
+    - axi_riscv_atomics
     - common_cells
     - common_verification
     - redundancy_cells
