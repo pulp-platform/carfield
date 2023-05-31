@@ -46,8 +46,6 @@ include $(CAR_ROOT)/utils/venv.mk
 TARGETS += -t sim
 TARGETS += -t test
 TARGETS += -t rtl
-TARGETS += -t integer_cluster
-TARGETS += -t cv64a6_imafdcsclic_sv39
 TARGETS += -t simulation
 TARGETS += $(common_targs)
 
