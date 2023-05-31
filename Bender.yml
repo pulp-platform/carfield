@@ -16,7 +16,7 @@ dependencies:
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 4d4d5d05959c83238a6fbf2537c15d411ca11b4b } # branch: main
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 08503a05307ef556ed5439619c70c039ff93d77a } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 67f0b4ef4c3b08fcd423bc5e70db144b196cd2d1 } # branch: master
-  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 48cf448fd01fa16d7485c0a8ebd37d4a463b096b } # branch: yt/carfield-integration
+  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: ba8f3cc3c06433d710b70e6e663239ddfd33d50e } # branch: yt/carfield-integration
   opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: ed1e7f1d53e28de556a3b02bc1bd1b855f51af15 } # branch: lowRISC-rebase
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             version: 1.1.0                                }
   apb:                { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }

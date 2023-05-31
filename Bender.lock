@@ -160,8 +160,8 @@ packages:
     dependencies:
     - common_cells
   cluster_peripherals:
-    revision: d388a790d9e1129e3ec57b2e0075ee21e454c3b1
-    version: 2.1.0
+    revision: a596f17fc77713909bceb7eecf3ea2c3cdfe707c
+    version: null
     source:
       Git: https://github.com/pulp-platform/cluster_peripherals.git
     dependencies:
@@ -178,7 +178,7 @@ packages:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
     source:
-      Git: https://github.com/pulp-platform/common_verification.git
+      Git: https://github.com/pulp-platform/common_verification
     dependencies: []
   cv32e40p:
     revision: 9b77611a1d0c681f4819798d95422b0b895528a2
@@ -230,8 +230,8 @@ packages:
     - cv32e40p
     - fpnew
   hci:
-    revision: 8fb848e8f6722c1c21b44533535f430960c31b0b
-    version: 1.0.8
+    revision: b2e6f391aa6c10c03f45b693d80a0aaddecf169b
+    version: null
     source:
       Git: https://github.com/pulp-platform/hci.git
     dependencies:
@@ -257,15 +257,6 @@ packages:
       Git: https://github.com/pulp-platform/hwpe-ctrl.git
     dependencies:
     - tech_cells_generic
-  hwpe-datamover-example:
-    revision: 47e7fe8a38331b123d763ecab11be4058d425021
-    version: 1.0.1
-    source:
-      Git: https://github.com/pulp-platform/hwpe-datamover-example.git
-    dependencies:
-    - hci
-    - hwpe-ctrl
-    - hwpe-stream
   hwpe-stream:
     revision: ddc154424187dff42a8fcec946c768ceb13f13de
     version: 1.6.4
@@ -360,7 +351,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 48cf448fd01fa16d7485c0a8ebd37d4a463b096b
+    revision: ba8f3cc3c06433d710b70e6e663239ddfd33d50e
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -377,17 +368,30 @@ packages:
     - fpu_interco
     - hci
     - hier-icache
-    - hwpe-datamover-example
     - ibex
     - idma
     - mchan
     - per2axi
+    - redmule
     - redundancy_cells
     - register_interface
     - riscv
     - scm
     - tech_cells_generic
     - timer_unit
+  redmule:
+    revision: 3797413e5f190c2a86185ab6d8b12af365051b1e
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/redmule.git
+    dependencies:
+    - common_cells
+    - cv32e40p
+    - fpnew
+    - hci
+    - hwpe-ctrl
+    - hwpe-stream
+    - tech_cells_generic
   redundancy_cells:
     revision: 6e10650b50c7b40f7f81602acf61526330c4d69d
     version: null
