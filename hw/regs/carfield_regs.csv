@@ -48,6 +48,7 @@ L2_CLK_DIV_VALUE,24,rw,hro,1,1,L2 Memory clk divider value
 HOST_FETCH_ENABLE,1,ro,hro,0,0,Host Domain fetch enable
 SAFETY_ISLAND_FETCH_ENABLE,1,rw,hro,0,0,Safety Island fetch enable
 SECURITY_ISLAND_FETCH_ENABLE,1,rw,hro,0,0,Security Island fetch enable
+PULP_CLUSTER_BOOT_ENABLE,1,rw,hro,0,0,PULP Cluster boot enable
 PULP_CLUSTER_FETCH_ENABLE,1,rw,hro,0,0,PULP Cluster fetch enable
 SPATZ_CLUSTER_FETCH_ENABLE,1,rw,hro,0,0,Spatz Cluster fetch enable
 HOST_BOOT_ADDR,32,rw,hro,0,0x1000,Host boot address

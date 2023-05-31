@@ -551,6 +551,17 @@
       ],
     }
 
+    { name: "PULP_CLUSTER_BOOT_ENABLE",
+      desc: "PULP Cluster boot enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
     { name: "PULP_CLUSTER_FETCH_ENABLE",
       desc: "PULP Cluster fetch enable",
       swaccess: "rw",

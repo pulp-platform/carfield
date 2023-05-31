@@ -27,7 +27,7 @@ SPATZ_MAKEDIR := $(SPATZ_ROOT)/hw/system/spatz_cluster
 
 TESTNAME ?= helloworld
 MEMTYPE  ?= spm
-CHS_BINARY   ?= $(CHS_ROOT)/sw/tests/hostd/$(TESTNAME).car.$(MEMTYPE).elf
+CHS_BINARY   ?= $(CAR_ROOT)/sw/tests/hostd/$(TESTNAME).car.$(MEMTYPE).elf
 SECD_BINARY  ?= # TODO: secd sw root
 SAFED_BINARY ?= # TODo: safed sw root
 CHS_IMAGE    ?=

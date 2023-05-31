@@ -1162,7 +1162,7 @@ safety_island_synth_wrapper #(
 // PULP integer cluster
 
 logic pulpcl_mbox_intr;
-
+// verilog_lint: waive-start line-length
 pulp_cluster #(
   .NB_CORES                       ( IntClusterNumCores        ),
   .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts    ),
@@ -1204,31 +1204,31 @@ pulp_cluster #(
   .LOG_DEPTH                      ( LogDepth                  ),
   .BaseAddr                       ( IntClusterBase            )
 ) i_integer_cluster            (
-  .clk_i                       ( pulp_clk                               ),
-  .rst_ni                      ( pulp_rst_n                             ),
-  .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                      ),
-  .ref_clk_i                   ( rt_clk_i                               ),
-  .pmu_mem_pwdn_i              ( '0                                     ),
-  .base_addr_i                 ( '0                                     ),
-  .test_mode_i                 ( test_mode_i                            ),
-  .cluster_id_i                ( IntClusterIndex                        ),
-  .en_sa_boot_i                ( '0                                     ), // To Soc Control
+  .clk_i                       ( pulp_clk                                  ),
+  .rst_ni                      ( pulp_rst_n                                ),
+  .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                         ),
+  .ref_clk_i                   ( rt_clk_i                                  ),
+  .pmu_mem_pwdn_i              ( '0                                        ),
+  .base_addr_i                 ( '0                                        ),
+  .test_mode_i                 ( test_mode_i                               ),
+  .cluster_id_i                ( IntClusterIndex                           ),
+  .en_sa_boot_i                ( car_regs_reg2hw.pulp_cluster_boot_enable  ), // To Soc Control
   .fetch_en_i                  ( car_regs_reg2hw.pulp_cluster_fetch_enable ), // To Soc Control
-  .eoc_o                       (                                        ), // To Soc Control
-  .busy_o                      (                                        ), // To Soc Control
-  .axi_isolate_i               ( slave_isolate_req [IntClusterSlvIdx]   ), // To SoC Control
-  .axi_isolated_o              ( master_isolated_rsp [IntClusterMstIdx] ), // To SoC Control
-  .dma_pe_evt_ack_i            ( '0                                     ), // To edge propagator
-  .dma_pe_evt_valid_o          (                                        ), // To edge propagator
-  .dma_pe_irq_ack_i            ( '1                                     ), // To edge propagator (?)
-  .dma_pe_irq_valid_o          (                                        ), // To edge propagator (?)
-  .dbg_irq_valid_i             ( '0                                     ), // To edge propagator (?)
-  .mbox_irq_i                  ( pulpcl_mbox_intr                       ), // from hostd or safed
-  .pf_evt_ack_i                ( '1                                     ), // To edge propagator (?)
-  .pf_evt_valid_o              (                                        ), // To edge propagator (?)
-  .async_cluster_events_wptr_i ( '0                                     ), // To edge propagator (?)
-  .async_cluster_events_rptr_o (                                        ), // To edge propagator (?)
-  .async_cluster_events_data_i ( '0                                     ), // To edge propagator (?)
+  .eoc_o                       (                                           ), // To Soc Control
+  .busy_o                      (                                           ), // To Soc Control
+  .axi_isolate_i               ( slave_isolate_req [IntClusterSlvIdx]      ), // To SoC Control
+  .axi_isolated_o              ( master_isolated_rsp [IntClusterMstIdx]    ), // To SoC Control
+  .dma_pe_evt_ack_i            ( '0                                        ), // To edge propagator
+  .dma_pe_evt_valid_o          (                                           ), // To edge propagator
+  .dma_pe_irq_ack_i            ( '1                                        ), // To edge propagator (?)
+  .dma_pe_irq_valid_o          (                                           ), // To edge propagator (?)
+  .dbg_irq_valid_i             ( '0                                        ), // To edge propagator (?)
+  .mbox_irq_i                  ( pulpcl_mbox_intr                          ), // from hostd or safed
+  .pf_evt_ack_i                ( '1                                        ), // To edge propagator (?)
+  .pf_evt_valid_o              (                                           ), // To edge propagator (?)
+  .async_cluster_events_wptr_i ( '0                                        ), // To edge propagator (?)
+  .async_cluster_events_rptr_o (                                           ), // To edge propagator (?)
+  .async_cluster_events_data_i ( '0                                        ), // To edge propagator (?)
   // AXI4 Slave port
   .async_data_slave_aw_data_i  ( axi_slv_intcluster_aw_data ),
   .async_data_slave_aw_wptr_i  ( axi_slv_intcluster_aw_wptr ),
@@ -1262,6 +1262,7 @@ pulp_cluster #(
   .async_data_master_b_wptr_i  ( axi_mst_intcluster_b_wptr  ),
   .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
 );
+// verilog_lint: waive-stop line-length
 
 // Floating Point Spatz Cluster
 

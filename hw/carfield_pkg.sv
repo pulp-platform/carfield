@@ -30,8 +30,8 @@ typedef enum byte_bt {
   EthernetSlvIdx     = 'd3,
   PeriphsSlvIdx      = 'd4,
   FPClusterSlvIdx    = 'd5,
-  IntClusterSlvIdx   = 'd6,
-  MailboxSlvIdx      = 'd7
+  MailboxSlvIdx      = 'd6,
+  IntClusterSlvIdx   = 'd7
 } axi_slv_idx_t;
 
 typedef enum byte_bt {

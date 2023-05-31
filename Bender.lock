@@ -68,7 +68,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
+      Git: https://github.com/pulp-platform/axi_riscv_atomics
     dependencies:
     - axi
     - common_cells
@@ -178,7 +178,7 @@ packages:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
     source:
-      Git: https://github.com/pulp-platform/common_verification
+      Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cv32e40p:
     revision: 9b77611a1d0c681f4819798d95422b0b895528a2
@@ -360,7 +360,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 4c5e6759d767d80d04562e2a76d72ed9bcd2b79a
+    revision: 48cf448fd01fa16d7485c0a8ebd37d4a463b096b
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -409,7 +409,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: dbcf0bbf827e1ec323ca223883c92ebfe9347c67
+    revision: 4ceb402db8619718a9170058bb31f75fcdf7ed1c
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
