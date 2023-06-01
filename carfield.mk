@@ -5,6 +5,8 @@
 # Luca Valente <luca.valente@unibo.it>
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@unibo.it>
+# Robert Balas <balasr@iis.ee.ethz.ch>
+# Manuel Eggimann <meggimann@iis.ee.ethz.ch>
 
 CAR_ROOT ?= .
 CHS_ROOT ?= $(CAR_ROOT)/cheshire
@@ -61,6 +63,25 @@ else
 	VSIM_FLAG := -c
 	RUN_AND_EXIT := run -all; exit
 endif
+
+######################
+# Shorthands         #
+######################
+
+## Same as car-hw-build
+build: car-hw-build
+
+## Same as car-hw-sim
+sim: car-hw-sim
+
+## Same as car-hw-clean
+clean: car-hw-clean
+
+## Same as car-init
+init: car-init
+
+## Same as scripts/carfield_compile.tcl
+scripts: scripts/carfield_compile.tcl
 
 ######################
 # Nonfree components #
@@ -183,7 +204,7 @@ SPYGLASS_DEFS += $(common_defs)
 SPYGLASS_DEFS += $(synth_defs)
 
 ## @section Carfield SoC Utilities
-
+.PHONY: lint
 ## Run Spyglass Lint on the entire RTL
 lint:
 	$(MAKE) -C scripts lint bender_defs="$(SPYGLASS_DEFS)" bender_targs="$(SPYGLASS_TARGS)" > make.log
