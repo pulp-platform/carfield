@@ -310,7 +310,7 @@ localparam int unsigned SafetyIslandPerSize   = 'h0010_0000;
 /******************************/
 /* Integer Cluster Parameters */
 /******************************/
-localparam int unsigned IntClusterNumCores = 8;
+localparam int unsigned IntClusterNumCores = 12;
 localparam int unsigned IntClusterNumHwpePorts = 9;
 localparam int unsigned IntClusterNumDmas = 4;
 localparam int unsigned IntClusterNumMstPer = 1;
