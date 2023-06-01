@@ -68,7 +68,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
+      Git: https://github.com/pulp-platform/axi_riscv_atomics
     dependencies:
     - axi
     - common_cells
@@ -274,7 +274,7 @@ packages:
     dependencies:
     - tech_cells_generic
   hyperbus:
-    revision: 4d4d5d05959c83238a6fbf2537c15d411ca11b4b
+    revision: be110d111f555af5de629f6315834c050b8b5148
     version: null
     source:
       Git: https://github.com/pulp-platform/hyperbus.git
