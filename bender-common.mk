@@ -17,4 +17,4 @@ common_targs += -t cv64a6_imafdcsclic_sv39
 common_defs += -D FEATURE_ICACHE_STAT
 common_defs += -D PRIVATE_ICACHE
 common_defs += -D HIERARCHY_ICACHE_32BIT
-common_degs += -D CLUSTER_ALIAS
+common_defs += -D CLUSTER_ALIAS
