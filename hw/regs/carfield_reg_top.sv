@@ -216,6 +216,11 @@ module carfield_reg_top #(
   logic [31:0] spatz_cluster_boot_addr_qs;
   logic [31:0] spatz_cluster_boot_addr_wd;
   logic spatz_cluster_boot_addr_we;
+  logic pulp_cluster_boot_enable_qs;
+  logic pulp_cluster_boot_enable_wd;
+  logic pulp_cluster_boot_enable_we;
+  logic pulp_cluster_busy_qs;
+  logic pulp_cluster_eoc_qs;
   logic [31:0] l2_sram_config0_qs;
   logic [31:0] l2_sram_config0_wd;
   logic l2_sram_config0_we;
@@ -1632,6 +1637,85 @@ module carfield_reg_top #(
   );
 
 
+  // R[pulp_cluster_boot_enable]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_pulp_cluster_boot_enable (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pulp_cluster_boot_enable_we),
+    .wd     (pulp_cluster_boot_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pulp_cluster_boot_enable.q ),
+
+    // to register interface (read)
+    .qs     (pulp_cluster_boot_enable_qs)
+  );
+
+
+  // R[pulp_cluster_busy]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pulp_cluster_busy (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pulp_cluster_busy.de),
+    .d      (hw2reg.pulp_cluster_busy.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pulp_cluster_busy.q ),
+
+    // to register interface (read)
+    .qs     (pulp_cluster_busy_qs)
+  );
+
+
+  // R[pulp_cluster_eoc]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RO"),
+    .RESVAL  (1'h0)
+  ) u_pulp_cluster_eoc (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    .we     (1'b0),
+    .wd     ('0  ),
+
+    // from internal hardware
+    .de     (hw2reg.pulp_cluster_eoc.de),
+    .d      (hw2reg.pulp_cluster_eoc.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pulp_cluster_eoc.q ),
+
+    // to register interface (read)
+    .qs     (pulp_cluster_eoc_qs)
+  );
+
+
   // R[l2_sram_config0]: V(False)
 
   prim_subreg #(
@@ -1742,7 +1826,7 @@ module carfield_reg_top #(
 
 
 
-  logic [59:0] addr_hit;
+  logic [62:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CARFIELD_VERSION0_OFFSET);
@@ -1801,10 +1885,13 @@ module carfield_reg_top #(
     addr_hit[53] = (reg_addr == CARFIELD_SECURITY_ISLAND_BOOT_ADDR_OFFSET);
     addr_hit[54] = (reg_addr == CARFIELD_PULP_CLUSTER_BOOT_ADDR_OFFSET);
     addr_hit[55] = (reg_addr == CARFIELD_SPATZ_CLUSTER_BOOT_ADDR_OFFSET);
-    addr_hit[56] = (reg_addr == CARFIELD_L2_SRAM_CONFIG0_OFFSET);
-    addr_hit[57] = (reg_addr == CARFIELD_L2_SRAM_CONFIG1_OFFSET);
-    addr_hit[58] = (reg_addr == CARFIELD_L2_SRAM_CONFIG2_OFFSET);
-    addr_hit[59] = (reg_addr == CARFIELD_L2_SRAM_CONFIG3_OFFSET);
+    addr_hit[56] = (reg_addr == CARFIELD_PULP_CLUSTER_BOOT_ENABLE_OFFSET);
+    addr_hit[57] = (reg_addr == CARFIELD_PULP_CLUSTER_BUSY_OFFSET);
+    addr_hit[58] = (reg_addr == CARFIELD_PULP_CLUSTER_EOC_OFFSET);
+    addr_hit[59] = (reg_addr == CARFIELD_L2_SRAM_CONFIG0_OFFSET);
+    addr_hit[60] = (reg_addr == CARFIELD_L2_SRAM_CONFIG1_OFFSET);
+    addr_hit[61] = (reg_addr == CARFIELD_L2_SRAM_CONFIG2_OFFSET);
+    addr_hit[62] = (reg_addr == CARFIELD_L2_SRAM_CONFIG3_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1871,7 +1958,10 @@ module carfield_reg_top #(
                (addr_hit[56] & (|(CARFIELD_PERMIT[56] & ~reg_be))) |
                (addr_hit[57] & (|(CARFIELD_PERMIT[57] & ~reg_be))) |
                (addr_hit[58] & (|(CARFIELD_PERMIT[58] & ~reg_be))) |
-               (addr_hit[59] & (|(CARFIELD_PERMIT[59] & ~reg_be)))));
+               (addr_hit[59] & (|(CARFIELD_PERMIT[59] & ~reg_be))) |
+               (addr_hit[60] & (|(CARFIELD_PERMIT[60] & ~reg_be))) |
+               (addr_hit[61] & (|(CARFIELD_PERMIT[61] & ~reg_be))) |
+               (addr_hit[62] & (|(CARFIELD_PERMIT[62] & ~reg_be)))));
   end
 
   assign jedec_idcode_we = addr_hit[6] & reg_we & !reg_error;
@@ -2012,16 +2102,19 @@ module carfield_reg_top #(
   assign spatz_cluster_boot_addr_we = addr_hit[55] & reg_we & !reg_error;
   assign spatz_cluster_boot_addr_wd = reg_wdata[31:0];
 
-  assign l2_sram_config0_we = addr_hit[56] & reg_we & !reg_error;
+  assign pulp_cluster_boot_enable_we = addr_hit[56] & reg_we & !reg_error;
+  assign pulp_cluster_boot_enable_wd = reg_wdata[0];
+
+  assign l2_sram_config0_we = addr_hit[59] & reg_we & !reg_error;
   assign l2_sram_config0_wd = reg_wdata[31:0];
 
-  assign l2_sram_config1_we = addr_hit[57] & reg_we & !reg_error;
+  assign l2_sram_config1_we = addr_hit[60] & reg_we & !reg_error;
   assign l2_sram_config1_wd = reg_wdata[31:0];
 
-  assign l2_sram_config2_we = addr_hit[58] & reg_we & !reg_error;
+  assign l2_sram_config2_we = addr_hit[61] & reg_we & !reg_error;
   assign l2_sram_config2_wd = reg_wdata[31:0];
 
-  assign l2_sram_config3_we = addr_hit[59] & reg_we & !reg_error;
+  assign l2_sram_config3_we = addr_hit[62] & reg_we & !reg_error;
   assign l2_sram_config3_wd = reg_wdata[31:0];
 
   // Read data return
@@ -2253,18 +2346,30 @@ module carfield_reg_top #(
       end
 
       addr_hit[56]: begin
-        reg_rdata_next[31:0] = l2_sram_config0_qs;
+        reg_rdata_next[0] = pulp_cluster_boot_enable_qs;
       end
 
       addr_hit[57]: begin
-        reg_rdata_next[31:0] = l2_sram_config1_qs;
+        reg_rdata_next[0] = pulp_cluster_busy_qs;
       end
 
       addr_hit[58]: begin
-        reg_rdata_next[31:0] = l2_sram_config2_qs;
+        reg_rdata_next[0] = pulp_cluster_eoc_qs;
       end
 
       addr_hit[59]: begin
+        reg_rdata_next[31:0] = l2_sram_config0_qs;
+      end
+
+      addr_hit[60]: begin
+        reg_rdata_next[31:0] = l2_sram_config1_qs;
+      end
+
+      addr_hit[61]: begin
+        reg_rdata_next[31:0] = l2_sram_config2_qs;
+      end
+
+      addr_hit[62]: begin
         reg_rdata_next[31:0] = l2_sram_config3_qs;
       end
 

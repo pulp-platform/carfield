@@ -30,8 +30,8 @@ typedef enum byte_bt {
   EthernetSlvIdx     = 'd3,
   PeriphsSlvIdx      = 'd4,
   FPClusterSlvIdx    = 'd5,
-  IntClusterSlvIdx   = 'd6,
-  MailboxSlvIdx      = 'd7
+  MailboxSlvIdx      = 'd6,
+  IntClusterSlvIdx   = 'd7
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
@@ -310,8 +310,8 @@ localparam int unsigned SafetyIslandPerSize   = 'h0010_0000;
 /******************************/
 /* Integer Cluster Parameters */
 /******************************/
-localparam int unsigned IntClusterNumCores = 8;
-localparam int unsigned IntClusterNumHwpePorts = 0;
+localparam int unsigned IntClusterNumCores = 12;
+localparam int unsigned IntClusterNumHwpePorts = 9;
 localparam int unsigned IntClusterNumDmas = 4;
 localparam int unsigned IntClusterNumMstPer = 1;
 localparam int unsigned IntClusterNumSlvPer = 10;
@@ -319,7 +319,7 @@ localparam int unsigned IntClusterAlias = 1;
 localparam int unsigned IntClusterAliasBase = 12'h000;
 localparam int unsigned IntClusterTcdmSize = 256*1024;
 localparam int unsigned IntClusterTcdmBanks = 16;
-localparam int unsigned IntClusterHwpePresent = 0;
+localparam int unsigned IntClusterHwpePresent = 1;
 localparam int unsigned IntClusterUseHci = 1;
 localparam int unsigned IntClusterSetAssociative = 4;
 localparam int unsigned IntClusterNumCacheBanks = 2;

@@ -27,7 +27,7 @@ SPATZ_MAKEDIR := $(SPATZ_ROOT)/hw/system/spatz_cluster
 
 TESTNAME ?= helloworld
 MEMTYPE  ?= spm
-CHS_BINARY   ?= $(CHS_ROOT)/sw/tests/hostd/$(TESTNAME).car.$(MEMTYPE).elf
+CHS_BINARY   ?= $(CAR_ROOT)/sw/tests/hostd/$(TESTNAME).car.$(MEMTYPE).elf
 SECD_BINARY  ?= # TODO: secd sw root
 SAFED_BINARY ?= # TODo: safed sw root
 CHS_IMAGE    ?=
@@ -46,8 +46,6 @@ include $(CAR_ROOT)/utils/venv.mk
 TARGETS += -t sim
 TARGETS += -t test
 TARGETS += -t rtl
-TARGETS += -t integer_cluster
-TARGETS += -t cv64a6_imafdcsclic_sv39
 TARGETS += -t simulation
 TARGETS += $(common_targs)
 

@@ -313,8 +313,11 @@ module cheshire_wrap
 );
 
 // All AXI slave buses
-cheshire_axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req, axi_ext_slv_isolated_req;
-cheshire_axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp, axi_ext_slv_isolated_rsp;
+cheshire_axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req;
+cheshire_axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp;
+
+cheshire_axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv-2):0] axi_ext_slv_isolated_req;
+cheshire_axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv-2):0] axi_ext_slv_isolated_rsp;
 
 // All AXI master buses
 cheshire_axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req;

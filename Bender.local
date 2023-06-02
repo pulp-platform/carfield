@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: SHL-0.51
 
 overrides:
-  axi:                  { git: https://github.com/pulp-platform/axi.git                 , rev:  5e85c7e5ee38a797b9ef6bbed0cf0d4fde473c67  } # branch: axi_rt-tbenz
-  apb:                  { git: "https://github.com/pulp-platform/apb.git"               , version: =0.2.3                                 }
-  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git", rev: 2bb08879bc2ceabe2b6a0dc283753048a739e27b } # branch main until new version tag newer than v0.4.0
-  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"  , rev: "6e10650b50c7b40f7f81602acf61526330c4d69d" } # branch: michaero/hmr-alt
-  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: =0.2.11                                }
-  riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"         , version: =0.8.0                                 }
-  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git"      , rev: e2486afcca71b685188f4fc8998b2f08f41bd961   } # branch carfield until PR #189, #183 are merged
-  idma:                 { git: "https://github.com/pulp-platform/idma.git"              , rev:     437ffa9                                }
-  hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"       , rev: a7e3f4e4c7fe607bcd6b9d94db77f612fd6ef6be   }
-  scm:                  { git: "https://github.com/pulp-platform/scm.git"               , rev: f7b51416f3c407e4c31e9c016616d57aae2687bd   }
-  cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3 } # branch: assertion-fix
+  axi:                  { git: https://github.com/pulp-platform/axi.git                   , rev:  5e85c7e5ee38a797b9ef6bbed0cf0d4fde473c67  } # branch: axi_rt-tbenz
+  apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: =0.2.3                                 }
+  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , rev: 2bb08879bc2ceabe2b6a0dc283753048a739e27b } # branch main until new version tag newer than v0.4.0
+  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "6e10650b50c7b40f7f81602acf61526330c4d69d" } # branch: michaero/hmr-alt
+  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.11                                }
+  riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"           , version: =0.8.0                                 }
+  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git"        , rev: e2486afcca71b685188f4fc8998b2f08f41bd961   } # branch carfield until PR #189, #183 are merged
+  idma:                 { git: "https://github.com/pulp-platform/idma.git"                , rev:     437ffa9                                }
+  hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: a7e3f4e4c7fe607bcd6b9d94db77f612fd6ef6be   }
+  scm:                  { git: "https://github.com/pulp-platform/scm.git"                 , rev: f7b51416f3c407e4c31e9c016616d57aae2687bd   }
+  cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
