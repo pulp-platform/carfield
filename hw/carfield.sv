@@ -134,12 +134,15 @@ module carfield
   output logic [HypNumPhys-1:0][7:0]                  hyper_dq_o,
   output logic [HypNumPhys-1:0]                       hyper_dq_oe_o,
   output logic [HypNumPhys-1:0]                       hyper_reset_no,
-  // PLL configuration
-  output reg_req_t                                    pll_cfg_reg_req_o,
-  input  reg_rsp_t                                    pll_cfg_reg_rsp_i,
-  // padframe configuration
-  output reg_req_t                                    padframe_cfg_reg_req_o,
-  input  reg_rsp_t                                    padframe_cfg_reg_rsp_i,
+  // External reg interface slaves (async)
+  // Currently for PLL and Padframe
+  output logic     [1:0]                              ext_reg_async_slv_req_o,
+  input  logic     [1:0]                              ext_reg_async_slv_ack_i,
+  output reg_req_t [1:0]                              ext_reg_async_slv_data_o,
+  input  logic     [1:0]                              ext_reg_async_slv_req_i,
+  output logic     [1:0]                              ext_reg_async_slv_ack_o,
+  input  reg_rsp_t [1:0]                              ext_reg_async_slv_data_i,
+  // Debug signals
   output carfield_debug_sigs_t                        debug_signals_o
 );
 
@@ -294,9 +297,9 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 `AXI_TYPEDEF_ALL_CT(axi_intcluster_mst, axi_intcluster_mst_req_t, axi_intcluster_mst_rsp_t, car_addrw_t, intclust_idout_t, car_dataw_t, car_strb_t, car_usr_t)
 // verilog_lint: waive-stop line-length
 
-// Local DRAM buses and parameter
-carfield_reg_req_t [Cfg.RegExtNumSlv-1:0] ext_reg_req;
-carfield_reg_rsp_t [Cfg.RegExtNumSlv-1:0] ext_reg_rsp;
+// External register interface synchronous with Cheshire's clock domain
+carfield_reg_req_t [iomsb(Cfg.RegExtNumSlv-2):0] ext_reg_req;
+carfield_reg_rsp_t [iomsb(Cfg.RegExtNumSlv-2):0] ext_reg_rsp;
 
 localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth   +
                                      $clog2(AxiIn.num_in)+
@@ -879,9 +882,16 @@ cheshire_wrap #(
   // Mailboxes
   .axi_mbox_slv_req_o ( axi_mbox_req  ),
   .axi_mbox_slv_rsp_i ( axi_mbox_rsp  ),
-  // External reg demux slaves
+  // External reg demux slaves Cheshire's clock domain (sync)
   .reg_ext_slv_req_o ( ext_reg_req     ),
   .reg_ext_slv_rsp_i ( ext_reg_rsp     ),
+  // External reg interface slaves (async)
+  .ext_reg_async_slv_req_o,
+  .ext_reg_async_slv_ack_i,
+  .ext_reg_async_slv_data_o,
+  .ext_reg_async_slv_req_i,
+  .ext_reg_async_slv_ack_o,
+  .ext_reg_async_slv_data_i,
   // Interrupts from external devices
   .intr_ext_i        ( /* TODO: connect me */ ),
   // Interrupts to external harts
@@ -2060,13 +2070,6 @@ can_top_apb #(
   .s_apb_pwrite     ( apb_mst_req[CanIdx].pwrite  )
 );
 
-// Propagate PLL cfg interface
-assign pll_cfg_reg_req_o   = ext_reg_req[PllIdx];
-assign ext_reg_rsp[PllIdx] = pll_cfg_reg_rsp_i;
-
-// Propagate padframe cfg interface
-assign padframe_cfg_reg_req_o   = ext_reg_req[PadframeIdx];
-assign ext_reg_rsp[PadframeIdx] = padframe_cfg_reg_rsp_i;
-
-
 endmodule
+
+

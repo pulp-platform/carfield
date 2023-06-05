@@ -194,10 +194,13 @@ module carfield_soc_fixture;
     .hyper_dq_o                 ( hyper_dq_o                ),
     .hyper_dq_oe_o              ( hyper_dq_oe               ),
     .hyper_reset_no             ( hyper_reset_n_wire        ),
-    .pll_cfg_reg_req_o          (                           ),
-    .pll_cfg_reg_rsp_i          ( '0                        ),
-    .padframe_cfg_reg_req_o     (                           ),
-    .padframe_cfg_reg_rsp_i     ( '0                        )
+    .ext_reg_async_slv_req_i    ( '0                        ),
+    .ext_reg_async_slv_ack_o    (                           ),
+    .ext_reg_async_slv_data_i   ( '0                        ),
+    .ext_reg_async_slv_req_o    (                           ),
+    .ext_reg_async_slv_ack_i    ( '0                        ),
+    .ext_reg_async_slv_data_o   (                           ),
+    .debug_signals_o            (                           )
   );
 
   //////////////

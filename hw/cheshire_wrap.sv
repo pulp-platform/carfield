@@ -4,6 +4,7 @@
 //
 // Luca Valente    <luca.valente@unibo.it>
 // Yvan Tortorella <yvan.tortorella@unibo.it>
+// Alessandro Ottaviano <aottaviano@ii.ee.ethz.ch>
 
 `include "cheshire/typedef.svh"
  `include "axi/typedef.svh"
@@ -249,9 +250,17 @@ module cheshire_wrap
   // Mailboxes
   output cheshire_axi_ext_slv_req_t axi_mbox_slv_req_o,
   input  cheshire_axi_ext_slv_rsp_t axi_mbox_slv_rsp_i,
-  // External reg demux slaves
-  output cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_req_o,
-  input  cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] reg_ext_slv_rsp_i,
+  // External reg demux slaves Cheshire's clock domain (sync)
+  output cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv-2):0] reg_ext_slv_req_o,
+  input  cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv-2):0] reg_ext_slv_rsp_i,
+  // External reg demux slaves other clock domains (async)
+  // Padframe and PLL
+  output logic                  [1:0] ext_reg_async_slv_req_o,
+  input  logic                  [1:0] ext_reg_async_slv_ack_i,
+  output cheshire_reg_ext_req_t [1:0] ext_reg_async_slv_data_o,
+  input  logic                  [1:0] ext_reg_async_slv_req_i,
+  output logic                  [1:0] ext_reg_async_slv_ack_o,
+  input  cheshire_reg_ext_rsp_t [1:0] ext_reg_async_slv_data_i,
   // Interrupts from external devices
   input  logic [iomsb(Cfg.NumExtIntrs):0] intr_ext_i,
   // Interrupts to external harts
@@ -331,6 +340,15 @@ cheshire_axi_ext_llc_rsp_t axi_llc_mst_rsp, axi_llc_mst_isolated_rsp;
 `AXI_ASSIGN_REQ_STRUCT(axi_mbox_slv_req_o, axi_ext_slv_req[MailboxSlvIdx])
 `AXI_ASSIGN_RESP_STRUCT(axi_ext_slv_rsp[MailboxSlvIdx], axi_mbox_slv_rsp_i)
 
+cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_req;
+cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_rsp;
+
+// Generate synchronous external register interface from Cheshire
+for (genvar i = 0; i < Cfg.RegExtNumSlv - 2; i++) begin: gen_ext_reg_sync
+  assign reg_ext_slv_req_o[i] = ext_reg_req[i];
+  assign ext_reg_rsp[i]       = reg_ext_slv_rsp_i[i];
+end
+
 cheshire_soc #(
   .Cfg               ( Cfg                        ),
   .ExtHartinfo       ( '0                         ),
@@ -357,8 +375,8 @@ cheshire_soc #(
   .axi_ext_slv_req_o ( axi_ext_slv_req ),
   .axi_ext_slv_rsp_i ( axi_ext_slv_rsp ),
   // External reg demux slaves
-  .reg_ext_slv_req_o,
-  .reg_ext_slv_rsp_i,
+  .reg_ext_slv_req_o ( ext_reg_req     ),
+  .reg_ext_slv_rsp_i ( ext_reg_rsp     ),
   // Interrupts from external devices
   .intr_ext_i,
   // Interrupts to external harts
@@ -697,5 +715,28 @@ axi_id_remap            #(
   .mst_req_o   ( axi_ext_mst_req[IntClusterMstIdx] ),
   .mst_resp_i  ( axi_ext_mst_rsp[IntClusterMstIdx] )
 );
+
+// Async reg interface:
+// See carfield_pkg.sv for indices referring to sync and async reg interfaces.
+for (genvar i = 0; i < Cfg.RegExtNumSlv - PllIdx; i++) begin : gen_ext_reg_async
+  reg_cdc_src #(
+    .CDC_KIND ( "cdc_4phase"              ),
+    .req_t     ( cheshire_reg_ext_req_t   ),
+    .rsp_t     ( cheshire_reg_ext_rsp_t   )
+  ) i_reg_cdc_src (
+      .src_clk_i    ( clk_i  ),
+      .src_rst_ni   ( rst_ni ),
+      .src_req_i    ( ext_reg_req[PllIdx + i] ),
+      .src_rsp_o    ( ext_reg_rsp[PllIdx + i] ),
+
+      .async_req_o  ( ext_reg_async_slv_req_o[i]  ),
+      .async_ack_i  ( ext_reg_async_slv_ack_i[i]  ),
+      .async_data_o ( ext_reg_async_slv_data_o[i] ),
+
+      .async_req_i  ( ext_reg_async_slv_req_i[i]  ),
+      .async_ack_o  ( ext_reg_async_slv_ack_o[i]  ),
+      .async_data_i ( ext_reg_async_slv_data_i[i] )
+  );
+end
 
 endmodule: cheshire_wrap
