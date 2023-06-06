@@ -223,6 +223,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // External reg slaves (at most 8 ports and rules)
   RegExtNumSlv      : 3,
   RegExtNumRules    : 3,
+  // For carfield, PllIdx is the first index of the async reg interfaces. Please add async reg
+  // interfaces indices to the left of PllIdx, and sync reg interface indices to its right.
   RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, PadframeIdx,  PllIdx,  CarRegsIdx  },
   RegExtRegionStart : '{ 0, 0, 0, 0, 0, PadframeBase, PllBase, CarRegsBase },
   RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, PadframeEnd,  PllEnd,  CarRegsEnd  },
