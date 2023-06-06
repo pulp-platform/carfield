@@ -58,6 +58,10 @@ sources:
     files:
       - scripts/spyglass/src/carfield_wrap.sv
 
+  - target: synthesis
+    files:
+      - target/synth/carfield_synth_wrap.sv
+
 vendor_package:
   - name: reggen
     target_dir: "utils"
