@@ -65,7 +65,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 4f7da0e3b10a72dc6a77a6dc475f1cedfd7f39a7
+CAR_NONFREE_COMMIT ?= 5b6b7ed7c08ec079a6725f6b2c3ddf69fea3ba16
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -112,15 +112,17 @@ $(CAR_ROOT)/tb/hyp_vip:
 	cp model_tmp/exe_folder/S27ks0641/model/s27ks0641.v model_tmp/exe_folder/S27ks0641/model/s27ks0641_verilog.sdf $@
 	rm -rf model_tmp
 
-.PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
 	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
+.PHONY: car-sim-init
+car-sim-init: chs-sim-init $(CAR_ROOT)/tb/hyp_vip scripts/carfield_compile.tcl
+
 ## @section Carfield SoC Simulation
 ## Compile the Carfield RTL using Questasim. In order to compile the TB you first have to run the
 ## car-nonfree-init target.
-car-hw-build: scripts/carfield_compile.tcl
+car-hw-build: car-sim-init
 	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
 .PHONY: car-hw-sim
@@ -141,7 +143,7 @@ car-hw-clean:
 	rm -rf *.ini trace* *.wlf transcript work
 
 ## @section Carfield SoC Dependency Management
-.PHONY: car-update-dps
+.PHONY: car-update-deps
 ## Update and re-resove all IP dependencies. Bender will try to resolve dependency conflicts with
 ## semantic versioning and the Bender.local file that contains overrides. You should run this target
 ## only if you changed the Bender.yml file and updated the version of some sub-IP. This will
@@ -159,18 +161,34 @@ car-checkout-deps:
 	$(BENDER) checkout
 	touch Bender.lock
 
+.PHONY: car-checkout
 car-checkout: car-checkout-deps
 
-car-init: $(CAR_ROOT)/tb/hyp_vip car-checkout spatz-init chs-init
+.PHONY: car-hw-init
+car-hw-init: spatz-hw-init chs-hw-init
 
-spatz-init:
+.PHONY: spatz-hw-init
+spatz-hw-init:
 	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
 
-.PHONY: chs-init
-chs-init:
-	$(MAKE) -B chs-hw-all
-	$(MAKE) -B chs-sim-all
-	$(MAKE) -B chs-sw-all
+.PHONY: chs-hw-init
+chs-hw-init:
+	$(MAKE) chs-hw-all
+
+.PHONY: chs-sim-init
+chs-sim-init:
+	$(MAKE) chs-sim-all
+
+.PHONY: chs-sw-build
+chs-sw-build:
+	$(MAKE) chs-sw-all
+
+.PHONY: car-sw-build
+car-sw-build: chs-sw-build
+	$(MAKE) car-sw-all
+
+.PHONY: car-init
+car-init: car-checkout car-hw-init car-sim-init car-sw-build
 
 ############
 # RTL LINT #
