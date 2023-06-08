@@ -22,7 +22,7 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: 5e85c7e5ee38a797b9ef6bbed0cf0d4fde473c67
+    revision: 02307cf26de40c713212148abb947fef87babd61
     version: null
     source:
       Git: https://github.com/pulp-platform/axi.git
@@ -64,6 +64,15 @@ packages:
     dependencies:
     - axi
     - common_cells
+  axi_obi:
+    revision: 87bb718809fb5a20f8e5bad537fdf43aeef6db2a
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:carfield/axi_obi.git
+    dependencies:
+    - axi
+    - common_cells
+    - obi
   axi_riscv_atomics:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
@@ -137,7 +146,7 @@ packages:
     - riscv-dbg
     - serial_link
   clic:
-    revision: ce0d748f28246c0635b225d9c8beb7b76eac8708
+    revision: bed98f88761ca86706c36c4c33ac600d88c42373
     version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
@@ -320,7 +329,7 @@ packages:
     dependencies:
     - common_cells
   obi:
-    revision: 1285848fe155e7803d409648dac8cd327993b042
+    revision: c54a7374bce9f4239c07f950ced339af926b5ff8
     version: null
     source:
       Git: https://github.com/pulp-platform/obi.git
@@ -429,13 +438,14 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 67f0b4ef4c3b08fcd423bc5e70db144b196cd2d1
+    revision: 60e768a3ef29f47339e31674d497293f5a768893
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
     dependencies:
     - apb
     - axi
+    - axi_obi
     - bus_err_unit
     - clic
     - cluster_interconnect
