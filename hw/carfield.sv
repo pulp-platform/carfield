@@ -645,6 +645,7 @@ assign domain_clk_en[L2DomainIdx]         = car_regs_reg2hw.l2_clk_en.q;
 // Assign debug signals
 assign debug_signals_o.domain_clk    = domain_clk_gated;
 assign debug_signals_o.domain_rsts_n = rsts_n;
+assign debug_signals_o.host_pwr_on_rst_n = host_pwr_on_rst_n;
 // verilog_lint: waive-stop line-length
 
 //
