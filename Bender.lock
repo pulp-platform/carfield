@@ -77,7 +77,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics
+      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
     - axi
     - common_cells
@@ -348,7 +348,7 @@ packages:
     - common_cells
     - common_verification
   opentitan:
-    revision: ed1e7f1d53e28de556a3b02bc1bd1b855f51af15
+    revision: cce5a6e0bacba31374109969adcd7abb0f70f7ec
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
@@ -371,7 +371,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: bd8182aaa33f2b0ac7bf924621f094a382d8ab17
+    revision: a389cab95ac978ddeaeb557c7e8a311863e0de90
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -433,7 +433,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: 4ceb402db8619718a9170058bb31f75fcdf7ed1c
+    revision: 4ef49607a0093378d3f6dccce2e673178d6481af
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
