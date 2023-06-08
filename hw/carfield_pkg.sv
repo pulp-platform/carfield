@@ -374,6 +374,7 @@ localparam int unsigned NumDomains = 6;
 typedef struct packed {
   logic [NumDomains-1:0] domain_clk;
   logic [NumDomains-1:0] domain_rsts_n;
+  logic                  host_pwr_on_rst_n;
 } carfield_debug_sigs_t;
 
 endpackage
