@@ -77,7 +77,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
+      Git: https://github.com/pulp-platform/axi_riscv_atomics
     dependencies:
     - axi
     - common_cells
