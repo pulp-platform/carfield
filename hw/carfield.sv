@@ -63,8 +63,6 @@ module carfield
   output  logic                                       jtag_safety_island_tdo_o,
   // Secure Subsystem BOOT pins
   input   logic [1:0]                                 bootmode_ot_i,
-  // unused by safety island -- tdo pad always out mode
-  output  logic                                       jtag_safe_isln_tdo_oe_o,
   // Safety Island BOOT pins
   input   logic [1:0]                                 bootmode_safe_isln_i,
   // Host UART Interface
