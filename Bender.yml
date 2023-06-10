@@ -25,7 +25,7 @@ dependencies:
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 230222cc568b49b39a3385b12edaf680657bc69d }
   spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: dbc4c442bd54a538bcafd0d62fec2b608a359dc3 } # branch: main
   bus_err_unit:       { git: git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git,          rev: 47a6436dc4b4b7f4a44f7786033b22c6d01530b2 } # branch: main
-  common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.29.0                               }
+  common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.30.0                               }
 
 workspace:
   package_links:
