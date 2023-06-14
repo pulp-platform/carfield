@@ -182,8 +182,6 @@ module carfield_soc_fixture;
     .slink_rcv_clk_o            ( slink_rcv_clk_o           ),
     .slink_i                    ( slink_i                   ),
     .slink_o                    ( slink_o                   ),
-    .hyp_clk_phy_i              ( clk                       ),
-    .hyp_rst_phy_ni             ( rst_n                     ),
     .hyper_cs_no                ( hyper_cs_n_wire           ),
     .hyper_ck_o                 ( hyper_ck_wire             ),
     .hyper_ck_no                ( hyper_ck_n_wire           ),
