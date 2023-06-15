@@ -117,9 +117,6 @@ module carfield_synth_wrap
   output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
   input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
   output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
-  // HyperBus clocks
-  input  logic                                        hyp_clk_phy_i,
-  input  logic                                        hyp_rst_phy_ni,
   // HyperBus interface
   output logic [HypNumPhys-1:0][HypNumChips-1:0]      hyper_cs_no,
   output logic [HypNumPhys-1:0]                       hyper_ck_o,
@@ -202,8 +199,6 @@ module carfield_synth_wrap
     .slink_rcv_clk_o           ,
     .slink_i                   ,
     .slink_o                   ,
-    .hyp_clk_phy_i             ,
-    .hyp_rst_phy_ni            ,
     .hyper_cs_no               ,
     .hyper_ck_o                ,
     .hyper_ck_no               ,
