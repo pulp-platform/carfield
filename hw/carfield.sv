@@ -148,23 +148,115 @@ module carfield
 **********************************/
 `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
 
-// Mailbox unit
+// Clocking and reset strategy
+logic    periph_rst_n;
+logic    safety_rst_n;
+logic    security_rst_n;
+logic    pulp_rst_n;
+logic    spatz_rst_n;
+logic    l2_rst_n;
+
+logic    host_pwr_on_rst_n;
+logic    periph_pwr_on_rst_n;
+logic    safety_pwr_on_rst_n;
+logic    security_pwr_on_rst_n;
+logic    pulp_pwr_on_rst_n;
+logic    spatz_pwr_on_rst_n;
+logic    l2_pwr_on_rst_n;
+
+logic  periph_clk;
+logic  safety_clk;
+logic  security_clk;
+logic  pulp_clk;
+logic  spatz_clk;
+logic  l2_clk;
 
 // verilog_lint: waive-start line-length
+// Peripheral interrupts
+logic [(Cfg.NumExtRouterTargets*(CarfieldNumExtIntrs+NumIntIntrs))-1:0] chs_intrs_distributed;
+logic [Cfg.NumExtIrqHarts-1:0]                             chs_mti;
+logic [CarfieldNumPeriphsIntrs-1:0]                        car_periph_intrs;
+
+logic                                                      car_sys_timer_lo_intr, car_sys_timer_hi_intr,  car_sys_timer_lo_intr_sync, car_sys_timer_hi_intr_sync;
+logic [3:0]                                                car_adv_timer_intrs, car_adv_timer_events, car_adv_timer_intrs_sync, car_adv_timer_events_sync;
+logic [4:0]                                                car_wdt_intrs;
+logic                                                      car_can_intr;
+
+// Carfield peripheral interrupts
+// Propagate edge-triggered interrupts between periph and host clock domains
+
+// Advanced timer
+for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_intrs
+  edge_propagator i_sync_adv_timer_intrs (
+    .clk_tx_i  ( periph_clk                  ),
+    .rstn_tx_i ( periph_rst_n                ),
+    .edge_i    ( car_adv_timer_intrs[i]      ),
+    .clk_rx_i  ( host_clk                    ),
+    .rstn_rx_i ( host_pwr_on_rst_n           ),
+    .edge_o    ( car_adv_timer_intrs_sync[i] )
+  );
+end
+
+for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_events
+  edge_propagator i_sync_adv_timer_events (
+    .clk_tx_i  ( periph_clk                   ),
+    .rstn_tx_i ( periph_rst_n                 ),
+    .edge_i    ( car_adv_timer_events[i]      ),
+    .clk_rx_i  ( host_clk                     ),
+    .rstn_rx_i ( host_pwr_on_rst_n            ),
+    .edge_o    ( car_adv_timer_events_sync[i] )
+  );
+end
+
+// System timer
+edge_propagator i_sync_sys_timer_lo_intr (
+  .clk_tx_i  ( periph_clk                 ),
+  .rstn_tx_i ( periph_rst_n               ),
+  .edge_i    ( car_sys_timer_lo_intr      ),
+  .clk_rx_i  ( host_clk                   ),
+  .rstn_rx_i ( host_pwr_on_rst_n          ),
+  .edge_o    ( car_sys_timer_lo_intr_sync )
+);
+
+edge_propagator i_sync_sys_timer_hi_intr (
+  .clk_tx_i  ( periph_clk                 ),
+  .rstn_tx_i ( periph_rst_n               ),
+  .edge_i    ( car_sys_timer_hi_intr      ),
+  .clk_rx_i  ( host_clk                   ),
+  .rstn_rx_i ( host_pwr_on_rst_n          ),
+  .edge_o    ( car_sys_timer_hi_intr_sync )
+);
+
+// Collect carfield peripheral interrupts to feed cheshire in the host domain
+assign car_periph_intrs = {
+  car_sys_timer_hi_intr_sync, // 1
+  car_sys_timer_lo_intr_sync, // 1
+  car_adv_timer_events_sync,  // 4
+  car_adv_timer_intrs_sync,   // 4
+  car_can_intr,               // 1
+  car_wdt_intrs               // 5
+};
+
+// Mailbox unit
+
 localparam int unsigned CheshireNumIntHarts = 1 + Cfg.DualCore;
-localparam int unsigned SafedNumIntHarts = 1;
-localparam int unsigned SecdNumIntHarts = 1;
-localparam int unsigned IntClusterNumIrq = 1;
-localparam int unsigned FPClusterNumIrq = 1;
+localparam int unsigned SafedNumIntHarts    = 1;
+localparam int unsigned SecdNumIntHarts     = 1;
+
+// TODO: Comment these constants: the name is not clear, I personally prefer to have raw numbers
+//localparam int unsigned IntClusterNumIrq    = 1;
+//localparam int unsigned FPClusterNumIrq     = 1;
 
 // Number of receiving side mailboxes per subsystem
-localparam int unsigned MailboxesHostd      = 4 * CheshireNumIntHarts;
-localparam int unsigned MailboxesFPCluster  =
-               spatz_cluster_pkg::NumCores * (CheshireNumIntHarts + SafedNumIntHarts);
-localparam int unsigned MailboxesIntCluster = CheshireNumIntHarts + SafedNumIntHarts;
-localparam int unsigned MailboxesSafed      = CheshireNumIntHarts + SecdNumIntHarts + IntClusterNumIrq + FPClusterNumIrq;
-localparam int unsigned MailboxesSecd       = CheshireNumIntHarts + SafedNumIntHarts;
-localparam int unsigned NumMailboxes = MailboxesHostd + MailboxesFPCluster + MailboxesIntCluster + MailboxesSafed + MailboxesSecd;
+// For Cheshire, 4 mailboxes for each application class processor
+localparam int unsigned NumMailboxesHostd      = 4 * CheshireNumIntHarts;
+localparam int unsigned NumMailboxesFPCluster  = spatz_cluster_pkg::NumCores * (CheshireNumIntHarts + SafedNumIntHarts);
+localparam int unsigned NumMailboxesIntCluster = CheshireNumIntHarts + SafedNumIntHarts;
+// For the safety island, consider host domain and security island, and one callback SW interrupt
+// from integer and floating point clusters
+localparam int unsigned NumMailboxesSafed      = CheshireNumIntHarts + SecdNumIntHarts + 1 + 1; //+ IntClusterNumIrq + FPClusterNumIrq;
+localparam int unsigned NumMailboxesSecd       = CheshireNumIntHarts + SafedNumIntHarts;
+localparam int unsigned NumMailboxes           = NumMailboxesHostd + NumMailboxesFPCluster + NumMailboxesIntCluster + NumMailboxesSafed + NumMailboxesSecd;
 // verilog_lint: waive-stop line-length
 
 // Interrupt lines
@@ -429,30 +521,6 @@ carfield_hw2reg_t car_regs_hw2reg;
 // pulp_cluster     (sw reset 3)
 // spatz_cluster    (sw reset 4)
 // shared_l2_memory (sw reset 5)
-
-logic    periph_rst_n;
-logic    safety_rst_n;
-logic    security_rst_n;
-logic    pulp_rst_n;
-logic    spatz_rst_n;
-logic    l2_rst_n;
-
-logic    host_pwr_on_rst_n;
-logic    periph_pwr_on_rst_n;
-logic    safety_pwr_on_rst_n;
-logic    security_pwr_on_rst_n;
-logic    pulp_pwr_on_rst_n;
-logic    spatz_pwr_on_rst_n;
-logic    l2_pwr_on_rst_n;
-
-logic  periph_clk;
-logic  safety_clk;
-logic  security_clk;
-logic  pulp_clk;
-logic  spatz_clk;
-logic  l2_clk;
-
-
 
 // Clock Multiplexing for each sub block
   localparam int unsigned DomainClkDivValueWidth = 24;
@@ -739,14 +807,37 @@ carfield_a32_d32_reg_rsp_t reg_wdt_rsp;
 carfield_axi_slv_req_t axi_mbox_req;
 carfield_axi_slv_rsp_t axi_mbox_rsp;
 
-/***************
-* Carfield IPs *
-***************/
+//////////////////
+// Carfield IPs //
+//////////////////
+
 // Cheshire SoC
 // Host Clock Domain
+
+// Interrupts
+logic [CarfieldNumExtIntrs-1:0]      chs_ext_intrs;
+logic [IntClusterNumEoc-1:0] pulpcl_eoc;
+
+// Edge-triggered interrupts from a different clock domain than cheshire (host clock domain) have
+// been synchronized already. Synchronization of level-sensitive interrupts is handled within the
+// module, before or inside the interrupt controller.
+assign chs_ext_intrs  = {
+  // tie unused to 0
+  {(CarfieldNumExtIntrs-21){1'b0}},
+  // System peripherals
+  car_periph_intrs,        // 16
+  // Mailboxes
+  secd_hostd_mbox_intr,    // 1
+  safed_hostd_mbox_intr,   // 1
+  spatzcl_hostd_mbox_intr, // 1
+  pulpcl_hostd_mbox_intr,  // 1
+  pulpcl_eoc               // from integer cluster
+};
+
 cheshire_wrap #(
   .Cfg                            ( Cfg                          ),
   .ExtHartinfo                    ( '0                           ),
+  .NumExtIntrs                    ( CarfieldNumExtIntrs          ),
   .cheshire_axi_ext_llc_ar_chan_t ( carfield_axi_llc_ar_chan_t   ),
   .cheshire_axi_ext_llc_aw_chan_t ( carfield_axi_llc_aw_chan_t   ),
   .cheshire_axi_ext_llc_b_chan_t  ( carfield_axi_llc_b_chan_t    ),
@@ -891,12 +982,13 @@ cheshire_wrap #(
   .ext_reg_async_slv_ack_o,
   .ext_reg_async_slv_data_i,
   // Interrupts from external devices
-  .intr_ext_i        ( /* TODO: connect me */ ),
+  .intr_ext_i        ( chs_ext_intrs ),
   // Interrupts to external harts
-  .meip_ext_o        ( /* TODO: connect me */ ),
-  .seip_ext_o        ( /* Unused */ ), // Unused
-  .mtip_ext_o        ( /* TODO: connect me */ ),
+  .meip_ext_o        ( /* Unused */ ),
+  .seip_ext_o        ( /* Unused */ ),
+  .mtip_ext_o        ( chs_mti      ),
   .msip_ext_o        ( /* Unused */ ), // We use mailboxes for this
+  .intr_distributed_o ( chs_intrs_distributed ),
   // Debug interface to external harts
   .dbg_active_o      (           ),
   .dbg_ext_req_o     (           ),
@@ -1068,13 +1160,52 @@ l2_wrap #(
 // Safety Island
 logic [SafetyIslandCfg.NumInterrupts-1:0] safed_intrs;
 
-assign safed_intrs  = {
-  59'h0,
-  spatzcl_safed_mbox_intr, // from spatzcl
-  pulpcl_safed_mbox_intr,  // from pulpcl
-  secd_safed_mbox_intr,    // from secd
-  hostd_safed_mbox_intr    // from hostd
+// Safety island interrupts from interrupt router
+logic [(NumIntIntrs+CarfieldNumExtIntrs)-1:0] safed_intrs_distributed;
+// Safety island edge-triggered interrupts and synchronized edge-triggered interrupts
+logic [CarfieldNumTimerIntrs-1:0] safed_edge_triggered_intrs, safed_edge_triggered_intrs_sync;
+// Safety island is the only external target for the router in carfield
+assign safed_intrs_distributed = chs_intrs_distributed[(NumIntIntrs+CarfieldNumExtIntrs)-1:0];
+
+// verilog_lint: waive-start line-length
+localparam int unsigned EdgeTriggeredIntrsOffset = NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd+
+                                                   CarfieldNumPeriphsIntrs-CarfieldNumTimerIntrs;
+assign safed_edge_triggered_intrs = safed_intrs_distributed[
+                                    EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs-1:
+                                    EdgeTriggeredIntrsOffset];
+
+// Propagate edge-triggered interrupts between host and safety_island clock domains. In carfield,
+// edge-triggered interrupts come from the system timer peripherals (`CarfieldNumTimerIntrs`
+// interrupt lines, see `carfield_pkg.sv`). Other interrupt lines are level-triggered.
+for (genvar i = 0; i < CarfieldNumTimerIntrs; i++) begin : gen_sync_safed_edge_triggered_intrs
+  edge_propagator i_sync_safed_edge_triggered_intrs (
+    .clk_tx_i  ( host_clk                           ),
+    .rstn_tx_i ( host_rst_n                         ),
+    .edge_i    ( safed_edge_triggered_intrs[i]      ),
+    .clk_rx_i  ( safety_clk                         ),
+    .rstn_rx_i ( safety_pwr_on_rst_n                ),
+    .edge_o    ( safed_edge_triggered_intrs_sync[i] )
+  );
+end
+
+// Collect interrupts for the safety island: private interrupts from mailboxes, shared interrupts
+// from the interrupt router.
+// verilog_lint: waive-start line-length
+assign safed_intrs = {
+  {(SafetyIslandCfg.NumInterrupts-(NumIntIntrs+CarfieldNumExtIntrs+NumMailboxesSafed)){1'b0}}, // Pad remaining interrupts
+  // Shared interrupts (cheshire and carfield's peripherals interrupts)
+  safed_intrs_distributed[(NumIntIntrs+CarfieldNumExtIntrs)-1:(EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs)], // Others up to CarfieldNumExtIntrs
+  safed_edge_triggered_intrs_sync, // Timer interrupts
+  safed_intrs_distributed[EdgeTriggeredIntrsOffset-1:(NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd)], // CAN, WDT interrupts
+  {(NumMailboxesHostd){1'b0}}, // Do not connect cheshire's mailbox interrupts
+  safed_intrs_distributed[(NumIntIntrs+IntClusterNumEoc)-1:0], // cheshire's peripherals, pulp cluster EOC
+  // Mailboxes
+  spatzcl_safed_mbox_intr, // 1
+  pulpcl_safed_mbox_intr,  // 1
+  secd_safed_mbox_intr,    // 1
+  hostd_safed_mbox_intr    // 1
 };
+// verilog_lint: waive-stop line-length
 
 safety_island_synth_wrapper #(
   .SafetyIslandCfg          ( SafetyIslandCfg            ),
@@ -1117,12 +1248,12 @@ safety_island_synth_wrapper #(
   .ref_clk_i              ( rt_clk_i                                 ),
   .rst_ni                 ( safety_rst_n                             ),
   .pwr_on_rst_ni          ( safety_pwr_on_rst_n                      ),
-  .test_enable_i          ( '0                                       ),
+  .test_enable_i          ( test_mode_i                              ),
   .bootmode_i             ( bootmode_safe_isln_i                     ),
   .fetch_en_i             ( car_regs_reg2hw.safety_island_fetch_enable ), // To SoC Bus
   .axi_isolate_i          ( slave_isolate_req [SafetyIslandSlvIdx]   ), // To SoC Bus
   .axi_isolated_o         ( master_isolated_rsp [SafetyIslandMstIdx] ),
-  .irqs_i                 ( '0                                       ),
+  .irqs_i                 ( safed_intrs                              ),
   .debug_req_o            (                                          ),
   .jtag_tck_i             ( jtag_safety_island_tck_i                 ),
   .jtag_trst_ni           ( jtag_safety_island_trst_ni               ),
@@ -1168,6 +1299,7 @@ safety_island_synth_wrapper #(
 logic pulpcl_mbox_intr;
 assign car_regs_hw2reg.pulp_cluster_eoc.de  = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
+assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
 
 pulp_cluster #(
   .NB_CORES                       ( IntClusterNumCores        ),
@@ -1220,7 +1352,7 @@ pulp_cluster #(
   .cluster_id_i                ( IntClusterIndex                           ),
   .en_sa_boot_i                ( car_regs_reg2hw.pulp_cluster_boot_enable  ),
   .fetch_en_i                  ( car_regs_reg2hw.pulp_cluster_fetch_enable ),
-  .eoc_o                       ( car_regs_hw2reg.pulp_cluster_eoc.d        ),
+  .eoc_o                       ( pulpcl_eoc                                ),
   .busy_o                      ( car_regs_hw2reg.pulp_cluster_busy.d       ),
   .axi_isolate_i               ( slave_isolate_req [IntClusterSlvIdx]      ),
   .axi_isolated_o              ( master_isolated_rsp [IntClusterMstIdx]    ),
@@ -1272,13 +1404,18 @@ pulp_cluster #(
 // Floating Point Spatz Cluster
 
 // Spatz cluster interrupts
-logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr, spatz_cl_mti;
+// msi (machine software interrupt): hostd, safed
+logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr;
+// mti (machine timer interrupt) : hostd (RISC-V clint)
+// verilog_lint: waive-start line-length
+logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr = { chs_mti[FPClusterIntrHart1Idx], chs_mti[FPClusterIntrHart0Idx] };
+// verilog_lint: waive-stop line-length
 
 spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth     ),
     .AxiDataWidth             ( Cfg.AxiDataWidth  ),
     .AxiUserWidth             ( Cfg.AxiUserWidth  ),
-    .AxiInIdWidth             ( AxiSlvIdWidth   ),
+    .AxiInIdWidth             ( AxiSlvIdWidth     ),
     .AxiOutIdWidth            ( Cfg.AxiMstIdWidth ),
     .LogDepth                 ( LogDepth ),
 
@@ -1317,14 +1454,14 @@ spatz_cluster_wrapper #(
     .clk_i           ( spatz_clk            ),
     .rst_ni          ( spatz_rst_n          ),
     .pwr_on_rst_ni   ( spatz_pwr_on_rst_n   ),
-    .testmode_i      ( 1'b0                 ), // TODO: connect
+    .testmode_i      ( test_mode_i          ),
     .scan_enable_i   ( 1'b0                 ),
     .scan_data_i     ( 1'b0                 ),
     .scan_data_o     (  /* Unused */        ),
-    .meip_i          ( '0 /* TODO: connect me */ ), // Needed?
+    .meip_i          ( '0 /* Unconnected */ ),
     .msip_i          ( spatzcl_mbox_intr         ),
-    .mtip_i          ( '0 /* TODO: connect me */ ), // from hostd
-    .debug_req_i     ( '0                   ),
+    .mtip_i          ( spatzcl_timer_intr        ),
+    .debug_req_i     ( '0 /* TODO: connect me */ ),
     //AXI Isolate
     .axi_isolate_i         ( slave_isolate_req [FPClusterSlvIdx]   ),
     .axi_isolated_o        ( master_isolated_rsp [FPClusterMstIdx] ),
@@ -1402,7 +1539,7 @@ secure_subsystem_synth_wrap #(
   .pwr_on_rst_ni    ( security_pwr_on_rst_n ),
   .fetch_en_i       ( car_regs_reg2hw.security_island_fetch_enable ),
   .bootmode_i       ( '0              ),
-  .test_enable_i    ( '0              ),
+  .test_enable_i    ( test_mode_i     ),
   .irq_ibex_i       ( secd_mbox_intr  ), // from hostd or safed
    // JTAG port
   .jtag_tck_i       ( jtag_ot_tck_i   ),
@@ -1502,7 +1639,7 @@ axi_to_axi_lite #(
 ) i_axi_to_axi_lite_mailbox (
   .clk_i     ( host_clk_i            ),
   .rst_ni    ( host_pwr_on_rst_n     ),
-  .test_i    ( '0                    ),
+  .test_i    ( test_mode_i           ),
   .slv_req_i ( axi_d32_mbox_req      ),
   .slv_resp_o( axi_d32_mbox_rsp      ),
   .mst_req_o ( axi_lite_d32_mbox_req ),
@@ -1905,8 +2042,8 @@ apb_timer_unit #(
   .ref_clk_i  ( rt_clk_i              ),
   .event_lo_i ( '0                    ),
   .event_hi_i ( '0                    ),
-  .irq_lo_o   ( /* TODO connect me */ ),
-  .irq_hi_o   ( /* TODO connect me */ ),
+  .irq_lo_o   ( car_sys_timer_lo_intr ),
+  .irq_hi_o   ( car_sys_timer_hi_intr ),
   .busy_o     ( /* TODO connect me */ )
 );
 
@@ -1927,12 +2064,12 @@ apb_adv_timer #(
   .PREADY          ( apb_mst_rsp[AdvancedTimerIdx].pready  ),
   .PSLVERR         ( apb_mst_rsp[AdvancedTimerIdx].pslverr ),
   .low_speed_clk_i ( rt_clk_i              ),
-  .ext_sig_i       ( /* TODO connect me */  ),
-  .events_o        ( /* TODO connect me */  ),
-  .ch_0_o          ( /* TODO connect me */  ),
-  .ch_1_o          ( /* TODO connect me */  ),
-  .ch_2_o          ( /* TODO connect me */  ),
-  .ch_3_o          ( /* TODO connect me */  )
+  .ext_sig_i       ( '0 /* TODO connect me */ ),
+  .events_o        ( car_adv_timer_events  ),
+  .ch_0_o          ( car_adv_timer_intrs   ),
+  .ch_1_o          ( ),
+  .ch_2_o          ( ),
+  .ch_3_o          ( )
 );
 
 // Watchdog timer
@@ -1995,14 +2132,14 @@ aon_timer i_watchdog_timer (
   .rst_aon_ni                ( periph_pwr_on_rst_n   ),
   .tl_i                      ( tl_wdt_req            ),
   .tl_o                      ( tl_wdt_rsp            ),
-  .alert_rx_i                ( '0                    ),
+  .alert_rx_i                ( '0                    ), // TODO: what are these for?
   .alert_tx_o                ( /* TODO connect me */ ),
   .lc_escalate_en_i          ( '0                    ),
-  .intr_wkup_timer_expired_o ( /* TODO connect me */ ),
-  .intr_wdog_timer_bark_o    ( /* TODO connect me */ ),
-  .nmi_wdog_timer_bark_o     ( /* TODO connect me */ ),
-  .wkup_req_o                ( /* TODO connect me */ ),
-  .aon_timer_rst_req_o       ( /* TODO connect me */ ),
+  .intr_wkup_timer_expired_o ( car_wdt_intrs[0] ),
+  .intr_wdog_timer_bark_o    ( car_wdt_intrs[1] ),
+  .nmi_wdog_timer_bark_o     ( car_wdt_intrs[2] ),
+  .wkup_req_o                ( car_wdt_intrs[3] ),
+  .aon_timer_rst_req_o       ( car_wdt_intrs[4] ),
   .sleep_mode_i              ( '0                    )
 );
 
@@ -2048,7 +2185,7 @@ can_top_apb #(
   .arstn            ( periph_pwr_on_rst_n    ),
   .scan_enable      ( 1'b0                   ),
   .res_n_out        (                        ),
-  .irq              ( /* TODO connect me */  ),
+  .irq              ( car_can_intr           ),
   .CAN_tx           ( can_tx_o               ),
   .CAN_rx           ( can_rx_i               ),
   .timestamp        ( can_timestamp          ),
@@ -2065,5 +2202,3 @@ can_top_apb #(
 );
 
 endmodule
-
-

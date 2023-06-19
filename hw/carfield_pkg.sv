@@ -14,6 +14,16 @@ package carfield_pkg;
 import cheshire_pkg::*;
 import safety_island_pkg::*;
 
+localparam int unsigned CarfieldNumExtIntrs           = 32; // Number of external interrupts
+localparam int unsigned CarfieldNumInterruptibleHarts = 2;  // Spatz (2 Snitch cores)
+localparam int unsigned CarfieldNumRouterTargets      = 1;  // Safety Island
+
+typedef enum int {
+  FPClusterIntrHart0Idx = 'd0,
+  FPClusterIntrHart1Idx = 'd1,
+  SafedIntrHartIdx      = 'd2
+} carfield_ext_intr_harts_e;
+
 typedef enum int {
   PeriphDomainIdx     = 'd0,
   SafedDomainIdx      = 'd1,
@@ -73,6 +83,13 @@ typedef enum doub_bt {
 } axi_end_t;
 
 // APB peripherals
+localparam int unsigned CarfieldNumTimerIntrs = 10; // 4 adv timer intrs, 4 adv timer events, 2 sys
+                                                    // timer intrs
+localparam int unsigned CarfieldNumWdtIntrs = 5;
+localparam int unsigned CarfieldNumCanIntrs = 1;
+localparam int unsigned CarfieldNumPeriphsIntrs = CarfieldNumTimerIntrs +
+                        CarfieldNumWdtIntrs + CarfieldNumCanIntrs;
+
 localparam int unsigned NumApbMst = 5;
 
 typedef enum int {
@@ -134,8 +151,6 @@ typedef enum doub_bt {
 localparam bit [3:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1;
 // Ext Masters: Integer Cluster + Security Island + Safety Island + Floating Point Cluster
 localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1 + 3'd1;
-// Ext Interrupts: Security Island Mailbox
-localparam bit [2:0] NumExtIntrs = 3'd1;
 
 // Safety island configuration
 localparam safety_island_cfg_t SafetyIslandCfg = '{
@@ -158,7 +173,7 @@ localparam safety_island_cfg_t SafetyIslandCfg = '{
     UseXPulp:           1,
     UseZfinx:           1,
     UseTCLS:            1,
-    NumInterrupts:      64,
+    NumInterrupts:      128,
     NumMhpmCounters:    1,
     // All non-set values should be zero
     default: '0
@@ -170,6 +185,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
   Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
   Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+  Cva6CLICNumInterruptSrc : 128,
+  Cva6CLICIntCtlBits      : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
   Cva6NrPMPEntries  : 0,
   Cva6ExtCieLength  : 'h1000_0000, // [0x2000_0000, 0x7000_0000) is non-CIE,
                                    // [0x7000_0000, 0x8000_0000) is CIE
@@ -178,6 +195,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   DualCore          : 0,  // Only one core, but rest of config allows for two
   CoreMaxTxns       : 8,
   CoreMaxTxnsPerId  : 4,
+  // External interrupts
+  NumExtIrqHarts    : CarfieldNumInterruptibleHarts,
+  NumExtRouterTargets : CarfieldNumRouterTargets,
   // Interconnect
   AddrWidth         : 48,
   AxiDataWidth      : 64,
@@ -230,8 +250,6 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, PadframeEnd,  PllEnd,  CarRegsEnd  },
   // RTC
   RtcFreq           : 32768,
-  // Ext Irq
-  NumExtIntrs       : NumExtIntrs,
   // Features
   Bootrom           : 1,
   Uart              : 1,
@@ -242,6 +260,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   SerialLink        : 1,
   Vga               : 1,
   AxiRt             : 1,
+  Clic              : 1,
+  IrqRouter         : 1,
   // Debug
   DbgIdCode         : CheshireIdCode,
   DbgMaxReqs        : 4,
@@ -343,6 +363,7 @@ localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterMaxUniqId = 1;
 localparam logic [ 5:0] IntClusterIndex = '0;
+localparam int unsigned IntClusterNumEoc = 1;
 
 /*******************************/
 /* Narrow Parameters: A32, D32 */
