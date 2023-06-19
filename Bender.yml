@@ -12,7 +12,7 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   rev: 2bb08879bc2ceabe2b6a0dc283753048a739e27b } # branch: main until newer version tag later than v0.4.0
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.9                        } # overridden in Bender.local to use axi-rt feature
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 9f0234c1a40cd332f2b502cbbb5f98bd242b29ba } # branch: main
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 3b773c80985294375421c8f8ad57c009c74b3d46 } # branch: aottaviano/cva6-clic
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 2adb7271438cdb96c19fbaf3e2a6bf89ffeee568 } # branch: lv/phys_in_use
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 08503a05307ef556ed5439619c70c039ff93d77a } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 60e768a3ef29f47339e31674d497293f5a768893 } # branch: atops
