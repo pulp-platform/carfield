@@ -17,6 +17,13 @@ TBENCH   ?= tb_carfield_soc
 BOOTMODE ?= 0 # default passive bootmode
 PRELMODE ?= 1 # default serial link preload
 VOPTARGS ?=
+# Interrupt configuration in cheshire
+# CLINT interruptible harts
+CLINTCORES     := 3
+# PLIC interruptible harts
+PLICCORES      := 6
+# PLIC number of input interrupts
+PLIC_NUM_INTRS := 128
 
 # Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
@@ -99,6 +106,18 @@ hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv: hw/regs/carfield_regs.h
 ## checked-in pregenerated register file RTL should be up-to-date. If you regenerate the regfile, do
 ## not forget to check in the generated RTL.
 regenerate_soc_regs: hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv
+
+## @section Carfield CLINT and PLIC interruptible harts configuration
+
+## The default configuration in cheshire allows for one interruptible hart. When the number of
+## external interruptible harts is updated in the cheshire cfg (cheshire_pkg.sv), we need to
+## regenerate the PLIC and CLINT accordingly.
+## CLINT: define CLINTCORES used in cheshire.mk before including the makefrag.
+## PLIC: edit the hjson configuration file in cheshire.
+.PHONY: update_plic
+update_plic: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
+	sed -i 's/src: .*/src: $(PLIC_NUM_INTRS),/' $<
+	sed -i 's/target: .*/target: $(PLICCORES),/' $<
 
 $(CAR_ROOT)/tb/hyp_vip:
 	rm -rf $@
