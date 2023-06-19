@@ -183,7 +183,11 @@ car-checkout-deps:
 .PHONY: car-checkout
 car-checkout: car-checkout-deps
 
+## @section Carfield initialization
 .PHONY: car-hw-init
+## Initialize carfield by generating cheshire and spatz registers and wrapper, respectively
+## This step takes care of the generation of the missing hardware, or an update of the configuration
+## of some IPs, such as the PLIC or CLINT.
 car-hw-init: spatz-hw-init chs-hw-init
 
 .PHONY: spatz-hw-init
@@ -191,22 +195,29 @@ spatz-hw-init:
 	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
 
 .PHONY: chs-hw-init
-chs-hw-init:
+## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
+## hardware.
+chs-hw-init: update_plic
 	$(MAKE) chs-hw-all
 
 .PHONY: chs-sim-init
+## Downloads verification IPs for SPI and I2C from cheshire and used by Carfield.
 chs-sim-init:
 	$(MAKE) chs-sim-all
 
 .PHONY: chs-sw-build
+## Builds the SW libraries in cheshire and generates an archive (`libcheshire.a`) available for
+## carfield as static library at link time.
 chs-sw-build:
 	$(MAKE) chs-sw-all
 
 .PHONY: car-sw-build
+## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
 car-sw-build: chs-sw-build
 	$(MAKE) car-sw-all
 
 .PHONY: car-init
+## Shortcut to initialize carfield with all the targets described above.
 car-init: car-checkout car-hw-init car-sim-init car-sw-build
 
 ############
