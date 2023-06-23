@@ -321,6 +321,27 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   default: '0
 };
 
+// Control which island to add (for FPGA)
+typedef struct packed {
+  bit     EnPulpCluster;
+  bit     EnSafetyIsland;
+  bit     EnSpatzCluster;
+  bit     EnOpenTitan;
+  bit     EnCan;
+  bit     EnEthernet;
+} islands_cfg_t;
+
+// Enable all islands by default
+localparam islands_cfg_t IslandsCfgDefault = '{
+  EnPulpCluster   : 1,
+  EnSafetyIsland  : 1,
+  EnSpatzCluster  : 1,
+  EnOpenTitan     : 1,
+  EnCan           : 1,
+  EnEthernet      : 1,
+  default         : '1
+};
+
 /*****************/
 /* L2 Parameters */
 /*****************/

@@ -9,10 +9,12 @@
 CAR_ROOT ?= .
 CHS_ROOT ?= $(CAR_ROOT)/cheshire
 CAR_SW_DIR := $(CAR_ROOT)/sw
+CAR_XIL_DIR := $(CAR_ROOT)/target/xilinx
 
 # Bender
 BENDER   ?= bender
 QUESTA   ?= questa-2022.3
+VIVADO   ?= vitis-2020.2 vivado
 TBENCH   ?= tb_carfield_soc
 BOOTMODE ?= 0 # default passive bootmode
 PRELMODE ?= 1 # default serial link preload
@@ -43,6 +45,7 @@ CHS_IMAGE    ?=
 # (the following includes are mandatory)
 include $(CAR_ROOT)/bender-common.mk
 include $(CAR_ROOT)/bender-synth.mk
+include $(CAR_ROOT)/bender-xilinx.mk
 
 # Setup Virtual Environment for python scripts (reggen)
 VENVDIR?=$(WORKDIR)/.venv
@@ -72,7 +75,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= c75d038822b71a7a52fb24f98d967f0bf1c7f3c6
+CAR_NONFREE_COMMIT ?= 3c2bf51894b699a49eb8e69e21ade567e1b28b49
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -237,6 +240,16 @@ SPYGLASS_DEFS += $(synth_defs)
 ## Run Spyglass Lint on the entire RTL
 lint:
 	$(MAKE) -C scripts lint bender_defs="$(SPYGLASS_DEFS)" bender_targs="$(SPYGLASS_TARGS)" > make.log
+
+#############
+# Emulation #
+#############
+
+include $(CAR_XIL_DIR)/xilinx.mk
+
+########
+# Help #
+########
 
 # Setup Autodocumentation of the Makefile
 HELP_TITLE="Carfield Open-Source RTL"

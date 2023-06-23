@@ -233,7 +233,7 @@ packages:
     dependencies:
     - common_cells
   fpu_interco:
-    revision: 0769976fa51bdd820656a01161a4c46b88c59ac5
+    revision: c985d54c2b078ddfbec8c2a498f453410bbdc93e
     version: null
     source:
       Git: https://github.com/pulp-platform/fpu_interco.git
@@ -371,7 +371,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: a746000f9dc9965e1351186905b59bca36edef57
+    revision: 314f9a04f8dad4a5eeb0b9e8ad84898c6dc3f81e
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -433,7 +433,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: 4eac53237c6d0062715d17016fe95462eb81ebc3
+    revision: 6187537f9994d16bad2d721c0f5ebc5193c0f010
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
