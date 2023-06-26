@@ -189,7 +189,7 @@ packages:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
     source:
-      Git: https://github.com/pulp-platform/common_verification.git
+      Git: https://github.com/pulp-platform/common_verification
     dependencies: []
   cv32e40p:
     revision: 9b77611a1d0c681f4819798d95422b0b895528a2
@@ -348,7 +348,7 @@ packages:
     - common_cells
     - common_verification
   opentitan:
-    revision: ed1e7f1d53e28de556a3b02bc1bd1b855f51af15
+    revision: cce5a6e0bacba31374109969adcd7abb0f70f7ec
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
@@ -371,7 +371,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: bd8182aaa33f2b0ac7bf924621f094a382d8ab17
+    revision: a746000f9dc9965e1351186905b59bca36edef57
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -433,7 +433,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: 4ceb402db8619718a9170058bb31f75fcdf7ed1c
+    revision: 4eac53237c6d0062715d17016fe95462eb81ebc3
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
@@ -486,7 +486,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: dbc4c442bd54a538bcafd0d62fec2b608a359dc3
+    revision: 05b01d6a0045496ad82d393355158e3b3438438e
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:spatz/spatz.git

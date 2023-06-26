@@ -152,9 +152,20 @@ localparam bit [3:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'
 // Ext Masters: Integer Cluster + Security Island + Safety Island + Floating Point Cluster
 localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1 + 3'd1;
 
+// Hart IDs
+typedef bit [5:0] hartid_t;
+
+typedef enum hartid_t {
+  ChsHartIdOffs       = 'd0 ,
+  OpnTitHartIdOffs    = 'd4 ,
+  SafetyIslHartIdOffs = 'd8 ,
+  SpatzHartIdOffs     = 'd16,
+  PulpHartIdOffs      = 'd32
+} hartid_offs_e;
+
 // Safety island configuration
 localparam safety_island_cfg_t SafetyIslandCfg = '{
-    HartId:             32'd8,
+    HartId:             SafetyIslHartIdOffs,
     BankNumBytes:       32'h0001_0000,
     // JTAG ID code:
     // LSB                        [0]:     1'h1
@@ -362,8 +373,8 @@ localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks)
 localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterMaxUniqId = 1;
-localparam logic [ 5:0] IntClusterIndex = '0;
 localparam int unsigned IntClusterNumEoc = 1;
+localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
 
 /*******************************/
 /* Narrow Parameters: A32, D32 */

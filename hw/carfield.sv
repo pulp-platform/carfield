@@ -1505,6 +1505,7 @@ spatz_cluster_wrapper #(
 logic secd_mbox_intr;
 
 secure_subsystem_synth_wrap #(
+  .HartIdOffs            ( OpnTitHartIdOffs           ),
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
   .AxiDataWidth          ( Cfg.AxiDataWidth           ),
   .AxiUserWidth          ( Cfg.AxiUserWidth           ),

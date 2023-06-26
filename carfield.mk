@@ -131,6 +131,7 @@ $(CAR_ROOT)/tb/hyp_vip:
 	cp model_tmp/exe_folder/S27ks0641/model/s27ks0641.v model_tmp/exe_folder/S27ks0641/model/s27ks0641_verilog.sdf $@
 	rm -rf model_tmp
 
+.PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
 	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" > $@
 	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
