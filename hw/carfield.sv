@@ -1302,7 +1302,6 @@ assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
 
 pulp_cluster #(
-  .HartIdOffs                     ( PulpHartIdOffs            ),
   .NB_CORES                       ( IntClusterNumCores        ),
   .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts    ),
   .NB_DMAS                        ( IntClusterNumDmas         ),

@@ -373,8 +373,8 @@ localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks)
 localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterMaxUniqId = 1;
-localparam logic [ 5:0] IntClusterIndex = '0;
 localparam int unsigned IntClusterNumEoc = 1;
+localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
 
 /*******************************/
 /* Narrow Parameters: A32, D32 */

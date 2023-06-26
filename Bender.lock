@@ -371,7 +371,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: a389cab95ac978ddeaeb557c7e8a311863e0de90
+    revision: a746000f9dc9965e1351186905b59bca36edef57
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -433,7 +433,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: 4ef49607a0093378d3f6dccce2e673178d6481af
+    revision: 4eac53237c6d0062715d17016fe95462eb81ebc3
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
@@ -486,7 +486,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: e947ee755579402e29d7faf919d175707e6d8ad9
+    revision: 05b01d6a0045496ad82d393355158e3b3438438e
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:spatz/spatz.git
