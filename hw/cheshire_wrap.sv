@@ -17,6 +17,7 @@ module cheshire_wrap
 #(
   parameter cheshire_cfg_t Cfg = '0,
   parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts)-1:0] ExtHartinfo = '0,
+  parameter int unsigned NumExtIntrs            = 32,
   parameter type cheshire_axi_ext_llc_ar_chan_t = logic,
   parameter type cheshire_axi_ext_llc_aw_chan_t = logic,
   parameter type cheshire_axi_ext_llc_b_chan_t  = logic,
@@ -262,12 +263,13 @@ module cheshire_wrap
   output logic                  [1:0] ext_reg_async_slv_ack_o,
   input  cheshire_reg_ext_rsp_t [1:0] ext_reg_async_slv_data_i,
   // Interrupts from external devices
-  input  logic [iomsb(Cfg.NumExtIntrs):0] intr_ext_i,
+  input  logic [iomsb(NumExtIntrs):0] intr_ext_i,
   // Interrupts to external harts
   output logic [iomsb(Cfg.NumExtIrqHarts):0] meip_ext_o,
   output logic [iomsb(Cfg.NumExtIrqHarts):0] seip_ext_o,
   output logic [iomsb(Cfg.NumExtIrqHarts):0] mtip_ext_o,
   output logic [iomsb(Cfg.NumExtIrqHarts):0] msip_ext_o,
+  output logic [iomsb(Cfg.NumExtRouterTargets*(NumExtIntrs+NumIntIntrs)):0] intr_distributed_o,
   // Debug interface to external harts
   output logic                               dbg_active_o,
   output logic [iomsb(Cfg.NumExtDbgHarts):0] dbg_ext_req_o,
@@ -352,6 +354,7 @@ end
 cheshire_soc #(
   .Cfg               ( Cfg                        ),
   .ExtHartinfo       ( '0                         ),
+  .NumExtIntrs       ( NumExtIntrs                ),
   .axi_ext_llc_req_t ( cheshire_axi_ext_llc_req_t ),
   .axi_ext_llc_rsp_t ( cheshire_axi_ext_llc_rsp_t ),
   .axi_ext_mst_req_t ( cheshire_axi_ext_mst_req_t ),
@@ -384,6 +387,7 @@ cheshire_soc #(
   .seip_ext_o,
   .mtip_ext_o,
   .msip_ext_o,
+  .intr_distributed_o,
   // Debug interface to external harts
   .dbg_active_o     ,
   .dbg_ext_req_o    ,

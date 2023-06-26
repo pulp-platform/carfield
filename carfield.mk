@@ -17,6 +17,13 @@ TBENCH   ?= tb_carfield_soc
 BOOTMODE ?= 0 # default passive bootmode
 PRELMODE ?= 1 # default serial link preload
 VOPTARGS ?=
+# Interrupt configuration in cheshire
+# CLINT interruptible harts
+CLINTCORES     := 3
+# PLIC interruptible harts
+PLICCORES      := 6
+# PLIC number of input interrupts
+PLIC_NUM_INTRS := 128
 
 # Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
@@ -100,6 +107,18 @@ hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv: hw/regs/carfield_regs.h
 ## not forget to check in the generated RTL.
 regenerate_soc_regs: hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv
 
+## @section Carfield CLINT and PLIC interruptible harts configuration
+
+## The default configuration in cheshire allows for one interruptible hart. When the number of
+## external interruptible harts is updated in the cheshire cfg (cheshire_pkg.sv), we need to
+## regenerate the PLIC and CLINT accordingly.
+## CLINT: define CLINTCORES used in cheshire.mk before including the makefrag.
+## PLIC: edit the hjson configuration file in cheshire.
+.PHONY: update_plic
+update_plic: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
+	sed -i 's/src: .*/src: $(PLIC_NUM_INTRS),/' $<
+	sed -i 's/target: .*/target: $(PLICCORES),/' $<
+
 $(CAR_ROOT)/tb/hyp_vip:
 	rm -rf $@
 	mkdir $@
@@ -164,7 +183,11 @@ car-checkout-deps:
 .PHONY: car-checkout
 car-checkout: car-checkout-deps
 
+## @section Carfield initialization
 .PHONY: car-hw-init
+## Initialize carfield by generating cheshire and spatz registers and wrapper, respectively
+## This step takes care of the generation of the missing hardware, or an update of the configuration
+## of some IPs, such as the PLIC or CLINT.
 car-hw-init: spatz-hw-init chs-hw-init
 
 .PHONY: spatz-hw-init
@@ -172,22 +195,29 @@ spatz-hw-init:
 	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
 
 .PHONY: chs-hw-init
-chs-hw-init:
+## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
+## hardware.
+chs-hw-init: update_plic
 	$(MAKE) chs-hw-all
 
 .PHONY: chs-sim-init
+## Downloads verification IPs for SPI and I2C from cheshire and used by Carfield.
 chs-sim-init:
 	$(MAKE) chs-sim-all
 
 .PHONY: chs-sw-build
+## Builds the SW libraries in cheshire and generates an archive (`libcheshire.a`) available for
+## carfield as static library at link time.
 chs-sw-build:
 	$(MAKE) chs-sw-all
 
 .PHONY: car-sw-build
+## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
 car-sw-build: chs-sw-build
 	$(MAKE) car-sw-all
 
 .PHONY: car-init
+## Shortcut to initialize carfield with all the targets described above.
 car-init: car-checkout car-hw-init car-sim-init car-sw-build
 
 ############

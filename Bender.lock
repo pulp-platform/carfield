@@ -126,7 +126,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 9f0234c1a40cd332f2b502cbbb5f98bd242b29ba
+    revision: 3b773c80985294375421c8f8ad57c009c74b3d46
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -136,11 +136,13 @@ packages:
     - axi_llc
     - axi_riscv_atomics
     - axi_vga
+    - clic
     - clint
     - common_cells
     - common_verification
     - cva6
     - idma
+    - irq_router
     - opentitan_peripherals
     - register_interface
     - riscv-dbg
@@ -149,7 +151,7 @@ packages:
     revision: bed98f88761ca86706c36c4c33ac600d88c42373
     version: null
     source:
-      Git: https://github.com/pulp-platform/clic.git
+      Git: https://github.com/pulp-platform/clic
     dependencies:
     - common_cells
     - register_interface
@@ -305,6 +307,15 @@ packages:
     - axi
     - common_cells
     - common_verification
+    - register_interface
+  irq_router:
+    revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/irq_router
+    dependencies:
+    - axi
+    - common_cells
     - register_interface
   l2_tcdm_hybrid_interco:
     revision: fa55e72859dcfb117a2788a77352193bef94ff2b
