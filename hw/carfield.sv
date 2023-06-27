@@ -1546,7 +1546,7 @@ secure_subsystem_synth_wrap #(
   .jtag_trst_n_i    ( jtag_ot_trst_ni ),
   .jtag_tdi_i       ( jtag_ot_tdi_i   ),
   .jtag_tdo_o       ( jtag_ot_tdo_o   ),
-  .jtag_tdo_oe_o    (                 ),
+  .jtag_tdo_oe_o    ( jtag_ot_tdo_oe_o),
    // Asynch axi port
   .async_axi_out_aw_data_o ( axi_mst_ext_aw_data [SecurityIslandMstIdx] ),
   .async_axi_out_aw_wptr_o ( axi_mst_ext_aw_wptr [SecurityIslandMstIdx] ),
