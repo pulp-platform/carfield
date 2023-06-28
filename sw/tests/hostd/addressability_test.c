@@ -6,9 +6,9 @@
 //
 
 #include "car_memory_map.h"
-#include "car_util.h"
 #include "dif/clint.h"
 #include "dif/uart.h"
+#include "io.h"
 #include "params.h"
 #include "regs/cheshire.h"
 #include "util.h"
@@ -41,9 +41,9 @@ int probe_range_direct(volatile uintptr_t from, volatile uintptr_t to, int sampl
     for (int i = 0; i < samples; i++) {
         // write
         uint32_t expected = 0xcafedead + 0xab + i;
-        axi_write(addr, expected);
+        writed(expected, addr);
         // read
-        if (expected != axi_read(addr))
+        if (expected != readd(addr))
             return 1;
         // increment
         addr += incr;
@@ -90,10 +90,10 @@ int probe_range_lfsr_wrwr(volatile uintptr_t from, volatile uintptr_t to, int sa
     for (int i = 0; i < samples; i++) {
         // write
         lfsr = lfsr_64bits(lfsr, lfsr_byte_feedback);
-        axi_write(addr, lfsr);
+        writed(lfsr, addr);
         asm volatile("fence" : : : "memory");
         // read
-        if (lfsr != axi_read(addr))
+        if (lfsr != readd(addr))
             return 1;
         // increment
         addr += incr;
@@ -114,7 +114,7 @@ int probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int sa
     for (int i = 0; i < samples; i++) {
         lfsr = lfsr_64bits(lfsr, lfsr_byte_feedback);
         // write
-        axi_write(addr, lfsr);
+        writed(lfsr, addr);
         // increment
         addr += incr;
     }
@@ -127,7 +127,7 @@ int probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int sa
     for (int i = 0; i < samples; i++) {
         lfsr = lfsr_64bits(lfsr, lfsr_byte_feedback);
         // read
-        if (lfsr != axi_read(addr))
+        if (lfsr != readd(addr))
             return 1;
         // increment
         addr += incr;
