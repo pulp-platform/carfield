@@ -5,12 +5,15 @@
 // Nicole Narr <narrn@student.ethz.ch>
 // Christopher Reinwardt <creinwar@student.ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
+// Robert Balas <balasr@iis.ee.ethz.ch>
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 //
 // This header provides information defined by hardware parameters, such as
 // the address map. In the future, it should be generated automatically as
 // part of the SoC generation process.
 
-#pragma once
+#ifndef __CAR_MEMORY_MAP_H
+#define __CAR_MEMORY_MAP_H
 
 // Base addresses provided at link time
 extern void *__base_l2;
@@ -46,14 +49,16 @@ extern void *__base_l2;
 #define CAR_HYPERRAM_END_ADDR  0x80800000
 
 // Peripheral devices
-#define CAR_ETHERNET_BASE_ADDR       0x20000000
-#define CAR_PERIPHS_BASE_ADDR        0x20001000
+#define CAR_PERIPHS_BASE_ADDR        0x20000000
 
-#define CAR_CAN_OFFSET               0x0000
-#define CAR_SYSTEM_TIMER_OFFSET      0x3000
-#define CAR_ADVANCED_TIMER_OFFSET    0x4000
-#define CAR_WATCHDOG_TIMER_OFFSET    0x6000
-#define CAR_HYPERBUS_CFG_OFFSET      0x8000
+#define CAR_ETHERNET_OFFSET          0x0000
+#define CAR_CAN_OFFSET               0x1000
+#define CAR_SYSTEM_TIMER_OFFSET      0x4000
+#define CAR_ADVANCED_TIMER_OFFSET    0x5000
+#define CAR_WATCHDOG_TIMER_OFFSET    0x7000
+#define CAR_HYPERBUS_CFG_OFFSET      0x9000
+#define CAR_PAD_CFG_OFFSET           0xa000
+#define CAR_SOC_CTRL_OFFSET         0x10000
 
 #define CAR_ETHERNET_BASE_ADDR       (CAR_PERIPHS_BASE_ADDR + CAR_ETHERNET_OFFSET)
 #define CAR_CAN_BASE_ADDR            (CAR_PERIPHS_BASE_ADDR + CAR_CAN_OFFSET)
@@ -61,5 +66,9 @@ extern void *__base_l2;
 #define CAR_ADVANCED_TIMER_BASE_ADDR (CAR_PERIPHS_BASE_ADDR + CAR_ADVANCED_TIMER_OFFSET)
 #define CAR_WATCHDOG_TIMER_BASE_ADDR (CAR_PERIPHS_BASE_ADDR + CAR_WATCHDOG_TIMER_OFFSET)
 #define CAR_HYPERBUS_CFG_BASE_ADDR   (CAR_PERIPHS_BASE_ADDR + CAR_HYPERBUS_CFG_OFFSET)
+#define CAR_PAD_CFG_BASE_ADDR        (CAR_PERIPHS_BASE_ADDR + CAR_PAD_CFG_OFFSET)
+#define CAR_SOC_CTRL_BASE_ADDR       (CAR_PERIPHS_BASE_ADDR + CAR_SOC_CTRL_OFFSET)
 
 #define CAR_MBOX_BASE_ADDR           0x40000000
+
+#endif /* __CAR_MEMORY_MAP_H */

@@ -99,6 +99,10 @@ hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv | venv
 hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv: hw/regs/carfield_regs.hjson | venv
 	$(VENV)/python utils/reggen/regtool.py -r $< --outdir $(dir $@)
 
+.PHONY: sw/include/regs/soc_ctrl.h
+sw/include/regs/soc_ctrl.h: hw/regs/carfield_regs.hjson | venv
+	$(VENV)/python utils/reggen/regtool.py -D $<  > $@
+
 ## @section Carfield SoC HW Generation
 .PHONY: regenerate_soc_regs
 ## Regenerate the toplevel SoC Control Register file from the CSV description of all registers in

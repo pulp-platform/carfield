@@ -63,8 +63,6 @@ module carfield
   output  logic                                       jtag_safety_island_tdo_o,
   // Secure Subsystem BOOT pins
   input   logic [1:0]                                 bootmode_ot_i,
-  // unused by safety island -- tdo pad always out mode
-  output  logic                                       jtag_safe_isln_tdo_oe_o,
   // Safety Island BOOT pins
   input   logic [1:0]                                 bootmode_safe_isln_i,
   // Host UART Interface
@@ -1548,7 +1546,7 @@ secure_subsystem_synth_wrap #(
   .jtag_trst_n_i    ( jtag_ot_trst_ni ),
   .jtag_tdi_i       ( jtag_ot_tdi_i   ),
   .jtag_tdo_o       ( jtag_ot_tdo_o   ),
-  .jtag_tdo_oe_o    (                 ),
+  .jtag_tdo_oe_o    ( jtag_ot_tdo_oe_o),
    // Asynch axi port
   .async_axi_out_aw_data_o ( axi_mst_ext_aw_data [SecurityIslandMstIdx] ),
   .async_axi_out_aw_wptr_o ( axi_mst_ext_aw_wptr [SecurityIslandMstIdx] ),
