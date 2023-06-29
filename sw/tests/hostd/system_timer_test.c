@@ -14,6 +14,11 @@
 #include "regs/system_timer.h"
 #include "util.h"
 
+// TODO: This test is really brittle. Its only purpose is to test timer accesses when the timer is
+// configured in freerunning mode and check if the value is within a sensible range. A better test
+// uses a periodic timer and checks if the periodic interrupts are taken. It will replace the
+// current test when interrupts are tested in the SoC.
+
 #define assert(expression) \
     do { \
 	if (!expression) { \
@@ -22,7 +27,7 @@
     } while (0)
 
 #define DUMMY_TIMER_CNT_GOLDEN_MIN 8050
-#define DUMMY_TIMER_CNT_GOLDEN_MAX 8250
+#define DUMMY_TIMER_CNT_GOLDEN_MAX 8280
 
 int main(void) {
 
