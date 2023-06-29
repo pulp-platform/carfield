@@ -1340,7 +1340,7 @@ pulp_cluster #(
   .AXI_ID_IN_WIDTH                ( IntClusterAxiIdInWidth    ),
   .AXI_ID_OUT_WIDTH               ( IntClusterAxiIdOutWidth   ),
   .LOG_DEPTH                      ( LogDepth                  ),
-  .BaseAddr                       ( IntClusterBase            )
+  .BaseAddr                       ( IntClusterBaseAddr        )
 ) i_integer_cluster            (
   .clk_i                       ( pulp_clk                                  ),
   .rst_ni                      ( pulp_rst_n                                ),
