@@ -375,6 +375,10 @@ localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
 localparam int unsigned IntClusterMaxUniqId = 1;
 localparam int unsigned IntClusterNumEoc = 1;
 localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
+localparam logic [CarfieldCfgDefault.AddrWidth-1:0] IntClusterInternalSize = 'h0040_0000;
+// verilog_lint: waive-start line-length
+localparam logic [CarfieldCfgDefault.AddrWidth-1:0] IntClusterBaseAddr = IntClusterBase - IntClusterIndex*IntClusterInternalSize;
+// verilog_lint: waive-stop line-length
 
 /*******************************/
 /* Narrow Parameters: A32, D32 */
