@@ -51,22 +51,22 @@ enum car_rst {
 #define X(NAME)                                                                \
     static inline uint32_t car_get_##NAME##_offset(enum car_rst rst)           \
     {                                                                          \
-        switch (rst) {                                                         \
-        case CAR_PERIPH_RST:                                                   \
-            return CARFIELD_PERIPH_##NAME##_REG_OFFSET;                        \
-        case CAR_SAFETY_RST:                                                   \
-            return CARFIELD_SAFETY_ISLAND_##NAME##_REG_OFFSET;                 \
-        case CAR_SECURITY_RST:                                                 \
-            return CARFIELD_SECURITY_ISLAND_##NAME##_REG_OFFSET;               \
-        case CAR_PULP_RST:                                                     \
-            return CARFIELD_PULP_CLUSTER_##NAME##_REG_OFFSET;                  \
-        case CAR_SPATZ_RST:                                                    \
-            return CARFIELD_SPATZ_CLUSTER_##NAME##_REG_OFFSET;                 \
-        case CAR_L2_RST:                                                       \
-            return CARFIELD_L2_##NAME##_REG_OFFSET;                            \
-        default:                                                               \
-            return -1;                                                         \
-        }                                                                      \
+	switch (rst) {                                                         \
+	case CAR_PERIPH_RST:                                                   \
+	    return CARFIELD_PERIPH_##NAME##_REG_OFFSET;                        \
+	case CAR_SAFETY_RST:                                                   \
+	    return CARFIELD_SAFETY_ISLAND_##NAME##_REG_OFFSET;                 \
+	case CAR_SECURITY_RST:                                                 \
+	    return CARFIELD_SECURITY_ISLAND_##NAME##_REG_OFFSET;               \
+	case CAR_PULP_RST:                                                     \
+	    return CARFIELD_PULP_CLUSTER_##NAME##_REG_OFFSET;                  \
+	case CAR_SPATZ_RST:                                                    \
+	    return CARFIELD_SPATZ_CLUSTER_##NAME##_REG_OFFSET;                 \
+	case CAR_L2_RST:                                                       \
+	    return CARFIELD_L2_##NAME##_REG_OFFSET;                            \
+	default:                                                               \
+	    return -1;                                                         \
+	}                                                                      \
     }
 
 X(RST);
@@ -78,22 +78,22 @@ X(ISOLATE_STATUS);
 #define X(NAME)                                                                \
     static inline uint32_t car_get_##NAME##_offset(enum car_clk clk)           \
     {                                                                          \
-        switch (clk) {                                                         \
-        case CAR_HOST_CLK:                                                     \
-            return CARFIELD_HOST_##NAME##_REG_OFFSET;                          \
-        case CAR_PERIPH_CLK:                                                   \
-            return CARFIELD_PERIPH_##NAME##_REG_OFFSET;                        \
-        case CAR_SAFETY_CLK:                                                   \
-            return CARFIELD_SAFETY_ISLAND_##NAME##_REG_OFFSET;                 \
-        case CAR_SECURITY_CLK:                                                 \
-            return CARFIELD_SECURITY_ISLAND_##NAME##_REG_OFFSET;               \
-        case CAR_SPATZ_CLK:                                                    \
-            return CARFIELD_SPATZ_CLUSTER_##NAME##_REG_OFFSET;                 \
-        case CAR_L2_CLK:                                                       \
-            return CARFIELD_L2_##NAME##_REG_OFFSET;                            \
-        default:                                                               \
-            return -1;                                                         \
-        }                                                                      \
+	switch (clk) {                                                         \
+	case CAR_HOST_CLK:                                                     \
+	    return CARFIELD_HOST_##NAME##_REG_OFFSET;                          \
+	case CAR_PERIPH_CLK:                                                   \
+	    return CARFIELD_PERIPH_##NAME##_REG_OFFSET;                        \
+	case CAR_SAFETY_CLK:                                                   \
+	    return CARFIELD_SAFETY_ISLAND_##NAME##_REG_OFFSET;                 \
+	case CAR_SECURITY_CLK:                                                 \
+	    return CARFIELD_SECURITY_ISLAND_##NAME##_REG_OFFSET;               \
+	case CAR_SPATZ_CLK:                                                    \
+	    return CARFIELD_SPATZ_CLUSTER_##NAME##_REG_OFFSET;                 \
+	case CAR_L2_CLK:                                                       \
+	    return CARFIELD_L2_##NAME##_REG_OFFSET;                            \
+	default:                                                               \
+	    return -1;                                                         \
+	}                                                                      \
     }
 
 X(CLK_EN);
@@ -105,17 +105,17 @@ static inline enum car_clk car_clkd_from_rstd(enum car_rst rst)
 {
     switch (rst) {
     case CAR_PERIPH_RST:
-        return CAR_PERIPH_CLK;
+	return CAR_PERIPH_CLK;
     case CAR_SAFETY_RST:
-        return CAR_SAFETY_CLK;
+	return CAR_SAFETY_CLK;
     case CAR_SECURITY_RST:
-        return CAR_SECURITY_CLK;
+	return CAR_SECURITY_CLK;
     case CAR_PULP_RST:
-        return CAR_PULP_CLK;
+	return CAR_PULP_CLK;
     case CAR_SPATZ_RST:
-        return CAR_SPATZ_CLK;
+	return CAR_SPATZ_CLK;
     case CAR_L2_RST:
-        return CAR_L2_CLK;
+	return CAR_L2_CLK;
     }
 }
 
@@ -124,8 +124,8 @@ void car_set_isolate(enum car_rst rst, enum car_isolation_status status)
     writew(status, CAR_SOC_CTRL_BASE_ADDR + car_get_ISOLATE_offset(rst));
     fence();
     while (readw(CAR_SOC_CTRL_BASE_ADDR + car_get_ISOLATE_STATUS_offset(rst)) !=
-           status)
-        ;
+	   status)
+	;
 }
 
 void car_enable_clk(enum car_clk clk)
@@ -153,11 +153,63 @@ void car_reset_domain(enum car_rst rst)
 
     car_set_rst(rst, CAR_RST_ASSERT);
     for (volatile int i = 0; i < 16; i++)
-        ;
+	;
     car_set_rst(rst, CAR_RST_RELEASE);
 
     car_enable_clk(car_clkd_from_rstd(rst));
     car_set_isolate(rst, CAR_ISOLATE_DISABLE);
+}
+
+// Safety Island offload
+void prepare_safed_boot () {
+
+	// Select bootmode
+	volatile uintptr_t *bootmode_addr = (uintptr_t*)CAR_SAFETY_ISLAND_BOOTMODE_ADDR;
+	writew(1, bootmode_addr);
+
+	// Write entry point into boot address
+	volatile uintptr_t *bootaddr_addr = (uintptr_t*)CAR_SAFETY_ISLAND_BOOTADDR_ADDR;
+	writew(CAR_SAFETY_ISLAND_ENTRY_POINT, bootaddr_addr);
+
+	// Assert fetch enable
+	volatile uintptr_t *fetchen_addr = (uintptr_t*)CAR_SAFETY_ISLAND_FETCHEN_ADDR;
+	writew(1, fetchen_addr);
+
+}
+
+uint32_t poll_safed_corestatus () {
+
+	volatile uint32_t corestatus;
+	volatile uintptr_t *corestatus_addr = (uintptr_t*)CAR_SAFETY_ISLAND_CORESTATUS_ADDR;
+	// TODO: Add a timeut to not poll indefinitely
+	while (((uint32_t)readw(corestatus_addr) & 0x80000000) == 0) {
+	    corestatus = (uint32_t) readw(corestatus_addr);
+	}
+
+	corestatus = (uint32_t) readw(corestatus_addr);
+
+	return corestatus;
+}
+
+uint32_t safed_offloader_blocking () {
+
+	uint32_t ret = 0;
+
+	// Load binary payload
+	load_safed_payload();
+
+	// Select bootmode, write entry point, write launch signal
+	prepare_safed_boot();
+
+	// Poll status register
+	volatile uint32_t corestatus = poll_safed_corestatus();
+
+	// Check core status. Return safed exit code to signal an error in the execution.
+	if ((corestatus & 0x7FFFFFFF) != 0) {
+	    ret = ESAFEDEXEC;
+	}
+
+	return ret;
 }
 
 #endif
