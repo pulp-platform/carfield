@@ -187,7 +187,7 @@ logic                                                      car_can_intr;
 for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_intrs
   edge_propagator i_sync_adv_timer_intrs (
     .clk_tx_i  ( periph_clk                  ),
-    .rstn_tx_i ( periph_rst_n                ),
+    .rstn_tx_i ( periph_pwr_on_rst_n         ),
     .edge_i    ( car_adv_timer_intrs[i]      ),
     .clk_rx_i  ( host_clk_i                  ),
     .rstn_rx_i ( host_pwr_on_rst_n           ),
@@ -198,7 +198,7 @@ end
 for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_events
   edge_propagator i_sync_adv_timer_events (
     .clk_tx_i  ( periph_clk                   ),
-    .rstn_tx_i ( periph_rst_n                 ),
+    .rstn_tx_i ( periph_pwr_on_rst_n          ),
     .edge_i    ( car_adv_timer_events[i]      ),
     .clk_rx_i  ( host_clk_i                   ),
     .rstn_rx_i ( host_pwr_on_rst_n            ),
@@ -209,7 +209,7 @@ end
 // System timer
 edge_propagator i_sync_sys_timer_lo_intr (
   .clk_tx_i  ( periph_clk                 ),
-  .rstn_tx_i ( periph_rst_n               ),
+  .rstn_tx_i ( periph_pwr_on_rst_n        ),
   .edge_i    ( car_sys_timer_lo_intr      ),
   .clk_rx_i  ( host_clk_i                 ),
   .rstn_rx_i ( host_pwr_on_rst_n          ),
@@ -218,7 +218,7 @@ edge_propagator i_sync_sys_timer_lo_intr (
 
 edge_propagator i_sync_sys_timer_hi_intr (
   .clk_tx_i  ( periph_clk                 ),
-  .rstn_tx_i ( periph_rst_n               ),
+  .rstn_tx_i ( periph_pwr_on_rst_n        ),
   .edge_i    ( car_sys_timer_hi_intr      ),
   .clk_rx_i  ( host_clk_i                 ),
   .rstn_rx_i ( host_pwr_on_rst_n          ),
