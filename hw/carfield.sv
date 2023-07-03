@@ -1495,7 +1495,7 @@ spatz_cluster_wrapper #(
    .async_axi_out_r_data_i  ( axi_mst_ext_r_data  [FPClusterMstIdx] ),
    .async_axi_out_r_wptr_i  ( axi_mst_ext_r_wptr  [FPClusterMstIdx] ),
    .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [FPClusterMstIdx] ),
-   .cluster_probe_o (        )
+   .cluster_probe_o         ( car_regs_hw2reg.spatz_cluster_busy.d  )
   );
 
 // Security Island

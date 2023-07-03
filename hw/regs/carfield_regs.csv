@@ -56,6 +56,7 @@ SECURITY_ISLAND_BOOT_ADDR,32,rw,hro,0,0x70000000,Security Island boot address
 PULP_CLUSTER_BOOT_ADDR,32,rw,hro,0,0x70000000,PULP Cluster boot address
 SPATZ_CLUSTER_BOOT_ADDR,32,rw,hro,0,0x70000000,Spatz Cluster boot address
 PULP_CLUSTER_BOOT_ENABLE,1,rw,hro,0,0,PULP Cluster boot enable
+SPATZ_CLUSTER_BUSY,1,ro,hrw,0,0,Spatz Cluster busy
 PULP_CLUSTER_BUSY,1,ro,hrw,0,0,PULP Cluster busy
 PULP_CLUSTER_EOC,1,ro,hrw,0,0,PULP Cluster end of computation
 L2_SRAM_CONFIG0,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
