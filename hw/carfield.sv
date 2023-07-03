@@ -187,9 +187,9 @@ logic                                                      car_can_intr;
 for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_intrs
   edge_propagator i_sync_adv_timer_intrs (
     .clk_tx_i  ( periph_clk                  ),
-    .rstn_tx_i ( periph_rst_n                ),
+    .rstn_tx_i ( periph_pwr_on_rst_n         ),
     .edge_i    ( car_adv_timer_intrs[i]      ),
-    .clk_rx_i  ( host_clk                    ),
+    .clk_rx_i  ( host_clk_i                  ),
     .rstn_rx_i ( host_pwr_on_rst_n           ),
     .edge_o    ( car_adv_timer_intrs_sync[i] )
   );
@@ -198,9 +198,9 @@ end
 for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_events
   edge_propagator i_sync_adv_timer_events (
     .clk_tx_i  ( periph_clk                   ),
-    .rstn_tx_i ( periph_rst_n                 ),
+    .rstn_tx_i ( periph_pwr_on_rst_n          ),
     .edge_i    ( car_adv_timer_events[i]      ),
-    .clk_rx_i  ( host_clk                     ),
+    .clk_rx_i  ( host_clk_i                   ),
     .rstn_rx_i ( host_pwr_on_rst_n            ),
     .edge_o    ( car_adv_timer_events_sync[i] )
   );
@@ -209,18 +209,18 @@ end
 // System timer
 edge_propagator i_sync_sys_timer_lo_intr (
   .clk_tx_i  ( periph_clk                 ),
-  .rstn_tx_i ( periph_rst_n               ),
+  .rstn_tx_i ( periph_pwr_on_rst_n        ),
   .edge_i    ( car_sys_timer_lo_intr      ),
-  .clk_rx_i  ( host_clk                   ),
+  .clk_rx_i  ( host_clk_i                 ),
   .rstn_rx_i ( host_pwr_on_rst_n          ),
   .edge_o    ( car_sys_timer_lo_intr_sync )
 );
 
 edge_propagator i_sync_sys_timer_hi_intr (
   .clk_tx_i  ( periph_clk                 ),
-  .rstn_tx_i ( periph_rst_n               ),
+  .rstn_tx_i ( periph_pwr_on_rst_n        ),
   .edge_i    ( car_sys_timer_hi_intr      ),
-  .clk_rx_i  ( host_clk                   ),
+  .clk_rx_i  ( host_clk_i                 ),
   .rstn_rx_i ( host_pwr_on_rst_n          ),
   .edge_o    ( car_sys_timer_hi_intr_sync )
 );
@@ -1177,8 +1177,8 @@ assign safed_edge_triggered_intrs = safed_intrs_distributed[
 // interrupt lines, see `carfield_pkg.sv`). Other interrupt lines are level-triggered.
 for (genvar i = 0; i < CarfieldNumTimerIntrs; i++) begin : gen_sync_safed_edge_triggered_intrs
   edge_propagator i_sync_safed_edge_triggered_intrs (
-    .clk_tx_i  ( host_clk                           ),
-    .rstn_tx_i ( host_rst_n                         ),
+    .clk_tx_i  ( host_clk_i                         ),
+    .rstn_tx_i ( host_pwr_on_rst_n                  ),
     .edge_i    ( safed_edge_triggered_intrs[i]      ),
     .clk_rx_i  ( safety_clk                         ),
     .rstn_rx_i ( safety_pwr_on_rst_n                ),
@@ -1195,7 +1195,6 @@ assign safed_intrs = {
   safed_intrs_distributed[(NumIntIntrs+CarfieldNumExtIntrs)-1:(EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs)], // Others up to CarfieldNumExtIntrs
   safed_edge_triggered_intrs_sync, // Timer interrupts
   safed_intrs_distributed[EdgeTriggeredIntrsOffset-1:(NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd)], // CAN, WDT interrupts
-  {(NumMailboxesHostd){1'b0}}, // Do not connect cheshire's mailbox interrupts
   safed_intrs_distributed[(NumIntIntrs+IntClusterNumEoc)-1:0], // cheshire's peripherals, pulp cluster EOC
   // Mailboxes
   spatzcl_safed_mbox_intr, // 1
