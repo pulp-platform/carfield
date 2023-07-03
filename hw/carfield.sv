@@ -1195,7 +1195,6 @@ assign safed_intrs = {
   safed_intrs_distributed[(NumIntIntrs+CarfieldNumExtIntrs)-1:(EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs)], // Others up to CarfieldNumExtIntrs
   safed_edge_triggered_intrs_sync, // Timer interrupts
   safed_intrs_distributed[EdgeTriggeredIntrsOffset-1:(NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd)], // CAN, WDT interrupts
-  {(NumMailboxesHostd){1'b0}}, // Do not connect cheshire's mailbox interrupts
   safed_intrs_distributed[(NumIntIntrs+IntClusterNumEoc)-1:0], // cheshire's peripherals, pulp cluster EOC
   // Mailboxes
   spatzcl_safed_mbox_intr, // 1
