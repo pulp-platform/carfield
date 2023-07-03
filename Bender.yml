@@ -17,7 +17,7 @@ dependencies:
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 4239b2a510d65aa110bcc8a070e434cabd1a8b9a } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 60e768a3ef29f47339e31674d497293f5a768893 } # branch: atops
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: a746000f9dc9965e1351186905b59bca36edef57 } # branch: yt/carfield-integration
-  opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: cce5a6e0bacba31374109969adcd7abb0f70f7ec } # branch: yt/hartid
+  opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: 5ce64a6225e971c1e00ece29aa485f23a31aa7b2 } # branch: carfield
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             version: 1.1.0                                }
   apb:                { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }

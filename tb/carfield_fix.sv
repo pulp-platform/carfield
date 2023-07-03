@@ -380,11 +380,11 @@ module carfield_soc_fixture;
      };
      //dm_ot::dtm_op_status_e op;
      automatic int dmi_wait_cycles = 10;
-     $info(" JTAG Preloading start time");
+     $display("[JTAG SECD] JTAG Preloading Starting");
      jtag_secd_dbg.wait_idle(300);
      jtag_secd_dbg.get_idcode(idcode);
      // Check Idcode
-     $display(" IDCode = %h", idcode);
+     $display("[JTAG SECD] IDCode = %h", idcode);
      // Activate Debug Module
      jtag_secd_dbg.write_dmi(dm_ot::DMControl, 32'h0000_0001);
      do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
@@ -405,22 +405,23 @@ module carfield_soc_fixture;
      jtag_secd_dbg.write_dmi(dm_ot::SBCS, sbcs);
      do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
      while (sbcs.sbbusy);
-     $display("======== Preload data to Secd SRAM ========");
      // Start writing to SRAM
      foreach (secd_sections[addr]) begin
-       $display("Writing %h with %0d words", addr << 2, secd_sections[addr]); // word = 8 bytes here
+       $display("[JTAG SECD] Writing %h with %0d words", addr << 2, secd_sections[addr]); // word = 8 bytes here
        jtag_secd_dbg.write_dmi(dm_ot::SBAddress0, (addr << 2));
        do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
        while (sbcs.sbbusy);
        for (int i = 0; i < secd_sections[addr]; i++) begin
-         $display(" -- Word %0d/%0d", i, secd_sections[addr]);
+         if (i%100 == 0)
+           $display("[JTAG SECD] loading: %0d/100%%", i*100/secd_sections[addr]);
          jtag_secd_dbg.write_dmi(dm_ot::SBData0, secd_memory[addr + i]);
          // Wait until SBA is free to write next 32 bits
          do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
          while (sbcs.sbbusy);
        end
+       $display("[JTAG SECD] loading: 100/100%%");
      end
-    $display("======== Preloading finished ========");
+    $display("[JTAG SECD] Preloading finished");
     // Preloading finished. Can now start executing
     sbcs.sbreadonaddr = 0;
     sbcs.sbreadondata = 0;
@@ -440,7 +441,7 @@ module carfield_soc_fixture;
     };
     //dm_ot::dtm_op_status_e op;
     automatic int dmi_wait_cycles = 10;
-    $info("======== Waking up Secd using JTAG ========");
+    $display("[JTAG SECD] Waking up Secd");
     // Initialize the dm module again, otherwise it will not work
     debug_secd_module_init();
     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
@@ -473,7 +474,7 @@ module carfield_soc_fixture;
     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs, dmi_wait_cycles);
 
     while (sbcs.sbbusy);
-    $info("======== Wait for Completion ========");
+    $display("[JTAG SECD] Wait for Completion");
   endtask
 
   task load_secd_binary;
@@ -483,12 +484,12 @@ module carfield_soc_fixture;
 
     // Read ELF
     void'(read_elf(binary));
-    $display("Reading %s", binary);
+    $display("[JTAG SECD] Reading %s", binary);
 
     while (get_section(section_addr, section_len)) begin
       // Read Sections
       automatic int num_words = (section_len + AxiWideBeWidth_ib - 1)/AxiWideBeWidth_ib;
-      $display("Reading section %x with %0d words", section_addr, num_words);
+      $display("[JTAG SECD] Reading section %x with %0d words", section_addr, num_words);
 
       secd_sections[section_addr >> AxiWideByteOffset_ib] = num_words;
       buffer = new[num_words * AxiWideBeWidth_ib];

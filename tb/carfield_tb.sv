@@ -52,6 +52,8 @@ module tb_carfield_soc;
         0: begin      // JTAG
           // Security Island
           if (secd_preload_elf != "") begin
+            repeat(10000)
+              @(posedge fix.clk);
             fix.debug_secd_module_init();
             fix.load_secd_binary(secd_preload_elf);
             fix.jtag_secd_data_preload();

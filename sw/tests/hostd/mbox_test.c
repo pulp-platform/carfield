@@ -25,22 +25,15 @@ int main(int argc, char const *argv[]) {
     asm volatile("csrw  mstatus, %0\n" : : "r"(global_irq_en  ));     // Set global interrupt enable in CVA6 csr
     asm volatile("csrw  mie, %0\n"     : : "r"(external_irq_en));     // Set external interrupt enable in CVA6 csr
     // PLIC setup
-    mmio_region_t plic_base_addr = mmio_region_from_addr(0x04000000);
+    mmio_region_t plic_base_addr = mmio_region_from_addr(0x03008000);
     t = dif_rv_plic_init(plic_base_addr, &plic0);
     t = dif_rv_plic_irq_set_priority(&plic0, mbox_id, prio);
     t = dif_rv_plic_irq_set_enabled(&plic0, mbox_id, 0, kDifToggleEnabled);
-    writed(0xBAADC0DE, 0x40000008);
-    writed(0xBAADC0DE, 0x40000010);
-    writed(0xBAADC0DE, 0x40000014);
-    writed(0xBAADC0DE, 0x40000018);
-    writed(0xBAADC0DE, 0x4000001C);
-    a = readd(0x40000008);
-    b = readd(0x40000010);
-    c = readd(0x40000014);
-    d = readd(0x40000018);
-    e = readd(0x4000001C);
-    if( a == 0xBAADC0DE && b == 0xBAADC0DE && c == 0xBAADC0DE && d == 0xBAADC0DE && e == 0xBAADC0DE)
-	writed(0x00000001, 0x40000020);    // ring doorbell if mailbox is accessible
+    writed(0xBAADC0DE, 0x40000B80);
+    a = readd(0x40000B80);
+    if( a == 0xBAADC0DE )
+      writed(0x00000001, 0x40000B04);    // ring doorbell if mailbox is accessible
+      writed(0x00000001, 0x40000B0c);
     wfi();
     return 0;
 }
