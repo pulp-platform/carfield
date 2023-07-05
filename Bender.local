@@ -14,3 +14,4 @@ overrides:
   scm:                  { git: "https://github.com/pulp-platform/scm.git"                 , rev: f7b51416f3c407e4c31e9c016616d57aae2687bd   }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
   obi:                  { git: "https://github.com/pulp-platform/obi.git"                 , rev: c54a7374bce9f4239c07f950ced339af926b5ff8   } # branch: atops
+  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git"        , version: =1.30.0                                }
