@@ -216,12 +216,12 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // Interconnect
   AddrWidth         : 48,
   AxiDataWidth      : 64,
-  AxiUserWidth      : 2,  // Convention: bit 0 for core(s), bit 1 for serial link
+  AxiUserWidth      : 3,  // {CACHE_PARTITIONING(8?), ECC_ERROR(1), ATOPS(3)}
   AxiMstIdWidth     : 2,
   AxiMaxMstTrans    : 8,
   AxiMaxSlvTrans    : 8,
-  AxiUserAmoMsb     : 1,
-  AxiUserAmoLsb     : 0,
+  AxiUserAmoMsb     : 2, // A0:000, A1:001, SF:010, FP:011, SL:1XX
+  AxiUserAmoLsb     : 0, // A0:000, A1:001, SF:010, FP:011, SL:1XX
   RegMaxReadTxns    : 8,
   RegMaxWriteTxns   : 8,
   RegAmoNumCuts     : 1,
@@ -277,6 +277,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiRt             : 1,
   Clic              : 1,
   IrqRouter         : 1,
+  BusErr            : 1,
   // Debug
   DbgIdCode         : CheshireIdCode,
   DbgMaxReqs        : 4,
@@ -310,7 +311,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   SlinkRegionEnd    : 'h2_0000_0000,
   SlinkTxAddrMask   : 'hFFFF_FFFF,
   SlinkTxAddrDomain : 'h0000_0000,
-  SlinkUserAmoBit   : 1,  // Upper atomics bit for serial link
+  SlinkUserAmoBit   : 2,  // Upper atomics bit for serial link
   // DMA config
   DmaConfMaxReadTxns  : 4,
   DmaConfMaxWriteTxns : 4,
