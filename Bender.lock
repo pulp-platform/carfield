@@ -126,7 +126,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 3b773c80985294375421c8f8ad57c009c74b3d46
+    revision: e5fc1ea4035cbb99a32c7d49f39745861df1c152
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -151,7 +151,7 @@ packages:
     revision: bed98f88761ca86706c36c4c33ac600d88c42373
     version: null
     source:
-      Git: https://github.com/pulp-platform/clic
+      Git: https://github.com/pulp-platform/clic.git
     dependencies:
     - common_cells
     - register_interface
@@ -477,8 +477,8 @@ packages:
     dependencies:
     - tech_cells_generic
   serial_link:
-    revision: f79be97dbd96707b822dd6c2ed7ca87b54bd4378
-    version: 1.0.1
+    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
+    version: 1.1.0
     source:
       Git: https://github.com/pulp-platform/serial_link
     dependencies:
