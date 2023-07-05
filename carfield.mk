@@ -72,11 +72,11 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 5b6b7ed7c08ec079a6725f6b2c3ddf69fea3ba16
+CAR_NONFREE_COMMIT ?= c75d038822b71a7a52fb24f98d967f0bf1c7f3c6
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
-	git clone $(CAR_NONFREE_REMOTE) nonfree
+	git clone $(CAR_NONFREE_REMOTE) $(CAR_ROOT)/nonfree
 	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
 	cd nonfree/intel16 && icdesign intel16 -update all -nogui
 
@@ -144,8 +144,7 @@ scripts/carfield_compile.tcl:
 car-sim-init: chs-sim-init $(CAR_ROOT)/tb/hyp_vip scripts/carfield_compile.tcl
 
 ## @section Carfield SoC Simulation
-## Compile the Carfield RTL using Questasim. In order to compile the TB you first have to run the
-## car-nonfree-init target.
+## Compile the Carfield RTL using Questasim.
 car-hw-build: car-sim-init
 	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
 
