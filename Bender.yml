@@ -62,6 +62,15 @@ sources:
     files:
       - target/synth/carfield_synth_wrap.sv
 
+  - target: intel16_elab_only
+    files:
+      - nonfree/intel16/sourcecode/tc_clk.sv
+      - nonfree/intel16/sourcecode/tc_sram.sv
+      - nonfree/intel16/sourcecode/tc_pads.sv
+      - nonfree/intel16/sourcecode/generic_delay_D4_O1_3P750_CG0.sv
+      - nonfree/intel16/sourcecode/tc_sram_impl.sv
+      - nonfree/intel16/sourcecode/sync.sv
+
 vendor_package:
   - name: reggen
     target_dir: "utils"
