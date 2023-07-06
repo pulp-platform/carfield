@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: SHL-0.51
 
 overrides:
-  axi:                  { git: https://github.com/pulp-platform/axi.git                   , rev:  02307cf26de40c713212148abb947fef87babd61  } # branch: michaero/detailed_mem-rebase, which is rebased on top of the branch axi_rt-tbenz
+  axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.0-beta.10                         }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: =0.2.3                                 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , rev: 2bb08879bc2ceabe2b6a0dc283753048a739e27b } # branch main until new version tag newer than v0.4.0
   redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "6e10650b50c7b40f7f81602acf61526330c4d69d" } # branch: michaero/hmr-alt
