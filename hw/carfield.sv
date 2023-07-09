@@ -21,6 +21,7 @@ module carfield
   import spatz_cluster_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
+  parameter islands_cfg_t IslandsCfg = carfield_pkg::IslandsCfgDefault,
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2,
   parameter type reg_req_t           = logic,
@@ -1204,6 +1205,7 @@ assign safed_intrs = {
 };
 // verilog_lint: waive-stop line-length
 
+if (IslandsCfg.EnSafetyIsland) begin : gen_safety_island
 safety_island_synth_wrapper #(
   .SafetyIslandCfg          ( SafetyIslandCfg            ),
   .AxiAddrWidth             ( Cfg.AddrWidth              ),
@@ -1290,6 +1292,10 @@ safety_island_synth_wrapper #(
   .async_axi_out_r_wptr_i  ( axi_mst_ext_r_wptr  [SafetyIslandMstIdx] ),
   .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [SafetyIslandMstIdx] )
 );
+end
+else begin : gen_no_safety_island
+  assign jtag_safety_island_tdo_o = jtag_safety_island_tdi_i;
+end
 
 // PULP integer cluster
 
@@ -1298,6 +1304,7 @@ assign car_regs_hw2reg.pulp_cluster_eoc.de  = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
 
+if (IslandsCfg.EnPulpCluster) begin : gen_pulp_cluster
 pulp_cluster #(
   .NB_CORES                       ( IntClusterNumCores        ),
   .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts    ),
@@ -1397,6 +1404,7 @@ pulp_cluster #(
   .async_data_master_b_wptr_i  ( axi_mst_intcluster_b_wptr  ),
   .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
 );
+end
 
 // Floating Point Spatz Cluster
 
@@ -1408,6 +1416,7 @@ logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr;
 logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr = { chs_mti[FPClusterIntrHart1Idx], chs_mti[FPClusterIntrHart0Idx] };
 // verilog_lint: waive-stop line-length
 
+if (IslandsCfg.EnSpatzCluster) begin : gen_spatz_cluster
 spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth     ),
     .AxiDataWidth             ( Cfg.AxiDataWidth  ),
@@ -1497,10 +1506,12 @@ spatz_cluster_wrapper #(
    .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [FPClusterMstIdx] ),
    .cluster_probe_o         ( car_regs_hw2reg.spatz_cluster_busy.d  )
   );
+end
 
 // Security Island
 logic secd_mbox_intr;
 
+if (IslandsCfg.EnOpenTitan) begin : gen_secure_subsystem
 secure_subsystem_synth_wrap #(
   .HartIdOffs            ( OpnTitHartIdOffs           ),
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
@@ -1576,6 +1587,10 @@ secure_subsystem_synth_wrap #(
   .spi_host_SD_i    ( spih_ot_sd_i     ),
   .spi_host_SD_en_o ( spih_ot_sd_en_o  )
 );
+end
+else begin : gen_no_secure_subsystem
+  assign jtag_ot_tdo_o = jtag_ot_tdi_i;
+end
 
 // Security Island Mailbox
 // Host Clock Domain
@@ -1750,6 +1765,7 @@ axi_lite_mailbox_unit #(
 carfield_axi_slv_req_t axi_ethernet_req;
 carfield_axi_slv_rsp_t axi_ethernet_rsp;
 
+if (IslandsCfg.EnEthernet) begin : gen_ethernet
 axi_cdc_dst #(
   .LogDepth   ( LogDepth                   ),
   .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
@@ -1797,6 +1813,7 @@ axi_err_slv #(
   .slv_req_i  ( axi_ethernet_req       ),
   .slv_resp_o ( axi_ethernet_rsp       )
 );
+end
 
 // APB peripherals
 // Periph Clock Domain
@@ -2174,6 +2191,7 @@ assign reg_bus_hyper.ready = reg_hyper_rsp.ready;
 // CAN bus
 logic [63:0] can_timestamp;
 assign can_timestamp = '1;
+if (IslandsCfg.EnCan) begin : gen_can
 can_top_apb #(
   .rx_buffer_size   ( 32                    ),
   .txt_buffer_count ( 2                     ),
@@ -2198,5 +2216,6 @@ can_top_apb #(
   .s_apb_pwdata     ( apb_mst_req[CanIdx].pwdata  ),
   .s_apb_pwrite     ( apb_mst_req[CanIdx].pwrite  )
 );
+end
 
 endmodule
