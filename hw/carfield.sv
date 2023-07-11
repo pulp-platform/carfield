@@ -433,24 +433,24 @@ logic [ LlcWWidth-1:0] llc_w_data;
 logic [    LogDepth:0] llc_w_wptr;
 logic [    LogDepth:0] llc_w_rptr;
 
-// All AXI Slaves (except the Integer Cluster)
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_rptr ;
+// All AXI Slaves (except the Integer Cluster and the Mailbox)
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_aw_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_aw_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_w_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_w_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_b_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_b_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_ar_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_ar_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_r_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_r_rptr ;
 
-// All AXI Slaves (except the Integer Cluster)
+// All AXI Masters (except the Integer Cluster)
 logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
 logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_wptr;
 logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_rptr;
