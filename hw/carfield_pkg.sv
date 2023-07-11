@@ -129,26 +129,35 @@ typedef enum word_bt {
 } apb_end_t;
 
 // Cheshire regbus out
+// For carfield, PllIdx is the first index of the async reg interfaces. Please add async reg
+// interfaces indices to the left of PllIdx, and sync reg interface indices to its right.
 typedef enum int {
-  CarRegsIdx  = 'd0,
-  PllIdx      = 'd1,
-  PadframeIdx = 'd2
+  CarRegsIdx  = 'd0, // sync
+  PllIdx      = 'd1, // async
+  PadframeIdx = 'd2, // async
+  L2EccIdx    = 'd3  // async
 } cheshire_reg_out_e;
+localparam int unsigned NumSyncRegIdx = PllIdx; // This only works if PllIdx is the first async reg
+localparam int unsigned NumAsyncRegIdx = 3;
+localparam int unsigned NumTotalRegIdx = NumSyncRegIdx + NumAsyncRegIdx;
 
 typedef enum doub_bt {
   CarRegsBase  = 'h0000_0000_2001_0000,
   PllBase      = 'h0000_0000_2002_0000,
-  PadframeBase = 'h0000_0000_200a_0000
+  PadframeBase = 'h0000_0000_200a_0000,
+  L2EccBase    = 'h0000_0000_200b_0000
 } reg_start_t;
 
 localparam doub_bt CarRegsSize  = 'h0000_0000_0000_1000;
 localparam doub_bt PllSize      = 'h0000_0000_0000_1000;
 localparam doub_bt PadframeSize = 'h0000_0000_0000_1000;
+localparam doub_bt L2EccSize    = 'h0000_0000_0000_1000;
 
 typedef enum doub_bt {
-  CarRegsEnd = CarRegsBase + CarRegsSize,
-  PllEnd     = PllBase + PllSize,
-  PadframeEnd = PadframeBase + PadframeSize
+  CarRegsEnd  = CarRegsBase + CarRegsSize,
+  PllEnd      = PllBase + PllSize,
+  PadframeEnd = PadframeBase + PadframeSize,
+  L2EccEnd    = L2EccBase + L2EccSize
 } reg_end_t;
 
 // Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals + Floating Point Cluster
@@ -257,13 +266,13 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 L2Port2End     ,
                                                 L2Port1End     },
   // External reg slaves (at most 8 ports and rules)
-  RegExtNumSlv      : 3,
-  RegExtNumRules    : 3,
+  RegExtNumSlv      : NumTotalRegIdx,
+  RegExtNumRules    : NumTotalRegIdx,
   // For carfield, PllIdx is the first index of the async reg interfaces. Please add async reg
   // interfaces indices to the left of PllIdx, and sync reg interface indices to its right.
-  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, PadframeIdx,  PllIdx,  CarRegsIdx  },
-  RegExtRegionStart : '{ 0, 0, 0, 0, 0, PadframeBase, PllBase, CarRegsBase },
-  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, PadframeEnd,  PllEnd,  CarRegsEnd  },
+  RegExtRegionIdx   : '{ 0, 0, 0, 0, L2EccIdx,  PadframeIdx,  PllIdx,  CarRegsIdx  },
+  RegExtRegionStart : '{ 0, 0, 0, 0, L2EccBase, PadframeBase, PllBase, CarRegsBase },
+  RegExtRegionEnd   : '{ 0, 0, 0, 0, L2EccEnd,  PadframeEnd,  PllEnd,  CarRegsEnd  },
   // RTC
   RtcFreq           : 32768,
   // Features
