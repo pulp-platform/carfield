@@ -83,8 +83,12 @@ typedef enum doub_bt {
 } axi_end_t;
 
 // APB peripherals
-localparam int unsigned CarfieldNumTimerIntrs = 10; // 4 adv timer intrs, 4 adv timer events, 2 sys
-                                                    // timer intrs
+
+localparam int unsigned CarfieldNumAdvTimerIntrs  = 4;
+localparam int unsigned CarfieldNumAdvTimerEvents = 4;
+localparam int unsigned CarfieldNumSysTimerIntrs  = 2;
+localparam int unsigned CarfieldNumTimerIntrs = CarfieldNumAdvTimerIntrs +
+                        CarfieldNumAdvTimerEvents + CarfieldNumSysTimerIntrs;
 localparam int unsigned CarfieldNumWdtIntrs = 5;
 localparam int unsigned CarfieldNumCanIntrs = 1;
 localparam int unsigned CarfieldNumPeriphsIntrs = CarfieldNumTimerIntrs +

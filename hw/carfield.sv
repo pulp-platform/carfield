@@ -185,7 +185,7 @@ logic                                                      car_can_intr;
 // Propagate edge-triggered interrupts between periph and host clock domains
 
 // Advanced timer
-for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_intrs
+for (genvar i=0; i < CarfieldNumAdvTimerIntrs; i++) begin : gen_sync_adv_timer_intrs
   edge_propagator i_sync_adv_timer_intrs (
     .clk_tx_i  ( periph_clk                  ),
     .rstn_tx_i ( periph_pwr_on_rst_n         ),
@@ -196,7 +196,7 @@ for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_intrs
   );
 end
 
-for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_events
+for (genvar i=0; i < CarfieldNumAdvTimerEvents; i++) begin : gen_sync_adv_timer_events
   edge_propagator i_sync_adv_timer_events (
     .clk_tx_i  ( periph_clk                   ),
     .rstn_tx_i ( periph_pwr_on_rst_n          ),
@@ -414,7 +414,7 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
 logic hyper_isolate_req, hyper_isolated_rsp;
 logic secd_isolate_req;
 
-logic [iomsb(Cfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
 logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
 logic [LlcArWidth-1:0] llc_ar_data;
