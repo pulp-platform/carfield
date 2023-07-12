@@ -171,6 +171,7 @@ typedef enum hartid_t {
 localparam safety_island_cfg_t SafetyIslandCfg = '{
     HartId:             SafetyIslHartIdOffs,
     BankNumBytes:       32'h0001_0000,
+    NumBanks:           2,
     // JTAG ID code:
     // LSB                        [0]:     1'h1
     // PULP Platform Manufacturer [11:1]:  11'h6d9

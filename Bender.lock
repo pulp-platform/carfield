@@ -31,8 +31,8 @@ packages:
     - common_verification
     - tech_cells_generic
   axi-rt:
-    revision: 99c4302b20f161f659a569f71f535366c10dc12e
-    version: null
+    revision: a0cc4d1695cd3d2ccdf69790e227a872ad97677c
+    version: 0.0.1-alpha
     source:
       Git: git@iis-git.ee.ethz.ch:bslk/axi-rt.git
     dependencies:
@@ -73,7 +73,7 @@ packages:
     - axi
     - common_cells
   axi_obi:
-    revision: 87bb718809fb5a20f8e5bad537fdf43aeef6db2a
+    revision: 6e36dccf02c34568b366ffd2b5b1e8f8f53b6106
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/axi_obi.git
@@ -134,7 +134,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 466616194273efd1ab7af53c6ff3d8096261fb4f
+    revision: 788374343863d3248af7518880d3764d1dc9c4f0
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -350,7 +350,7 @@ packages:
     dependencies:
     - common_cells
   obi:
-    revision: c54a7374bce9f4239c07f950ced339af926b5ff8
+    revision: 9eaccdfb5f7b1fd996f3cb26901c02763295ed03
     version: null
     source:
       Git: https://github.com/pulp-platform/obi.git
@@ -423,7 +423,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 6e10650b50c7b40f7f81602acf61526330c4d69d
+    revision: 6a011b6f5acf3eca202ed847d6c64474a0bc7cb5
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -459,7 +459,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 60e768a3ef29f47339e31674d497293f5a768893
+    revision: 382bc52d437c578cb68e4f5dcd1db291b3325001
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
@@ -467,6 +467,7 @@ packages:
     - apb
     - axi
     - axi_obi
+    - axi_riscv_atomics
     - bus_err_unit
     - clic
     - cluster_interconnect
