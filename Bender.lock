@@ -17,19 +17,27 @@ packages:
     revision: 6c7dde3d749ac8274377745c105da8c8b8cd27c6
     version: 0.2.1
     source:
-      Git: https://github.com/pulp-platform/apb_uart
+      Git: https://github.com/pulp-platform/apb_uart.git
     dependencies:
     - apb
     - register_interface
   axi:
-    revision: 02307cf26de40c713212148abb947fef87babd61
-    version: null
+    revision: 1c9a10278efe643e40e22c88dbd56243fb3343c8
+    version: 0.39.0-beta.10
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
     - common_cells
     - common_verification
     - tech_cells_generic
+  axi-rt:
+    revision: a0cc4d1695cd3d2ccdf69790e227a872ad97677c
+    version: 0.0.1-alpha
+    source:
+      Git: git@iis-git.ee.ethz.ch:bslk/axi-rt.git
+    dependencies:
+    - axi
+    - common_cells
   axi2mem:
     revision: 6973e0434d26ba578cdb4aa69c26c1facd1a3f15
     version: null
@@ -49,7 +57,7 @@ packages:
     revision: 559bcbd09a5a884dbe31e2d72fd95d024e357f39
     version: 0.2.1
     source:
-      Git: https://github.com/pulp-platform/axi_llc
+      Git: https://github.com/pulp-platform/axi_llc.git
     dependencies:
     - axi
     - common_cells
@@ -65,7 +73,7 @@ packages:
     - axi
     - common_cells
   axi_obi:
-    revision: 87bb718809fb5a20f8e5bad537fdf43aeef6db2a
+    revision: 6e36dccf02c34568b366ffd2b5b1e8f8f53b6106
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/axi_obi.git
@@ -77,7 +85,7 @@ packages:
     revision: 97dcb14ef057cbe5bd70dda2060b5bb9e7e04c6d
     version: 0.7.0
     source:
-      Git: https://github.com/pulp-platform/axi_riscv_atomics
+      Git: https://github.com/pulp-platform/axi_riscv_atomics.git
     dependencies:
     - axi
     - common_cells
@@ -93,7 +101,7 @@ packages:
     revision: 07be187d1e954d8090031b32d236ad76dc62ce45
     version: 0.1.1
     source:
-      Git: https://github.com/pulp-platform/axi_vga
+      Git: https://github.com/pulp-platform/axi_vga.git
     dependencies:
     - axi
     - common_cells
@@ -126,16 +134,18 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: e5fc1ea4035cbb99a32c7d49f39745861df1c152
+    revision: 788374343863d3248af7518880d3764d1dc9c4f0
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
     dependencies:
     - apb_uart
     - axi
+    - axi-rt
     - axi_llc
     - axi_riscv_atomics
     - axi_vga
+    - bus_err_unit
     - clic
     - clint
     - common_cells
@@ -159,7 +169,7 @@ packages:
     revision: e1357c1d0edddde458aec58363473605f51e539e
     version: 0.1.0
     source:
-      Git: https://github.com/pulp-platform/clint
+      Git: https://github.com/pulp-platform/clint.git
     dependencies:
     - common_cells
     - register_interface
@@ -189,7 +199,7 @@ packages:
     revision: 9c07fa860593b2caabd9b5681740c25fac04b878
     version: 0.2.3
     source:
-      Git: https://github.com/pulp-platform/common_verification
+      Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cv32e40p:
     revision: 9b77611a1d0c681f4819798d95422b0b895528a2
@@ -204,7 +214,7 @@ packages:
     revision: bf806ffa1385876ab70b28df488fafe7ea573a7f
     version: null
     source:
-      Git: https://github.com/pulp-platform/cva6
+      Git: https://github.com/pulp-platform/cva6.git
     dependencies:
     - axi
     - common_cells
@@ -286,10 +296,10 @@ packages:
     - register_interface
     - tech_cells_generic
   ibex:
-    revision: 95b85ddd1c995ace9f89ee42530f9e24820c1051
+    revision: b18f7ef178ed07f5085051f96042c670a919fd5c
     version: null
     source:
-      Git: https://github.com/lowRISC/ibex.git
+      Git: https://github.com/pulp-platform/ibex.git
     dependencies:
     - tech_cells_generic
   icache-intc:
@@ -312,7 +322,7 @@ packages:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
     version: null
     source:
-      Git: https://github.com/pulp-platform/irq_router
+      Git: https://github.com/pulp-platform/irq_router.git
     dependencies:
     - axi
     - common_cells
@@ -340,7 +350,7 @@ packages:
     dependencies:
     - common_cells
   obi:
-    revision: c54a7374bce9f4239c07f950ced339af926b5ff8
+    revision: 9eaccdfb5f7b1fd996f3cb26901c02763295ed03
     version: null
     source:
       Git: https://github.com/pulp-platform/obi.git
@@ -358,7 +368,7 @@ packages:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
     source:
-      Git: https://github.com/pulp-platform/opentitan_peripherals
+      Git: https://github.com/pulp-platform/opentitan_peripherals.git
     dependencies:
     - common_cells
     - register_interface
@@ -371,7 +381,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 314f9a04f8dad4a5eeb0b9e8ad84898c6dc3f81e
+    revision: adcdb725c916fbca7d3e4657f9a41c4f1fb482b6
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -413,7 +423,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 6e10650b50c7b40f7f81602acf61526330c4d69d
+    revision: 6a011b6f5acf3eca202ed847d6c64474a0bc7cb5
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -449,7 +459,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 60e768a3ef29f47339e31674d497293f5a768893
+    revision: 382bc52d437c578cb68e4f5dcd1db291b3325001
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
@@ -457,6 +467,7 @@ packages:
     - apb
     - axi
     - axi_obi
+    - axi_riscv_atomics
     - bus_err_unit
     - clic
     - cluster_interconnect
@@ -480,13 +491,13 @@ packages:
     revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
     version: 1.1.0
     source:
-      Git: https://github.com/pulp-platform/serial_link
+      Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
     - axi
     - common_cells
     - register_interface
   spatz:
-    revision: 05b01d6a0045496ad82d393355158e3b3438438e
+    revision: 3072b05ee2d983fb47c04ad58ff509b2f8522434
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:spatz/spatz.git

@@ -257,12 +257,12 @@ module cheshire_wrap
   input  cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv-2):0] reg_ext_slv_rsp_i,
   // External reg demux slaves other clock domains (async)
   // Padframe and PLL
-  output logic                  [1:0] ext_reg_async_slv_req_o,
-  input  logic                  [1:0] ext_reg_async_slv_ack_i,
-  output cheshire_reg_ext_req_t [1:0] ext_reg_async_slv_data_o,
-  input  logic                  [1:0] ext_reg_async_slv_req_i,
-  output logic                  [1:0] ext_reg_async_slv_ack_o,
-  input  cheshire_reg_ext_rsp_t [1:0] ext_reg_async_slv_data_i,
+  output logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_o,
+  input  logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_i,
+  output cheshire_reg_ext_req_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_o,
+  input  logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_i,
+  output logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_o,
+  input  cheshire_reg_ext_rsp_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_i,
   // Interrupts from external devices
   input  logic [iomsb(NumExtIntrs):0] intr_ext_i,
   // Interrupts to external harts
@@ -347,7 +347,7 @@ cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_req;
 cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_rsp;
 
 // Generate synchronous external register interface from Cheshire
-for (genvar i = 0; i < Cfg.RegExtNumSlv - 2; i++) begin: gen_ext_reg_sync
+for (genvar i = 0; i < NumSyncRegIdx; i++) begin: gen_ext_reg_sync
   assign reg_ext_slv_req_o[i] = ext_reg_req[i];
   assign ext_reg_rsp[i]       = reg_ext_slv_rsp_i[i];
 end
@@ -725,7 +725,7 @@ axi_id_remap            #(
 
 // Async reg interface:
 // See carfield_pkg.sv for indices referring to sync and async reg interfaces.
-for (genvar i = 0; i < Cfg.RegExtNumSlv - PllIdx; i++) begin : gen_ext_reg_async
+for (genvar i = 0; i < Cfg.RegExtNumSlv - NumSyncRegIdx; i++) begin : gen_ext_reg_async
   reg_cdc_src #(
     .CDC_KIND ( "cdc_4phase"              ),
     .req_t     ( cheshire_reg_ext_req_t   ),
@@ -733,8 +733,8 @@ for (genvar i = 0; i < Cfg.RegExtNumSlv - PllIdx; i++) begin : gen_ext_reg_async
   ) i_reg_cdc_src (
       .src_clk_i    ( clk_i  ),
       .src_rst_ni   ( rst_ni ),
-      .src_req_i    ( ext_reg_req[PllIdx + i] ),
-      .src_rsp_o    ( ext_reg_rsp[PllIdx + i] ),
+      .src_req_i    ( ext_reg_req[NumSyncRegIdx + i] ),
+      .src_rsp_o    ( ext_reg_rsp[NumSyncRegIdx + i] ),
 
       .async_req_o  ( ext_reg_async_slv_req_o[i]  ),
       .async_ack_i  ( ext_reg_async_slv_ack_i[i]  ),

@@ -505,6 +505,24 @@ logic [                 LogDepth:0] axi_mst_intcluster_r_rptr ;
 carfield_reg2hw_t car_regs_reg2hw;
 carfield_hw2reg_t car_regs_hw2reg;
 
+logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_out;
+logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_in;
+reg_req_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_out;
+logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_in;
+logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_out;
+reg_rsp_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_in;
+
+// External reg interface slaves (async)
+// Currently for PLL and Padframe
+for (genvar i = 0; i < 2; i++) begin : gen_ext_reg_assign
+  assign ext_reg_async_slv_req_o[i]   = ext_reg_async_slv_req_out[i];
+  assign ext_reg_async_slv_ack_in[i]  = ext_reg_async_slv_ack_i[i];
+  assign ext_reg_async_slv_data_o[i]  = ext_reg_async_slv_data_out[i];
+  assign ext_reg_async_slv_req_in[i]  = ext_reg_async_slv_req_i[i];
+  assign ext_reg_async_slv_ack_o[i]   = ext_reg_async_slv_ack_out[i];
+  assign ext_reg_async_slv_data_in[i] = ext_reg_async_slv_data_i[i];
+end
+
 // Clocking and reset strategy
 // We have three clock sources that are multiplexed to 6 domains. The default assignment after
 // hard reset is:
@@ -974,12 +992,12 @@ cheshire_wrap #(
   .reg_ext_slv_req_o ( ext_reg_req     ),
   .reg_ext_slv_rsp_i ( ext_reg_rsp     ),
   // External reg interface slaves (async)
-  .ext_reg_async_slv_req_o,
-  .ext_reg_async_slv_ack_i,
-  .ext_reg_async_slv_data_o,
-  .ext_reg_async_slv_req_i,
-  .ext_reg_async_slv_ack_o,
-  .ext_reg_async_slv_data_i,
+  .ext_reg_async_slv_req_o  (ext_reg_async_slv_req_out),
+  .ext_reg_async_slv_ack_i  (ext_reg_async_slv_ack_in),
+  .ext_reg_async_slv_data_o (ext_reg_async_slv_data_out),
+  .ext_reg_async_slv_req_i  (ext_reg_async_slv_req_in),
+  .ext_reg_async_slv_ack_o  (ext_reg_async_slv_ack_out),
+  .ext_reg_async_slv_data_i (ext_reg_async_slv_data_in),
   // Interrupts from external devices
   .intr_ext_i        ( chs_ext_intrs ),
   // Interrupts to external harts
@@ -1154,6 +1172,39 @@ l2_wrap #(
   .slvport_w_wptr_i    ( axi_slv_ext_w_wptr  [NumL2Ports-1:0] ),
   .slvport_w_rptr_o    ( axi_slv_ext_w_rptr  [NumL2Ports-1:0] ),
   .ecc_error_o         ( l2_ecc_err                           )
+);
+
+// Todo connect regs to L2, move cdc into L2
+carfield_reg_req_t  l2_reg_req;
+carfield_reg_rsp_t  l2_reg_rsp;
+reg_cdc_dst #(
+  .req_t   (carfield_reg_req_t),
+  .rsp_t   (carfield_reg_rsp_t),
+  .CDC_KIND("cdc_4phase")
+) i_l2_reg_cdc_dst (
+  .dst_clk_i   (l2_clk),
+  .dst_rst_ni  (l2_rst_n),
+
+  .dst_req_o   (l2_reg_req),
+  .dst_rsp_i   (l2_reg_rsp),
+
+  .async_req_i ( ext_reg_async_slv_req_out  [L2EccIdx-NumSyncRegIdx]),
+  .async_ack_o ( ext_reg_async_slv_ack_in   [L2EccIdx-NumSyncRegIdx]),
+  .async_data_i( ext_reg_async_slv_data_out [L2EccIdx-NumSyncRegIdx]),
+
+  .async_req_o ( ext_reg_async_slv_req_in   [L2EccIdx-NumSyncRegIdx]),
+  .async_ack_i ( ext_reg_async_slv_ack_out  [L2EccIdx-NumSyncRegIdx]),
+  .async_data_o( ext_reg_async_slv_data_in  [L2EccIdx-NumSyncRegIdx])
+);
+
+reg_err_slv #(
+  .DW     (32),
+  .ERR_VAL(32'hBADCAB1E),
+  .req_t  (carfield_reg_req_t),
+  .rsp_t  (carfield_reg_rsp_t)
+) i_l2_reg_err (
+  .req_i(l2_reg_req),
+  .rsp_o(l2_reg_rsp)
 );
 
 // Safety Island

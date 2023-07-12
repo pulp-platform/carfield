@@ -6,10 +6,11 @@
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@unibo.it>
 
-CAR_ROOT ?= .
+CAR_ROOT ?= $(shell $(BENDER) path carfield)
 CHS_ROOT ?= $(CAR_ROOT)/cheshire
 CAR_SW_DIR := $(CAR_ROOT)/sw
 CAR_XIL_DIR := $(CAR_ROOT)/target/xilinx
+CAR_HW_DIR := $(CAR_ROOT)/hw
 
 # Bender
 BENDER   ?= bender
@@ -44,6 +45,7 @@ CHS_IMAGE    ?=
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
 include $(CAR_ROOT)/bender-common.mk
+include $(CAR_ROOT)/bender-sim.mk
 include $(CAR_ROOT)/bender-synth.mk
 include $(CAR_ROOT)/bender-xilinx.mk
 
@@ -51,16 +53,6 @@ include $(CAR_ROOT)/bender-xilinx.mk
 VENVDIR?=$(WORKDIR)/.venv
 REQUIREMENTS_TXT?=$(wildcard requirements.txt)
 include $(CAR_ROOT)/utils/venv.mk
-
-# bender targets
-TARGETS += -t sim
-TARGETS += -t test
-TARGETS += -t rtl
-TARGETS += -t simulation
-TARGETS += $(common_targs)
-
-# bender defines
-DEFINES += $(common_defs)
 
 ifdef gui
 	VSIM_FLAG :=
@@ -140,8 +132,8 @@ $(CAR_ROOT)/tb/hyp_vip:
 
 .PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" > $@
-	echo 'vlog "$(CURDIR)/$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) --vlog-arg="$(VLOG_ARGS)" --compilation-mode separate > $@
+	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 .PHONY: car-sim-init
 car-sim-init: chs-sim-init $(CAR_ROOT)/tb/hyp_vip scripts/carfield_compile.tcl
@@ -199,7 +191,7 @@ car-hw-init: spatz-hw-init chs-hw-init
 
 .PHONY: spatz-hw-init
 spatz-hw-init:
-	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=carfield.hjson bootrom
+	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(CAR_HW_DIR)/cfg/spatz_carfield.hjson bootrom
 
 .PHONY: chs-hw-init
 ## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the

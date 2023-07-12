@@ -9,6 +9,8 @@ work/
 *.log
 *.wlf
 /.venv/
+/logs/
+/working_dir/
 
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
