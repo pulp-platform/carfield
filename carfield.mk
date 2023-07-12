@@ -45,6 +45,7 @@ CHS_IMAGE    ?=
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
 include $(CAR_ROOT)/bender-common.mk
+include $(CAR_ROOT)/bender-sim.mk
 include $(CAR_ROOT)/bender-synth.mk
 include $(CAR_ROOT)/bender-xilinx.mk
 
@@ -52,16 +53,6 @@ include $(CAR_ROOT)/bender-xilinx.mk
 VENVDIR?=$(WORKDIR)/.venv
 REQUIREMENTS_TXT?=$(wildcard requirements.txt)
 include $(CAR_ROOT)/utils/venv.mk
-
-# bender targets
-TARGETS += -t sim
-TARGETS += -t test
-TARGETS += -t rtl
-TARGETS += -t simulation
-TARGETS += $(common_targs)
-
-# bender defines
-DEFINES += $(common_defs)
 
 ifdef gui
 	VSIM_FLAG :=
@@ -141,7 +132,7 @@ $(CAR_ROOT)/tb/hyp_vip:
 
 .PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim $(TARGETS) $(DEFINES) --vlog-arg="$(VLOG_ARGS)" --compilation-mode separate > $@
+	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) --vlog-arg="$(VLOG_ARGS)" --compilation-mode separate > $@
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 .PHONY: car-sim-init

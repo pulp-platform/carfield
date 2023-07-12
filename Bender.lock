@@ -296,10 +296,10 @@ packages:
     - register_interface
     - tech_cells_generic
   ibex:
-    revision: 95b85ddd1c995ace9f89ee42530f9e24820c1051
+    revision: b18f7ef178ed07f5085051f96042c670a919fd5c
     version: null
     source:
-      Git: https://github.com/lowRISC/ibex.git
+      Git: https://github.com/pulp-platform/ibex.git
     dependencies:
     - tech_cells_generic
   icache-intc:
@@ -381,7 +381,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 314f9a04f8dad4a5eeb0b9e8ad84898c6dc3f81e
+    revision: adcdb725c916fbca7d3e4657f9a41c4f1fb482b6
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
