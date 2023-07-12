@@ -67,8 +67,6 @@ module carfield_soc_fixture;
 
   logic uart_tx;
   logic uart_rx;
-  logic ot_uart_tx;
-  logic ot_uart_rx;
 
   logic i2c_sda_o;
   logic i2c_sda_i;
@@ -149,17 +147,18 @@ module carfield_soc_fixture;
     .jtag_safety_island_tms_i   ( '0                        ), // Temporary
     .jtag_safety_island_tdi_i   ( '0                        ), // Temporary
     .jtag_safety_island_tdo_o   ( jtag_safed_tdo            ),
+    .bootmode_ot_i              ( '0                        ), // Temporary
+    .bootmode_safe_isln_i       ( '0                        ), // Temporary
     .uart_tx_o                  ( uart_tx                   ),
     .uart_rx_i                  ( uart_rx                   ),
-    .uart_ot_tx_o               ( ot_uart_tx                ),
-    .uart_ot_rx_i               ( ot_uart_rx                ),
+    .uart_ot_tx_o               (                           ),
+    .uart_ot_rx_i               ( '0                        ),
     .i2c_sda_o                  ( i2c_sda_o                 ),
     .i2c_sda_i                  ( i2c_sda_i                 ),
     .i2c_sda_en_o               ( i2c_sda_en                ),
     .i2c_scl_o                  ( i2c_scl_o                 ),
     .i2c_scl_i                  ( i2c_scl_i                 ),
     .i2c_scl_en_o               ( i2c_scl_en                ),
-    // hostd spi
     .spih_sck_o                 ( spih_sck_o                ),
     .spih_sck_en_o              ( spih_sck_en               ),
     .spih_csb_o                 ( spih_csb_o                ),
@@ -167,7 +166,6 @@ module carfield_soc_fixture;
     .spih_sd_o                  ( spih_sd_o                 ),
     .spih_sd_en_o               ( spih_sd_en                ),
     .spih_sd_i                  ( spih_sd_i                 ),
-    // secd spi
     .spih_ot_sck_o              (                           ),
     .spih_ot_sck_en_o           (                           ),
     .spih_ot_csb_o              (                           ),
@@ -175,6 +173,19 @@ module carfield_soc_fixture;
     .spih_ot_sd_o               (                           ),
     .spih_ot_sd_en_o            (                           ),
     .spih_ot_sd_i               ( '0                        ),
+    .eth_rxck_i                 ( '0                        ),
+    .eth_rxctl_i                ( '0                        ),
+    .eth_rxd_i                  ( '0                        ),
+    .eth_md_i                   ( '0                        ),
+    .eth_txck_o                 ( /* Currently unconnected, tie to 0 */ ),
+    .eth_txctl_o                ( /* Currently unconnected, tie to 0 */ ),
+    .eth_txd_o                  ( /* Currently unconnected, tie to 0 */ ),
+    .eth_md_o                   ( /* Currently unconnected, tie to 0 */ ),
+    .eth_md_oe                  ( /* Currently unconnected, tie to 0 */ ),
+    .eth_mdc_o                  ( /* Currently unconnected, tie to 0 */ ),
+    .eth_rst_n_o                ( /* Currently unconnected, tie to 0 */ ),
+    .can_rx_i                   ( '0                        ),
+    .can_tx_o                   (                           ),
     .gpio_i                     ( '0                        ),
     .gpio_o                     (                           ),
     .gpio_en_o                  (                           ),

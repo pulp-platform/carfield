@@ -185,7 +185,7 @@ logic                                                      car_can_intr;
 // Propagate edge-triggered interrupts between periph and host clock domains
 
 // Advanced timer
-for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_intrs
+for (genvar i=0; i < CarfieldNumAdvTimerIntrs; i++) begin : gen_sync_adv_timer_intrs
   edge_propagator i_sync_adv_timer_intrs (
     .clk_tx_i  ( periph_clk                  ),
     .rstn_tx_i ( periph_pwr_on_rst_n         ),
@@ -196,7 +196,7 @@ for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_intrs
   );
 end
 
-for (genvar i=0; i < 3; i++) begin : gen_sync_adv_timer_events
+for (genvar i=0; i < CarfieldNumAdvTimerEvents; i++) begin : gen_sync_adv_timer_events
   edge_propagator i_sync_adv_timer_events (
     .clk_tx_i  ( periph_clk                   ),
     .rstn_tx_i ( periph_pwr_on_rst_n          ),
@@ -414,7 +414,7 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
 logic hyper_isolate_req, hyper_isolated_rsp;
 logic secd_isolate_req;
 
-logic [iomsb(Cfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
+logic [iomsb(Cfg.AxiExtNumSlv-1):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
 logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
 logic [LlcArWidth-1:0] llc_ar_data;
@@ -433,24 +433,24 @@ logic [ LlcWWidth-1:0] llc_w_data;
 logic [    LogDepth:0] llc_w_wptr;
 logic [    LogDepth:0] llc_w_rptr;
 
-// All AXI Slaves (except the Integer Cluster)
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-1):0][               LogDepth:0] axi_slv_ext_r_rptr ;
+// All AXI Slaves (except the Integer Cluster and the Mailbox)
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_aw_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_aw_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_w_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_w_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_b_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_b_rptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_ar_wptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_ar_rptr;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_r_wptr ;
+logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_r_rptr ;
 
-// All AXI Slaves (except the Integer Cluster)
+// All AXI Masters (except the Integer Cluster)
 logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
 logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_wptr;
 logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_rptr;

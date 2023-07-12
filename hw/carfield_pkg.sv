@@ -40,8 +40,8 @@ typedef enum byte_bt {
   EthernetSlvIdx     = 'd3,
   PeriphsSlvIdx      = 'd4,
   FPClusterSlvIdx    = 'd5,
-  MailboxSlvIdx      = 'd6,
-  IntClusterSlvIdx   = 'd7
+  IntClusterSlvIdx   = 'd6,
+  MailboxSlvIdx      = 'd7
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
@@ -83,8 +83,12 @@ typedef enum doub_bt {
 } axi_end_t;
 
 // APB peripherals
-localparam int unsigned CarfieldNumTimerIntrs = 10; // 4 adv timer intrs, 4 adv timer events, 2 sys
-                                                    // timer intrs
+
+localparam int unsigned CarfieldNumAdvTimerIntrs  = 4;
+localparam int unsigned CarfieldNumAdvTimerEvents = 4;
+localparam int unsigned CarfieldNumSysTimerIntrs  = 2;
+localparam int unsigned CarfieldNumTimerIntrs = CarfieldNumAdvTimerIntrs +
+                        CarfieldNumAdvTimerEvents + CarfieldNumSysTimerIntrs;
 localparam int unsigned CarfieldNumWdtIntrs = 5;
 localparam int unsigned CarfieldNumCanIntrs = 1;
 localparam int unsigned CarfieldNumPeriphsIntrs = CarfieldNumTimerIntrs +
@@ -227,27 +231,27 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiExtNumSlv      : AxiNumExtSlv,
   AxiExtNumRules    : AxiNumExtSlv,
   // External AXI region map
-  AxiExtRegionIdx   : '{0, 0, 0, 0, 0, 0, 0, 0, IntClusterSlvIdx  ,
+  AxiExtRegionIdx   : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxSlvIdx     ,
+                                                IntClusterSlvIdx  ,
                                                 FPClusterSlvIdx   ,
                                                 PeriphsSlvIdx     ,
                                                 EthernetSlvIdx    ,
-                                                MailboxSlvIdx     ,
                                                 SafetyIslandSlvIdx,
                                                 L2Port2SlvIdx     ,
                                                 L2Port1SlvIdx     },
-  AxiExtRegionStart : '{0, 0, 0, 0, 0, 0, 0, 0, IntClusterBase  ,
+  AxiExtRegionStart : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxBase     ,
+                                                IntClusterBase  ,
                                                 FPClusterBase   ,
                                                 PeriphsBase     ,
                                                 EthernetBase    ,
-                                                MailboxBase     ,
                                                 SafetyIslandBase,
                                                 L2Port2Base     ,
                                                 L2Port1Base     },
-  AxiExtRegionEnd   : '{0, 0, 0, 0, 0, 0, 0, 0, IntClusterEnd  ,
+  AxiExtRegionEnd   : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxEnd     ,
+                                                IntClusterEnd  ,
                                                 FPClusterEnd   ,
                                                 PeriphsEnd     ,
                                                 EthernetEnd    ,
-                                                MailboxEnd     ,
                                                 SafetyIslandEnd,
                                                 L2Port2End     ,
                                                 L2Port1End     },
