@@ -4,7 +4,7 @@
 #
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
-CAR_ROOT ?= .
+CAR_ROOT ?= $(shell pwd)
 
 include carfield.mk
 
