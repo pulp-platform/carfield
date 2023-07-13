@@ -5,6 +5,8 @@
 # Luca Valente <luca.valente@unibo.it>
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 # Yvan Tortorella <yvan.tortorella@unibo.it>
+# Robert Balas <balasr@iis.ee.ethz.ch>
+# Manuel Eggimann <meggiman@iis.ee.ethz.ch>
 
 CAR_ROOT ?= $(shell $(BENDER) path carfield)
 CHS_ROOT ?= $(CAR_ROOT)/cheshire
@@ -67,7 +69,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 3c2bf51894b699a49eb8e69e21ade567e1b28b49
+CAR_NONFREE_COMMIT ?= f09457c9aabc3b150ae36c854961e89b679360aa
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:

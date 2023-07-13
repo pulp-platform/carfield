@@ -9,6 +9,7 @@
 #include "dif/clint.h"
 #include "dif/uart.h"
 #include "io.h"
+#include "car_util.h"
 #include "params.h"
 #include "regs/cheshire.h"
 #include "util.h"
@@ -91,7 +92,7 @@ int probe_range_lfsr_wrwr(volatile uintptr_t from, volatile uintptr_t to, int sa
         // write
         lfsr = lfsr_64bits(lfsr, lfsr_byte_feedback);
         writed(lfsr, addr);
-        asm volatile("fence" : : : "memory");
+        fence();
         // read
         if (lfsr != readd(addr))
             return 1;
@@ -119,7 +120,7 @@ int probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int sa
         addr += incr;
     }
 
-    asm volatile("fence" : : : "memory");
+    fence();
 
     // read
     addr = from;
