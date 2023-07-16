@@ -439,7 +439,8 @@ typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
 //////////////////////////////
 
 
-// 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz & pulp_cluster
+// 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz &
+// pulp_cluster, L2 shared memory
 localparam int unsigned NumDomains = 6;
 
 

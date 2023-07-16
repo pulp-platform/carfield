@@ -20,6 +20,13 @@ enum car_isolation_status { CAR_ISOLATE_DISABLE = 0, CAR_ISOLATE_ENABLE = 1 };
 
 enum car_rst_status { CAR_RST_ASSERT = 1, CAR_RST_RELEASE = 0 };
 
+// As input clocks for carfield, we have 3 clock sources to be multiplexed among 6 domains.
+enum car_src_clk {
+    CAR_CLK0 = 0,
+    CAR_CLK1 = 1,
+    CAR_CLK2 = 2
+};
+
 enum car_clk {
     CAR_HOST_CLK     = 0,
     CAR_PERIPH_CLK   = 1,
@@ -140,12 +147,19 @@ void car_disable_clk(enum car_clk clk)
     fence();
 }
 
+void car_select_clk(enum car_src_clk clk_src, enum car_clk clk)
+{
+    writew(clk_src, CAR_SOC_CTRL_BASE_ADDR + car_get_CLK_SEL_offset(clk));
+    fence();
+}
+
 void car_set_rst(enum car_rst rst, enum car_rst_status status)
 {
     writew(status, CAR_SOC_CTRL_BASE_ADDR + car_get_RST_offset(rst));
     fence();
 }
 
+// SW reset cycle without changing the selected clock source
 void car_reset_domain(enum car_rst rst)
 {
     car_set_isolate(rst, CAR_ISOLATE_ENABLE);
