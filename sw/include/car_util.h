@@ -94,7 +94,9 @@ X(ISOLATE_STATUS);
 	    return CARFIELD_SAFETY_ISLAND_##NAME##_REG_OFFSET;                 \
 	case CAR_SECURITY_CLK:                                                 \
 	    return CARFIELD_SECURITY_ISLAND_##NAME##_REG_OFFSET;               \
-	case CAR_SPATZ_CLK:                                                    \
+	case CAR_PULP_CLK:                                                     \
+	    return CARFIELD_PULP_CLUSTER_##NAME##_REG_OFFSET;                  \
+	case CAR_SPATZ_CLK:						       \
 	    return CARFIELD_SPATZ_CLUSTER_##NAME##_REG_OFFSET;                 \
 	case CAR_L2_CLK:                                                       \
 	    return CARFIELD_L2_##NAME##_REG_OFFSET;                            \
