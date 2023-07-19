@@ -782,7 +782,6 @@ assign slave_isolate_req[IntClusterSlvIdx]   = car_regs_reg2hw.pulp_cluster_isol
 assign slave_isolate_req[FPClusterSlvIdx]    = car_regs_reg2hw.spatz_cluster_isolate.q;
 assign slave_isolate_req[L2Port1SlvIdx]      = 'd0;
 assign slave_isolate_req[L2Port2SlvIdx]      = 'd0;
-assign slave_isolate_req[MailboxSlvIdx]      = 'd0;
 assign slave_isolate_req[EthernetSlvIdx]     = 'd0;
 assign slave_isolate_req[PeriphsSlvIdx]      = 'd0;
 assign secd_isolate_req                      = 'd0;
