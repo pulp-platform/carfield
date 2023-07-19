@@ -2,6 +2,27 @@
 
 We keep all RTL changes relevant for weekly releases here
 
+## Unreleased
+
+### Carfield Top
+- Bump FPU with fixes
+- Bump AXI with proper release
+
+### Cheshire
+
+### Safety Island
+
+### Security Island
+
+### Spatz
+- Align commit to released version (v0.4.1)
+
+### PULP Cluster
+
+### L2 Memory
+- Update with ECC manager and register interface port
+
+
 ## Weekly 2023_07_20 (weekly_20230720)
 
 ### Carfield Top
@@ -27,6 +48,9 @@ We keep all RTL changes relevant for weekly releases here
   - Propagate testmode signal
 
 ### PULP Cluster
+
+### L2 Memory
+
 
 ## Weekly 2023_07_12 (weekly_20230712)
 
@@ -55,6 +79,8 @@ We keep all RTL changes relevant for weekly releases here
 
 ### PULP Cluster
 * Bump unused ibex to fix bender target issue
+
+### L2 Memory
 
 
 ## Weekly 2023_07_06 (weekly_20230706)

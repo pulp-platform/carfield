@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: SHL-0.51
 
 overrides:
-  axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.0-beta.10 }
+  axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.0 }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , version: 0.4.1 }
   redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "6a011b6" } # branch: michaero/hmr-alt
@@ -14,3 +14,4 @@ overrides:
   scm:                  { git: "https://github.com/pulp-platform/scm.git"                 , rev: f7b51416f3c407e4c31e9c016616d57aae2687bd   }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
   clic:                 { git: "https://github.com/pulp-platform/clic.git"                , rev: bed98f8 }
+  fpnew:                { git: "https://github.com/pulp-platform/cvfpu.git"               , rev: pulp-v0.1.3 }
