@@ -9,7 +9,7 @@
 
 CAR_LD_DIR    ?= $(CAR_SW_DIR)/link
 
-RISCV_LDFLAGS ?= $(RISCV_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,) -L$(CHS_LD_DIR) -L$(CAR_LD_DIR)
+RISCV_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -Wl,) -L$(CHS_SW_LD_DIR) -L$(CAR_LD_DIR)
 
 car-sw-all: car-sw-libs car-sw-tests
 
@@ -28,7 +28,7 @@ CAR_SW_LIB_SRCS_O  = $(CAR_SW_DEPS_SRCS:.c=.o) $(CAR_SW_LIB_SRCS_S:.S=.o) $(CAR_
 CAR_SW_LIBS = $(CAR_SW_DIR)/lib/libcarfield.a
 
 $(CAR_SW_DIR)/lib/libcarfield.a: $(CAR_SW_LIB_SRCS_O)
-	$(RISCV_AR) $(RISCV_ARFLAGS) -rcsv $@ $^
+	$(CHS_SW_AR) $(CHS_SW_ARFLAGS) -rcsv $@ $^
 
 car-sw-libs: $(CAR_SW_LIBS)
 
@@ -39,16 +39,16 @@ car-sw-libs: $(CAR_SW_LIBS)
 # All objects require up-to-date patches and headers
 %.car.o: %.c
 	@echo $(CAR_SW_INCLUDES)
-	$(RISCV_CC) $(CAR_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $< -o $@
 
 %.car.o: %.S
-	$(RISCV_CC) $(CAR_SW_INCLUDES) $(RISCV_CCFLAGS) -c $< -o $@
+	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $< -o $@
 
 define car_ld_elf_rule
 .PRECIOUS: %.car.$(1).elf
 
 %.car.$(1).elf: $$(CAR_LD_DIR)/$(1).ld %.car.o $(CHS_SW_LIBS) $$(CAR_SW_LIBS)
-	$$(RISCV_CC) $$(CAR_SW_INCLUDES) -T$$< $$(RISCV_LDFLAGS) -o $$@ $$(filter-out $$<,$$^)
+	$$(CHS_SW_CC) $$(CAR_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$(filter-out $$<,$$^)
 endef
 
 $(foreach link,$(patsubst $(CAR_LD_DIR)/%.ld,%,$(wildcard $(CAR_LD_DIR)/*.ld)),$(eval $(call car_ld_elf_rule,$(link))))

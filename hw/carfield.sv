@@ -172,14 +172,14 @@ logic  l2_clk;
 
 // verilog_lint: waive-start line-length
 // Peripheral interrupts
-logic [(Cfg.NumExtRouterTargets*(CarfieldNumExtIntrs+NumIntIntrs))-1:0] chs_intrs_distributed;
-logic [Cfg.NumExtIrqHarts-1:0]                             chs_mti;
-logic [CarfieldNumPeriphsIntrs-1:0]                        car_periph_intrs;
+logic [Cfg.NumExtOutIntrs-1:0]      chs_intrs_distributed;
+logic [Cfg.NumExtIrqHarts-1:0]      chs_mti;
+logic [CarfieldNumPeriphsIntrs-1:0] car_periph_intrs;
 
-logic                                                      car_sys_timer_lo_intr, car_sys_timer_hi_intr,  car_sys_timer_lo_intr_sync, car_sys_timer_hi_intr_sync;
-logic [3:0]                                                car_adv_timer_intrs, car_adv_timer_events, car_adv_timer_intrs_sync, car_adv_timer_events_sync;
-logic [4:0]                                                car_wdt_intrs;
-logic                                                      car_can_intr;
+logic       car_sys_timer_lo_intr, car_sys_timer_hi_intr,  car_sys_timer_lo_intr_sync, car_sys_timer_hi_intr_sync;
+logic [3:0] car_adv_timer_intrs, car_adv_timer_events, car_adv_timer_intrs_sync, car_adv_timer_events_sync;
+logic [4:0] car_wdt_intrs;
+logic       car_can_intr;
 
 // Carfield peripheral interrupts
 // Propagate edge-triggered interrupts between periph and host clock domains
@@ -999,12 +999,11 @@ cheshire_wrap #(
   .ext_reg_async_slv_data_i (ext_reg_async_slv_data_in),
   // Interrupts from external devices
   .intr_ext_i        ( chs_ext_intrs ),
+  .intr_ext_o        ( chs_intrs_distributed ),
   // Interrupts to external harts
-  .meip_ext_o        ( /* Unused */ ),
-  .seip_ext_o        ( /* Unused */ ),
+  .xeip_ext_o        ( /* Unused */ ),
   .mtip_ext_o        ( chs_mti      ),
   .msip_ext_o        ( /* Unused */ ), // We use mailboxes for this
-  .intr_distributed_o ( chs_intrs_distributed ),
   // Debug interface to external harts
   .dbg_active_o      (           ),
   .dbg_ext_req_o     (           ),

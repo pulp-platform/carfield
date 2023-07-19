@@ -28,7 +28,7 @@ CLINTCORES     := 3
 # PLIC interruptible harts
 PLICCORES      := 6
 # PLIC number of input interrupts
-PLIC_NUM_INTRS := 128
+PLIC_NUM_INTRS := 89
 
 # Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
@@ -143,7 +143,7 @@ car-sim-init: chs-sim-init $(CAR_ROOT)/tb/hyp_vip scripts/carfield_compile.tcl
 ## @section Carfield SoC Simulation
 ## Compile the Carfield RTL using Questasim.
 car-hw-build: car-sim-init
-	$(QUESTA) vsim -c -do "source scripts/carfield_compile.tcl; exit"
+	$(QUESTA) vsim -c -do "quit -code [source scripts/carfield_compile.tcl]"
 
 .PHONY: car-hw-sim
 ## Run simulation of the carfield RTL.
