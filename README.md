@@ -18,9 +18,7 @@ To handle project dependencies, you can use
 
 ## Carfield Initialization
 To initialize Carfield, do the following:
- * Export the `RISCV` environment variable to the RISC-V toolchain. To work on IIS machines,
- do `export RISCV=/usr/pack/riscv-1.0-kgf/riscv64-gcc-11.2.0`.
- * Execute the command:
+* Execute the command:
 
    ```
    make car-init
@@ -28,17 +26,24 @@ To initialize Carfield, do the following:
 
    It will take care of:
 
-   ** Clone all the Carfield dependencies;
-   ** Initialize the [Cheshire SoC](https://github.com/pulp-platform/cheshire). This can be
+   1. Clone all the Carfield dependencies;
+   2. Initialize the [Cheshire SoC](https://github.com/pulp-platform/cheshire). This can be
 	  done separately by running `make chs-init`
-   ** Downloads the Hyperram models from the iis-gitlab. If you don't have access to it, you
+   3. Downloads the Hyperram models from the iis-gitlab. If you don't have access to it, you
 	  can also download the freely-available Hyperram models from
 	  [here](https://www.cypress.com/documentation/models/verilog/s27kl0641-s27ks0641-verilog)
 	  and unzip them according to the bender.
 
+* Check that you have a RISCV toolchain for both RV64 and RV32 ISAs. For ETH, type:
+   ```
+   source scripts/env-iis.sh
+   ```
+
 ## Simulation
 
 Follow these steps to launch a Carfield simulation:
+
+### Compile HW and SW
 
 * Generate the compile scripts for Questasim and compile Carfield.
 
@@ -55,9 +60,11 @@ Follow these steps to launch a Carfield simulation:
   make car-sw-build
   ```
 
-* Simulate a binary in RTL. The current supported bootmodes from Cheshire are:
+### System bootmodes
 
-  | Bootmode | Preload mode | Action |
+* The current supported bootmodes from Cheshire are:
+
+  | `CHS_BOOTMODE` | `CHS_PRELMODE` | Action |
   | --- | --- | --- |
   | 0 | 0 | Passive bootmode, JTAG preload |
   | 0 | 1 | Passive bootmode, Serial Link preload |
@@ -66,18 +73,33 @@ Follow these steps to launch a Carfield simulation:
   | 2 | - | Autonomous bootmode, SPI flash |
   | 3 | - | Autonomous bootmode, I2C EEPROM |
 
-  `Bootmode` indicates the available bootmodes in Cheshire, while `Preload mode`
-  indicates the type of preload, if any is needed. For RTL simulation, bootmodes
-  0, 2 and 3 are supported. SPI SD card bootmode is supported on FPGA emulation.
+  `Bootmode` indicates the available bootmodes in Cheshire, while `Preload mode` indicates the type
+  of preload, if any is needed. For RTL simulation, bootmodes 0, 2 and 3 are supported. SPI SD card
+  bootmode is supported on FPGA emulation.
 
-  To launch an RTL simulation with the selected boot and preload modes, type:
+* The current supported bootmodes ffrom the Safety Island are:
 
-  | Bootmode | Command |
+  | `SAFED_BOOTMODE` | Action |
   | --- | --- |
-  | 0 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> CHS_BINARY=<chs_binary_path>.car.elf SECD_BINARY=<secd_binary_path> SAFED_BINARY=<safed_binary_path>`  |
-  | 1, 2, 3 | `make car-hw-sim BOOTMODE=<bootmode> PRELMODE=<prelmode> CHS_IMAGE=<chs_binary_path>.car.memh`  |
+  | 0 | Passive bootmode, JTAG preload |
+  | 1 | Passive bootmode, Serial Link preload |
 
-  Default is passive bootmode with serial link preload.
+### Simulation
+
+To launch an RTL simulation with the selected boot/preload modes for the island of choice, type:
+
+
+* For cheshire in passive bootmode (`CHS_BOOTMODE=0`), set `CHS_BINARY` for Cheshire
+
+```
+make car-hw-sim CHS_BOOTMODE=<chs_bootmode> CHS_PRELMODE=<chs_prelmode> CHS_BINARY=<chs_binary_path>.car.elf PULPCL_BINARY=<pulpcl_binary> SPATZCL_BINARY=<spatzcl_binary> SECD_BINARY=<secd_binary_path> SAFED_BOOTMODE=<safed_bootmode> SAFED_BINARY=<safed_binary_path>
+```
+
+* For cheshire in autonomous bootmode (`CHS_BOOTMODE` = {1,2,3}), set `CHS_IMAGE` for Cheshire
+
+```
+make car-hw-sim CHS_BOOTMODE=<chs_bootmode> CHS_PRELMODE=<chs_prelmode> CHS_IMAGE=<chs_binary_path>.car.memh PULPCL_BINARY=<pulpcl_binary> SPATZCL_BINARY=<spatzcl_binary> SECD_BINARY=<secd_binary_path> SAFED_BOOTMODE=<safed_bootmode> SAFED_BINARY=<safed_binary_path>
+```
 
 ## License
 

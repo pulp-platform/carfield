@@ -32,6 +32,9 @@ workspace:
   package_links:
     cheshire: cheshire
     spatz: spatz
+    safety_island: safety_island
+    opentitan: opentitan
+    pulp_cluster: pulp_cluster
 
 sources:
   # Source files grouped in levels. Files in level 0 have no dependencies on files in this
@@ -52,6 +55,7 @@ sources:
   - target: test
     files:
       - tb/hyp_vip/s27ks0641.v
+      - tb/vip_carfield_soc.sv
       - tb/carfield_fix.sv
       - tb/carfield_tb.sv
 
@@ -62,7 +66,7 @@ sources:
   - target: all(synthesis, not(fpga))
     files:
       - target/synth/carfield_synth_wrap.sv
-  
+
   - target: all(xilinx, fpga)
     files:
       - target/xilinx/src/carfield_top_xilinx.sv

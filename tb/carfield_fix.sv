@@ -16,6 +16,7 @@ module carfield_soc_fixture;
 
   import cheshire_pkg::*;
   import carfield_pkg::*;
+  import safety_island_pkg::*;
 
   ///////////
   //  DPI  //
@@ -31,12 +32,14 @@ module carfield_soc_fixture;
   /////////
 
   localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
-
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
-  localparam int unsigned RstCycles = 5;
-  localparam real         TAppl     = 0.1;
-  localparam real         TTest     = 0.9;
+  localparam time         ClkPeriodSys  = 5ns;
+  localparam time         ClkPeriodJtag = 20ns;
+  localparam time         ClkPeriodRtc  = 30518ns;
+  localparam int unsigned RstCycles     = 5;
+  localparam real         TAppl         = 0.1;
+  localparam real         TTest         = 0.9;
 
   localparam int NumPhys  = 2;
   localparam int NumChips = 2;
@@ -46,6 +49,9 @@ module carfield_soc_fixture;
   logic       test_mode;
   logic [1:0] boot_mode;
   logic       rtc;
+
+  logic exit_status_safed;
+  logic [1:0] boot_mode_safed;
 
   logic jtag_tck;
   logic jtag_trst_n;
@@ -88,33 +94,25 @@ module carfield_soc_fixture;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_i;
   logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] slink_o;
 
-  logic [NumPhys-1:0][NumChips-1:0] hyper_cs_n_wire;
-  logic [NumPhys-1:0][NumChips-1:0] hyper_cs_pen_wire;
-  logic [NumPhys-1:0][NumChips-1:0] hyper_cs_pad_out;
-  logic [NumPhys-1:0]               hyper_ck_wire;
-  logic [NumPhys-1:0]               hyper_ck_out_wire;
-  logic [NumPhys-1:0]               hyper_ck_pen_wire;
-  logic [NumPhys-1:0]               hyper_ck_n_wire;
-  logic [NumPhys-1:0]               hyper_ck_n_out_wire;
-  logic [NumPhys-1:0]               hyper_ck_n_pen_wire;
+  logic [NumPhys-1:0][NumChips-1:0] hyper_cs_no;
+  logic [NumPhys-1:0]               hyper_ck_i;
+  logic [NumPhys-1:0]               hyper_ck_o;
+  logic [NumPhys-1:0]               hyper_ck_ni;
+  logic [NumPhys-1:0]               hyper_ck_no;
   logic [NumPhys-1:0]               hyper_rwds_o;
   logic [NumPhys-1:0]               hyper_rwds_i;
-  logic [NumPhys-1:0]               hyper_rwds_oe;
-  logic [NumPhys-1:0]               hyper_rwds_pen;
+  logic [NumPhys-1:0]               hyper_rwds_oe_o;
   logic [NumPhys-1:0][7:0]          hyper_dq_i;
   logic [NumPhys-1:0][7:0]          hyper_dq_o;
-  logic [NumPhys-1:0][7:0]          hyper_dq_pen;
-  logic [NumPhys-1:0]               hyper_dq_oe;
-  logic [NumPhys-1:0]               hyper_reset_n_wire;
-  logic [NumPhys-1:0]               hyper_rst_n_out_wire;
-  logic [NumPhys-1:0]               hyper_rst_n_pen_wire;
+  logic [NumPhys-1:0]               hyper_dq_oe_o;
+  logic [NumPhys-1:0]               hyper_reset_no;
 
-  wire [NumPhys-1:0][NumChips-1:0] pad_hyper_csn;
-  wire [NumPhys-1:0]               pad_hyper_ck;
-  wire [NumPhys-1:0]               pad_hyper_ckn;
-  wire [NumPhys-1:0]               pad_hyper_rwds;
-  wire [NumPhys-1:0]               pad_hyper_reset;
-  wire [NumPhys-1:0][7:0]          pad_hyper_dq;
+  wire [NumPhys-1:0][NumChips-1:0]  pad_hyper_csn;
+  wire [NumPhys-1:0]                pad_hyper_ck;
+  wire [NumPhys-1:0]                pad_hyper_ckn;
+  wire [NumPhys-1:0]                pad_hyper_rwds;
+  wire [NumPhys-1:0]                pad_hyper_reset;
+  wire [NumPhys-1:0][7:0]           pad_hyper_dq;
 
   carfield      #(
     .Cfg         ( DutCfg    ),
@@ -143,12 +141,12 @@ module carfield_soc_fixture;
     .jtag_ot_tdo_o              ( jtag_secd_tdo             ),
     .jtag_ot_tdo_oe_o           (                           ),
     .jtag_safety_island_tck_i   ( jtag_safed_tck            ),
-    .jtag_safety_island_trst_ni ( jtag_trst_n               ), // Temporary
-    .jtag_safety_island_tms_i   ( '0                        ), // Temporary
-    .jtag_safety_island_tdi_i   ( '0                        ), // Temporary
+    .jtag_safety_island_trst_ni ( jtag_safed_trst_n         ),
+    .jtag_safety_island_tms_i   ( jtag_safed_tms            ),
+    .jtag_safety_island_tdi_i   ( jtag_safed_tdi            ),
     .jtag_safety_island_tdo_o   ( jtag_safed_tdo            ),
-    .bootmode_ot_i              ( '0                        ), // Temporary
-    .bootmode_safe_isln_i       ( '0                        ), // Temporary
+    .bootmode_ot_i              ( '0                        ),
+    .bootmode_safe_isln_i       ( boot_mode_safed           ),
     .uart_tx_o                  ( uart_tx                   ),
     .uart_rx_i                  ( uart_rx                   ),
     .uart_ot_tx_o               (                           ),
@@ -193,16 +191,16 @@ module carfield_soc_fixture;
     .slink_rcv_clk_o            ( slink_rcv_clk_o           ),
     .slink_i                    ( slink_i                   ),
     .slink_o                    ( slink_o                   ),
-    .hyper_cs_no                ( hyper_cs_n_wire           ),
-    .hyper_ck_o                 ( hyper_ck_wire             ),
-    .hyper_ck_no                ( hyper_ck_n_wire           ),
+    .hyper_cs_no                ( hyper_cs_no               ),
+    .hyper_ck_o                 ( hyper_ck_o                ),
+    .hyper_ck_no                ( hyper_ck_no               ),
     .hyper_rwds_o               ( hyper_rwds_o              ),
     .hyper_rwds_i               ( hyper_rwds_i              ),
-    .hyper_rwds_oe_o            ( hyper_rwds_oe             ),
+    .hyper_rwds_oe_o            ( hyper_rwds_oe_o           ),
     .hyper_dq_i                 ( hyper_dq_i                ),
     .hyper_dq_o                 ( hyper_dq_o                ),
-    .hyper_dq_oe_o              ( hyper_dq_oe               ),
-    .hyper_reset_no             ( hyper_reset_n_wire        ),
+    .hyper_dq_oe_o              ( hyper_dq_oe_o             ),
+    .hyper_reset_no             ( hyper_reset_no            ),
     .ext_reg_async_slv_req_i    ( '0                        ),
     .ext_reg_async_slv_ack_o    (                           ),
     .ext_reg_async_slv_data_i   ( '0                        ),
@@ -212,91 +210,48 @@ module carfield_soc_fixture;
     .debug_signals_o            (                           )
   );
 
-  //////////////
-  // HyperRam //
-  //////////////
+  //////////////////
+  // Carfield VIP //
+  //////////////////
 
-  for (genvar i = 0 ; i<NumPhys; i++) begin : gen_hyper_phy
-    for (genvar j = 0; j<NumChips; j++) begin : gen_hyper_cs
-      pad_functional_pd padinst_hyper_csno (
-        .OEN ( 1'b0                    ),
-        .I   ( hyper_cs_n_wire[i][j]   ),
-        .O   ( hyper_cs_pad_out[i][j]  ),
-        .PEN ( hyper_cs_pen_wire[i][j] ),
-        .PAD ( pad_hyper_csn[i][j]     )
-      );
-    end
-    pad_functional_pd padinst_hyper_ck (
-      .OEN ( 1'b0                 ),
-      .I   ( hyper_ck_wire[i]     ),
-      .O   ( hyper_ck_out_wire[i] ),
-      .PEN ( hyper_ck_pen_wire[i] ),
-      .PAD ( pad_hyper_ck[i]      )
-    );
-    pad_functional_pd padinst_hyper_ckno   (
-      .OEN ( 1'b0                   ),
-      .I   ( hyper_ck_n_wire[i]     ),
-      .O   ( hyper_ck_n_out_wire[i] ),
-      .PEN ( hyper_ck_n_pen_wire[i] ),
-      .PAD ( pad_hyper_ckn[i]       )
-    );
-    pad_functional_pd padinst_hyper_rwds0  (
-      .OEN (~hyper_rwds_oe[i]  ),
-      .I   ( hyper_rwds_o[i]   ),
-      .O   ( hyper_rwds_i[i]   ),
-      .PEN ( hyper_rwds_pen[i] ),
-      .PAD ( pad_hyper_rwds[i] )
-    );
-    pad_functional_pd padinst_hyper_resetn (
-      .OEN ( 1'b0                    ),
-      .I   ( hyper_reset_n_wire[i]   ),
-      .O   ( hyper_rst_n_out_wire[i] ),
-      .PEN ( hyper_rst_n_pen_wire[i] ),
-      .PAD ( pad_hyper_reset[i]      )
-    );
-    for (genvar j = 0; j < 8; j++) begin : gen_hyper_dq
-      pad_functional_pd padinst_hyper_dqio0  (
-        .OEN (~hyper_dq_oe[i]     ),
-        .I   ( hyper_dq_o[i][j]   ),
-        .O   ( hyper_dq_i[i][j]   ),
-        .PEN ( hyper_dq_pen[i][j] ),
-        .PAD ( pad_hyper_dq[i][j] )
-      );
-    end
-  end : gen_hyper_phy
+  localparam int unsigned SafedNumAxiExtMstPorts   = 1;
+  localparam int unsigned PulpClNumAxiExtMstPorts  = 0;
+  localparam int unsigned SpatzClNumAxiExtMstPorts = 0;
+  localparam int unsigned CarNumAxiExtSlvPorts     = SafedNumAxiExtMstPorts + PulpClNumAxiExtMstPorts + SpatzClNumAxiExtMstPorts;
 
-  for (genvar i=0; i<NumPhys; i++) begin : hyperrams
-    for (genvar j=0; j<NumChips; j++) begin : chips
-      s27ks0641 #(
-        /*.mem_file_name ( "s27ks0641.mem"    ),*/
-        .TimingModel ( "S27KS0641DPBHI020"    )
-      ) dut (
-        .DQ7      ( pad_hyper_dq[i][7]  ),
-        .DQ6      ( pad_hyper_dq[i][6]  ),
-        .DQ5      ( pad_hyper_dq[i][5]  ),
-        .DQ4      ( pad_hyper_dq[i][4]  ),
-        .DQ3      ( pad_hyper_dq[i][3]  ),
-        .DQ2      ( pad_hyper_dq[i][2]  ),
-        .DQ1      ( pad_hyper_dq[i][1]  ),
-        .DQ0      ( pad_hyper_dq[i][0]  ),
-        .RWDS     ( pad_hyper_rwds[i]   ),
-        .CSNeg    ( pad_hyper_csn[i][j] ),
-        .CK       ( pad_hyper_ck[i]     ),
-        .CKNeg    ( pad_hyper_ckn[i]    ),
-        .RESETNeg ( pad_hyper_reset[i]  )
-      );
-    end
-  end
+  axi_mst_req_t [CarNumAxiExtSlvPorts-1:0] ext_to_vip_req;
+  axi_mst_rsp_t [CarNumAxiExtSlvPorts-1:0] ext_to_vip_rsp;
 
-  for (genvar p=0; p<NumPhys; p++) begin : sdf_annotation
-     for (genvar l=0; l<NumChips; l++) begin : sdf_annotation
-        initial begin
-           automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
-           $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
-           $display("Mem (%d,%d)",p,l);
-        end
-    end
-  end
+  axi_mst_req_t axi_muxed_req;
+  axi_mst_rsp_t axi_muxed_rsp;
+
+  // Verification IPs for carfield
+  vip_carfield_soc #(
+    .DutCfg        ( DutCfg ),
+    .ClkPeriodSys  ( ClkPeriodSys ),
+    .ClkPeriodJtag ( ClkPeriodJtag ),
+    .ClkPeriodRtc  ( ClkPeriodRtc),
+    .RstCycles     ( RstCycles ),
+    .TAppl         ( TAppl ),
+    .TTest         ( TTest ),
+    .NumAxiExtSlvPorts ( CarNumAxiExtSlvPorts ),
+    .axi_slv_ext_req_t ( axi_mst_req_t ),
+    .axi_slv_ext_rsp_t ( axi_mst_rsp_t )
+  ) car_vip (
+    // We use the clock/reset generated in cheshire VIP
+    .clk_vip (),
+    .rst_n_vip (),
+    // Multiplex incoming AXI req/rsp and convert t
+    // hrough serial link
+    .axi_slvs_req ( ext_to_vip_req ),
+    .axi_slvs_rsp ( ext_to_vip_rsp ),
+    .axi_muxed_req ( axi_muxed_req ),
+    .axi_muxed_rsp ( axi_muxed_rsp ),
+    .*
+  );
+
+  // I/O to INOUT behavioral conversion for carfield's peripherals that require it
+  vip_carfield_soc_tristate vip_tristate ( .* );
 
   //////////////////
   // Cheshire VIP //
@@ -310,24 +265,29 @@ module carfield_soc_fixture;
   wire [SpihNumCs-1:0] spih_csb;
   wire [ 3:0]          spih_sd;
 
+  // I/O to INOUT behavioral conversion for cheshire's peripherals that require it
   vip_cheshire_soc_tristate chs_vip_tristate (.*);
 
   // VIP
   vip_cheshire_soc #(
     .DutCfg            ( DutCfg ),
-    .RstCycles         ( RstCycles ),
-    .TAppl             ( TAppl ),
-    .TTest             ( TTest ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
     .axi_ext_mst_req_t ( axi_mst_req_t ),
-    .axi_ext_mst_rsp_t ( axi_mst_rsp_t )
+    .axi_ext_mst_rsp_t ( axi_mst_rsp_t ),
+    .ClkPeriodSys      ( ClkPeriodSys  ),
+    .ClkPeriodJtag     ( ClkPeriodJtag ),
+    .ClkPeriodRtc      ( ClkPeriodRtc  ),
+    .RstCycles         ( RstCycles ),
+    .TAppl             ( TAppl ),
+    .TTest             ( TTest )
   ) chs_vip (
     // We do not connect to axi_sim_mem, but to HyperRAM
     .axi_llc_mst_req ( '0 ),
     .axi_llc_mst_rsp (    ),
-    .axi_ext_mst_req ( '0 ),
-    .axi_ext_mst_rsp (    ),
+    // External AXI port
+    .axi_ext_mst_req ( axi_muxed_req ),
+    .axi_ext_mst_rsp ( axi_muxed_rsp ),
     .*
   );
 
@@ -335,15 +295,59 @@ module carfield_soc_fixture;
   // Safety island VIP //
   ///////////////////////
 
-  localparam time    ClkPeriodSafedJtag = 20ns;
+  localparam time ClkPeriodSafedJtag = 20ns;
 
-  // TODO
-  clk_rst_gen #(
-    .ClkPeriod    ( ClkPeriodSafedJtag ),
-    .RstClkCycles ( RstCycles )
-  ) i_clk_safety_island_jtag (
-    .clk_o  ( jtag_safed_tck ),
-    .rst_no ( )
+  localparam axi_in_t AxiIn = gen_axi_in(DutCfg);
+  localparam int unsigned AxiSlvIdWidth = DutCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+
+  // VIP
+  vip_safety_island_soc #(
+    .DutCfg            ( SafetyIslandCfg ),
+    .axi_mst_ext_req_t ( axi_mst_req_t ),
+    .axi_mst_ext_rsp_t ( axi_mst_rsp_t ),
+    .axi_slv_ext_req_t ( axi_mst_req_t ),
+    .axi_slv_ext_rsp_t ( axi_mst_rsp_t ),
+    .GlobalAddrWidth   ( 32            ),
+    .BaseAddr          ( 32'h6000_0000 ),
+    .AddrRange         ( SafetyIslandSize      ),
+    .MemOffset         ( SafetyIslandMemOffset ),
+    .PeriphOffset      ( SafetyIslandPerOffset ),
+    .ClkPeriodSys      ( ClkPeriodSys          ),
+    .ClkPeriodJtag     ( ClkPeriodSafedJtag    ),
+    .ClkPeriodRtc      ( ClkPeriodRtc          ),
+    .RstCycles         ( RstCycles             ),
+    .AxiDataWidth      ( DutCfg.AxiDataWidth   ),
+    .AxiAddrWidth      ( DutCfg.AddrWidth      ),
+    .AxiInputIdWidth   ( AxiSlvIdWidth         ),
+    .AxiOutputIdWidth  ( DutCfg.AxiMstIdWidth  ),
+    .AxiUserWidth      ( DutCfg.AxiUserWidth   ),
+    .AxiDebug          ( 0     ),
+    .ApplFrac          ( TAppl ),
+    .TestFrac          ( TTest )
+  ) safed_vip (
+    // we use the clock generated in cheshire VIP
+    .clk_vip      (),
+    .ext_clk_vip  (),
+    // we use the reset generated in cheshire VIP
+    .rst_n_vip    (),
+    .test_mode    (),
+    .boot_mode    ( boot_mode_safed ),
+    // we use the rtc generated in cheshire VIP
+    .rtc          (),
+    // Not used in carfield
+    .axi_mst_req  ( '0 ),
+    .axi_mst_rsp  (    ),
+    // Virtual driver to be multiplexed and then serialized through the serial link
+    .axi_slv_req  ( ext_to_vip_req[SafedNumAxiExtMstPorts-1:0] ),
+    .axi_slv_rsp  ( ext_to_vip_rsp[SafedNumAxiExtMstPorts-1:0] ),
+    // JTAG interface
+    .jtag_tck     ( jtag_safed_tck    ),
+    .jtag_trst_n  ( jtag_safed_trst_n ),
+    .jtag_tms     ( jtag_safed_tms    ),
+    .jtag_tdi     ( jtag_safed_tdi    ),
+    .jtag_tdo     ( jtag_safed_tdo    ),
+    // Exit
+    .exit_status  ( exit_status_safed )
   );
 
   /////////////////////////

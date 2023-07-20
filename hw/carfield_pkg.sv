@@ -374,9 +374,7 @@ localparam doub_bt L2Port2NonInterlBase = L2Port2Base + L2MemSize;
 /****************************/
 localparam int unsigned LogDepth = 3;
 localparam int unsigned SafetyIslandMemOffset = 'h0000_0000;
-localparam int unsigned SafetyIslandMemSize   = 'h0020_0000;
 localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
-localparam int unsigned SafetyIslandPerSize   = 'h0010_0000;
 
 /******************************/
 /* Integer Cluster Parameters */

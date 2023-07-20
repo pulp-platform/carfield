@@ -29,6 +29,7 @@ jobs:
           sw/include/regs/*.h
           .dir-locals.el
           utils/*
+          scripts/*
 
   lint-sv:
     runs-on: ubuntu-latest

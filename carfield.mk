@@ -14,14 +14,12 @@ CAR_SW_DIR := $(CAR_ROOT)/sw
 CAR_XIL_DIR := $(CAR_ROOT)/target/xilinx
 CAR_HW_DIR := $(CAR_ROOT)/hw
 
-# Bender
 BENDER   ?= bender
 QUESTA   ?= questa-2022.3
 VIVADO   ?= vitis-2020.2 vivado
 TBENCH   ?= tb_carfield_soc
-BOOTMODE ?= 0 # default passive bootmode
-PRELMODE ?= 1 # default serial link preload
 VOPTARGS ?=
+
 # Interrupt configuration in cheshire
 # CLINT interruptible harts
 CLINTCORES     := 3
@@ -30,19 +28,39 @@ PLICCORES      := 6
 # PLIC number of input interrupts
 PLIC_NUM_INTRS := 89
 
+# Cheshire
+CHS_ROOT ?= $(shell $(BENDER) path cheshire)
 # Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
 
-# Spatz
-SPATZ_ROOT ?= $(CAR_ROOT)/spatz
-SPATZ_MAKEDIR := $(SPATZ_ROOT)/hw/system/spatz_cluster
-
-TESTNAME ?= helloworld
-MEMTYPE  ?= spm
-CHS_BINARY   ?= $(CAR_ROOT)/sw/tests/hostd/$(TESTNAME).car.$(MEMTYPE).elf
-SECD_BINARY  ?= # TODO: secd sw root
-SAFED_BINARY ?= # TODo: safed sw root
+CHS_BOOTMODE ?= 0 # default passive bootmode
+CHS_PRELMODE ?= 1 # default serial link preload
+CHS_BINARY   ?= 
 CHS_IMAGE    ?=
+
+# Safety Island
+SAFED_ROOT     ?= $(shell $(BENDER) path safety_island)
+SAFED_SW_DIR   := $(SAFED_ROOT)/sw
+SAFED_BOOTMODE ?= 0
+SAFED_BINARY   ?=
+
+# Security island
+SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
+SECD_BINARY   ?=
+SECD_BOOTMODE ?=
+
+# PULP cluster
+PULPCL_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
+PULPCL_BINARY ?=
+
+# Spatz cluster
+SPATZCL_ROOT    ?= $(shell $(BENDER) path spatz)
+SPATZCL_MAKEDIR := $(SPATZCL_ROOT)/hw/system/spatz_cluster
+SPATZCL_BINARY  ?=
+
+# Default variable values for RTL simulation
+TBENCH         ?= tb_carfield_soc
+OPTARGS        ?=
 
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
@@ -50,6 +68,7 @@ include $(CAR_ROOT)/bender-common.mk
 include $(CAR_ROOT)/bender-sim.mk
 include $(CAR_ROOT)/bender-synth.mk
 include $(CAR_ROOT)/bender-xilinx.mk
+include $(CAR_ROOT)/bender-safed.mk
 
 # Setup Virtual Environment for python scripts (reggen)
 VENVDIR?=$(WORKDIR)/.venv
@@ -69,7 +88,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= f09457c9aabc3b150ae36c854961e89b679360aa
+CAR_NONFREE_COMMIT ?= 72bdf4836596be7c3a939e6bea71924811066e86
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -88,16 +107,16 @@ include $(CAR_SW_DIR)/sw.mk
 ##############
 # Simulation #
 ##############
-.PHONY: hw/regs/carfield_regs.hjson
-hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv | venv
+.PHONY: $(CAR_ROOT)/hw/regs/carfield_regs.hjson
+$(CAR_ROOT)/hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv | venv
 	$(VENV)/python ./scripts/csv_to_json.py --input $< --output $@
 
-.PHONY: hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv
-hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv: hw/regs/carfield_regs.hjson | venv
+.PHONY: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv
+$(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
 	$(VENV)/python utils/reggen/regtool.py -r $< --outdir $(dir $@)
 
-.PHONY: sw/include/regs/soc_ctrl.h
-sw/include/regs/soc_ctrl.h: hw/regs/carfield_regs.hjson | venv
+.PHONY: $(CAR_SW_DIR)/include/regs/soc_ctrl.h
+$(CAR_SW_DIR)/include/regs/soc_ctrl.h: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
 	$(VENV)/python utils/reggen/regtool.py -D $<  > $@
 
 ## @section Carfield SoC HW Generation
@@ -106,7 +125,7 @@ sw/include/regs/soc_ctrl.h: hw/regs/carfield_regs.hjson | venv
 ## hw/regs/carfield_regs.csv. You don't have to run this target unless you changed the CSV file. The
 ## checked-in pregenerated register file RTL should be up-to-date. If you regenerate the regfile, do
 ## not forget to check in the generated RTL.
-regenerate_soc_regs: hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv
+regenerate_soc_regs: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv $(CAR_SW_DIR)/include/regs/soc_ctrl.h 
 
 ## @section Carfield CLINT and PLIC interruptible harts configuration
 
@@ -134,7 +153,7 @@ $(CAR_ROOT)/tb/hyp_vip:
 
 .PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) --vlog-arg="$(VLOG_ARGS)" --compilation-mode separate > $@
+	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) $(safed_defs) --vlog-arg="$(VLOG_ARGS)" --compilation-mode separate > $@
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 
 .PHONY: car-sim-init
@@ -155,7 +174,21 @@ car-hw-build: car-sim-init
 ## @param VOPTARGS="" Additional arguments to Questa's vopt command.
 ## @param TBENCH=tb_carfield_soc The toplevel testbench to use. Defaults to 'tb_carfield_soc'.
 car-hw-sim:
-	$(QUESTA) vsim $(VSIM_FLAG) -do "set BOOTMODE $(BOOTMODE); set PRELMODE $(PRELMODE); set CHS_BINARY $(CHS_BINARY); set SECD_BINARY $(SECD_BINARY); set SAFED_BINARY $(SAFED_BINARY); set VOPTARGS $(VOPTARGS); set CHS_IMAGE $(CHS_IMAGE); set TESTBENCH $(TBENCH); source scripts/start_carfield.tcl ; add log -r sim:/$(TBENCH)/*; $(RUN_AND_EXIT)"
+	$(QUESTA) vsim $(VSIM_FLAG) -do \
+		"set CHS_BOOTMODE $(CHS_BOOTMODE); \
+		 set CHS_PRELMODE $(CHS_PRELMODE); \
+		 set CHS_BINARY $(CHS_BINARY); \
+		 set CHS_IMAGE $(CHS_IMAGE); \
+		 set SECD_BINARY $(SECD_BINARY); \
+		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
+		 set SAFED_BINARY $(SAFED_BINARY); \
+		 set PULPCL_BINARY $(PULPCL_BINARY); \
+		 set SPATZCL_BINARY $(SPATZCL_BINARY); \
+		 set VOPTARGS $(VOPTARGS); \
+		 set TESTBENCH $(TBENCH); \
+		 source scripts/start_carfield.tcl ; \
+		 add log -r sim:/$(TBENCH)/*; \
+		 $(RUN_AND_EXIT)"
 
 .PHONY: car-hw-clean
 ## Remove all simulation build artifacts
@@ -193,7 +226,7 @@ car-hw-init: spatz-hw-init chs-hw-init
 
 .PHONY: spatz-hw-init
 spatz-hw-init:
-	$(MAKE) -C $(SPATZ_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(CAR_HW_DIR)/cfg/spatz_carfield.hjson bootrom
+	$(MAKE) -C $(SPATZCL_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(CAR_HW_DIR)/cfg/spatz_carfield.hjson bootrom
 
 .PHONY: chs-hw-init
 ## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
@@ -209,17 +242,28 @@ chs-sim-init:
 .PHONY: chs-sw-build
 ## Builds the SW libraries in cheshire and generates an archive (`libcheshire.a`) available for
 ## carfield as static library at link time.
-chs-sw-build:
-	$(MAKE) chs-sw-all
+chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build
-	$(MAKE) car-sw-all
+car-sw-build: chs-sw-build car-sw-all
 
 .PHONY: car-init
 ## Shortcut to initialize carfield with all the targets described above.
-car-init: car-checkout car-hw-init car-sim-init car-sw-build
+car-init: car-checkout car-hw-init car-sim-init safed-sw-init
+
+# Initialize and build Safety Island SW
+.PHONY: safed-sw-init
+safed-sw-init: $(SAFED_ROOT) $(SAFED_SW_DIR)/pulp-runtime $(SAFED_SW_DIR)/pulp-freertos
+
+$(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
+	$(MAKE) -C $(SAFED_ROOT) pulp-runtime
+$(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
+	$(MAKE) -C $(SAFED_ROOT) pulp-freertos
+
+# For independent boot of an island, we allow to compile the binary standalone.
+.PHONY: safed-sw-build
+safed-sw-build: safed-sw-init safed-sw-all
 
 ############
 # RTL LINT #

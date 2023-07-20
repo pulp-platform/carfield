@@ -288,10 +288,10 @@ logic [CheshireNumIntHarts-1:0] safed_hostd_mbox_intr;   // from safety island t
 localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
 localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
 
-/*****************************/
-/* Wide Parameters: A48, D32 */
-/*****************************/
-localparam int unsigned AxiStrbWidth  = Cfg.AxiDataWidth / 8;
+///////////////////////////////
+// Wide Parameters: A48, D32 //
+///////////////////////////////
+
 localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
 // Wide AXI types
