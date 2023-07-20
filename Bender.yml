@@ -14,7 +14,7 @@ dependencies:
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.10                       }
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 31f30657937b3a50b761298289be68e613182d54 } # branch: michaero/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 2adb7271438cdb96c19fbaf3e2a6bf89ffeee568 } # branch: lv/phys_in_use
-  car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 4239b2a510d65aa110bcc8a070e434cabd1a8b9a } # branch: main
+  car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: d6ab486b2777bf78c38b49352b5977565a272a58 } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 382bc52d437c578cb68e4f5dcd1db291b3325001 } # branch: param_banks
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: adcdb725c916fbca7d3e4657f9a41c4f1fb482b6 } # branch: ck/carfield-1
   opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: 5ce64a6225e971c1e00ece29aa485f23a31aa7b2 } # branch: carfield
