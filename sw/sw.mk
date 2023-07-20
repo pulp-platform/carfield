@@ -80,11 +80,11 @@ include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk
 car-sw-offload-tests: safed-sw-all
 	$(foreach header,$(HEADER_TARGETS), \
 		cp $(header) $(CAR_SW_DIR)/tests/bare-metal/safed/payload.h; \
-		$(RISCV_CC) $(CAR_SW_INCLUDES) $(RISCV_CCFLAGS) -c $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o; \
-		$(RISCV_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(RISCV_LDFLAGS) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.elf  $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(RISCV_OBJDUMP) -d -S $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.elf   > $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.dump; \
-		$(RISCV_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(RISCV_LDFLAGS) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.elf  $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(RISCV_OBJDUMP) -d -S $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.elf > $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.dump; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CHS_SW_LDFLAGS) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.elf  $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+		$(CHS_SW_OBJDUMP) -d -S $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.elf   > $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.dump; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CHS_SW_LDFLAGS) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.elf  $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+		$(CHS_SW_OBJDUMP) -d -S $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.elf > $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.dump; \
 		$(RM) $(CAR_SW_DIR)/tests/bare-metal/safed/payload.h; \
 		$(RM) $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o; \
 	)
