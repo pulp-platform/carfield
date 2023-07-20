@@ -210,8 +210,6 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
   Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
   Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
-  Cva6CLICNumInterruptSrc : 128,
-  Cva6CLICIntCtlBits      : ariane_pkg::ArianeDefaultConfig.CLICIntCtlBits,
   Cva6NrPMPEntries  : 0,
   Cva6ExtCieLength  : 'h1000_0000, // [0x2000_0000, 0x7000_0000) is non-CIE,
                                    // [0x7000_0000, 0x8000_0000) is CIE
@@ -220,9 +218,13 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   DualCore          : 0,  // Only one core, but rest of config allows for two
   CoreMaxTxns       : 8,
   CoreMaxTxnsPerId  : 4,
-  // External interrupts
+  // Interrupt parameters
   NumExtIrqHarts    : CarfieldNumInterruptibleHarts,
-  NumExtRouterTargets : CarfieldNumRouterTargets,
+  NumExtInIntrs     : CarfieldNumExtIntrs,
+  NumExtClicIntrs   : CarfieldNumExtIntrs,
+  NumExtOutIntrTgts : 1,
+  NumExtOutIntrs    : CarfieldNumExtIntrs+$bits(cheshire_int_intr_t),
+  ClicIntCtlBits    : 8,
   // Interconnect
   AddrWidth         : 48,
   AxiDataWidth      : 64,

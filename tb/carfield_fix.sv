@@ -319,11 +319,15 @@ module carfield_soc_fixture;
     .TAppl             ( TAppl ),
     .TTest             ( TTest ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
-    .axi_ext_llc_rsp_t ( axi_llc_rsp_t )
+    .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
+    .axi_ext_mst_req_t ( axi_mst_req_t ),
+    .axi_ext_mst_rsp_t ( axi_mst_rsp_t )
   ) chs_vip (
     // We do not connect to axi_sim_mem, but to HyperRAM
     .axi_llc_mst_req ( '0 ),
     .axi_llc_mst_rsp (    ),
+    .axi_ext_mst_req ( '0 ),
+    .axi_ext_mst_rsp (    ),
     .*
   );
 
