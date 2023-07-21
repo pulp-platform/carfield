@@ -1149,7 +1149,9 @@ l2_wrap #(
   .L2MaxWriteTxns ( Cfg.LlcMaxWriteTxns  ),
   .AxiUserAmoMsb  ( Cfg.AxiUserAmoMsb    ),
   .AxiUserAmoLsb  ( Cfg.AxiUserAmoLsb    ),
-  .L2AmoNumCuts   ( Cfg.LlcAmoNumCuts    )
+  .L2AmoNumCuts   ( Cfg.LlcAmoNumCuts    ),
+  .l2_ecc_reg_req_t ( carfield_reg_req_t ),
+  .l2_ecc_reg_rsp_t ( carfield_reg_rsp_t )
 ) i_reconfigurable_l2 (
   .clk_i               ( l2_clk                               ),
   .rst_ni              ( l2_rst_n                             ),
@@ -1169,40 +1171,13 @@ l2_wrap #(
   .slvport_w_data_i    ( axi_slv_ext_w_data  [NumL2Ports-1:0] ),
   .slvport_w_wptr_i    ( axi_slv_ext_w_wptr  [NumL2Ports-1:0] ),
   .slvport_w_rptr_o    ( axi_slv_ext_w_rptr  [NumL2Ports-1:0] ),
+  .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [L2EccIdx-NumSyncRegIdx] ),
+  .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [L2EccIdx-NumSyncRegIdx] ),
+  .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[L2EccIdx-NumSyncRegIdx] ),
+  .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [L2EccIdx-NumSyncRegIdx] ),
+  .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [L2EccIdx-NumSyncRegIdx] ),
+  .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [L2EccIdx-NumSyncRegIdx] ),
   .ecc_error_o         ( l2_ecc_err                           )
-);
-
-// Todo connect regs to L2, move cdc into L2
-carfield_reg_req_t  l2_reg_req;
-carfield_reg_rsp_t  l2_reg_rsp;
-reg_cdc_dst #(
-  .req_t   (carfield_reg_req_t),
-  .rsp_t   (carfield_reg_rsp_t),
-  .CDC_KIND("cdc_4phase")
-) i_l2_reg_cdc_dst (
-  .dst_clk_i   (l2_clk),
-  .dst_rst_ni  (l2_rst_n),
-
-  .dst_req_o   (l2_reg_req),
-  .dst_rsp_i   (l2_reg_rsp),
-
-  .async_req_i ( ext_reg_async_slv_req_out  [L2EccIdx-NumSyncRegIdx]),
-  .async_ack_o ( ext_reg_async_slv_ack_in   [L2EccIdx-NumSyncRegIdx]),
-  .async_data_i( ext_reg_async_slv_data_out [L2EccIdx-NumSyncRegIdx]),
-
-  .async_req_o ( ext_reg_async_slv_req_in   [L2EccIdx-NumSyncRegIdx]),
-  .async_ack_i ( ext_reg_async_slv_ack_out  [L2EccIdx-NumSyncRegIdx]),
-  .async_data_o( ext_reg_async_slv_data_in  [L2EccIdx-NumSyncRegIdx])
-);
-
-reg_err_slv #(
-  .DW     (32),
-  .ERR_VAL(32'hBADCAB1E),
-  .req_t  (carfield_reg_req_t),
-  .rsp_t  (carfield_reg_rsp_t)
-) i_l2_reg_err (
-  .req_i(l2_reg_req),
-  .rsp_o(l2_reg_rsp)
 );
 
 // Safety Island

@@ -24,6 +24,9 @@ module l2_wrap
   parameter int unsigned AxiUserAmoMsb  = 1,
   parameter int unsigned AxiUserAmoLsb  = 0,
   parameter int unsigned L2AmoNumCuts   = 1,
+  /// ECC Reg Bus
+  parameter type         l2_ecc_reg_req_t = logic,
+  parameter type         l2_ecc_reg_rsp_t = logic,
   /// Mapping rules
   parameter int unsigned NumRules   = car_l2_pkg::NUM_MAP_TYPES * NumPort,
   /// L2 Memory settings
@@ -68,6 +71,12 @@ module l2_wrap
   input  logic [NumPort-1:0][ WWidth-1:0] slvport_w_data_i ,
   input  logic [NumPort-1:0][ LogDepth:0] slvport_w_wptr_i ,
   output logic [NumPort-1:0][ LogDepth:0] slvport_w_rptr_o ,
+  input  logic                            l2_ecc_reg_async_mst_req_i,
+  output logic                            l2_ecc_reg_async_mst_ack_o,
+  input  l2_ecc_reg_req_t                 l2_ecc_reg_async_mst_data_i,
+  output logic                            l2_ecc_reg_async_mst_req_o,
+  input  logic                            l2_ecc_reg_async_mst_ack_i,
+  output l2_ecc_reg_rsp_t                 l2_ecc_reg_async_mst_data_o,
   output logic                            ecc_error_o
 );
 
@@ -113,6 +122,28 @@ for (genvar i = 0; i < NumPort; i++) begin: gen_cdc_fifos
   );
 end
 
+l2_ecc_reg_req_t l2_ecc_reg_req;
+l2_ecc_reg_rsp_t l2_ecc_reg_rsp;
+
+reg_cdc_dst #(
+    .CDC_KIND ( "cdc_4phase" ),
+    .req_t     ( l2_ecc_reg_req_t ),
+    .rsp_t     ( l2_ecc_reg_rsp_t )
+ ) i_reg_cdc_dst (
+     .dst_clk_i   ( clk_i                       ),
+     .dst_rst_ni  ( pwr_on_rst_ni               ),
+     .dst_req_o   ( l2_ecc_reg_req              ),
+     .dst_rsp_i   ( l2_ecc_reg_rsp              ),
+
+     .async_req_i ( l2_ecc_reg_async_mst_req_i  ),
+     .async_ack_o ( l2_ecc_reg_async_mst_ack_o  ),
+     .async_data_i( l2_ecc_reg_async_mst_data_i ),
+
+     .async_req_o ( l2_ecc_reg_async_mst_req_o  ),
+     .async_ack_i ( l2_ecc_reg_async_mst_ack_i  ),
+     .async_data_o( l2_ecc_reg_async_mst_data_o )
+ );
+
 typedef struct packed {
   int unsigned             idx;
   logic [AxiAddrWidth-1:0] start_addr;
@@ -150,6 +181,8 @@ car_l2_top #(
   .ATM_USER_ID_LSB     ( AxiUserAmoLsb   ),
   .ATM_RISCV_WORD      ( 64              ),
   .ATM_NUM_CUTS        ( L2AmoNumCuts    ),
+  .l2_ecc_reg_req_t    ( l2_ecc_reg_req_t),
+  .l2_ecc_reg_rsp_t    ( l2_ecc_reg_rsp_t),
   .axi_req_t           ( axi_async_req_t ),
   .axi_resp_t          ( axi_async_rsp_t )
 ) i_l2_top             (
@@ -158,6 +191,8 @@ car_l2_top #(
   .mapping_rules_i     ( MappingRules    ),
   .axi_req_i           ( axi_async_req   ),
   .axi_resp_o          ( axi_async_rsp   ),
+  .l2_ecc_reg_req_i    ( l2_ecc_reg_req  ),
+  .l2_ecc_reg_rsp_o    ( l2_ecc_reg_rsp  ),
   .ecc_error_o         ( ecc_error_o     )
 );
 

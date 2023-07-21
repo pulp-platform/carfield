@@ -121,7 +121,7 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   car_l2:
-    revision: 4239b2a510d65aa110bcc8a070e434cabd1a8b9a
+    revision: d6ab486b2777bf78c38b49352b5977565a272a58
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git
