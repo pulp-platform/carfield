@@ -14,6 +14,21 @@
 #include "regs/soc_ctrl.h"
 #include "io.h"
 
+// execution error codes
+#define EHOSTDEXEC  1 // Execution error host domain
+#define ESAFEDEXEC  2 // Execution error safe domain
+#define EINTCLEXEC  3 // Execution error integer cluster
+#define EFPCLEXEC   4 // Execution error floating point cluster
+#define EPERIPHEXEC 5 // Execution error peripheral domain
+// access error codes
+#define EHOSTDNOACCES   6 // Access error in host domain
+#define ESAFEDNOACCES   7 // Access error in safe domain
+#define EINTCLNOACCES   8 // Access error in integer cluster
+#define EFPCLNOACCES    9 // Access error in floating point cluster
+#define EPERIPHNOACCES 10 // Access error in peripheral domain
+
+// Clock and reset control
+
 // for the calculation check safety island top
 #define SAFETY_ISLAND_BOOT_ADDR_RSVAL (CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR + 0x1080)
 
