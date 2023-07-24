@@ -839,17 +839,20 @@ carfield_axi_slv_rsp_t axi_mbox_rsp;
 // Host Clock Domain
 
 // Interrupts
-logic [CarfieldNumExtIntrs-1:0]      chs_ext_intrs;
-logic [IntClusterNumEoc-1:0] pulpcl_eoc;
+logic [CarfieldNumExtIntrs-1:0] chs_ext_intrs;
+logic [IntClusterNumEoc-1:0]    pulpcl_eoc;
+logic                           l2_ecc_err;
 
 // Edge-triggered interrupts from a different clock domain than cheshire (host clock domain) have
 // been synchronized already. Synchronization of level-sensitive interrupts is handled within the
 // module, before or inside the interrupt controller.
 assign chs_ext_intrs  = {
   // tie unused to 0
-  {(CarfieldNumExtIntrs-21){1'b0}},
+  {(CarfieldNumExtIntrs-22){1'b0}},
   // System peripherals
   car_periph_intrs,        // 16
+  // L2 ECC
+  l2_ecc_err,              // 1
   // Mailboxes
   secd_hostd_mbox_intr,    // 1
   safed_hostd_mbox_intr,   // 1
@@ -1140,7 +1143,6 @@ hyperbus_wrap      #(
 
 // Reconfigurable L2 Memory
 // Host Clock Domain
-logic l2_ecc_err;
 
 l2_wrap #(
   .NumPort      ( NumL2Ports             ),
