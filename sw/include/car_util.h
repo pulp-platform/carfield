@@ -62,10 +62,6 @@ enum car_rst {
     CAR_L2_RST       = 5,
 };
 
-// these do not exist so we set a dummy value
-#define CARFIELD_L2_ISOLATE_REG_OFFSET -1
-#define CARFIELD_L2_ISOLATE_STATUS_REG_OFFSET -1
-
 #define CARFIELD_HOST_CLK_EN_REG_OFFSET -1
 #define CARFIELD_HOST_CLK_SEL_REG_OFFSET -1
 #define CARFIELD_HOST_CLK_DIV_VALUE_REG_OFFSET -1
