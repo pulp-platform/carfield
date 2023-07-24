@@ -542,36 +542,36 @@ end
 // shared_l2_memory (sw reset 5)
 
 // Clock Multiplexing for each sub block
-  localparam int unsigned DomainClkDivValueWidth = 16;
-  typedef logic [DomainClkDivValueWidth-1:0] domain_clk_div_value_t;
-  logic [NumDomains-1:0] domain_clk;
-  logic [NumDomains-1:0] domain_clk_en;
-  logic [NumDomains-1:0] domain_clk_gated;
-  logic [NumDomains-1:0][1:0] domain_clk_sel;
+localparam int unsigned DomainClkDivValueWidth = 24;
+typedef logic [DomainClkDivValueWidth-1:0] domain_clk_div_value_t;
+logic [NumDomains-1:0] domain_clk;
+logic [NumDomains-1:0] domain_clk_en;
+logic [NumDomains-1:0] domain_clk_gated;
+logic [NumDomains-1:0][1:0] domain_clk_sel;
 
-  logic [NumDomains-1:0] domain_clk_div_changed;
-  logic [NumDomains-1:0] domain_clk_div_decoupled_valid, domain_clk_div_decoupled_ready;
-  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value;
-  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_decoupled;
-  logic [NumDomains-1:0] domain_clk_div_valid_synced, domain_clk_div_ready_synced;
-  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_synced;
+logic [NumDomains-1:0] domain_clk_div_changed;
+logic [NumDomains-1:0] domain_clk_div_decoupled_valid, domain_clk_div_decoupled_ready;
+domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value;
+domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_decoupled;
+logic [NumDomains-1:0] domain_clk_div_valid_synced, domain_clk_div_ready_synced;
+domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_synced;
 
-  // Note that each accelerator has two resets: One for the combined
-  // software/power-on reset and a power-on reset only
-  logic [NumDomains-1:0] pwr_on_rsts_n;
-  logic [NumDomains-1:0] rsts_n;
+// Note that each accelerator has two resets: One for the combined
+// software/power-on reset and a power-on reset only
+logic [NumDomains-1:0] pwr_on_rsts_n;
+logic [NumDomains-1:0] rsts_n;
 
 
-  // Each of the 5 clock gateable domains (periph, safety island, security island, spatz and pulp
-  // cluster) have the following clock distribution scheme:
-  // 1. For each domain the user selects one of 3 different clock sources (host clock, alt clock and
-  //    per clock). Each of these main clocks are either supplied externally, by a dedicated PLL per
-  //    clock source or by a single PLL that supplies all three clock sources. The configuration of
-  //    the clock source is handled by the external PLL wrapper configuration registers.
-  // 2. The selected clock source for the domain is fed into a default-bypassed arbitrary integer
-  //    clock divider with 50% duty cycle. This allows to use different integer clock divisions for
-  //    every target domain to use different clock frequencies.
-  // 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
+// Each of the 5 clock gateable domains (periph, safety island, security island, spatz and pulp
+// cluster) have the following clock distribution scheme:
+// 1. For each domain the user selects one of 3 different clock sources (host clock, alt clock and
+//    per clock). Each of these main clocks are either supplied externally, by a dedicated PLL per
+//    clock source or by a single PLL that supplies all three clock sources. The configuration of
+//    the clock source is handled by the external PLL wrapper configuration registers.
+// 2. The selected clock source for the domain is fed into a default-bypassed arbitrary integer
+//    clock divider with 50% duty cycle. This allows to use different integer clock divisions for
+//    every target domain to use different clock frequencies.
+// 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
 
 for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
   clk_mux_glitch_free #(
