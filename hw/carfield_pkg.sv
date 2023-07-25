@@ -222,7 +222,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                    // [0x7000_0000, 0x8000_0000) is CIE
   Cva6ExtCieOnTop   : 1,
   // Harts
-  DualCore          : 0,  // Only one core, but rest of config allows for two
+  NumCores          : 2,
   CoreMaxTxns       : 8,
   CoreMaxTxnsPerId  : 4,
   // Interrupt parameters
