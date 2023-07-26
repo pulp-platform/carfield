@@ -69,6 +69,7 @@ Follow these steps to launch a Carfield simulation:
   | 0 | 0 | Passive bootmode, JTAG preload |
   | 0 | 1 | Passive bootmode, Serial Link preload |
   | 0 | 2 | Passive bootmode, UART preload |
+  | 0 | 3 | Passive bootmode, Secure Boot from SECD |
   | 1 | - | Autonomous bootmode, SPI SD card |
   | 2 | - | Autonomous bootmode, SPI flash |
   | 3 | - | Autonomous bootmode, I2C EEPROM |
