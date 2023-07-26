@@ -286,8 +286,8 @@ module carfield_soc_fixture;
     .axi_llc_mst_req ( '0 ),
     .axi_llc_mst_rsp (    ),
     // External AXI port
-    .axi_ext_mst_req ( axi_muxed_req ),
-    .axi_ext_mst_rsp ( axi_muxed_rsp ),
+    .axi_slink_mst_req ( axi_muxed_req ),
+    .axi_slink_mst_rsp ( axi_muxed_rsp ),
     .*
   );
 
