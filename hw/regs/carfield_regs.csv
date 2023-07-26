@@ -15,10 +15,10 @@ PULP_CLUSTER_RST,1,rw,hro,0,0,"PULP Cluster reset -active high, inverted in HW-"
 SPATZ_CLUSTER_RST,1,rw,hro,0,0,"Spatz Cluster reset -active high, inverted in HW-"
 L2_RST,1,rw,hro,0,0,"L2 reset -active high, inverted in HW-"
 PERIPH_ISOLATE,1,rw,hro,0,0,Periph Domain  AXI isolate
-SAFETY_ISLAND_ISOLATE,1,rw,hro,0,0,Safety Island AXI isolate
-SECURITY_ISLAND_ISOLATE,1,rw,hro,0,0,Security Island AXI isolate
-PULP_CLUSTER_ISOLATE,1,rw,hro,0,0,PULP Cluster AXI isolate
-SPATZ_CLUSTER_ISOLATE,1,rw,hro,0,0,Spatz Cluster AXI isolate
+SAFETY_ISLAND_ISOLATE,1,rw,hro,0,1,Safety Island AXI isolate
+SECURITY_ISLAND_ISOLATE,1,rw,hro,0,1,Security Island AXI isolate
+PULP_CLUSTER_ISOLATE,1,rw,hro,0,1,PULP Cluster AXI isolate
+SPATZ_CLUSTER_ISOLATE,1,rw,hro,0,1,Spatz Cluster AXI isolate
 L2_ISOLATE,1,rw,hro,0,0,L2 AXI isolate
 PERIPH_ISOLATE_STATUS,1,rw,hwo,0,0,Periph Domain AXI isolate status
 SAFETY_ISLAND_ISOLATE_STATUS,1,rw,hwo,0,0,Safety Island AXI isolate status
@@ -27,10 +27,10 @@ PULP_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,0,PULP Cluster AXI isolate status
 SPATZ_CLUSTER_ISOLATE_STATUS,1,rw,hwo,0,0,Spatz Cluster AXI isolate status
 L2_ISOLATE_STATUS,1,rw,hwo,0,0,L2 AXI isolate status
 PERIPH_CLK_EN,1,rw,hro,0,1,Periph Domain clk gate enable
-SAFETY_ISLAND_CLK_EN,1,rw,hro,0,1,Safety Island clk gate enable
-SECURITY_ISLAND_CLK_EN,1,rw,hro,0,1,Security Island clk gate enable
-PULP_CLUSTER_CLK_EN,1,rw,hro,0,1,PULP Cluster clk gate enable
-SPATZ_CLUSTER_CLK_EN,1,rw,hro,0,1,Spatz Cluster clk gate enable
+SAFETY_ISLAND_CLK_EN,1,rw,hro,0,0,Safety Island clk gate enable
+SECURITY_ISLAND_CLK_EN,1,rw,hro,0,0,Security Island clk gate enable
+PULP_CLUSTER_CLK_EN,1,rw,hro,0,0,PULP Cluster clk gate enable
+SPATZ_CLUSTER_CLK_EN,1,rw,hro,0,0,Spatz Cluster clk gate enable
 L2_CLK_EN,1,rw,hro,0,1,Shared L2 memory clk gate enable
 PERIPH_CLK_SEL,2,rw,hro,0,2,"Periph Domain pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
 SAFETY_ISLAND_CLK_SEL,2,rw,hro,0,1,"Safety Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
