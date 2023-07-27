@@ -8,11 +8,10 @@
 # Robert Balas <balasr@iis.ee.ethz.ch>
 # Manuel Eggimann <meggiman@iis.ee.ethz.ch>
 
-CAR_ROOT ?= $(shell $(BENDER) path carfield)
-CHS_ROOT ?= $(CAR_ROOT)/cheshire
-CAR_SW_DIR := $(CAR_ROOT)/sw
+CAR_ROOT    ?= $(shell $(BENDER) path carfield)
+CAR_SW_DIR  := $(CAR_ROOT)/sw
 CAR_XIL_DIR := $(CAR_ROOT)/target/xilinx
-CAR_HW_DIR := $(CAR_ROOT)/hw
+CAR_HW_DIR  := $(CAR_ROOT)/hw
 
 BENDER   ?= bender
 QUESTA   ?= questa-2022.3
