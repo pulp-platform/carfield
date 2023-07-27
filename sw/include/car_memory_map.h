@@ -88,6 +88,11 @@ extern void *__base_l2;
 
 #define CAR_MBOX_BASE_ADDR           0x40000000
 
+// PLL
+#define CAR_PLL_BASE_ADDRESS         0x20020000
+#define PLL_ADDR_SPACE               0x200
+#define PLL_BASE_ADDRESS(id)         (CAR_PLL_BASE_ADDRESS + (id+1)*PLL_ADDR_SPACE)
+
 // Error codes
 #define EHOSTDEXEC 1 // Execution error host domain
 #define ESAFEDEXEC 2 // Execution error safe domain
