@@ -56,6 +56,7 @@ module cheshire_wrap
   parameter type cheshire_reg_ext_req_t         = logic,
   parameter type cheshire_reg_ext_rsp_t         = logic,
   parameter int unsigned LogDepth = 3,
+  parameter int unsigned CdcSyncStages = 2,
   parameter axi_in_t    AxiIn  = gen_axi_in(Cfg) ,
   parameter axi_out_t   AxiOut = gen_axi_out(Cfg),
   // LLC Parameters
@@ -465,6 +466,7 @@ for (genvar i = 0; i < Cfg.AxiExtNumSlv - 2; i++) begin: gen_ext_slv_src_cdc
 
   axi_cdc_src #(
     .LogDepth   ( LogDepth                       ),
+    .SyncStages ( CdcSyncStages                  ),
     .aw_chan_t  ( cheshire_axi_ext_slv_aw_chan_t ),
     .w_chan_t   ( cheshire_axi_ext_slv_w_chan_t  ),
     .b_chan_t   ( cheshire_axi_ext_slv_b_chan_t  ),
@@ -502,6 +504,7 @@ end
 for (genvar i = 0; i < Cfg.AxiExtNumMst - 1; i++) begin: gen_ext_mst_dst_cdc
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
+    .SyncStages ( CdcSyncStages              ),
     .aw_chan_t  ( cheshire_axi_ext_mst_aw_chan_t ),
     .w_chan_t   ( cheshire_axi_ext_mst_w_chan_t  ),
     .b_chan_t   ( cheshire_axi_ext_mst_b_chan_t  ),
@@ -558,6 +561,7 @@ axi_isolate              #(
 
 axi_cdc_src #(
   .LogDepth   ( LogDepth                       ),
+  .SyncStages ( CdcSyncStages                  ),
   .aw_chan_t  ( cheshire_axi_ext_llc_aw_chan_t ),
   .w_chan_t   ( cheshire_axi_ext_llc_w_chan_t  ),
   .b_chan_t   ( cheshire_axi_ext_llc_b_chan_t  ),
@@ -634,6 +638,7 @@ axi_isolate               #(
 
 axi_cdc_src  #(
   .LogDepth   ( LogDepth                     ),
+  .SyncStages ( CdcSyncStages                ),
   .aw_chan_t  ( axi_intcluster_slv_aw_chan_t ),
   .w_chan_t   ( axi_intcluster_slv_w_chan_t  ),
   .b_chan_t   ( axi_intcluster_slv_b_chan_t  ),
@@ -671,6 +676,7 @@ axi_intcluster_mst_rsp_t axi_intcluster_ser_mst_rsp;
 
 axi_cdc_dst #(
   .LogDepth   ( LogDepth                     ),
+  .SyncStages ( CdcSyncStages                ),
   .aw_chan_t  ( axi_intcluster_mst_aw_chan_t ),
   .w_chan_t   ( axi_intcluster_mst_w_chan_t  ),
   .b_chan_t   ( axi_intcluster_mst_b_chan_t  ),

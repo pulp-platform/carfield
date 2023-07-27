@@ -892,6 +892,7 @@ cheshire_wrap #(
   .cheshire_reg_ext_req_t         ( carfield_reg_req_t           ),
   .cheshire_reg_ext_rsp_t         ( carfield_reg_rsp_t           ),
   .LogDepth                       ( LogDepth                     ),
+  .CdcSyncStages                  ( SyncStages                   ),
   .AxiIn                          ( AxiIn                        ),
   .AxiOut                         ( AxiOut                       )
 ) i_cheshire_wrap                 (
@@ -1088,7 +1089,8 @@ hyperbus_wrap      #(
   .AxiSlaveBWidth   ( LlcBWidth                             ),
   .AxiSlaveRWidth   ( LlcRWidth                             ),
   .AxiSlaveWWidth   ( LlcWWidth                             ),
-  .AxiMaxTrans      ( Cfg.AxiMaxSlvTrans                    )
+  .AxiMaxTrans      ( Cfg.AxiMaxSlvTrans                    ),
+  .CdcSyncStages    ( SyncStages                            )
 ) i_hyperbus_wrap   (
   .clk_i               ( periph_clk         ),
   .rst_ni              ( periph_rst_n       ),
@@ -1140,6 +1142,7 @@ l2_wrap #(
   .AxiUserWidth ( Cfg.AxiUserWidth       ),
   .AxiMaxTrans  ( Cfg.AxiMaxSlvTrans     ),
   .LogDepth     ( LogDepth               ),
+  .CdcSyncStages( SyncStages             ),
   .NumRules     ( L2NumRules             ),
   .L2MemSize    ( L2MemSize              ),
   // Atomics
@@ -1238,6 +1241,8 @@ safety_island_synth_wrapper #(
   .AxiInIdWidth             ( AxiSlvIdWidth              ),
   .AxiOutIdWidth            ( Cfg.AxiMstIdWidth          ),
   .LogDepth                 ( LogDepth                   ),
+  .CdcSyncStages            ( SyncStages                 ),
+  .SyncStages               ( SyncStages                 ),
   .SafetyIslandBaseAddr     ( SafetyIslandBase           ),
   .SafetyIslandAddrRange    ( SafetyIslandSize           ),
   .SafetyIslandMemOffset    ( SafetyIslandMemOffset      ),
@@ -1337,6 +1342,7 @@ pulp_cluster #(
   .NB_SPERIPHS                    ( IntClusterNumSlvPer       ),
   .CLUSTER_ALIAS                  ( IntClusterAlias           ),
   .CLUSTER_ALIAS_BASE             ( IntClusterAliasBase       ),
+  .SynchStages                    ( SyncStages                ),
   .TCDM_SIZE                      ( IntClusterTcdmSize        ),
   .NB_TCDM_BANKS                  ( IntClusterTcdmBanks       ),
   .HWPE_PRESENT                   ( IntClusterHwpePresent     ),
@@ -1368,7 +1374,8 @@ pulp_cluster #(
   .AXI_ID_IN_WIDTH                ( IntClusterAxiIdInWidth    ),
   .AXI_ID_OUT_WIDTH               ( IntClusterAxiIdOutWidth   ),
   .LOG_DEPTH                      ( LogDepth                  ),
-  .BaseAddr                       ( IntClusterBaseAddr        )
+  .BaseAddr                       ( IntClusterBaseAddr        ),
+  .CDC_SYNC_STAGES                ( SyncStages                )
 ) i_integer_cluster            (
   .clk_i                       ( pulp_clk                                  ),
   .rst_ni                      ( pulp_rst_n                                ),
@@ -1441,13 +1448,15 @@ logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr = { chs_mti[FPCluster
 // verilog_lint: waive-stop line-length
 
 if (IslandsCfg.EnSpatzCluster) begin : gen_spatz_cluster
-spatz_cluster_wrapper #(
+  spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth     ),
     .AxiDataWidth             ( Cfg.AxiDataWidth  ),
     .AxiUserWidth             ( Cfg.AxiUserWidth  ),
     .AxiInIdWidth             ( AxiSlvIdWidth     ),
     .AxiOutIdWidth            ( Cfg.AxiMstIdWidth ),
-    .LogDepth                 ( LogDepth ),
+    .LogDepth                 ( LogDepth          ),
+    .CdcSyncStages            ( SyncStages        ),
+    .SyncStages               ( SyncStages        ),
 
     // AXI type IN
     .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
@@ -1560,7 +1569,9 @@ secure_subsystem_synth_wrap #(
   .axi_ot_out_ar_chan_t  ( carfield_axi_mst_ar_chan_t ),
   .axi_ot_out_r_chan_t   ( carfield_axi_mst_r_chan_t  ),
   .axi_ot_out_req_t      ( carfield_axi_mst_req_t     ),
-  .axi_ot_out_resp_t     ( carfield_axi_mst_rsp_t     )
+  .axi_ot_out_resp_t     ( carfield_axi_mst_rsp_t     ),
+  .CdcSyncStages         ( SyncStages                 ),
+  .SyncStages            ( SyncStages                 )
 ) i_security_island (
   .clk_i            ( security_clk    ),
   .clk_ref_i        ( rt_clk_i        ),
@@ -1788,6 +1799,7 @@ carfield_axi_slv_rsp_t axi_ethernet_rsp;
 if (IslandsCfg.EnEthernet) begin : gen_ethernet
 axi_cdc_dst #(
   .LogDepth   ( LogDepth                   ),
+  .SyncStages ( SyncStages                 ),
   .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
   .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
   .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
@@ -1843,6 +1855,7 @@ carfield_axi_slv_rsp_t axi_d64_a48_peripherals_rsp;
 
 axi_cdc_dst #(
   .LogDepth   ( LogDepth                   ),
+  .SyncStages ( SyncStages                 ),
   .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
   .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
   .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
