@@ -5,8 +5,6 @@ We keep all RTL changes relevant for weekly releases here
 ## Unreleased
 
 ### Carfield Top
-- Bump FPU with fixes
-- Bump AXI with proper release
 
 ### Cheshire
 
@@ -15,12 +13,45 @@ We keep all RTL changes relevant for weekly releases here
 ### Security Island
 
 ### Spatz
-- Align commit to released version (v0.4.1)
 
 ### PULP Cluster
 
 ### L2 Memory
-- Update with ECC manager and register interface port
+
+
+## Weekly 2023_07_28 (weekly_20230728)
+
+### Carfield Top
+- Bump FPU with fixes (`pulp-v0.1.3`)
+- Bump AXI with proper release (`v0.39.0`)
+- Add new preload mode (`3`) to boot from Security Island
+- **[Interface]** Increase Serial Link data lanes to 8 (previously 4)
+
+### Cheshire
+- Align Cheshire to main branch
+  - Add external serial link AXI port in `vip_cheshire.sv`
+
+### Safety Island
+
+### Security Island
+- Update dependency
+  - Add `carfield_boot` code to boot cva6 from Ibex in OT
+
+### Spatz
+- Align commit to released version (`v0.4.2`)
+  - Fix and cleanup FFT kernel
+  - Update carfield configuration (latency of fp64 and sdotp)
+  - Remove register_offload_req parameter
+  - Pipeline the core response
+  - Add the dp-fdotp kernel and dp-faxpy kernel
+  - Remove manually-inserted test ports
+  - Update testbench
+  - **[Interface]** Remove testmode, scan enable and scan data signals
+
+### PULP Cluster
+
+### L2 Memory
+- **[Interface]** Update with ECC manager and register interface port
 
 
 ## Weekly 2023_07_20 (weekly_20230720)
