@@ -165,6 +165,10 @@ localparam bit [3:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'
 // Ext Masters: Integer Cluster + Security Island + Safety Island + Floating Point Cluster
 localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1 + 3'd1;
 
+// Synchronization stages (for FIFOs read/write pointers and single-bit signals syncronization after
+// CDCs)
+localparam int unsigned SyncStages = 3;
+
 // Hart IDs
 typedef bit [5:0] hartid_t;
 
@@ -225,6 +229,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   NumExtOutIntrTgts : 1,
   NumExtOutIntrs    : CarfieldNumExtIntrs+$bits(cheshire_int_intr_t),
   ClicIntCtlBits    : 8,
+  NumExtIntrSyncs   : SyncStages,
   // Interconnect
   AddrWidth         : 48,
   AxiDataWidth      : 64,
@@ -359,6 +364,9 @@ localparam islands_cfg_t IslandsCfgDefault = '{
   default         : '1
 };
 
+// CDC FIFO parameters (FIFO depth).
+localparam int unsigned LogDepth   = 3;
+
 /*****************/
 /* L2 Parameters */
 /*****************/
@@ -372,7 +380,6 @@ localparam doub_bt L2Port2NonInterlBase = L2Port2Base + L2MemSize;
 /****************************/
 /* Safety Island Parameters */
 /****************************/
-localparam int unsigned LogDepth = 3;
 localparam int unsigned SafetyIslandMemOffset = 'h0000_0000;
 localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
 
