@@ -95,6 +95,10 @@ module tb_carfield_soc;
         fix.chs_vip.jtag_init();
         fix.chs_vip.jtag_wait_for_eoc(exit_code);
       end
+
+      $display("Wait for OT to boot..."); // TODO: is there a better way to fix this?
+      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+
       $finish;
     end
   end
@@ -123,6 +127,10 @@ module tb_carfield_soc;
           $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
         end
       endcase
+
+      $display("Wait for OT to boot..."); // TODO: is there a better way to fix this?
+      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+
       $finish;
     end
   end
