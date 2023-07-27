@@ -22,43 +22,36 @@ import os.path
 import struct
 import argparse
 
-#c_header = """\
-#// Auto-generated code
-##ifdef USE_HYPER
-##include "hyperbus_test.h"
-##endif
-#
-#extern int __cluster_code_start;
-#extern int __cluster_code_end;
-#
-#"""
-#c_function = """\
-#   #ifdef CLUSTER_BIN
-#      uint32_t *p, *end, *p0;
-#      p = (uint32_t*)&__cluster_code_start;
-#      p0 = (uint32_t*)&__cluster_code_start;
-#      end = (uint32_t*)&__cluster_code_end;
-#       #ifdef USE_HYPER
-#         udma_hyper_setup();
-#         set_pagebound_hyper(2048);
-#         udma_hyper_dread((end-p)*4,p-0x80000000, 0x1C000000, 128, 0);
-#         udma_hyper_wait(0);
-#       #else
-#         uint32_t * addr;
-#         while(p<end){
-#           addr = 0x1C000000 + ((p - p0)*4);
-#           pulp_write32(addr,pulp_read32(p));
-#           p++;
-#         }
-#       #endif
-#  #else
-#"""
-
 c_header = """\
 // Auto-generated code
+#ifdef USE_HYPER
+#include "hyperbus_test.h"
+#endif
+
+extern int __cluster_code_start;
+extern int __cluster_code_end;
 
 """
 c_function = """\
+   #ifdef CLUSTER_BIN
+      uint32_t *p, *end, *p0;
+      p = (uint32_t*)&__cluster_code_start;
+      p0 = (uint32_t*)&__cluster_code_start;
+      end = (uint32_t*)&__cluster_code_end;
+       #ifdef USE_HYPER
+         udma_hyper_setup();
+         set_pagebound_hyper(2048);
+         udma_hyper_dread((end-p)*4,p-0x80000000, 0x1C000000, 128, 0);
+         udma_hyper_wait(0);
+       #else
+         uint32_t * addr;
+         while(p<end){
+           addr = 0x1C000000 + ((p - p0)*4);
+           pulp_write32(addr,pulp_read32(p));
+           p++;
+         }
+       #endif
+  #else
 """
 
 class stim(object):
@@ -149,11 +142,11 @@ class stim(object):
 
     with open(filename, 'w') as file:
       file.write(c_header)
-      file.write('int load_safed_payload() {\n' )
+      file.write('int load_binary() {\n' )
       file.write(c_function)
       for key in sorted(self.mem.keys()):
         file.write('  (*(volatile unsigned int *)(uint64_t)(0x%X)) = 0x%0*X ;\n' % (int(key), width*2, self.mem.get(key)))
-      #file.write('#endif\n')
+      file.write('#endif\n')
       file.write('return 0; \n }\n')
 
 

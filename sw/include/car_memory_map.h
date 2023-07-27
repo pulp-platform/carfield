@@ -16,6 +16,7 @@
 #define __CAR_MEMORY_MAP_H
 
 #include "regs/safety_soc_ctrl.h"
+#include "regs/soc_ctrl.h"
 
 // Base addresses provided at link time
 extern void *__base_l2;
@@ -53,6 +54,12 @@ extern void *__base_l2;
 // Integer Cluster
 #define CAR_INT_CLUSTER_SPM_BASE_ADDR 0x50000000
 #define CAR_INT_CLUSTER_SPM_END_ADDR  0x50040000
+
+#define CAR_INT_CLUSTER_PERIPH_OFFS    0x00200000
+#define CAR_INT_CLUSTER_CTRL_UNIT_OFFS 0x00000000
+
+#define CAR_INT_CLUSTER_BOOT_ADDR_OFFS 0x40
+#define CAR_INT_CLUSTER_BOOT_ADDR_REG (CAR_INT_CLUSTER_SPM_BASE_ADDR + CAR_INT_CLUSTER_PERIPH_OFFS + CAR_INT_CLUSTER_CTRL_UNIT_OFFS + CAR_INT_CLUSTER_BOOT_ADDR_OFFS)
 
 // Floating Point Spatz Cluster
 #define CAR_FP_CLUSTER_SPM_BASE_ADDR 0x51000000
@@ -98,5 +105,11 @@ extern void *__base_l2;
 #define ESAFEDEXEC 2 // Execution error safe domain
 #define EINTCLEXEC 3 // Execution error integer cluster
 #define EFPCLEXEC  4 // Execution error floating point cluster
+
+// Memory-mapped registers
+#define CAR_INT_CLUSTER_FETCHEN_ADDR (CAR_SOC_CTRL_BASE_ADDR + CARFIELD_PULP_CLUSTER_FETCH_ENABLE_REG_OFFSET)
+#define CAR_INT_CLUSTER_BOOTEN_ADDR  (CAR_SOC_CTRL_BASE_ADDR + CARFIELD_PULP_CLUSTER_BOOT_ENABLE_REG_OFFSET)
+#define CAR_INT_CLUSTER_BUSY_ADDR    (CAR_SOC_CTRL_BASE_ADDR + CARFIELD_PULP_CLUSTER_BUSY_REG_OFFSET)
+#define CAR_INT_CLUSTER_EOC_ADDR     (CAR_SOC_CTRL_BASE_ADDR + CARFIELD_PULP_CLUSTER_EOC_REG_OFFSET)
 
 #endif /* __CAR_MEMORY_MAP_H */

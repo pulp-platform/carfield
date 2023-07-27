@@ -37,7 +37,7 @@ CHS_ROOT ?= $(shell $(BENDER) path cheshire)
 
 CHS_BOOTMODE ?= 0 # default passive bootmode
 CHS_PRELMODE ?= 1 # default serial link preload
-CHS_BINARY   ?= 
+CHS_BINARY   ?=
 CHS_IMAGE    ?=
 
 # Safety Island
@@ -52,8 +52,8 @@ SECD_BINARY   ?=
 SECD_BOOTMODE ?=
 
 # PULP cluster
-PULPCL_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
-PULPCL_BINARY ?=
+PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
+PULPD_BINARY ?=
 
 # Spatz cluster
 SPATZCL_ROOT    ?= $(shell $(BENDER) path spatz)
@@ -191,7 +191,7 @@ car-hw-sim:
 		 set SECD_BINARY $(SECD_BINARY); \
 		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
 		 set SAFED_BINARY $(SAFED_BINARY); \
-		 set PULPCL_BINARY $(PULPCL_BINARY); \
+		 set PULPD_BINARY $(PULPD_BINARY); \
 		 set SPATZCL_BINARY $(SPATZCL_BINARY); \
 		 set VOPTARGS $(VOPTARGS); \
 		 set TESTBENCH $(TBENCH); \
@@ -259,10 +259,11 @@ car-sw-build: chs-sw-build car-sw-all
 
 .PHONY: car-init
 ## Shortcut to initialize carfield with all the targets described above.
-car-init: car-checkout car-hw-init car-sim-init safed-sw-init
+car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init
 
-# Initialize and build Safety Island SW
-.PHONY: safed-sw-init
+# Initialize and build SW for the Islands
+.PHONY: safed-sw-init pulpd-sw-init
+# Safety Island
 safed-sw-init: $(SAFED_ROOT) $(SAFED_SW_DIR)/pulp-runtime $(SAFED_SW_DIR)/pulp-freertos
 
 $(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
@@ -270,9 +271,18 @@ $(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
 $(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
 	$(MAKE) -C $(SAFED_ROOT) pulp-freertos
 
+# PULP Cluster
+pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
+
+$(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
+	$(MAKE) -C $(PULPD_ROOT) pulp-runtime
+$(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
+	$(MAKE) -C $(PULPD_ROOT) regression-tests
+
 # For independent boot of an island, we allow to compile the binary standalone.
-.PHONY: safed-sw-build
-safed-sw-build: safed-sw-init safed-sw-all
+.PHONY: safed-sw-build pulpd-sw-build
+safed-sw-build: safed-sw-all
+pulpd-sw-build: pulpd-sw-all
 
 ############
 # RTL LINT #

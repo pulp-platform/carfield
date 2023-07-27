@@ -412,7 +412,7 @@ localparam int unsigned IntClusterSharedFpuDivSqrt = 0;
 localparam int unsigned IntClusterNumAxiMst = 3;
 localparam int unsigned IntClusterNumAxiSlv = 4;
 // IntClusterAxiIdInWidth is fixed from PULP Cluster
-localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 1;
+localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 3;
 localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterMaxUniqId = 1;
