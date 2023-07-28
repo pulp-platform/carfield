@@ -8,11 +8,10 @@
 # Robert Balas <balasr@iis.ee.ethz.ch>
 # Manuel Eggimann <meggiman@iis.ee.ethz.ch>
 
-CAR_ROOT ?= $(shell $(BENDER) path carfield)
-CHS_ROOT ?= $(CAR_ROOT)/cheshire
-CAR_SW_DIR := $(CAR_ROOT)/sw
+CAR_ROOT    ?= $(shell $(BENDER) path carfield)
+CAR_SW_DIR  := $(CAR_ROOT)/sw
 CAR_XIL_DIR := $(CAR_ROOT)/target/xilinx
-CAR_HW_DIR := $(CAR_ROOT)/hw
+CAR_HW_DIR  := $(CAR_ROOT)/hw
 
 BENDER   ?= bender
 QUESTA   ?= questa-2022.3
@@ -27,6 +26,9 @@ CLINTCORES     := 3
 PLICCORES      := 6
 # PLIC number of input interrupts
 PLIC_NUM_INTRS := 89
+
+# Serial Link configuration in cheshire
+SERIAL_LINK_NUM_BITS := 16
 
 # Cheshire
 CHS_ROOT ?= $(shell $(BENDER) path cheshire)
@@ -139,6 +141,13 @@ update_plic: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	sed -i 's/src: .*/src: $(PLIC_NUM_INTRS),/' $<
 	sed -i 's/target: .*/target: $(PLICCORES),/' $<
 
+# @section Serial Link configuration
+## The default configuration in cheshire allows for 4 data lanes for the serial link. We update the
+## configuration to 8 data lanes.
+.PHONY: update_serial_link
+update_serial_link: $(CHS_ROOT)/hw/serial_link.hjson
+	sed -i 's/\(default: "\)8/\116/' $<
+
 $(CAR_ROOT)/tb/hyp_vip:
 	rm -rf $@
 	mkdir $@
@@ -231,7 +240,7 @@ spatz-hw-init:
 .PHONY: chs-hw-init
 ## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
 ## hardware.
-chs-hw-init: update_plic
+chs-hw-init: update_plic update_serial_link
 	$(MAKE) chs-hw-all
 
 .PHONY: chs-sim-init
