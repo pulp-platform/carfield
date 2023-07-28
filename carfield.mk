@@ -21,9 +21,9 @@ VOPTARGS ?=
 
 # Interrupt configuration in cheshire
 # CLINT interruptible harts
-CLINTCORES     := 3
+CLINTCORES     := 4
 # PLIC interruptible harts
-PLICCORES      := 6
+PLICCORES      := 8
 # PLIC number of input interrupts
 PLIC_NUM_INTRS := 89
 
