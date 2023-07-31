@@ -79,11 +79,9 @@ module tb_carfield_soc;
           end 2: begin // Standalone UART passive preload
             fix.chs_vip.uart_debug_elf_run_and_wait(chs_preload_elf, exit_code);
           end 3: begin  // Secure boot: Opentitan booting CVA6
-            if (chs_preload_elf != "") begin
-              fix.chs_vip.slink_elf_preload(chs_preload_elf, unused);
-              fix.chs_vip.jtag_init();
-              fix.chs_vip.jtag_wait_for_eoc(exit_code);
-            end
+            fix.chs_vip.slink_elf_preload(chs_preload_elf, unused);
+            fix.chs_vip.jtag_init();
+            fix.chs_vip.jtag_wait_for_eoc(exit_code);
           end default: begin
             $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
           end
