@@ -50,7 +50,6 @@ module carfield_soc_fixture;
   logic [1:0] boot_mode;
   logic       rtc;
 
-  logic exit_status_safed;
   logic [1:0] boot_mode_safed;
 
   logic jtag_tck;
@@ -347,7 +346,7 @@ module carfield_soc_fixture;
     .jtag_tdi     ( jtag_safed_tdi    ),
     .jtag_tdo     ( jtag_safed_tdo    ),
     // Exit
-    .exit_status  ( exit_status_safed )
+    .exit_status  ( )
   );
 
   /////////////////////////

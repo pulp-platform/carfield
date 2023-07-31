@@ -137,16 +137,15 @@ module tb_carfield_soc;
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("SECD_BINARY=%s", secd_preload_elf)) secd_preload_elf = "";
-      // Security Island
-      if (secd_preload_elf != "") begin
-        // Wait before security island HW is initialized
-        repeat(10000)
-          @(posedge fix.clk);
-        fix.debug_secd_module_init();
-        fix.load_secd_binary(secd_preload_elf);
-        fix.jtag_secd_data_preload();
-        fix.jtag_secd_wakeup(32'h E0000080);
-      end
+
+    if (secd_preload_elf != "") begin
+      // Wait before security island HW is initialized
+      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      fix.debug_secd_module_init();
+      fix.load_secd_binary(secd_preload_elf);
+      fix.jtag_secd_data_preload();
+      fix.jtag_secd_wakeup(32'hE0000080);
+    end
   end
 
   // pulp cluster standalone
