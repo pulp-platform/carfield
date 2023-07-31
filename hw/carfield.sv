@@ -599,7 +599,8 @@ for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
     .data_i  ( domain_clk_div_value[i]           ),
     .valid_o ( domain_clk_div_decoupled_valid[i] ),
     .ready_i ( domain_clk_div_decoupled_ready[i] ),
-    .data_o  ( domain_clk_div_value_decoupled[i] )
+    .data_o  ( domain_clk_div_value_decoupled[i] ),
+    .busy_o  ( )
   );
 
   // We have to synchronize the division value into the clock domain of the undivided source clock.
