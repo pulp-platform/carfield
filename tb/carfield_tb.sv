@@ -141,10 +141,10 @@ module tb_carfield_soc;
     if (secd_preload_elf != "") begin
       // Wait before security island HW is initialized
       wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
-      fix.debug_secd_module_init();
-      fix.load_secd_binary(secd_preload_elf);
-      fix.jtag_secd_data_preload();
-      fix.jtag_secd_wakeup(32'hE0000080);
+      fix.secd_vip.debug_secd_module_init();
+      fix.secd_vip.load_secd_binary(secd_preload_elf);
+      fix.secd_vip.jtag_secd_data_preload();
+      fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
     end
   end
 
