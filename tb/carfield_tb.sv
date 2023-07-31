@@ -94,8 +94,8 @@ module tb_carfield_soc;
         fix.chs_vip.jtag_wait_for_eoc(exit_code);
       end
 
-      $display("Wait for OT to boot..."); // TODO: is there a better way to fix this?
-      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      // Eventually wait for HWRoT to end initialization anda ssert Ibex's fetch enable
+      fix.passthrough_or_wait_for_secd_hw_init();
 
       $finish;
     end
@@ -126,8 +126,8 @@ module tb_carfield_soc;
         end
       endcase
 
-      $display("Wait for OT to boot..."); // TODO: is there a better way to fix this?
-      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      // Eventually wait for HWRoT to end initialization and assert Ibex's fetch enable
+      fix.passthrough_or_wait_for_secd_hw_init();
 
       $finish;
     end
@@ -140,7 +140,8 @@ module tb_carfield_soc;
 
     if (secd_preload_elf != "") begin
       // Wait before security island HW is initialized
-      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      repeat(10000)
+        @(posedge fix.clk);
       fix.secd_vip.debug_secd_module_init();
       fix.secd_vip.load_secd_binary(secd_preload_elf);
       fix.secd_vip.jtag_secd_data_preload();
