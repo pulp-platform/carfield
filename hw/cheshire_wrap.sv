@@ -254,16 +254,16 @@ module cheshire_wrap
   output cheshire_axi_ext_slv_req_t axi_mbox_slv_req_o,
   input  cheshire_axi_ext_slv_rsp_t axi_mbox_slv_rsp_i,
   // External reg demux slaves Cheshire's clock domain (sync)
-  output cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv-2):0] reg_ext_slv_req_o,
-  input  cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv-2):0] reg_ext_slv_rsp_i,
+  output cheshire_reg_ext_req_t [iomsb(NumSyncRegSlv):0] reg_ext_slv_req_o,
+  input  cheshire_reg_ext_rsp_t [iomsb(NumSyncRegSlv):0] reg_ext_slv_rsp_i,
   // External reg demux slaves other clock domains (async)
   // Padframe and PLL
-  output logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_o,
-  input  logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_i,
-  output cheshire_reg_ext_req_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_o,
-  input  logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_i,
-  output logic                  [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_o,
-  input  cheshire_reg_ext_rsp_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_i,
+  output logic                  [NumAsyncRegSlv-1:0] ext_reg_async_slv_req_o,
+  input  logic                  [NumAsyncRegSlv-1:0] ext_reg_async_slv_ack_i,
+  output cheshire_reg_ext_req_t [NumAsyncRegSlv-1:0] ext_reg_async_slv_data_o,
+  input  logic                  [NumAsyncRegSlv-1:0] ext_reg_async_slv_req_i,
+  output logic                  [NumAsyncRegSlv-1:0] ext_reg_async_slv_ack_o,
+  input  cheshire_reg_ext_rsp_t [NumAsyncRegSlv-1:0] ext_reg_async_slv_data_i,
   // Interrupts from external devices
   input  logic [iomsb(Cfg.NumExtInIntrs):0]                                  intr_ext_i,
   output logic [iomsb(Cfg.NumExtOutIntrTgts):0][iomsb(Cfg.NumExtOutIntrs):0] intr_ext_o,
@@ -347,7 +347,7 @@ cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_req;
 cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_rsp;
 
 // Generate synchronous external register interface from Cheshire
-for (genvar i = 0; i < NumSyncRegIdx; i++) begin: gen_ext_reg_sync
+for (genvar i = 0; i < NumSyncRegSlv; i++) begin: gen_ext_reg_sync
   assign reg_ext_slv_req_o[i] = ext_reg_req[i];
   assign ext_reg_rsp[i]       = reg_ext_slv_rsp_i[i];
 end
@@ -728,7 +728,7 @@ axi_id_remap            #(
 
 // Async reg interface:
 // See carfield_pkg.sv for indices referring to sync and async reg interfaces.
-for (genvar i = 0; i < Cfg.RegExtNumSlv - NumSyncRegIdx; i++) begin : gen_ext_reg_async
+for (genvar i = 0; i < Cfg.RegExtNumSlv - NumAsyncRegSlv; i++) begin : gen_ext_reg_async
   reg_cdc_src #(
     .CDC_KIND ( "cdc_4phase"              ),
     .req_t     ( cheshire_reg_ext_req_t   ),
@@ -736,8 +736,8 @@ for (genvar i = 0; i < Cfg.RegExtNumSlv - NumSyncRegIdx; i++) begin : gen_ext_re
   ) i_reg_cdc_src (
       .src_clk_i    ( clk_i  ),
       .src_rst_ni   ( rst_ni ),
-      .src_req_i    ( ext_reg_req[NumSyncRegIdx + i] ),
-      .src_rsp_o    ( ext_reg_rsp[NumSyncRegIdx + i] ),
+      .src_req_i    ( ext_reg_req[NumSyncRegSlv + i] ),
+      .src_rsp_o    ( ext_reg_rsp[NumSyncRegSlv + i] ),
 
       .async_req_o  ( ext_reg_async_slv_req_o[i]  ),
       .async_ack_i  ( ext_reg_async_slv_ack_i[i]  ),

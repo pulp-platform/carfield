@@ -386,8 +386,8 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 // verilog_lint: waive-stop line-length
 
 // External register interface synchronous with Cheshire's clock domain
-carfield_reg_req_t [iomsb(Cfg.RegExtNumSlv-2):0] ext_reg_req;
-carfield_reg_rsp_t [iomsb(Cfg.RegExtNumSlv-2):0] ext_reg_rsp;
+carfield_reg_req_t [iomsb(NumSyncRegSlv):0] ext_reg_req;
+carfield_reg_rsp_t [iomsb(NumSyncRegSlv):0] ext_reg_rsp;
 
 localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth   +
                                      $clog2(AxiIn.num_in)+
@@ -505,12 +505,12 @@ logic [                 LogDepth:0] axi_mst_intcluster_r_rptr ;
 carfield_reg2hw_t car_regs_reg2hw;
 carfield_hw2reg_t car_regs_hw2reg;
 
-logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_out;
-logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_in;
-reg_req_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_out;
-logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_req_in;
-logic     [NumAsyncRegIdx-1:0] ext_reg_async_slv_ack_out;
-reg_rsp_t [NumAsyncRegIdx-1:0] ext_reg_async_slv_data_in;
+logic     [NumAsyncRegSlv-1:0] ext_reg_async_slv_req_out;
+logic     [NumAsyncRegSlv-1:0] ext_reg_async_slv_ack_in;
+reg_req_t [NumAsyncRegSlv-1:0] ext_reg_async_slv_data_out;
+logic     [NumAsyncRegSlv-1:0] ext_reg_async_slv_req_in;
+logic     [NumAsyncRegSlv-1:0] ext_reg_async_slv_ack_out;
+reg_rsp_t [NumAsyncRegSlv-1:0] ext_reg_async_slv_data_in;
 
 // External reg interface slaves (async)
 // Currently for PLL and Padframe
@@ -1175,12 +1175,12 @@ l2_wrap #(
   .slvport_w_data_i    ( axi_slv_ext_w_data  [NumL2Ports-1:0] ),
   .slvport_w_wptr_i    ( axi_slv_ext_w_wptr  [NumL2Ports-1:0] ),
   .slvport_w_rptr_o    ( axi_slv_ext_w_rptr  [NumL2Ports-1:0] ),
-  .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [L2EccIdx-NumSyncRegIdx] ),
-  .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [L2EccIdx-NumSyncRegIdx] ),
-  .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[L2EccIdx-NumSyncRegIdx] ),
-  .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [L2EccIdx-NumSyncRegIdx] ),
-  .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [L2EccIdx-NumSyncRegIdx] ),
-  .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [L2EccIdx-NumSyncRegIdx] ),
+  .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [L2EccIdx-NumSyncRegSlv] ),
+  .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [L2EccIdx-NumSyncRegSlv] ),
+  .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[L2EccIdx-NumSyncRegSlv] ),
+  .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [L2EccIdx-NumSyncRegSlv] ),
+  .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [L2EccIdx-NumSyncRegSlv] ),
+  .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [L2EccIdx-NumSyncRegSlv] ),
   .ecc_error_o         ( l2_ecc_err                           )
 );
 
