@@ -22,8 +22,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: bfee21757bf090ec8e358456314b0b0fd3c90809
-    version: 0.39.0
+    revision: da423834b45f2e1878ecb28a11dc5b72b437f9c1
+    version: 0.39.1-beta
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -134,7 +134,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: ce5e6b607632fa0c8c03a728783f085fc898a644
+    revision: 7514252a9502737be3412078da371f3ce4207dbe
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -358,7 +358,7 @@ packages:
     - common_cells
     - common_verification
   opentitan:
-    revision: 478c7816d7a20ad970fee43b509ea505d8f1c06c
+    revision: 245d92fe49dc6be32afe3bfb6a133778002d4880
     version: null
     source:
       Git: https://github.com/alsaqr-platform/opentitan.git
@@ -381,7 +381,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: adcdb725c916fbca7d3e4657f9a41c4f1fb482b6
+    revision: ebc7d1888e2242ea8cb579aab1113e02e08367b4
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -459,7 +459,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 382bc52d437c578cb68e4f5dcd1db291b3325001
+    revision: b0501345b1741fa96b781ef5d845026fec036fd2
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
@@ -497,8 +497,8 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: e79683c6cbe781e8fe2d2a62a7bed5ba66ab5839
-    version: 0.4.2
+    revision: 1506445bea978dfa81e0d717a005e84e6fa450b5
+    version: null
     source:
       Git: git@iis-git.ee.ethz.ch:spatz/spatz.git
     dependencies:

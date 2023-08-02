@@ -43,7 +43,8 @@ module hyperbus_wrap #(
   parameter int unsigned AxiSlaveAwWidth = 0,
   parameter int unsigned AxiSlaveBWidth  = 0,
   parameter int unsigned AxiSlaveRWidth  = 0,
-  parameter int unsigned AxiSlaveWWidth  = 0
+  parameter int unsigned AxiSlaveWWidth  = 0,
+  parameter int unsigned CdcSyncStages   = 0
 )(
   input  logic clk_i         ,
   input  logic rst_ni        ,
@@ -100,6 +101,7 @@ axi_rsp_t hyper_rsp;
 
 axi_cdc_dst      #(
   .LogDepth       ( AxiLogDepth   ),
+  .SyncStages     ( CdcSyncStages ),
   .aw_chan_t      ( axi_aw_chan_t ),
   .w_chan_t       ( axi_w_chan_t  ),
   .b_chan_t       ( axi_b_chan_t  ),

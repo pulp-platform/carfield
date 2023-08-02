@@ -19,6 +19,7 @@ module l2_wrap
   parameter int unsigned AxiUserWidth = 1,
   parameter int unsigned AxiMaxTrans  = 8,
   parameter int unsigned LogDepth     = 3,
+  parameter int unsigned CdcSyncStages  = 2,
   parameter int unsigned L2MaxReadTxns  = 8,
   parameter int unsigned L2MaxWriteTxns = 8,
   parameter int unsigned AxiUserAmoMsb  = 1,
@@ -90,6 +91,7 @@ axi_async_rsp_t [NumPort-1:0] axi_async_rsp;
 for (genvar i = 0; i < NumPort; i++) begin: gen_cdc_fifos
   axi_cdc_dst #(
     .LogDepth   ( LogDepth            ),
+    .SyncStages ( CdcSyncStages       ),
     .aw_chan_t  ( axi_async_aw_chan_t ),
     .w_chan_t   ( axi_async_w_chan_t  ),
     .b_chan_t   ( axi_async_b_chan_t  ),

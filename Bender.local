@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: SHL-0.51
 
 overrides:
-  axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.0 }
+  axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.1-beta }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , version: 0.4.1 }
   redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "6a011b6" } # branch: michaero/hmr-alt
