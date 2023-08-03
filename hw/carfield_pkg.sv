@@ -137,9 +137,12 @@ typedef enum int {
   PadframeIdx = 'd2, // async
   L2EccIdx    = 'd3  // async
 } cheshire_reg_out_e;
-localparam int unsigned NumSyncRegIdx = PllIdx; // This only works if PllIdx is the first async reg
-localparam int unsigned NumAsyncRegIdx = 3;
-localparam int unsigned NumTotalRegIdx = NumSyncRegIdx + NumAsyncRegIdx;
+localparam int unsigned NumSyncRegSlv = 1;
+                                      // CarRegs
+localparam int unsigned NumAsyncRegSlv =  1  + 1        + 1;
+                                       // PLL  Padframe   L2ECC
+localparam int unsigned NumTotalRegSlv = NumSyncRegSlv + NumAsyncRegSlv;
+localparam int unsigned NumTotalRegRules = NumTotalRegSlv;
 
 typedef enum doub_bt {
   CarRegsBase  = 'h0000_0000_2001_0000,
@@ -273,8 +276,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 L2Port2End     ,
                                                 L2Port1End     },
   // External reg slaves (at most 8 ports and rules)
-  RegExtNumSlv      : NumTotalRegIdx,
-  RegExtNumRules    : NumTotalRegIdx,
+  RegExtNumSlv      : NumTotalRegSlv,
+  RegExtNumRules    : NumTotalRegRules,
   // For carfield, PllIdx is the first index of the async reg interfaces. Please add async reg
   // interfaces indices to the left of PllIdx, and sync reg interface indices to its right.
   RegExtRegionIdx   : '{ 0, 0, 0, 0, L2EccIdx,  PadframeIdx,  PllIdx,  CarRegsIdx  },
@@ -412,7 +415,7 @@ localparam int unsigned IntClusterSharedFpuDivSqrt = 0;
 localparam int unsigned IntClusterNumAxiMst = 3;
 localparam int unsigned IntClusterNumAxiSlv = 4;
 // IntClusterAxiIdInWidth is fixed from PULP Cluster
-localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 1;
+localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 3;
 localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
 localparam int unsigned IntClusterMaxUniqId = 1;

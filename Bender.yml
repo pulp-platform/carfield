@@ -16,14 +16,14 @@ dependencies:
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 2adb7271438cdb96c19fbaf3e2a6bf89ffeee568 } # branch: lv/phys_in_use
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: d6ab486b2777bf78c38b49352b5977565a272a58 } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: b0501345b1741fa96b781ef5d845026fec036fd2 } # branch: param_banks
-  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: ebc7d1888e2242ea8cb579aab1113e02e08367b4 } # branch: ck/carfield-1
+  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 201453dbcedc8f7235b2723363356ba5845e5120 } # branch: yt/rapidrecovery
   opentitan:          { git: https://github.com/alsaqr-platform/opentitan.git,          rev: 245d92fe49dc6be32afe3bfb6a133778002d4880 } # branch: carfield
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             version: 1.1.0                                }
   apb:                { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 230222cc568b49b39a3385b12edaf680657bc69d }
-  spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: 1506445bea978dfa81e0d717a005e84e6fa450b5 } # branch: aottaviano/sync-regs
+  spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: 56544dc2e50acd08cf2c3909267d7daf19f5be19 } # branch: aottaviano/sync-regs
   bus_err_unit:       { git: git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git,          rev: 47a6436dc4b4b7f4a44f7786033b22c6d01530b2 } # branch: main
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.30.0                               }
 

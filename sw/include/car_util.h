@@ -10,6 +10,7 @@
 
 #include "util.h"
 #include "car_memory_map.h"
+#include "car_properties.h"
 #include "regs/soc_ctrl.h"
 #include "io.h"
 
@@ -198,9 +199,8 @@ uint32_t poll_safed_corestatus () {
 	volatile uint32_t corestatus;
 	volatile uintptr_t *corestatus_addr = (uintptr_t*)CAR_SAFETY_ISLAND_CORESTATUS_ADDR;
 	// TODO: Add a timeut to not poll indefinitely
-	while (((uint32_t)readw(corestatus_addr) & 0x80000000) == 0) {
-	    corestatus = (uint32_t) readw(corestatus_addr);
-	}
+	while (((uint32_t)readw(corestatus_addr) & 0x80000000) == 0)
+	    ;
 
 	corestatus = (uint32_t) readw(corestatus_addr);
 
@@ -212,7 +212,7 @@ uint32_t safed_offloader_blocking () {
 	uint32_t ret = 0;
 
 	// Load binary payload
-	load_safed_payload();
+	load_binary();
 
 	// Select bootmode, write entry point, write launch signal
 	prepare_safed_boot();
@@ -226,6 +226,36 @@ uint32_t safed_offloader_blocking () {
 	}
 
 	return ret;
+}
+
+// PULP cluster setup and configuration
+
+void pulp_cluster_set_bootaddress(uint32_t pulp_boot_addr) {
+
+  volatile uint32_t cluster_boot_reg_addr = CAR_INT_CLUSTER_BOOT_ADDR_REG;
+
+  for (int i = 0; i < IntClustNumCores; i++) {
+    writew(pulp_boot_addr, (uint32_t*)(cluster_boot_reg_addr));
+    cluster_boot_reg_addr += 0x4;
+  }
+}
+
+void pulp_cluster_start() {
+
+  volatile uint32_t *booten_addr = (uint32_t*)(CAR_INT_CLUSTER_BOOTEN_ADDR);
+  writew(1, booten_addr);
+
+  volatile uint32_t *fetchen_addr = (uint32_t*)(CAR_INT_CLUSTER_FETCHEN_ADDR);
+	writew(1, fetchen_addr);
+}
+
+void pulp_cluster_wait_eoc() {
+
+  volatile uint32_t *pulp_eoc_addr = (uint32_t*)(CAR_INT_CLUSTER_EOC_ADDR);
+
+  while(!readw(pulp_eoc_addr))
+      ;
+
 }
 
 #endif

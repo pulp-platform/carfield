@@ -57,8 +57,19 @@ Follow these steps to launch a Carfield simulation:
 * Compile tests for Carfield. Tests resides in `sw/tests`.
 
   ```
+  // Compile Safety Island standalone software
+  source ./scripts/safed-env.sh
+  make safed-sw-build
+  // Compile Integer cluster standalone software
+  source ./scripts/pulpd-env.sh
+  make pulpd-sw-build
+  // Compile Cheshire SW
   make car-sw-build
   ```
+
+  The latter commands:
+  * Compiles safety island and pulp cluster standalone tests
+  * Compiles CVA6 standalone and offloading tests
 
 ### System bootmodes
 
@@ -78,7 +89,7 @@ Follow these steps to launch a Carfield simulation:
   of preload, if any is needed. For RTL simulation, bootmodes 0, 2 and 3 are supported. SPI SD card
   bootmode is supported on FPGA emulation.
 
-* The current supported bootmodes ffrom the Safety Island are:
+* The current supported bootmodes for the Safety Island are:
 
   | `SAFED_BOOTMODE` | Action |
   | --- | --- |

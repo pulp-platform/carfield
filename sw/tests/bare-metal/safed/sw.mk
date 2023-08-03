@@ -4,20 +4,17 @@
 #
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
-RISCV32_GCC_BINROOT ?= $(dir $(shell which riscv32-unknown-elf-gcc))
-RISCV32_CC          ?= $(RISCV32_GCC_BINROOT)/riscv32-unknown-elf-gcc
-
 .PHONY: all clean
 
 # Make fragment for safety island bare-metal tests compiled with pulp-runtime.
 
 # List all the directories in the 'tests' folder
-TEST_DIRS := $(wildcard $(SAFED_SW_DIR)/tests/*)
-TEST_DIRS := $(filter-out $(SAFED_SW_DIR)/tests/runtime_shared,$(TEST_DIRS))
-TEST_DIRS := $(filter-out $(wildcard $(SAFED_SW_DIR)/tests/freertos*),$(TEST_DIRS))
+SAFED_TEST_DIRS := $(wildcard $(SAFED_SW_DIR)/tests/*)
+SAFED_TEST_DIRS := $(filter-out $(SAFED_SW_DIR)/tests/runtime_shared,$(SAFED_TEST_DIRS))
+SAFED_TEST_DIRS := $(filter-out $(wildcard $(SAFED_SW_DIR)/tests/freertos*),$(SAFED_TEST_DIRS))
 
 # Generate the list of build targets based on the directories
-BUILD_TARGETS := $(addsuffix /build,$(TEST_DIRS))
+SAFED_BUILD_TARGETS := $(addsuffix /build,$(SAFED_TEST_DIRS))
 
 # We have a target per test. The target (1) compiles the binary and (2) generates the needed stimuli
 # file format, if any is required.
@@ -26,16 +23,16 @@ $(SAFED_SW_DIR)/tests/%/build: $(SAFED_ROOT) | venv
 	$(MAKE) -C $(SAFED_SW_DIR)/tests/$* all
 
 # Convert compiled binaries to header files
-HEADER_TARGETS := $(patsubst $(SAFED_SW_DIR)/tests/%, $(CAR_SW_DIR)/tests/bare-metal/safed/%.h, $(TEST_DIRS))
+SAFED_HEADER_TARGETS := $(patsubst $(SAFED_SW_DIR)/tests/%, $(CAR_SW_DIR)/tests/bare-metal/safed/%.h, $(SAFED_TEST_DIRS))
 
 $(CAR_SW_DIR)/tests/bare-metal/safed/%.h: $(SAFED_SW_DIR)/tests/%/build | venv
-	$(VENV)/python $(CAR_ROOT)/scripts/elf_to_header.py --binary $</$*/$* --vectors $@
+	$(VENV)/python $(CAR_ROOT)/scripts/elf2header.py --binary $</$*/$* --vectors $@
 #	xxd -i $</$*/$* > $@ )
 
 # Global targets
-safed-sw-all: $(BUILD_TARGETS) $(HEADER_TARGETS)
+safed-sw-all: $(SAFED_BUILD_TARGETS) $(SAFED_HEADER_TARGETS)
 
 safed-sw-clean:
 	# Clean all the directories in 'tests'
-	$(foreach dir, $(TEST_DIRS), $(MAKE) -C $(dir) clean;)
+	$(foreach dir, $(SAFED_TEST_DIRS), $(MAKE) -C $(dir) clean;)
 	$(RM) $(CAR_SW_DIR)/tests/bare-metal/safed/*.h

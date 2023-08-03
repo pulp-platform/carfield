@@ -243,13 +243,13 @@ packages:
     dependencies:
     - common_cells
   fpu_interco:
-    revision: c985d54c2b078ddfbec8c2a498f453410bbdc93e
+    revision: 4aec4b68424947b0c4cf25fd7c4b907cb9ec3dfa
     version: null
     source:
       Git: https://github.com/pulp-platform/fpu_interco.git
     dependencies:
-    - cv32e40p
     - fpnew
+    - riscv
   hci:
     revision: b2e6f391aa6c10c03f45b693d80a0aaddecf169b
     version: null
@@ -381,7 +381,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: ebc7d1888e2242ea8cb579aab1113e02e08367b4
+    revision: 201453dbcedc8f7235b2723363356ba5845e5120
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -423,7 +423,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 6a011b6f5acf3eca202ed847d6c64474a0bc7cb5
+    revision: 482d2f5ed05f25c851f4048f1bd402cc0d2b58b6
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -443,7 +443,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: 6187537f9994d16bad2d721c0f5ebc5193c0f010
+    revision: dd086242d10f248b4051a1fc67ae2b35b989c29c
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
@@ -497,7 +497,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: 1506445bea978dfa81e0d717a005e84e6fa450b5
+    revision: 56544dc2e50acd08cf2c3909267d7daf19f5be19
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:spatz/spatz.git
