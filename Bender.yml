@@ -55,6 +55,7 @@ sources:
   - target: test
     files:
       - tb/hyp_vip/s27ks0641.v
+      - tb/vip_security_island_soc.sv
       - tb/vip_carfield_soc.sv
       - tb/carfield_fix.sv
       - tb/carfield_tb.sv

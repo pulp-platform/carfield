@@ -79,11 +79,9 @@ module tb_carfield_soc;
           end 2: begin // Standalone UART passive preload
             fix.chs_vip.uart_debug_elf_run_and_wait(chs_preload_elf, exit_code);
           end 3: begin  // Secure boot: Opentitan booting CVA6
-            if (chs_preload_elf != "") begin
-              fix.chs_vip.slink_elf_preload(chs_preload_elf, unused);
-              fix.chs_vip.jtag_init();
-              fix.chs_vip.jtag_wait_for_eoc(exit_code);
-            end
+            fix.chs_vip.slink_elf_preload(chs_preload_elf, unused);
+            fix.chs_vip.jtag_init();
+            fix.chs_vip.jtag_wait_for_eoc(exit_code);
           end default: begin
             $fatal(1, "Unsupported preload mode %d (reserved)!", boot_mode);
           end
@@ -96,8 +94,8 @@ module tb_carfield_soc;
         fix.chs_vip.jtag_wait_for_eoc(exit_code);
       end
 
-      $display("Wait for OT to boot..."); // TODO: is there a better way to fix this?
-      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      // Eventually wait for HWRoT to end initialization anda ssert Ibex's fetch enable
+      fix.passthrough_or_wait_for_secd_hw_init();
 
       $finish;
     end
@@ -128,8 +126,8 @@ module tb_carfield_soc;
         end
       endcase
 
-      $display("Wait for OT to boot..."); // TODO: is there a better way to fix this?
-      wait (fix.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      // Eventually wait for HWRoT to end initialization and assert Ibex's fetch enable
+      fix.passthrough_or_wait_for_secd_hw_init();
 
       $finish;
     end
@@ -139,16 +137,16 @@ module tb_carfield_soc;
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("SECD_BINARY=%s", secd_preload_elf)) secd_preload_elf = "";
-      // Security Island
-      if (secd_preload_elf != "") begin
-        // Wait before security island HW is initialized
-        repeat(10000)
-          @(posedge fix.clk);
-        fix.debug_secd_module_init();
-        fix.load_secd_binary(secd_preload_elf);
-        fix.jtag_secd_data_preload();
-        fix.jtag_secd_wakeup(32'h E0000080);
-      end
+
+    if (secd_preload_elf != "") begin
+      // Wait before security island HW is initialized
+      repeat(10000)
+        @(posedge fix.clk);
+      fix.secd_vip.debug_secd_module_init();
+      fix.secd_vip.load_secd_binary(secd_preload_elf);
+      fix.secd_vip.jtag_secd_data_preload();
+      fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
+    end
   end
 
   // pulp cluster standalone

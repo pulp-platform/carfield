@@ -21,7 +21,7 @@ BUILD_TARGETS := $(addsuffix /build,$(TEST_DIRS))
 
 # We have a target per test. The target (1) compiles the binary and (2) generates the needed stimuli
 # file format, if any is required.
-$(SAFED_SW_DIR)/tests/%/build: safety_island | venv
+$(SAFED_SW_DIR)/tests/%/build: $(SAFED_ROOT) | venv
 	# Compile
 	$(MAKE) -C $(SAFED_SW_DIR)/tests/$* all
 
@@ -29,7 +29,7 @@ $(SAFED_SW_DIR)/tests/%/build: safety_island | venv
 HEADER_TARGETS := $(patsubst $(SAFED_SW_DIR)/tests/%, $(CAR_SW_DIR)/tests/bare-metal/safed/%.h, $(TEST_DIRS))
 
 $(CAR_SW_DIR)/tests/bare-metal/safed/%.h: $(SAFED_SW_DIR)/tests/%/build | venv
-	$(VENV)/python ./scripts/elf_to_header.py --binary $</$*/$* --vectors $@
+	$(VENV)/python $(CAR_ROOT)/scripts/elf_to_header.py --binary $</$*/$* --vectors $@
 #	xxd -i $</$*/$* > $@ )
 
 # Global targets

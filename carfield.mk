@@ -195,7 +195,7 @@ car-hw-sim:
 		 set SPATZCL_BINARY $(SPATZCL_BINARY); \
 		 set VOPTARGS $(VOPTARGS); \
 		 set TESTBENCH $(TBENCH); \
-		 source scripts/start_carfield.tcl ; \
+		 source $(CAR_ROOT)/scripts/start_carfield.tcl ; \
 		 add log -r sim:/$(TBENCH)/*; \
 		 $(RUN_AND_EXIT)"
 
