@@ -80,17 +80,22 @@ car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_
 
 include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk
 
+# Template function for offload tests
+define offload_tests_template
+	$(foreach header,$(1), \
+		cp $(header) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $(3) -o $(4).$(basename $(notdir $(header))).car.o; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CHS_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.l2.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.l2.elf > $(4).$(basename $(notdir $(header))).car.l2.dump; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CHS_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.dram.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.dram.elf > $(4).$(basename $(notdir $(header))).car.dram.dump; \
+		$(RM) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
+		$(RM) $(4).$(basename $(notdir $(header))).car.o; \
+	)
+endef
+
 car-safed-sw-offload-tests:
-	$(foreach header,$(SAFED_HEADER_TARGETS), \
-		cp $(header) $(CAR_SW_DIR)/tests/bare-metal/safed/payload.h; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CHS_SW_LDFLAGS) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.elf  $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.elf   > $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.l2.dump; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CHS_SW_LDFLAGS) -o $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.elf  $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.elf > $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.dram.dump; \
-		$(RM) $(CAR_SW_DIR)/tests/bare-metal/safed/payload.h; \
-		$(RM) $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).$(basename $(notdir $(header))).car.o; \
-  )
+	$(call offload_tests_template,$(SAFED_HEADER_TARGETS),safed,$(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C),$(CAR_ELFLOAD_BLOCKING_SAFED_PATH))
 
 ###################
 # Integer Cluster #
@@ -99,13 +104,5 @@ car-safed-sw-offload-tests:
 include $(CAR_SW_DIR)/tests/bare-metal/pulpd/sw.mk
 
 car-pulpd-sw-offload-tests:
-	$(foreach header,$(PULPD_HEADER_TARGETS), \
-		cp $(header) $(CAR_SW_DIR)/tests/bare-metal/pulpd/payload.h; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(RISCV_CCFLAGS) -c $(CAR_ELFLOAD_PULPD_SRC_C) -o $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.o; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(RISCV_LDFLAGS) -o $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.l2.elf  $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.l2.elf   > $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.l2.dump; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(RISCV_LDFLAGS) -o $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.dram.elf  $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.dram.elf > $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.dram.dump; \
-		$(RM) $(CAR_SW_DIR)/tests/bare-metal/pulpd/payload.h; \
-		$(RM) $(CAR_ELFLOAD_PULPD_PATH).$(basename $(notdir $(header))).car.o; \
-	)
+	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_PULPD_SRC_C),$(CAR_ELFLOAD_PULPD_PATH))
+
