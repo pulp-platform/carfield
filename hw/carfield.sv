@@ -1376,7 +1376,7 @@ pulp_cluster #(
   .AXI_ID_OUT_WIDTH               ( IntClusterAxiIdOutWidth   ),
   .LOG_DEPTH                      ( LogDepth                  ),
   .BaseAddr                       ( IntClusterBaseAddr        ),
-  .CDC_SYNC_STAGES                ( SyncStages                )
+  .CdcSynchStages                 ( SyncStages                )
 ) i_integer_cluster            (
   .clk_i                       ( pulp_clk                                  ),
   .rst_ni                      ( pulp_rst_n                                ),

@@ -243,13 +243,13 @@ packages:
     dependencies:
     - common_cells
   fpu_interco:
-    revision: 0769976fa51bdd820656a01161a4c46b88c59ac5
+    revision: 4aec4b68424947b0c4cf25fd7c4b907cb9ec3dfa
     version: null
     source:
       Git: https://github.com/pulp-platform/fpu_interco.git
     dependencies:
-    - cv32e40p
     - fpnew
+    - riscv
   hci:
     revision: b2e6f391aa6c10c03f45b693d80a0aaddecf169b
     version: null
@@ -296,10 +296,10 @@ packages:
     - register_interface
     - tech_cells_generic
   ibex:
-    revision: 95b85ddd1c995ace9f89ee42530f9e24820c1051
+    revision: b18f7ef178ed07f5085051f96042c670a919fd5c
     version: null
     source:
-      Git: https://github.com/lowRISC/ibex.git
+      Git: https://github.com/pulp-platform/ibex.git
     dependencies:
     - tech_cells_generic
   icache-intc:
@@ -381,7 +381,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: ebc7d1888e2242ea8cb579aab1113e02e08367b4
+    revision: 201453dbcedc8f7235b2723363356ba5845e5120
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -423,7 +423,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 6a011b6f5acf3eca202ed847d6c64474a0bc7cb5
+    revision: 482d2f5ed05f25c851f4048f1bd402cc0d2b58b6
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -443,7 +443,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: 4eac53237c6d0062715d17016fe95462eb81ebc3
+    revision: dd086242d10f248b4051a1fc67ae2b35b989c29c
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
