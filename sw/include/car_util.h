@@ -199,9 +199,8 @@ uint32_t poll_safed_corestatus () {
 	volatile uint32_t corestatus;
 	volatile uintptr_t *corestatus_addr = (uintptr_t*)CAR_SAFETY_ISLAND_CORESTATUS_ADDR;
 	// TODO: Add a timeut to not poll indefinitely
-	while (((uint32_t)readw(corestatus_addr) & 0x80000000) == 0) {
-	    corestatus = (uint32_t) readw(corestatus_addr);
-	}
+	while (((uint32_t)readw(corestatus_addr) & 0x80000000) == 0)
+	    ;
 
 	corestatus = (uint32_t) readw(corestatus_addr);
 
