@@ -19,6 +19,50 @@ We keep all RTL changes relevant for weekly releases here
 ### L2 Memory
 
 
+## Weekly 2023_08_04 (weekly_20230804)
+
+### Carfield Top
+- Add missing port connection in `lossy_valid_to_stream` module
+- Cleanup makefrags
+- Cleanup SoC fixture and testbench (add security island VIPs)
+- Propagate `CDCSyncStages` parameter through the design. Required bump of AXI to `v0.39.1-beta`,
+  bump of IPs. Set `CDCSyncStages` and `SyncStages` (the latter for single-bit lines synchronization
+  through CDC crossings) to **3 stages**.
+- Add offlad flow to integer cluster
+- Configure cheshire to support 2 CVA6 cores
+
+### Cheshire
+- Bump CVA6 to support self-invalidation (enables SMP execution)
+- Bump to support multicore (adds logic to instantiate multiple CVA6 cores)
+- Modify Cheshire's crt0 and bootrom. Bootcode is modified to:
+  - Pause all harts except 0 at the beginning of the bootrom;
+  - Let all harts jump to next boot stage after hart 0 finished bootrom;
+  - Park all harts except 0 at the beginning of crt0 for now (to be extended).
+- Increase number of *scratch* registers from 4 to 16
+- Add a register storing the number of harts
+- Expose number of synchronization stages for single-bit lines (e.g., interrupts), previously a
+  localparam
+
+### Safety Island
+- Bump AXI to `v0.39.1-beta` and expose `CDCSyncStages`
+
+### Security Island
+- Bump AXI to `v0.39.1-beta` and expose `CDCSyncStages`
+
+### Spatz
+- Point to latest stable release `v0.4.3`
+  - Bump AXI to `v0.39.1-beta` and expose `CDCSyncStages`
+
+### PULP Cluster
+- Bump AXI to `v0.39.1-beta` and expose `CDCSyncStages`
+- Fixes to support offload within carfield
+  - **[Interface]** Increase AXI ID width; interface change for integer cluster macro and cheshire
+    macros
+- Add support for rapid recovery
+
+### L2 Memory
+
+
 ## Weekly 2023_07_28 (weekly_20230728)
 
 ### Carfield Top
