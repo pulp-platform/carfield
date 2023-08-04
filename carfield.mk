@@ -21,9 +21,9 @@ VOPTARGS ?=
 
 # Interrupt configuration in cheshire
 # CLINT interruptible harts
-CLINTCORES     := 3
+CLINTCORES     := 4
 # PLIC interruptible harts
-PLICCORES      := 6
+PLICCORES      := 8
 # PLIC number of input interrupts
 PLIC_NUM_INTRS := 89
 
@@ -90,7 +90,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= a51afe8cd67a47b83df79e1d0f53d5a8cf22371d
+CAR_NONFREE_COMMIT ?= 717358edc2da9e31f4b24622086f6bc756344237
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:

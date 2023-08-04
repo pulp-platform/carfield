@@ -238,7 +238,7 @@ assign car_periph_intrs = {
 
 // Mailbox unit
 
-localparam int unsigned CheshireNumIntHarts = 1 + Cfg.DualCore;
+localparam int unsigned CheshireNumIntHarts = Cfg.NumCores;
 localparam int unsigned SafedNumIntHarts    = 1;
 localparam int unsigned SecdNumIntHarts     = 1;
 
