@@ -340,8 +340,10 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // GPIOs
   GpioInputSyncs    : 1,
   // AXI RT
-  AxiRtNumPending   : 16,
-  AxiRtWBufferDepth : 16,
+  AxiRtNumPending     : 16,
+  AxiRtWBufferDepth   : 16,
+  AxiRtNumAddrRegions : 2,
+  AxiRtCutPaths       : 1,
   // All non-set values should be zero
   default: '0
 };
