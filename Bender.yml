@@ -12,7 +12,7 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.1                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.10                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 834ea0dc2109c03c472c6afbdf7d1ae10503cb6a } # branch: nwistoff/carfield
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 6c314fa41f56174edd88f85a899d44b9107d174a } # branch: aottaviano/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 2adb7271438cdb96c19fbaf3e2a6bf89ffeee568 } # branch: lv/phys_in_use
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: d6ab486b2777bf78c38b49352b5977565a272a58 } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: b0501345b1741fa96b781ef5d845026fec036fd2 } # branch: param_banks
@@ -25,7 +25,7 @@ dependencies:
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 230222cc568b49b39a3385b12edaf680657bc69d }
   spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: v0.4.3                                   }
   bus_err_unit:       { git: git@iis-git.ee.ethz.ch:carfield/bus_err_unit.git,          rev: 47a6436dc4b4b7f4a44f7786033b22c6d01530b2 } # branch: main
-  common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.30.0                               }
+  common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
 
 
 workspace:
