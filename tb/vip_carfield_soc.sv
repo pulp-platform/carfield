@@ -42,7 +42,7 @@ module vip_carfield_soc
   wire [HypNumPhys-1:0]                  pad_hyper_ck,
   wire [HypNumPhys-1:0]                  pad_hyper_ckn,
   wire [HypNumPhys-1:0]                  pad_hyper_rwds,
-  wire [HypNumPhys-1:0]                  pad_hyper_reset,
+  wire [HypNumPhys-1:0]                  pad_hyper_resetn,
   wire [HypNumPhys-1:0][7:0]             pad_hyper_dq,
   // External virtual AXI ports
   input  axi_slv_ext_req_t [NumAxiExtSlvPorts-1:0] axi_slvs_req,
@@ -95,7 +95,7 @@ module vip_carfield_soc
         .CSNeg    ( pad_hyper_csn[i][j] ),
         .CK       ( pad_hyper_ck[i]     ),
         .CKNeg    ( pad_hyper_ckn[i]    ),
-        .RESETNeg ( pad_hyper_reset[i]  )
+        .RESETNeg ( pad_hyper_resetn[i]  )
       );
     end
   end
@@ -194,7 +194,7 @@ module vip_carfield_soc_tristate import carfield_pkg::*; # (
   wire [HypNumPhys-1:0]                  pad_hyper_ck,
   wire [HypNumPhys-1:0]                  pad_hyper_ckn,
   wire [HypNumPhys-1:0]                  pad_hyper_rwds,
-  wire [HypNumPhys-1:0]                  pad_hyper_reset,
+  wire [HypNumPhys-1:0]                  pad_hyper_resetn,
   wire [HypNumPhys-1:0][7:0]             pad_hyper_dq
 );
 
@@ -234,7 +234,7 @@ module vip_carfield_soc_tristate import carfield_pkg::*; # (
       .I   ( hyper_reset_no[i]  ),
       .O   (                    ),
       .PEN (                    ),
-      .PAD ( pad_hyper_reset[i] )
+      .PAD ( pad_hyper_resetn[i] )
     );
     for (genvar j = 0; j < 8; j++) begin : gen_hyper_dq
       pad_functional_pd padinst_hyper_dqio0  (
