@@ -30,6 +30,10 @@ PLIC_NUM_INTRS := 89
 # Serial Link configuration in cheshire
 SERIAL_LINK_NUM_BITS := 16
 
+# AXI Real-Time unit configuration in Carfield
+AXIRT_NUM_MGRS := 10
+AXIRT_NUM_SUBS := 2
+
 # Cheshire
 CHS_ROOT ?= $(shell $(BENDER) path cheshire)
 # Include cheshire's makefrag only if the dependency was cloned
@@ -241,7 +245,10 @@ spatz-hw-init:
 ## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
 ## hardware.
 chs-hw-init: update_plic update_serial_link
-	$(MAKE) chs-hw-all
+	# Note: We use `-B` as AXI RT doesn't currently have a `regenerate` PHONY target to always
+	# trigger register regeneration when the value of the variables passed to its makefrag
+	# changes.
+	$(MAKE) -B chs-hw-all
 
 .PHONY: chs-sim-init
 ## Downloads verification IPs for SPI and I2C from cheshire and used by Carfield.
