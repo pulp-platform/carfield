@@ -540,7 +540,7 @@ end
 // shared_l2_memory (sw reset 5)
 
 // Clock Multiplexing for each sub block
-  localparam int unsigned DomainClkDivValueWidth = 24;
+  localparam int unsigned DomainClkDivValueWidth = 16;
   typedef logic [DomainClkDivValueWidth-1:0] domain_clk_div_value_t;
   logic [NumDomains-1:0] domain_clk;
   logic [NumDomains-1:0] domain_clk_en;
