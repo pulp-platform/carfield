@@ -113,7 +113,7 @@ module carfield_soc_fixture;
   wire [NumPhys-1:0]                pad_hyper_ck;
   wire [NumPhys-1:0]                pad_hyper_ckn;
   wire [NumPhys-1:0]                pad_hyper_rwds;
-  wire [NumPhys-1:0]                pad_hyper_reset;
+  wire [NumPhys-1:0]                pad_hyper_resetn;
   wire [NumPhys-1:0][7:0]           pad_hyper_dq;
 
   carfield      #(
