@@ -106,3 +106,24 @@ include $(CAR_SW_DIR)/tests/bare-metal/pulpd/sw.mk
 car-pulpd-sw-offload-tests:
 	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_PULPD_SRC_C),$(CAR_ELFLOAD_PULPD_PATH))
 
+# Benchmarks
+
+# Mibench
+MIBENCH_DIR := $(CAR_SW_DIR)/benchmarks/mibench
+CC       := $(CHS_SW_CC)
+OBJDUMP  := $(CHS_SW_OBJDUMP)
+INCLUDES := $(CAR_SW_INCLUDES)
+CCFLAGS  := $(CHS_SW_CCFLAGS)
+LDFLAGS  := $(CAR_SW_LDFLAGS)
+LDLIBS   += $(CHS_SW_LIBS)
+LDLIBS   += $(CAR_SW_LIBS)
+LDLINK   := -T$(CAR_LD_DIR)/l2.ld
+
+-include $(MIBENCH_DIR)/mibench.mk
+
+.PHONY: mibench-automotive mibench-automotive-basicmath mibench-automotive-bitcount mibench-automotive-qsort mibench-automotive-susan
+mibench-automotive: automotive
+mibench-automotive-basicmath: automotive-basicmath
+mibench-automotive-bitcount: automotive-bitcount
+mibench-automotive-qsort: automotive-qsort
+mibench-automotive-susan: automotive-susan

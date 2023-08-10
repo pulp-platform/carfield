@@ -316,6 +316,16 @@ lint:
 
 include $(CAR_XIL_DIR)/xilinx.mk
 
+##############
+# Benchmarks #
+##############
+
+.PHONY: mibench
+mibench: $(CAR_SW_DIR)/benchmarks/mibench
+
+$(CAR_SW_DIR)/benchmarks/mibench:
+	git clone git@github.com:alex96295/mibench.git -b carfield $@
+
 ########
 # Help #
 ########
