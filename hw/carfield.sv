@@ -725,7 +725,7 @@ assign domain_clk_div_changed[L2DomainIdx]         = car_regs_reg2hw.l2_clk_div_
 
 assign domain_clk_en[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_en.q;
 assign domain_clk_en[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_en.q;
-// secure boot mode forces security island to come up concurently with host domain. Furthermore, it
+// secure boot mode forces security island to come up concurrently with host domain. Furthermore, it
 // cannot be disabled by design
 assign domain_clk_en[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_en.q | secure_boot_i;
 assign domain_clk_en[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_en.q;
@@ -779,7 +779,8 @@ assign slave_isolate_req[EthernetSlvIdx]       = car_regs_reg2hw.periph_isolate.
 // Hyperbus isolation follows writes to the peripheral isolate registers in `carfield_reg_top`
 assign hyper_isolate_req                       = car_regs_reg2hw.periph_isolate.q;
 assign slave_isolate_req[PeriphsSlvIdx]        = car_regs_reg2hw.periph_isolate.q;
-assign security_island_isolate_req             = car_regs_reg2hw.security_island_isolate.q;
+assign security_island_isolate_req             = car_regs_reg2hw.security_island_isolate.q
+                                                 && !secure_boot_i;
 
 always_comb begin : gen_assign_isolated_responses
   slave_isolated = '0;
