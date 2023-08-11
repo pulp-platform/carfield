@@ -57,13 +57,13 @@ Follow these steps to launch a Carfield simulation:
 * Compile tests for Carfield. Tests resides in `sw/tests`.
 
   ```
-  // Compile Safety Island standalone software
+  # Compile Safety Island standalone software
   source ./scripts/safed-env.sh
   make safed-sw-build
-  // Compile Integer cluster standalone software
+  # Compile Integer cluster standalone software
   source ./scripts/pulpd-env.sh
   make pulpd-sw-build
-  // Compile Cheshire SW
+  # Compile Cheshire SW
   make car-sw-build
   ```
 
