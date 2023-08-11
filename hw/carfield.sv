@@ -1579,7 +1579,7 @@ secure_subsystem_synth_wrap #(
   .rst_ni           ( security_rst_n  ),
   .pwr_on_rst_ni    ( security_pwr_on_rst_n ),
   .fetch_en_i       ( car_regs_reg2hw.security_island_fetch_enable ),
-  .bootmode_i       ( '0              ),
+  .bootmode_i       ( bootmode_ot_i   ),
   .test_enable_i    ( test_mode_i     ),
   .irq_ibex_i       ( secd_mbox_intr  ), // from hostd or safed
    // JTAG port
