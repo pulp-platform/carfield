@@ -66,6 +66,8 @@ module carfield
   input   logic [1:0]                                 bootmode_ot_i,
   // Safety Island BOOT pins
   input   logic [1:0]                                 bootmode_safe_isln_i,
+  // Secure Boot Chain mode pin
+  input   logic                                       secure_boot_i,
   // Host UART Interface
   output logic                                        uart_tx_o,
   input  logic                                        uart_rx_i,
@@ -720,7 +722,9 @@ assign domain_clk_div_changed[L2DomainIdx]         = car_regs_reg2hw.l2_clk_div_
 
 assign domain_clk_en[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_en.q;
 assign domain_clk_en[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_en.q;
-assign domain_clk_en[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_en.q;
+// secure boot mode forces security island to come up concurently with host domain. Furthermore, it
+// cannot be disabled by design
+assign domain_clk_en[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_en.q | secure_boot_i;
 assign domain_clk_en[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_en.q;
 assign domain_clk_en[FPClusterDomainIdx]  = car_regs_reg2hw.spatz_cluster_clk_en.q;
 assign domain_clk_en[L2DomainIdx]         = car_regs_reg2hw.l2_clk_en.q;
@@ -751,7 +755,6 @@ carfield_reg_top #(
 // TODO: these still need to be connected but can't at this point in time since RTL is missing
 // car_regs_reg2hw.host_isolate // dummy
 // car_regs_reg2hw.periph_isolate
-// car_regs_reg2hw.security_island_isolate
 
 // car_regs_reg2hw.host_fetch_enable // dummy (?)
 // car_regs_reg2hw.spatz_cluster_fetch_enable
@@ -766,7 +769,6 @@ carfield_reg_top #(
 
 // car_regs_hw2reg.host_isolate_status // dummy
 // car_regs_hw2reg.periph_isolate_status
-// car_regs_hw2reg.security_island_isolate_status
 
 
 // Temporary assign
@@ -785,7 +787,10 @@ assign slave_isolate_req[L2Port1SlvIdx]      = 'd0;
 assign slave_isolate_req[L2Port2SlvIdx]      = 'd0;
 assign slave_isolate_req[EthernetSlvIdx]     = 'd0;
 assign slave_isolate_req[PeriphsSlvIdx]      = 'd0;
-assign secd_isolate_req                      = 'd0;
+// if secure boot is enabled then security island cannot be isolate under any circumstances
+// especially at boot time
+assign secd_isolate_req                      = car_regs_reg2hw.security_island_isolate.q &&
+                                               !secure_boot_i;
 
 always_comb begin: assign_isolated_responses
   slave_isolated = '0;
@@ -809,6 +814,10 @@ assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
 
 assign car_regs_hw2reg.spatz_cluster_isolate_status.d = slave_isolated[FPClusterSlvIdx];
 assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
+
+// security island only has a master port
+assign car_regs_hw2reg.security_island_isolate_status.d = master_isolated_rsp[SecurityIslandMstIdx];
+assign car_regs_hw2reg.security_island_isolate_status.de = 1'b1;
 
 // TODO: propagate isolated signal from security island to register
 
