@@ -1384,7 +1384,7 @@ pulp_cluster #(
   .AXI_ID_IN_WIDTH                ( IntClusterAxiIdInWidth    ),
   .AXI_ID_OUT_WIDTH               ( IntClusterAxiIdOutWidth   ),
   .LOG_DEPTH                      ( LogDepth                  ),
-  .BaseAddr                       ( IntClusterBaseAddr        ),
+  .BaseAddr                       ( IntClusterBase            ),
   .CdcSynchStages                 ( SyncStages                )
 ) i_integer_cluster            (
   .clk_i                       ( pulp_clk                                  ),
@@ -1392,7 +1392,7 @@ pulp_cluster #(
   .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                         ),
   .ref_clk_i                   ( rt_clk_i                                  ),
   .pmu_mem_pwdn_i              ( '0                                        ),
-  .base_addr_i                 ( '0                                        ),
+  .base_addr_i                 ( IntClusterBase[31:28]                     ),
   .test_mode_i                 ( test_mode_i                               ),
   .cluster_id_i                ( IntClusterIndex                           ),
   .en_sa_boot_i                ( car_regs_reg2hw.pulp_cluster_boot_enable  ),
