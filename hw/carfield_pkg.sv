@@ -284,7 +284,11 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   RegExtRegionStart : '{ 0, 0, 0, 0, L2EccBase, PadframeBase, PllBase, CarRegsBase },
   RegExtRegionEnd   : '{ 0, 0, 0, 0, L2EccEnd,  PadframeEnd,  PllEnd,  CarRegsEnd  },
   // RTC
+`ifdef TARGET_FPGA
+  RtcFreq           : 1000000,
+`else
   RtcFreq           : 32768,
+`endif
   // Features
   Bootrom           : 1,
   Uart              : 1,

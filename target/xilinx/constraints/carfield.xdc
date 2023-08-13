@@ -13,29 +13,17 @@
 set_property DONT_TOUCH TRUE [get_cells i_sys_clk_div/i_clk_bypass_mux]
 
 # The net of which we get the 200 MHz single ended clock from the MIG
-set MIG_CLK_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets dram_clock_out]]
-set MIG_RST_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets dram_sync_reset]]
-
 set SOC_RST_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets rst_n]]
 
 #####################
 # Timing Parameters #
 #####################
 
-# 333 MHz (max) DRAM Axi clock
-set FPGA_TCK 3.0
-
-# 200 MHz DRAM Generated clock
-set DRAM_TCK 5.0
-
-# 20 MHz SoC clock
-set SOC_TCK 50.0
+# 20 MHz soc clock
+set SYS_TCK 50
 
 # 10 MHz (max) JTAG clock
 set JTAG_TCK 100.0
-
-# I2C High-speed mode is 3.2 Mb/s
-set I2C_IO_SPEED 312.5
 
 # UART speed is at most 5 Mb/s
 set UART_IO_SPEED 200.0
@@ -44,25 +32,40 @@ set UART_IO_SPEED 200.0
 # Clocks #
 ##########
 
+# Clk_wiz clocks
+create_clock -period 100 -name clk_10 [get_pins i_xlnx_clk_wiz/clk_10]
+create_clock -period 50 -name clk_20 [get_pins i_xlnx_clk_wiz/clk_20]
+create_clock -period 20 -name clk_50 [get_pins i_xlnx_clk_wiz/clk_50]
+create_clock -period 10 -name clk_100 [get_pins i_xlnx_clk_wiz/clk_100]
+
 # System Clock
-# create_generated_clock -name clk_soc -source $MIG_CLK_SRC -divide_by 4 [get_nets soc_clk]
+# [see in board.xdc]
+
 # JTAG Clock
 create_clock -period $JTAG_TCK -name clk_jtag [get_ports jtag_tck_i]
 set_input_jitter clk_jtag 1.000
+
+##########
+# BUFG   #
+##########
+
+# JTAG are on non clock capable GPIOs (if not using BSCANE)
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets -of [get_ports jtag_tck_i]]
+set_property CLOCK_BUFFER_TYPE NONE [get_nets -of [get_ports jtag_tck_i]]
+
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets -of [get_ports cpu_reset]]
+set_property CLOCK_BUFFER_TYPE NONE [get_nets -of [get_ports cpu_reset]]
+
+set all_in_mux [get_nets -of [ get_pins -filter { DIRECTION == IN } -of [get_cells -hier -filter { ORIG_REF_NAME == tc_clk_mux2 || REF_NAME == tc_clk_mux2 }]]]
+set_property CLOCK_DEDICATED_ROUTE FALSE $all_in_mux
+set_property CLOCK_BUFFER_TYPE NONE $all_in_mux
 
 ################
 # Clock Groups #
 ################
 
 # JTAG Clock is asynchronous to all other clocks
-set_clock_groups -name jtag_async -asynchronous -group [get_clocks clk_jtag]
-
-#######################
-# Placement Overrides #
-#######################
-
-# Accept suboptimal BUFG-BUFG cascades
-set_property CLOCK_DEDICATED_ROUTE ANY_CMT_COLUMN [get_nets i_sys_clk_div/i_clk_mux/clk0_i]
+set_clock_groups -name jtag_async -asynchronous -group {clk_jtag}
 
 ########
 # JTAG #
@@ -76,13 +79,6 @@ set_output_delay -max -clock clk_jtag [expr 0.20 * $JTAG_TCK] [get_ports jtag_td
 
 set_max_delay  -from [get_ports jtag_trst_ni] $JTAG_TCK
 set_false_path -hold -from [get_ports jtag_trst_ni]
-
-#######
-# MIG #
-#######
-
-set_max_delay  -from $MIG_RST_SRC $FPGA_TCK
-set_false_path -hold -from $MIG_RST_SRC
 
 ########
 # UART #
@@ -98,16 +94,15 @@ set_false_path -hold -to [get_ports uart_tx_o]
 # CDCs #
 ########
 
-# cdc_fifo_gray: Disable hold checks, limit datapath delay and bus skew
-set_property KEEP_HIERARCHY SOFT [get_cells i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*i_sync]
-set_false_path -hold -through [get_pins -of_objects [get_cells i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*]] -through [get_pins -of_objects [get_cells i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*]]
-set_max_delay -datapath -from [get_pins i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] -to [get_pins i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_dst_*/*i_sync/reg*/D] $FPGA_TCK
-set_max_delay -datapath -from [get_pins i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] -to [get_pins i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_src_*/*i_sync/reg*/D] $FPGA_TCK
-set_max_delay -datapath -from [get_pins i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/*reg*/C] -to [get_pins i_dram_wrapper/i_axi_cdc_mig/i_axi_cdc_*/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] $FPGA_TCK
+# Disable hold checks
+set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {ORIG_REF_NAME=="sync" || REF_NAME=="sync"}]
+# src false path
+set_false_path -hold -through [get_pins -of_objects [get_cells -hier -filter {ORIG_REF_NAME == axi_cdc_src || REF_NAME == axi_cdc_src}] -filter {NAME =~ *async*}]
+# dst false path
+set_false_path -hold -through [get_pins -of_objects [get_cells -hier -filter {ORIG_REF_NAME == axi_cdc_dst || REF_NAME == axi_cdc_dst}] -filter {NAME =~ *async*}]
 
-set_false_path -through [get_pins -of_objects [get_cells -hier -filter {ORIG_REF_NAME == axi_cdc_src || REF_NAME == axi_cdc_src}] -filter {NAME =~ *async*}]
-set_false_path -through [get_pins -of_objects [get_cells -hier -filter {ORIG_REF_NAME == axi_cdc_dst || REF_NAME == axi_cdc_dst}] -filter {NAME =~ *async*}]
-
+# Limit datapath delay
+# [see in board.xdc]
 
 ####################
 # Reset Generators #

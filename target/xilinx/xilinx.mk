@@ -7,7 +7,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 PROJECT      ?= carfield
-# Board in     {genesys2, zcu102, vcu128}
+# Board in     {vcu128}
 BOARD        ?= vcu128
 ip-dir       := $(CAR_XIL_DIR)/xilinx
 
@@ -15,18 +15,7 @@ ip-dir       := $(CAR_XIL_DIR)/xilinx
 ifeq ($(BOARD),vcu128)
 	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
 	XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
-	ips-names    := xlnx_clk_wiz xlnx_vio
-endif
-ifeq ($(BOARD),genesys2)
-	XILINX_PART  ?= xc7k325tffg900-2
-	XILINX_BOARD ?= digilentinc.com:genesys2:part0:1.1
-	ips-names    := xlnx_mig_7_ddr3 xlnx_clk_wiz xlnx_vio
-	FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
-endif
-ifeq ($(BOARD),zcu102)
-	XILINX_PART    ?= xczu9eg-ffvb1156-2-e
-	XILINX_BOARD   ?= xilinx.com:zcu102:part0:3.4
-	ips-names      := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
+	ips-names    := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
 endif
 
 # Location of ip outputs
@@ -48,9 +37,13 @@ VIVADOENV ?=  PROJECT=$(PROJECT)            \
               PORT=$(XILINX_PORT)           \
               HOST=$(XILINX_HOST)           \
               FPGA_PATH=$(FPGA_PATH)        \
-              BIT=$(bit)
+              BIT=$(bit)                    \
+              IP_PATHS="$(foreach ip-name,$(ips-names),xilinx/$(ip-name)/$(ip-name).srcs/sources_1/ip/$(ip-name)/$(ip-name).xci)" \
+              ROUTED_DCP=$(ROUTED_DCP)      \
+              CHECK_TIMING=$(CHECK_TIMING)
+
 MODE        ?= gui
-VIVADOFLAGS ?= -nojournal -mode $(MODE) -source scripts/prologue.tcl
+VIVADOFLAGS ?= -nojournal -mode $(MODE)
 
 car-xil-all: $(bit)
 
@@ -61,8 +54,10 @@ $(mcs): $(bit)
 # Compile bitstream
 $(bit): $(ips) $(CAR_XIL_DIR)/scripts/add_sources.tcl
 	@mkdir -p $(out)
-	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
-	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/$(PROJECT)* $(out)
+	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/prologue.tcl -source scripts/run.tcl
+	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.bit $(out)
+	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.ltx $(out)
+	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.dcp $(out)
 
 # Generate ips
 %.xci:
@@ -78,7 +73,7 @@ car-xil-gui:
 
 car-xil-program: #$(bit)
 	@echo "Programming board $(BOARD) ($(XILINX_PART))"
-	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
+	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source -source $(CHS_XIL_DIR)/scripts/program.tcl
 
 car-xil-clean:
 	cd $(CAR_XIL_DIR) && rm -rf scripts/add_sources.tcl* *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).srcs $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim
@@ -96,8 +91,5 @@ $(CAR_XIL_DIR)/scripts/add_sources.tcl: Bender.yml
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
 	grep -v -P "lowrisc_ip/ip/prim/rtl" $@ > $@-tmp
 	mv $@-tmp $@
-# Override system verilog files
-	$(CAR_XIL_DIR)/scripts/overrides.sh $@
-	echo "" >> $@
 
 .PHONY: car-xil-gui car-xil-program car-xil-clean car-xil-rebuild-top car-xil-all
