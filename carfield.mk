@@ -90,7 +90,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 717358edc2da9e31f4b24622086f6bc756344237
+CAR_NONFREE_COMMIT ?= 728f16e60e6785217a144146cc390b56c44cdb4c
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -255,7 +255,7 @@ chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build car-sw-all
+car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
 
 .PHONY: car-init
 ## Shortcut to initialize carfield with all the targets described above.
@@ -281,8 +281,13 @@ $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
 
 # For independent boot of an island, we allow to compile the binary standalone.
 .PHONY: safed-sw-build pulpd-sw-build
-safed-sw-build: safed-sw-all
-pulpd-sw-build: pulpd-sw-all
+safed-sw-build:
+	. $(CAR_ROOT)/scripts/safed-env.sh; \
+	$(MAKE) safed-sw-all
+
+pulpd-sw-build:
+	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
+	$(MAKE) pulpd-sw-all
 
 ############
 # RTL LINT #

@@ -24,6 +24,8 @@ module vip_security_island_soc
 ) (
   output logic clk_vip,
   output logic rst_n_vip,
+  // secure boot enabled
+  output logic secure_boot,
   // UART interface
   input logic  uart_tx,
   output logic uart_rx,
@@ -55,6 +57,13 @@ module vip_security_island_soc
     @(posedge rst_n);
     @(posedge clk);
   endtask
+
+  /////////////////
+  // Secure boot //
+  /////////////////
+
+  // TODO: secure boot emulation mode is currently not tested
+  assign secure_boot = 1'b0;
 
   //////////
   // JTAG //
