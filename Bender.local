@@ -8,7 +8,7 @@ overrides:
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , version: 0.4.1 }
   redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "482d2f5" } # branch: yt/rapidrecovery
-  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.11                                }
+  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.12                                }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"           , version: =0.8.0                                 }
   idma:                 { git: "https://github.com/pulp-platform/idma.git"                , rev:     437ffa9                                }
   hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: a7e3f4e4c7fe607bcd6b9d94db77f612fd6ef6be   }
