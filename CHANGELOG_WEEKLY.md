@@ -18,6 +18,16 @@ We keep all RTL changes relevant for weekly releases here
 
 ### L2 Memory
 
+## Weekly 2023_08_14 (weekly_20230814)
+
+### Carfield Top
+- Reduce clock divider div width to reduce critical path within clk div
+- Add secure boot pin
+
+### Cheshire
+- Bump CVA6 to `pulp-v0.4.3` to densely pack Valid/Dirty SRAMs
+- Force latest `axi_riscv_atomics` version (`v0.8.1`)
+
 
 ## Weekly 2023_08_04 (weekly_20230804)
 
