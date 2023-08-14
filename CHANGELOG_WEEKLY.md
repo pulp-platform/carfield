@@ -22,6 +22,7 @@ We keep all RTL changes relevant for weekly releases here
 
 ### Carfield Top
 - Reduce clock divider div width to reduce critical path within clk div
+- Add secure boot pin
 
 ### Cheshire
 - Bump CVA6 to `pulp-v0.4.3` to densely pack Valid/Dirty SRAMs
