@@ -57,7 +57,7 @@ $(bit): $(ips) $(CAR_XIL_DIR)/scripts/add_sources.tcl
 	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/prologue.tcl -source scripts/run.tcl
 	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.bit $(out)
 	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.ltx $(out)
-	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.dcp $(out)
+	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*_routed.dcp $(out)
 
 # Generate ips
 %.xci:

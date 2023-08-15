@@ -115,9 +115,11 @@ if {[info exists ::env(CHECK_TIMING)] && $::env(CHECK_TIMING)==1} {
 }
 
 # Output Verilog netlist + SDC for timing simulation
-write_verilog -force -mode funcsim out/${project}_funcsim.v
-write_verilog -force -mode timesim out/${project}_timesim.v
-write_sdf     -force out/${project}_timesim.sdf
+if {[info exists ::env(EXPORT_SDF)] && $::env(EXPORT_SDF)==1} {
+  write_verilog -force -mode funcsim out/${project}_funcsim.v
+  write_verilog -force -mode timesim out/${project}_timesim.v
+  write_sdf     -force out/${project}_timesim.sdf
+}
 
 # Reports
 exec mkdir -p reports/
