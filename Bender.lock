@@ -30,14 +30,6 @@ packages:
     - common_cells
     - common_verification
     - tech_cells_generic
-  axi-rt:
-    revision: a14e1926f1ccedbc8fc739444ce86c1e09195fe5
-    version: 0.0.2-beta
-    source:
-      Git: git@iis-git.ee.ethz.ch:bslk/axi-rt.git
-    dependencies:
-    - axi
-    - common_cells
   axi2mem:
     revision: 6973e0434d26ba578cdb4aa69c26c1facd1a3f15
     version: null
@@ -90,6 +82,15 @@ packages:
     - axi
     - common_cells
     - common_verification
+  axi_rt:
+    revision: 6c00b92158e9359a60f07081be1d806d3a05fdbf
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/axi_rt.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
   axi_slice:
     revision: a4f72bc21ac4d7da631e8309d9f8d0c34b735c23
     version: 1.1.4
@@ -134,16 +135,16 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 834ea0dc2109c03c472c6afbdf7d1ae10503cb6a
+    revision: 6c314fa41f56174edd88f85a899d44b9107d174a
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
     dependencies:
     - apb_uart
     - axi
-    - axi-rt
     - axi_llc
     - axi_riscv_atomics
+    - axi_rt
     - axi_vga
     - bus_err_unit
     - clic
@@ -188,8 +189,8 @@ packages:
     dependencies:
     - hci
   common_cells:
-    revision: 0989ff73d0315922791bf42137c0ce0cbb4a76ca
-    version: 1.30.0
+    revision: 53b0b58af2db5bd3c850a7038fae170ed78326bb
+    version: 1.31.1
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
