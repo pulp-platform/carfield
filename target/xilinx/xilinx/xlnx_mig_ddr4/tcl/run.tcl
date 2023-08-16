@@ -28,7 +28,7 @@ if {$::env(BOARD) eq "vcu128"} {
                            CONFIG.C0.DDR4_Ecc {true} \
                            CONFIG.C0.DDR4_AxiDataWidth {512} \
                            CONFIG.C0.DDR4_AxiAddressWidth {32} \
-                           CONFIG.C0.DDR4_AxiIDWidth {6} \
+                           CONFIG.C0.DDR4_AxiIDWidth {8} \
                            CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
                            CONFIG.C0.BANK_GROUP_WIDTH {1} \
                            CONFIG.C0.CS_WIDTH {2} \
@@ -45,7 +45,7 @@ if {$::env(BOARD) eq "vcu128"} {
                            CONFIG.C0.DDR4_CasWriteLatency {12} \
                            CONFIG.C0.DDR4_AxiDataWidth {128} \
                            CONFIG.C0.DDR4_AxiAddressWidth {29} \
-                           CONFIG.C0.DDR4_AxiIDWidth {6} \
+                           CONFIG.C0.DDR4_AxiIDWidth {8} \
                            CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
                            CONFIG.System_Clock {No_Buffer} \
                            CONFIG.Reference_Clock {No_Buffer} \

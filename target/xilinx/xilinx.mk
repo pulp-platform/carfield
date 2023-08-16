@@ -15,6 +15,9 @@ ip-dir       := $(CAR_XIL_DIR)/xilinx
 ifeq ($(BOARD),vcu128)
 	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
 	XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
+	XILINX_PORT  ?= 3232
+	FPGA_PATH    ?= xilinx_tcf/Xilinx/091847100638A
+	XILINX_HOST  ?= bordcomputer
 	ips-names    := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
 endif
 
@@ -73,7 +76,10 @@ car-xil-gui:
 
 car-xil-program: #$(bit)
 	@echo "Programming board $(BOARD) ($(XILINX_PART))"
-	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source -source $(CHS_XIL_DIR)/scripts/program.tcl
+	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source $(CAR_XIL_DIR)/scripts/program.tcl
+
+car-xil-flash: $(CAR_SW_DIR)/boot/linux.gpt.bin
+	$(VIVADOENV) FILE=$< OFFSET=0 $(VIVADO) $(VIVADOFLAGS) -source $(CAR_XIL_DIR)/scripts/flash_spi.tcl
 
 car-xil-clean:
 	cd $(CAR_XIL_DIR) && rm -rf scripts/add_sources.tcl* *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).srcs $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim

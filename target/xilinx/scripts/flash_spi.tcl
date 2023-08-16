@@ -5,8 +5,18 @@
 # Nils Wistoff <nwistoff@iis.ee.ethz.ch>
 # Noah Huetter <huettern@iis.ee.ethz.ch>
 
-if {$env::{BOARD} == } {
+open_hw_manager
+
+connect_hw_server -url $::env(HOST):$::env(PORT)
+open_hw_target $::env(HOST):$::env(PORT)/$::env(FPGA_PATH)
+
+set file $::env(FILE)
+set offset $::env(OFFSET)
+set mcs_file image.mcs
+
+if {$::env(BOARD) eq "vcu128"} {
   set hw_device [get_hw_devices xcvu37p_0]
+  set hw_mem_device [lindex [get_cfgmem_parts {mt25qu02g-spi-x1_x2_x4}] 0]
 }
 
 # Create flash configuration file
@@ -17,7 +27,7 @@ write_cfgmem -force -format mcs -size 256 -interface SPIx4 \
 
 set_property PARAM.FREQUENCY 15000000 [get_hw_targets *]
 
-create_hw_cfgmem -hw_device $hw_device [lindex [get_cfgmem_parts {mt25qu02g-spi-x1_x2_x4}] 0]
+create_hw_cfgmem -hw_device $hw_device $hw_mem_device
 set hw_cfgmem [get_property PROGRAM.HW_CFGMEM $hw_device]
 set_property PROGRAM.ADDRESS_RANGE  {use_file} $hw_cfgmem
 set_property PROGRAM.FILES [list $mcs_file ] $hw_cfgmem
@@ -30,8 +40,8 @@ set_property PROGRAM.VERIFY  1 $hw_cfgmem
 set_property PROGRAM.CHECKSUM  0 $hw_cfgmem
 
 # Create bitstream to access SPI flash
-create_hw_bitstream -hw_device $hw_device [get_property PROGRAM.HW_CFGMEM_BITFILE $hw_device]; 
-program_hw_devices $hw_device; 
+create_hw_bitstream -hw_device $hw_device [get_property PROGRAM.HW_CFGMEM_BITFILE $hw_device];
+program_hw_devices $hw_device;
 refresh_hw_device $hw_device;
 
 # Program SPI flash

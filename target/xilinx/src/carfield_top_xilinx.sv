@@ -176,8 +176,8 @@ module carfield_top_xilinx
     .clk_in1 ( sys_clk  ),
     .reset   ( '0       ),
     .clk_100 (          ),
-    .clk_50  ( soc_clk  ),
-    .clk_20  (          ),
+    .clk_50  (          ),
+    .clk_20  ( soc_clk  ),
     .clk_10  (          )
   );
 

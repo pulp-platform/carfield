@@ -19,9 +19,6 @@ set SOC_RST_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets
 # Timing Parameters #
 #####################
 
-# 20 MHz soc clock
-set SYS_TCK 50
-
 # 10 MHz (max) JTAG clock
 set JTAG_TCK 100.0
 

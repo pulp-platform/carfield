@@ -57,7 +57,7 @@ module dram_wrapper #(
     EnResizer     : 1,
     EnCDC         : 1, // 333 MHz axi
     EnSpill1      : 1,
-    IdWidth       : 6,
+    IdWidth       : 8,
     AddrWidth     : 32,
     DataWidth     : 512,
     StrobeWidth   : 64
@@ -254,20 +254,8 @@ module dram_wrapper #(
 
   // Process ids
   if (IdPadding > 0) begin : gen_downsize_ids
-    // Sample full rid and bid from arid and awid on request
-    assign spill_dram_rsp_rid_d = spill_dram_req.ar_valid ? spill_dram_req.ar.id : spill_dram_rsp_rid_q;
-    assign spill_dram_rsp_bid_d = spill_dram_req.aw_valid ? spill_dram_req.aw.id : spill_dram_rsp_bid_q;
-    // Send reduced ids to DRAM
-    assign spill_dram_req_arid = spill_dram_req.ar.id[cfg.IdWidth-1:0];
-    assign spill_dram_req_awid = spill_dram_req.aw.id[cfg.IdWidth-1:0];
-    // Send full sampled rid and bid to SoC on response
-    assign spill_dram_rsp.r.id = spill_dram_rsp.r_valid ? {
-      {IdPadding{1'b0}}, spill_dram_rsp_rid_q
-    } : '0;
-    assign spill_dram_rsp.b.id = spill_dram_rsp.b_valid ? {
-      {IdPadding{1'b0}}, spill_dram_rsp_bid_q
-    } : '0;
-
+    // NOT SUPPORTED
+    do_not_enter_here i_error();
   end else begin : gen_upsize_ids
     // Forward arid awid rid bid to and from DDR
     assign spill_dram_req_arid = {{-IdPadding{1'b0}}, spill_dram_req.ar.id};

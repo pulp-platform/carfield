@@ -52,10 +52,13 @@ report_utilization -hierarchical                                        -file re
 report_cdc                                                              -file reports/$project.cdc.rpt
 report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
 
+# Remove black-boxed unreads
+remove_cell [get_cells -hier -filter {ORIG_REF_NAME == "unread" || REF_NAME == "unread"}]
+
 # Instantiate ILA
 set DEBUG [llength [get_nets -hier -filter {MARK_DEBUG == 1}]]
+set DEBUG 0
 if ($DEBUG) {
-  remove_cell [get_cells -hier -filter {ORIG_REF_NAME == "unread" || REF_NAME == "unread"}]
     # Create core
     puts "Creating debug core..."
     create_debug_core u_ila_0 ila
