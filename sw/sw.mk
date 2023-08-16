@@ -11,9 +11,8 @@
 # Carfield #
 ############
 
-CAR_LD_DIR    ?= $(CAR_SW_DIR)/link
-
-RISCV_LDFLAGS ?= $(CHS_SW_FLAGS) -nostartfiles -Wl,--gc-sections -L$(CHS_SW_LD_DIR) -L$(CAR_LD_DIR)
+CAR_LD_DIR     ?= $(CAR_SW_DIR)/link
+CAR_SW_LDFLAGS ?= $(CHS_SW_LDFLAGS) -L$(CAR_LD_DIR)
 
 car-sw-all: car-sw-libs car-sw-tests
 
@@ -48,7 +47,7 @@ define car_ld_elf_rule
 .PRECIOUS: %.car.$(1).elf
 
 %.car.$(1).elf: $$(CAR_LD_DIR)/$(1).ld %.car.o $(CHS_SW_LIBS) $$(CAR_SW_LIBS)
-	$$(CHS_SW_CC) $$(CAR_SW_INCLUDES) -T$$< $$(CHS_SW_LDFLAGS) -o $$@ $$(filter-out $$<,$$^)
+	$$(CHS_SW_CC) $$(CAR_SW_INCLUDES) -T$$< $$(CAR_SW_LDFLAGS) -o $$@ $$(filter-out $$<,$$^)
 endef
 
 $(foreach link,$(patsubst $(CAR_LD_DIR)/%.ld,%,$(wildcard $(CAR_LD_DIR)/*.ld)),$(eval $(call car_ld_elf_rule,$(link))))
@@ -69,30 +68,28 @@ CAR_SW_TEST_L2_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.l2.dump)   $(CAR_SW_TEST_SRCS
 CAR_SW_TEST_SPM_ROMH	= $(CAR_SW_TEST_SRCS_S:.S=.car.rom.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.rom.memh)
 CAR_SW_TEST_SPM_GPTH	= $(CAR_SW_TEST_SRCS_S:.S=.car.gpt.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.gpt.memh)
 
-car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH) car-pulpd-sw-offload-tests car-safed-sw-offload-tests
+car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH) car-pulpd-sw-offload-tests car-safed-sw-offload-tests mibench-automotive
 
 # Generate ELFs for blocking offload from cheshire. We execute from L2 or dram.
-# TODO: Make these generations nicer and using patterns. As of now, they are ugly and inefficient.
+# Template function for offload tests
+define offload_tests_template
+	$(foreach header,$(1), \
+		cp $(header) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $(3) -o $(4).$(basename $(notdir $(header))).car.o; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CAR_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.l2.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.l2.elf > $(4).$(basename $(notdir $(header))).car.l2.dump; \
+		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CAR_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.dram.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.dram.elf > $(4).$(basename $(notdir $(header))).car.dram.dump; \
+		$(RM) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
+		$(RM) $(4).$(basename $(notdir $(header))).car.o; \
+	)
+endef
 
 #################
 # Safety Island #
 #################
 
 include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk
-
-# Template function for offload tests
-define offload_tests_template
-	$(foreach header,$(1), \
-		cp $(header) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $(3) -o $(4).$(basename $(notdir $(header))).car.o; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CHS_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.l2.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.l2.elf > $(4).$(basename $(notdir $(header))).car.l2.dump; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CHS_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.dram.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.dram.elf > $(4).$(basename $(notdir $(header))).car.dram.dump; \
-		$(RM) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
-		$(RM) $(4).$(basename $(notdir $(header))).car.o; \
-	)
-endef
 
 car-safed-sw-offload-tests:
 	$(call offload_tests_template,$(SAFED_HEADER_TARGETS),safed,$(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C),$(CAR_ELFLOAD_BLOCKING_SAFED_PATH))
@@ -106,3 +103,24 @@ include $(CAR_SW_DIR)/tests/bare-metal/pulpd/sw.mk
 car-pulpd-sw-offload-tests:
 	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_PULPD_SRC_C),$(CAR_ELFLOAD_PULPD_PATH))
 
+# Benchmarks
+
+# Mibench
+MIBENCH_DIR := $(CAR_SW_DIR)/benchmarks/mibench
+CC       := $(CHS_SW_CC)
+OBJDUMP  := $(CHS_SW_OBJDUMP)
+INCLUDES := $(CAR_SW_INCLUDES)
+CCFLAGS  := $(CHS_SW_CCFLAGS)
+LDFLAGS  := $(CAR_SW_LDFLAGS)
+LDLIBS   += $(CHS_SW_LIBS)
+LDLIBS   += $(CAR_SW_LIBS)
+LDLINK   := -T$(CAR_LD_DIR)/l2.ld
+
+-include $(MIBENCH_DIR)/mibench.mk
+
+.PHONY: mibench-automotive mibench-automotive-basicmath mibench-automotive-bitcount mibench-automotive-qsort mibench-automotive-susan
+mibench-automotive: automotive
+mibench-automotive-basicmath: automotive-basicmath
+mibench-automotive-bitcount: automotive-bitcount
+mibench-automotive-qsort: automotive-qsort
+mibench-automotive-susan: automotive-susan

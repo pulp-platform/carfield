@@ -94,7 +94,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 728f16e60e6785217a144146cc390b56c44cdb4c
+CAR_NONFREE_COMMIT ?= b25a18bce74df67bbd5e0fe3b56aab62aa2befd8
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -315,6 +315,16 @@ lint:
 #############
 
 include $(CAR_XIL_DIR)/xilinx.mk
+
+##############
+# Benchmarks #
+##############
+
+.PHONY: mibench
+mibench: $(CAR_SW_DIR)/benchmarks/mibench
+
+$(CAR_SW_DIR)/benchmarks/mibench:
+	git clone git@github.com:alex96295/mibench.git -b carfield $@
 
 ########
 # Help #
