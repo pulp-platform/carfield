@@ -261,7 +261,7 @@ packages:
     - hwpe-stream
     - l2_tcdm_hybrid_interco
   hier-icache:
-    revision: a7e3f4e4c7fe607bcd6b9d94db77f612fd6ef6be
+    revision: fac03040e4901daad29c141fc481f7c5d3758e99
     version: null
     source:
       Git: https://github.com/pulp-platform/hier-icache.git
@@ -273,8 +273,8 @@ packages:
     - scm
     - tech_cells_generic
   hwpe-ctrl:
-    revision: 3d9b9bea7b98df24e6b235408364521a1a27d561
-    version: 1.7.2
+    revision: b7857919ea14b586901ff4282ad7749a3d50501e
+    version: null
     source:
       Git: https://github.com/pulp-platform/hwpe-ctrl.git
     dependencies:
@@ -382,7 +382,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 201453dbcedc8f7235b2723363356ba5845e5120
+    revision: 78c7e4b188151c7790bb1422b9aeeb28f5e0b588
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -411,7 +411,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   redmule:
-    revision: 3797413e5f190c2a86185ab6d8b12af365051b1e
+    revision: 886ad5ecf5fd908e0c0b278c22914a76a704eda3
     version: null
     source:
       Git: https://github.com/pulp-platform/redmule.git
@@ -482,7 +482,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   scm:
-    revision: f7b51416f3c407e4c31e9c016616d57aae2687bd
+    revision: 74426dee36f28ae1c02f7635cf844a0156145320
     version: null
     source:
       Git: https://github.com/pulp-platform/scm.git
