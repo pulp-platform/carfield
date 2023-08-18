@@ -9,7 +9,7 @@
 module l2_wrap
   import carfield_pkg::*;
   import axi_pkg::*;
-  import car_l2_pkg::*;
+  import dyn_mem_pkg::*;
 #(
   parameter cheshire_pkg::cheshire_cfg_t Cfg = CarfieldCfgDefault,
   /// AXI Ports settings
@@ -30,7 +30,7 @@ module l2_wrap
   parameter type         l2_ecc_reg_req_t = logic,
   parameter type         l2_ecc_reg_rsp_t = logic,
   /// Mapping rules
-  parameter int unsigned NumRules   = car_l2_pkg::NUM_MAP_TYPES * NumPort,
+  parameter int unsigned NumRules   = dyn_mem_pkg::NUM_MAP_TYPES * NumPort,
   /// L2 Memory settings
   parameter int unsigned L2MemSize  = 2**20,
   /// Non-changable parameters
@@ -154,21 +154,21 @@ typedef struct packed {
 } map_rule_t;
 
 localparam map_rule_t [NumRules-1:0] MappingRules = '{
-  '{idx       : car_l2_pkg::INTERLEAVE  ,
+  '{idx       : dyn_mem_pkg::INTERLEAVE  ,
     start_addr: L2Port0Base             ,
     end_addr  : L2Port0Base + L2MemSize},
-  '{idx       : car_l2_pkg::NONE_INTER           ,
+  '{idx       : dyn_mem_pkg::NONE_INTER           ,
     start_addr: L2Port0NonInterlBase             ,
     end_addr  : L2Port0NonInterlBase + L2MemSize},
-  '{idx       : car_l2_pkg::INTERLEAVE ,
+  '{idx       : dyn_mem_pkg::INTERLEAVE ,
     start_addr: L2Port1Base            ,
     end_addr  : L2Port1Base + L2MemSize},
-  '{idx       : car_l2_pkg::NONE_INTER          ,
+  '{idx       : dyn_mem_pkg::NONE_INTER          ,
     start_addr: L2Port1NonInterlBase            ,
     end_addr  : L2Port1NonInterlBase + L2MemSize}
 };
 
-car_l2_top #(
+dyn_mem_top #(
   .NUM_PORT            ( NumPort         ),
   .AXI_ADDR_WIDTH      ( AxiAddrWidth    ),
   .AXI_DATA_WIDTH      ( AxiDataWidth    ),
