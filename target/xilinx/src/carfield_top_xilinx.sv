@@ -126,7 +126,7 @@ module carfield_top_xilinx
 
   (* dont_touch = "yes" *) wire master_clk;
   (* dont_touch = "yes" *) wire master_sync_rst;
-  (* dont_touch = "yes" *) wire soc_clk;
+  (* dont_touch = "yes" *) wire soc_clk, alt_clk;
   (* dont_touch = "yes" *) wire rst_n;
 
   ///////////////////
@@ -176,8 +176,8 @@ module carfield_top_xilinx
     .clk_in1 ( sys_clk  ),
     .reset   ( '0       ),
     .clk_100 (          ),
-    .clk_50  (          ),
-    .clk_20  ( soc_clk  ),
+    .clk_50  ( soc_clk  ),
+    .clk_20  ( alt_clk  ),
     .clk_10  (          )
   );
 
@@ -509,7 +509,7 @@ module carfield_top_xilinx
   ) i_carfield (
       .host_clk_i    (soc_clk),
       .periph_clk_i  (soc_clk),
-      .alt_clk_i     (soc_clk),
+      .alt_clk_i     (alt_clk),
       .rt_clk_i      (rtc_clk_q),
       .pwr_on_rst_ni (rst_n),
       .test_mode_i   (testmode_i),

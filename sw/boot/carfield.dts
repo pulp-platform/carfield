@@ -8,8 +8,8 @@
 / {
   #address-cells = <2>;
   #size-cells = <2>;
-  compatible = "eth,cheshire-dev";
-  model = "eth,cheshire";
+  compatible = "eth,carfield-dev";
+  model = "eth,carfield";
   chosen {
     stdout-path = "/soc/serial@3002000:38400";
   };
@@ -25,7 +25,7 @@
       device_type = "cpu";
       status = "okay";
       compatible = "eth,ariane", "riscv";
-      clock-frequency = <20000000>; // 25 MHz
+      clock-frequency = <20000000>; // 20 MHz
       riscv,isa = "rv64imafdc";
       mmu-type = "riscv,sv39";
       tlb-split;
@@ -108,6 +108,15 @@
       riscv,max-priority = <7>;
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
+    };
+    soc-ctrl@20010000 {
+      compatible = "soc-ctrl,carfield";
+      reg = <0x0 0x20010000 0x0 0x1000>;
+    };
+    safety-island@60000000 {
+      compatible = "safety-island,carfield";
+      reg-names = "tcdm", "peripheral";
+      reg = <0x0 0x6000000 0x0 0x20000>, <0x0 0x60300000 0x0 0x100000>;
     };
   };
 };

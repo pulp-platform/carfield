@@ -97,5 +97,8 @@ $(CAR_XIL_DIR)/scripts/add_sources.tcl: Bender.yml
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
 	grep -v -P "lowrisc_ip/ip/prim/rtl" $@ > $@-tmp
 	mv $@-tmp $@
+# Override system verilog files
+	$(CAR_XIL_DIR)/scripts/overrides.sh $@
+	echo "" >> $@
 
 .PHONY: car-xil-gui car-xil-program car-xil-clean car-xil-rebuild-top car-xil-all

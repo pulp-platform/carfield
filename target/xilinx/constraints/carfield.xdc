@@ -12,7 +12,7 @@
 # Preserve the output mux of the clock divider
 set_property DONT_TOUCH TRUE [get_cells i_sys_clk_div/i_clk_bypass_mux]
 
-# The net of which we get the 200 MHz single ended clock from the MIG
+# The output of the reset synchronizer
 set SOC_RST_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets rst_n]]
 
 #####################
@@ -34,6 +34,8 @@ create_clock -period 100 -name clk_10 [get_pins i_xlnx_clk_wiz/clk_10]
 create_clock -period 50 -name clk_20 [get_pins i_xlnx_clk_wiz/clk_20]
 create_clock -period 20 -name clk_50 [get_pins i_xlnx_clk_wiz/clk_50]
 create_clock -period 10 -name clk_100 [get_pins i_xlnx_clk_wiz/clk_100]
+
+set SOC_TCK 20
 
 # System Clock
 # [see in board.xdc]

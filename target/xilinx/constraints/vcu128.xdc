@@ -18,11 +18,15 @@ set_clock_groups -name sys_clk_async -asynchronous -group {sys_clk}
 
 # Dram axi clock : 833ps * 4
 set MIG_TCK 3.332
-set MIG_RST [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk_sync_rst]
 create_clock -period $MIG_TCK -name dram_axi_clk [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk]
 set_clock_groups -name dram_async -asynchronous -group {dram_axi_clk}
-set_false_path -hold -through $MIG_RST
-set_max_delay -through $MIG_RST $MIG_TCK
+# Aynch reset in
+set MIG_RST_I [get_pin i_dram_wrapper/i_dram/inst/c0_ddr4_aresetn]
+set_false_path -hold -setup -through $MIG_RST_I
+# Synch reset out
+set MIG_RST_O [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk_sync_rst]
+set_false_path -hold -through $MIG_RST_O
+set_max_delay -through $MIG_RST_O $MIG_TCK
 
 ########
 # CDCs #

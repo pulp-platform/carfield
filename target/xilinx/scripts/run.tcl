@@ -25,9 +25,8 @@ set_property top ${project}_top_xilinx [current_fileset]
 
 update_compile_order -fileset sources_1
 
-# Runtime optimized due to the low frequency (20MHz)
-set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
-set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+set_property strategy Flow_PerfOptimized_high [get_runs synth_1]
+set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
 
 set_property XPM_LIBRARIES XPM_MEMORY [current_project]
 
