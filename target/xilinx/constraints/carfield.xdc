@@ -25,6 +25,9 @@ set JTAG_TCK 100.0
 # UART speed is at most 5 Mb/s
 set UART_IO_SPEED 200.0
 
+# Host on clk_50
+set SOC_TCK 20
+
 ##########
 # Clocks #
 ##########
@@ -35,7 +38,10 @@ create_clock -period 50 -name clk_20 [get_pins i_xlnx_clk_wiz/clk_20]
 create_clock -period 20 -name clk_50 [get_pins i_xlnx_clk_wiz/clk_50]
 create_clock -period 10 -name clk_100 [get_pins i_xlnx_clk_wiz/clk_100]
 
-set SOC_TCK 20
+set_clock_groups -name clk_10_grp -asynchronous -group {clk_10}
+set_clock_groups -name clk_20_grp -asynchronous -group {clk_20}
+set_clock_groups -name clk_50_grp -asynchronous -group {clk_50}
+set_clock_groups -name clk_100_grp -asynchronous -group {clk_100}
 
 # System Clock
 # [see in board.xdc]
@@ -43,6 +49,7 @@ set SOC_TCK 20
 # JTAG Clock
 create_clock -period $JTAG_TCK -name clk_jtag [get_ports jtag_tck_i]
 set_input_jitter clk_jtag 1.000
+set_clock_groups -name jtag_grp -asynchronous -group {clk_jtag}
 
 ##########
 # BUFG   #
@@ -58,13 +65,6 @@ set_property CLOCK_BUFFER_TYPE NONE [get_nets -of [get_ports cpu_reset]]
 set all_in_mux [get_nets -of [ get_pins -filter { DIRECTION == IN } -of [get_cells -hier -filter { ORIG_REF_NAME == tc_clk_mux2 || REF_NAME == tc_clk_mux2 }]]]
 set_property CLOCK_DEDICATED_ROUTE FALSE $all_in_mux
 set_property CLOCK_BUFFER_TYPE NONE $all_in_mux
-
-################
-# Clock Groups #
-################
-
-# JTAG Clock is asynchronous to all other clocks
-set_clock_groups -name jtag_async -asynchronous -group {clk_jtag}
 
 ########
 # JTAG #
