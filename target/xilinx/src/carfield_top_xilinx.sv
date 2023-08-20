@@ -172,6 +172,7 @@ module carfield_top_xilinx
     .O  (sys_clk)
   );
 
+
   xlnx_clk_wiz i_xlnx_clk_wiz (
     .clk_in1 ( sys_clk  ),
     .reset   ( '0       ),
@@ -180,6 +181,8 @@ module carfield_top_xilinx
     .clk_20  ( alt_clk  ),
     .clk_10  (          )
   );
+  // Use 24 for clk_50 and 9 for clk_20
+  localparam rtc_clk_divider = 24;
 
   /////////////////////
   // Reset Generator //
@@ -355,12 +358,12 @@ module carfield_top_xilinx
   logic rtc_clk_d, rtc_clk_q;
   logic [4:0] counter_d, counter_q;
 
-  // Divide soc_clk (20 MHz) by 20 => 1 MHz RTC Clock
+  // Divide soc_clk => 1 MHz RTC Clock
   always_comb begin
     counter_d = counter_q + 1;
     rtc_clk_d = rtc_clk_q;
 
-    if(counter_q == 9) begin
+    if(counter_q == rtc_clk_divider) begin
       counter_d = 5'b0;
       rtc_clk_d = ~rtc_clk_q;
     end

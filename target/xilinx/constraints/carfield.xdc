@@ -37,11 +37,13 @@ create_clock -period 100 -name clk_10 [get_pins i_xlnx_clk_wiz/clk_10]
 create_clock -period 50 -name clk_20 [get_pins i_xlnx_clk_wiz/clk_20]
 create_clock -period 20 -name clk_50 [get_pins i_xlnx_clk_wiz/clk_50]
 create_clock -period 10 -name clk_100 [get_pins i_xlnx_clk_wiz/clk_100]
+create_clock -period 1000 -name rtc_clk [get_pins rtc_clk_q_reg/Q]
 
 set_clock_groups -name clk_10_grp -asynchronous -group {clk_10}
 set_clock_groups -name clk_20_grp -asynchronous -group {clk_20}
 set_clock_groups -name clk_50_grp -asynchronous -group {clk_50}
 set_clock_groups -name clk_100_grp -asynchronous -group {clk_100}
+set_clock_groups -name rtc_clk_grp -asynchronous -group {rtc_clk}
 
 # System Clock
 # [see in board.xdc]
@@ -89,19 +91,112 @@ set_false_path -hold -from [get_ports uart_rx_i]
 set_max_delay [expr $UART_IO_SPEED * 0.35] -to [get_ports uart_tx_o]
 set_false_path -hold -to [get_ports uart_tx_o]
 
-########
-# CDCs #
-########
+#################
+# Carfield CDCs #
+#################
 
-# Disable hold checks
+# Data on 4 phases
+set_max_delay -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME == cdc_4phase_src || ORIG_REF_NAME == cdc_4phase_src}]] $SOC_TCK
+# Hold on 4 phases
+set_false_path -hold -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME == cdc_4phase_src || ORIG_REF_NAME == cdc_4phase_src}]]
+
+# i_carfield/i_cdc_dst_peripherals
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cdc_dst_peripherals/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[4].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[4].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cdc_dst_peripherals/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cdc_dst_peripherals/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[4].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[4].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cdc_dst_peripherals/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_in
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_in/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_in/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[0].i_cheshire_ext_mst_cdc_dst
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[0].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D
+] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[0].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[0].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[0].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# i_carfield/i_reconfigurable_l2/gen_cdc_fifos[0].i_dst_cdc
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[0].i_dst_cdc/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[0].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D
+] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[0].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[0].i_dst_cdc/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[0].i_dst_cdc/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[0].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[0].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[0].i_dst_cdc/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# i_carfield/i_reconfigurable_l2/gen_cdc_fifos[1].i_dst_cdc
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[1].i_dst_cdc/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[1].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D
+] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[1].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[1].i_dst_cdc/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[1].i_dst_cdc/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[1].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[1].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[1].i_dst_cdc/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# Hold on axi_cdc
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {ORIG_REF_NAME=="sync" || REF_NAME=="sync"}]
-# src false path
 set_false_path -hold -through [get_pins -of_objects [get_cells -hier -filter {ORIG_REF_NAME == axi_cdc_src || REF_NAME == axi_cdc_src}] -filter {NAME =~ *async*}]
-# dst false path
 set_false_path -hold -through [get_pins -of_objects [get_cells -hier -filter {ORIG_REF_NAME == axi_cdc_dst || REF_NAME == axi_cdc_dst}] -filter {NAME =~ *async*}]
-
-# Limit datapath delay
-# [see in board.xdc]
 
 ####################
 # Reset Generators #
