@@ -91,8 +91,9 @@ localparam int unsigned CarfieldNumTimerIntrs = CarfieldNumAdvTimerIntrs +
                         CarfieldNumAdvTimerEvents + CarfieldNumSysTimerIntrs;
 localparam int unsigned CarfieldNumWdtIntrs = 5;
 localparam int unsigned CarfieldNumCanIntrs = 1;
+localparam int unsigned CarfieldNumEthIntrs = 1;
 localparam int unsigned CarfieldNumPeriphsIntrs = CarfieldNumTimerIntrs +
-                        CarfieldNumWdtIntrs + CarfieldNumCanIntrs;
+                        CarfieldNumWdtIntrs + CarfieldNumCanIntrs + CarfieldNumEthIntrs;
 
 localparam int unsigned NumApbMst = 5;
 
