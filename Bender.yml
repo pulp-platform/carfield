@@ -25,6 +25,7 @@ dependencies:
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379 } # branch: pulp
   spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: v0.4.3                                   }
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
+  ethernet:           { git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git,  rev: 8b0cee7ef143b4c637a875664881232ac1c518a5 } # branch: aottaviano/carfield-dev
 
 
 workspace:

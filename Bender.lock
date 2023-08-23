@@ -213,6 +213,14 @@ packages:
     - common_cells
     - fpnew
     - tech_cells_generic
+  ethernet:
+    revision: 8b0cee7ef143b4c637a875664881232ac1c518a5
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git
+    dependencies:
+    - axi
+    - common_verification
   event_unit_flex:
     revision: 53fb3a1093aaaedfe883739fd8a3155d601210bc
     version: null
