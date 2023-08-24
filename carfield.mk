@@ -55,7 +55,7 @@ SAFED_BINARY   ?=
 # Security island
 SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
 SECD_BINARY   ?=
-SECD_BOOTMODE ?=
+SECD_BOOTMODE ?= 0
 
 # PULP cluster
 PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
@@ -195,6 +195,7 @@ car-hw-sim:
 		 set CHS_BINARY $(CHS_BINARY); \
 		 set CHS_IMAGE $(CHS_IMAGE); \
 		 set SECD_BINARY $(SECD_BINARY); \
+		 set SECD_BOOTMODE $(SECD_BOOTMODE); \
 		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
 		 set SAFED_BINARY $(SAFED_BINARY); \
 		 set PULPD_BINARY $(PULPD_BINARY); \

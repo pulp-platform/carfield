@@ -34,6 +34,7 @@ module tb_carfield_soc;
 
   // security island
   string      secd_preload_elf;
+  logic       secd_boot_mode;
 
   logic [63:0] unused;
 
@@ -137,16 +138,25 @@ module tb_carfield_soc;
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("SECD_BINARY=%s", secd_preload_elf)) secd_preload_elf = "";
-
-    if (secd_preload_elf != "") begin
-      // Wait before security island HW is initialized
-      repeat(10000)
-        @(posedge fix.clk);
-      fix.secd_vip.debug_secd_module_init();
-      fix.secd_vip.load_secd_binary(secd_preload_elf);
-      fix.secd_vip.jtag_secd_data_preload();
-      fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
-    end
+    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode)) secd_boot_mode = 0;
+    case(secd_boot_mode)
+      0: begin
+       fix.secd_vip.set_secd_boot_mode(2'b00);
+       if (secd_preload_elf != "") begin
+         // Wait before security island HW is initialized
+         repeat(10000)
+           @(posedge fix.clk);
+         fix.secd_vip.debug_secd_module_init();
+         fix.secd_vip.load_secd_binary(secd_preload_elf);
+         fix.secd_vip.jtag_secd_data_preload();
+         fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
+       end
+      end 1: begin // case: 0
+       fix.secd_vip.set_secd_boot_mode(2'b01);
+      end default: begin
+         $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
+      end
+    endcase
   end
 
   // pulp cluster standalone

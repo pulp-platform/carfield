@@ -22,19 +22,20 @@ module vip_security_island_soc
   parameter int unsigned UartBurstBytes    = 256,
   parameter int unsigned UartWaitCycles    = 60
 ) (
-  output logic clk_vip,
-  output logic rst_n_vip,
+  output logic       clk_vip,
+  output logic       rst_n_vip,
   // secure boot enabled
-  output logic secure_boot,
+  output logic       secure_boot,
+  output logic [1:0] bootmode,
   // UART interface
-  input logic  uart_tx,
-  output logic uart_rx,
+  input logic        uart_tx,
+  output logic       uart_rx,
   // JTAG interface
-  output logic jtag_tck,
-  output logic jtag_trst_n,
-  output logic jtag_tms,
-  output logic jtag_tdi,
-  input logic  jtag_tdo  
+  output logic       jtag_tck,
+  output logic       jtag_trst_n,
+  output logic       jtag_tms,
+  output logic       jtag_tdi,
+  input logic        jtag_tdo
 );
 
   ///////////////////////////////
@@ -44,6 +45,10 @@ module vip_security_island_soc
   logic clk, rst_n;
   assign clk_vip   = clk;
   assign rst_n_vip = rst_n;
+
+  initial begin
+    bootmode = '0;
+  end
 
   clk_rst_gen #(
     .ClkPeriod    ( ClkPeriodSys ),
@@ -58,12 +63,16 @@ module vip_security_island_soc
     @(posedge clk);
   endtask
 
+  task set_secd_boot_mode(input logic [1:0] mode);
+    bootmode = mode;
+  endtask
+
   /////////////////
   // Secure boot //
   /////////////////
 
   // TODO: secure boot emulation mode is currently not tested
-  assign secure_boot = 1'b0;
+  assign secure_boot = bootmode[0];
 
   //////////
   // JTAG //

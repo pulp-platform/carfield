@@ -50,6 +50,7 @@ module carfield_soc_fixture;
   logic [1:0] boot_mode;
   logic       rtc;
 
+  logic [1:0] boot_mode_secd;
   logic [1:0] boot_mode_safed;
 
   logic jtag_hostd_tck;
@@ -149,7 +150,7 @@ module carfield_soc_fixture;
     .jtag_safety_island_tms_i   ( jtag_safed_tms            ),
     .jtag_safety_island_tdi_i   ( jtag_safed_tdi            ),
     .jtag_safety_island_tdo_o   ( jtag_safed_tdo            ),
-    .bootmode_ot_i              ( '0                        ),
+    .bootmode_ot_i              ( boot_mode_secd            ),
     .bootmode_safe_isln_i       ( boot_mode_safed           ),
     .secure_boot_i              ( secure_boot               ),
     .uart_tx_o                  ( uart_hostd_tx             ),
@@ -382,6 +383,7 @@ module carfield_soc_fixture;
     .rst_n_vip (),
     // secure boot enabled
     .secure_boot  ( secure_boot      ),
+    .bootmode     ( boot_mode_secd   ),
     // UART interface
     .uart_tx      ( uart_secd_tx     ),
     .uart_rx      ( uart_secd_rx     ),
