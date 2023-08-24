@@ -266,7 +266,7 @@ car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
 
 .PHONY: car-init
 ## Shortcut to initialize carfield with all the targets described above.
-car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init
+car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibench
 
 # Initialize and build SW for the Islands
 .PHONY: safed-sw-init pulpd-sw-init
