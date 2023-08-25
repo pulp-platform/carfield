@@ -287,7 +287,7 @@ packages:
     dependencies:
     - tech_cells_generic
   hyperbus:
-    revision: 2adb7271438cdb96c19fbaf3e2a6bf89ffeee568
+    revision: 4714902ecf23074fb20bb462db4c66d96cc631f5
     version: null
     source:
       Git: https://github.com/pulp-platform/hyperbus.git
