@@ -56,6 +56,7 @@ SAFED_BINARY   ?=
 SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
 SECD_BINARY   ?=
 SECD_BOOTMODE ?= 0
+SECD_FLASH    ?= $(SECD_ROOT)/sw/tests/opentitan/flash_hmac_smoketest/bazel-out/flash_hmac_smoketest_signed8.vmem
 
 # PULP cluster
 PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
@@ -196,6 +197,7 @@ car-hw-sim:
 		 set CHS_IMAGE $(CHS_IMAGE); \
 		 set SECD_BINARY $(SECD_BINARY); \
 		 set SECD_BOOTMODE $(SECD_BOOTMODE); \
+		 set SECD_FLASH $(SECD_FLASH); \
 		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
 		 set SAFED_BINARY $(SAFED_BINARY); \
 		 set PULPD_BINARY $(PULPD_BINARY); \

@@ -35,7 +35,15 @@ module vip_security_island_soc
   output logic       jtag_trst_n,
   output logic       jtag_tms,
   output logic       jtag_tdi,
-  input logic        jtag_tdo
+  input logic        jtag_tdo,
+  // SPI hots
+  output logic [3:0] spi_secd_sd_o,
+  input logic [3:0]  spi_secd_sd_i,
+  input logic [3:0]  spi_secd_sd_oe_i,
+  input logic        spi_secd_csb_oe_i,
+  input logic        spi_secd_csb_i,
+  input logic        spi_secd_sck_oe_i,
+  input logic        spi_secd_sck_i
 );
 
   ///////////////////////////////
@@ -74,10 +82,54 @@ module vip_security_island_soc
   // TODO: secure boot emulation mode is currently not tested
   assign secure_boot = bootmode[0];
 
+  ////////////////
+  //  SPI Host  //
+  ////////////////
+
+  wire  SPI_D0, SPI_D1, SPI_SCK, SPI_CSB, WPNeg, RESETNeg;
+  wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
+
+  assign RESETNeg = 1'b1;
+  assign WPNeg    = 1'b0;
+
+  pad_alsaqr i_I0 ( .OEN(~spi_secd_sd_oe_i[0]), .I(spi_secd_sd_i[0]), .O(), .PUEN(1'b1), .PAD(SPI_D0),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+  pad_alsaqr i_I1 ( .OEN(~spi_secd_sd_oe_i[1]), .I(), .O(spi_secd_sd_o[1]), .PUEN(1'b1), .PAD(SPI_D1),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+  pad_alsaqr i_SCK (.OEN(~spi_secd_sck_oe_i), .I(spi_secd_sck_i), .O(), .PUEN(1'b1), .PAD(SPI_SCK),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+  pad_alsaqr i_CSB (.OEN(~spi_secd_csb_oe_i), .I(spi_secd_csb_i), .O(), .PUEN(1'b1), .PAD(SPI_CSB),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+
+  s25fs512s #(
+    .UserPreload ( 0 )
+  ) i_spi_norflash (
+    .SI       ( SPI_D0   ),
+    .SO       ( SPI_D1   ),
+    .WPNeg    ( RESETNeg ),
+    .RESETNeg ( WPNeg    ),
+    .SCK      ( SPI_SCK  ),
+    .CSNeg    ( SPI_CSB  )
+  );
+
+  // Preload function called by testbench
+  task automatic spih_norflash_preload(string image);
+    // We overlay the entire memory with an alternating pattern
+    for (int k = 0; k < $size(i_spi_norflash.Mem); ++k)
+        i_spi_norflash.Mem[k] = 'h9a;
+    // We load an image into chip 0 only if it exists
+    if (image != "")
+      $readmemh(image, i_spi_norflash.Mem);
+  endtask
+
   //////////
   // JTAG //
   //////////
-  
+
   localparam         AxiWideBeWidth_ib    = 4;
   localparam         AxiWideByteOffset_ib = $clog2(AxiWideBeWidth_ib);
   logic [31:0]       secd_memory   [bit [31:0]];
@@ -90,7 +142,7 @@ module vip_security_island_soc
     .clk_o  ( jtag_tck ),
     .rst_no ( )
   );
- 
+
   JTAG_DV jtag_secd(jtag_tck);
 
   typedef jtag_ot_test::riscv_dbg #(
