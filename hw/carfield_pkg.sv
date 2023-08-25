@@ -34,8 +34,8 @@ typedef enum int {
 } carfield_domains_e;
 
 typedef enum byte_bt {
-  L2Port1SlvIdx      = 'd0,
-  L2Port2SlvIdx      = 'd1,
+  L2Port0SlvIdx      = 'd0,
+  L2Port1SlvIdx      = 'd1,
   SafetyIslandSlvIdx = 'd2,
   EthernetSlvIdx     = 'd3,
   PeriphsSlvIdx      = 'd4,
@@ -52,8 +52,8 @@ typedef enum byte_bt {
 } axi_mst_idx_t;
 
 typedef enum doub_bt {
-  L2Port1Base      = 'h0000_0000_7800_0000,
-  L2Port2Base      = 'h0000_0000_7820_0000,
+  L2Port0Base      = 'h0000_0000_7800_0000,
+  L2Port1Base      = 'h0000_0000_7820_0000,
   SafetyIslandBase = 'h0000_0000_6000_0000,
   EthernetBase     = 'h0000_0000_2000_0000,
   PeriphsBase      = 'h0000_0000_2000_1000,
@@ -72,8 +72,8 @@ localparam doub_bt FPClusterSize    = 'h0000_0000_0080_0000;
 localparam doub_bt MailboxSize      = 'h0000_0000_0000_1000;
 
 typedef enum doub_bt {
+  L2Port0End      = L2Port0Base + L2Size,
   L2Port1End      = L2Port1Base + L2Size,
-  L2Port2End      = L2Port2Base + L2Size,
   SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize,
   EthernetEnd     = EthernetBase + EthernetSize,
   PeriphsEnd      = PeriphsBase + PeriphsSize,
@@ -257,24 +257,24 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                                 PeriphsSlvIdx     ,
                                                 EthernetSlvIdx    ,
                                                 SafetyIslandSlvIdx,
-                                                L2Port2SlvIdx     ,
-                                                L2Port1SlvIdx     },
+                                                L2Port1SlvIdx     ,
+                                                L2Port0SlvIdx     },
   AxiExtRegionStart : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxBase     ,
                                                 IntClusterBase  ,
                                                 FPClusterBase   ,
                                                 PeriphsBase     ,
                                                 EthernetBase    ,
                                                 SafetyIslandBase,
-                                                L2Port2Base     ,
-                                                L2Port1Base     },
+                                                L2Port1Base     ,
+                                                L2Port0Base     },
   AxiExtRegionEnd   : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxEnd     ,
                                                 IntClusterEnd  ,
                                                 FPClusterEnd   ,
                                                 PeriphsEnd     ,
                                                 EthernetEnd    ,
                                                 SafetyIslandEnd,
-                                                L2Port2End     ,
-                                                L2Port1End     },
+                                                L2Port1End     ,
+                                                L2Port0End     },
   // External reg slaves (at most 8 ports and rules)
   RegExtNumSlv      : NumTotalRegSlv,
   RegExtNumRules    : NumTotalRegRules,
@@ -379,8 +379,8 @@ localparam int unsigned NumL2Ports = 2;
 localparam int unsigned L2MemSize = 2**20;
 localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
                                         // (interleaved, non-interleaved)
+localparam doub_bt L2Port0NonInterlBase = L2Port0Base + L2MemSize;
 localparam doub_bt L2Port1NonInterlBase = L2Port1Base + L2MemSize;
-localparam doub_bt L2Port2NonInterlBase = L2Port2Base + L2MemSize;
 
 /****************************/
 /* Safety Island Parameters */

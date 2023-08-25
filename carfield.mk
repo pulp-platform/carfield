@@ -94,7 +94,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= b25a18bce74df67bbd5e0fe3b56aab62aa2befd8
+CAR_NONFREE_COMMIT ?= 0bd54b6d992594847c76a546b3c9b7357567b39c
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -266,7 +266,7 @@ car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
 
 .PHONY: car-init
 ## Shortcut to initialize carfield with all the targets described above.
-car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init
+car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibench
 
 # Initialize and build SW for the Islands
 .PHONY: safed-sw-init pulpd-sw-init

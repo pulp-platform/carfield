@@ -5,13 +5,8 @@
 // Robert Balas <balasr@iis.ee.ethz.ch>
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
-// basic testing of warm resets
-
-// Safety Island OK
-// Spatz OK
-// PULP cluster Hangs
-// Security Island Hangs
-// Peripherals Hangs
+// Basic testing of warm resets. This test is executed only from LLC/SPM since it tests SW reset on
+// shared L2 and hyperbus memory controller.
 
 #include <stdint.h>
 #include "params.h"
@@ -34,44 +29,52 @@ int main(void)
 
     // Write a pattern to safety island boot addr
     writew(magic, CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR +
-                      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET);
+		      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET);
 
     // Double check
     if (readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR +
-              SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) != magic)
-        return 2;
+	      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) != magic)
+	return ESAFEDNOACCES;
 
     // engage reset sequence for safety island
     car_reset_domain(CAR_SAFETY_RST);
 
     // After the reset we should only see zeros
     if (readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR +
-              SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) !=
-        SAFETY_ISLAND_BOOT_ADDR_RSVAL)
-        return 3;
+	      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) !=
+	SAFETY_ISLAND_BOOT_ADDR_RSVAL)
+	return ESAFEDNOACCES;
 
     // Spatz
     writew(magic, CAR_FP_CLUSTER_PERIPHS_BASE_ADDR +
-                      SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET);
+		      SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET);
     if (readw(CAR_FP_CLUSTER_PERIPHS_BASE_ADDR +
-              SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET) !=
-        magic)
-        return 4;
+	      SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET) !=
+	magic)
+	return EFPCLNOACCES;
 
     car_reset_domain(CAR_SPATZ_RST);
     if (readw(CAR_FP_CLUSTER_PERIPHS_BASE_ADDR +
-              SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET) != 0)
-        return 5;
+	      SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET) != 0)
+	return EFPCLNOACCES;
 
     // PULP Reset
-    // car_reset_domain(CAR_PULP_RST);
+    writew(magic, CAR_INT_CLUSTER_BOOT_ADDR_REG);
+    if (readw(CAR_INT_CLUSTER_BOOT_ADDR_REG) != magic)
+	return EINTCLNOACCES;
 
-    // Periph Reset
-    // car_reset_domain(CAR_PERIPH_RST);
+    volatile uint32_t pulp_boot_addr_rst_value = 0x78200000;
+    car_reset_domain(CAR_PULP_RST);
+    if (readw(CAR_INT_CLUSTER_BOOT_ADDR_REG) != pulp_boot_addr_rst_value)
+	return EINTCLNOACCES;
+
+    // L2 Reset
+    // Memory doesn't have a reset so this needs to be checked manually
+    car_reset_domain(CAR_L2_RST);
 
     // Security Island
-    // We can't access anything no way to check if the reset worked
-    // car_reset_domain(CAR_SECURITY_RST);
+    // We can't access anything so this needs to be checked manually
+    car_reset_domain(CAR_SECURITY_RST);
 
     return 0;
 }

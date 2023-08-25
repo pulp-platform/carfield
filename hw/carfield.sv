@@ -414,7 +414,7 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
                                                        Cfg.AxiUserWidth );
 
 logic hyper_isolate_req, hyper_isolated_rsp;
-logic secd_isolate_req;
+logic security_island_isolate_req;
 
 logic [iomsb(Cfg.AxiExtNumSlv-1):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
 logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
@@ -542,36 +542,36 @@ end
 // shared_l2_memory (sw reset 5)
 
 // Clock Multiplexing for each sub block
-  localparam int unsigned DomainClkDivValueWidth = 16;
-  typedef logic [DomainClkDivValueWidth-1:0] domain_clk_div_value_t;
-  logic [NumDomains-1:0] domain_clk;
-  logic [NumDomains-1:0] domain_clk_en;
-  logic [NumDomains-1:0] domain_clk_gated;
-  logic [NumDomains-1:0][1:0] domain_clk_sel;
+localparam int unsigned DomainClkDivValueWidth = 24;
+typedef logic [DomainClkDivValueWidth-1:0] domain_clk_div_value_t;
+logic [NumDomains-1:0] domain_clk;
+logic [NumDomains-1:0] domain_clk_en;
+logic [NumDomains-1:0] domain_clk_gated;
+logic [NumDomains-1:0][1:0] domain_clk_sel;
 
-  logic [NumDomains-1:0] domain_clk_div_changed;
-  logic [NumDomains-1:0] domain_clk_div_decoupled_valid, domain_clk_div_decoupled_ready;
-  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value;
-  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_decoupled;
-  logic [NumDomains-1:0] domain_clk_div_valid_synced, domain_clk_div_ready_synced;
-  domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_synced;
+logic [NumDomains-1:0] domain_clk_div_changed;
+logic [NumDomains-1:0] domain_clk_div_decoupled_valid, domain_clk_div_decoupled_ready;
+domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value;
+domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_decoupled;
+logic [NumDomains-1:0] domain_clk_div_valid_synced, domain_clk_div_ready_synced;
+domain_clk_div_value_t [NumDomains-1:0] domain_clk_div_value_synced;
 
-  // Note that each accelerator has two resets: One for the combined
-  // software/power-on reset and a power-on reset only
-  logic [NumDomains-1:0] pwr_on_rsts_n;
-  logic [NumDomains-1:0] rsts_n;
+// Note that each accelerator has two resets: One for the combined
+// software/power-on reset and a power-on reset only
+logic [NumDomains-1:0] pwr_on_rsts_n;
+logic [NumDomains-1:0] rsts_n;
 
 
-  // Each of the 5 clock gateable domains (periph, safety island, security island, spatz and pulp
-  // cluster) have the following clock distribution scheme:
-  // 1. For each domain the user selects one of 3 different clock sources (host clock, alt clock and
-  //    per clock). Each of these main clocks are either supplied externally, by a dedicated PLL per
-  //    clock source or by a single PLL that supplies all three clock sources. The configuration of
-  //    the clock source is handled by the external PLL wrapper configuration registers.
-  // 2. The selected clock source for the domain is fed into a default-bypassed arbitrary integer
-  //    clock divider with 50% duty cycle. This allows to use different integer clock divisions for
-  //    every target domain to use different clock frequencies.
-  // 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
+// Each of the 5 clock gateable domains (periph, safety island, security island, spatz and pulp
+// cluster) have the following clock distribution scheme:
+// 1. For each domain the user selects one of 3 different clock sources (host clock, alt clock and
+//    per clock). Each of these main clocks are either supplied externally, by a dedicated PLL per
+//    clock source or by a single PLL that supplies all three clock sources. The configuration of
+//    the clock source is handled by the external PLL wrapper configuration registers.
+// 2. The selected clock source for the domain is fed into a default-bypassed arbitrary integer
+//    clock divider with 50% duty cycle. This allows to use different integer clock divisions for
+//    every target domain to use different clock frequencies.
+// 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
 
 for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
   clk_mux_glitch_free #(
@@ -752,60 +752,47 @@ carfield_reg_top #(
   .devmode_i (1'b1)
 );
 
-// TODO: these still need to be connected but can't at this point in time since RTL is missing
-// car_regs_reg2hw.host_isolate // dummy
-// car_regs_reg2hw.periph_isolate
-
-// car_regs_reg2hw.host_fetch_enable // dummy (?)
-// car_regs_reg2hw.spatz_cluster_fetch_enable
-
-// car_regs_reg2hw.host_boot_addr // dummy (?)
-// car_regs_reg2hw.safety_island_boot_addr
-// car_regs_reg2hw.security_island_boot_addr
-// car_regs_reg2hw.pulp_cluster_boot_addr
-// car_regs_reg2hw.spatz_cluster_boot_addr
-
-// car_regs_reg2hw.l2_sram_config0...x
-
-// car_regs_hw2reg.host_isolate_status // dummy
-// car_regs_hw2reg.periph_isolate_status
-
-
-// Temporary assign
-// TODO: add ethernet and hyperbus isolate?
-assign hyper_isolate_req = '0;
-
-
-//
 // Isolate and Isolate status
-//
-// TODO: Add registers to control missing isolate signals
-assign slave_isolate_req[SafetyIslandSlvIdx] = car_regs_reg2hw.safety_island_isolate.q;
-assign slave_isolate_req[IntClusterSlvIdx]   = car_regs_reg2hw.pulp_cluster_isolate.q;
-assign slave_isolate_req[FPClusterSlvIdx]    = car_regs_reg2hw.spatz_cluster_isolate.q;
-assign slave_isolate_req[L2Port1SlvIdx]      = 'd0;
-assign slave_isolate_req[L2Port2SlvIdx]      = 'd0;
-assign slave_isolate_req[EthernetSlvIdx]     = 'd0;
-assign slave_isolate_req[PeriphsSlvIdx]      = 'd0;
-// if secure boot is enabled then security island cannot be isolate under any circumstances
-// especially at boot time
-assign secd_isolate_req                      = car_regs_reg2hw.security_island_isolate.q &&
-                                               !secure_boot_i;
 
-always_comb begin: assign_isolated_responses
+// For islands that connect to Cheshire with a master and a slave AXI port (Safety Island, Integer
+// Cluster, FP cluster), we consider the island isolated when the isolation status signals for both
+// ports are asserted.
+
+// For islands that connect to Cheshire with a slave port only (L2 port0, L2 port1, Ethernet,
+// Carfield peripherals, Hyperbus), we consider the island isolated when the unique isolation status
+// signal is asserted.
+
+// For islands that connect to Cheshire with a master port only (Security Island), we consider the
+// island isolated when the unique isolation status signal is asserted.
+
+assign slave_isolate_req[SafetyIslandSlvIdx]   = car_regs_reg2hw.safety_island_isolate.q;
+assign slave_isolate_req[IntClusterSlvIdx]     = car_regs_reg2hw.pulp_cluster_isolate.q;
+assign slave_isolate_req[FPClusterSlvIdx]      = car_regs_reg2hw.spatz_cluster_isolate.q;
+// We isolate both L2 AXI ports with a single write to the isolate register in `carfield_reg_top`
+assign slave_isolate_req[L2Port0SlvIdx]        = car_regs_reg2hw.l2_isolate.q;
+assign slave_isolate_req[L2Port1SlvIdx]        = car_regs_reg2hw.l2_isolate.q;
+// Ethernet isolation follows writes to the peripheral isolate registers in `carfield_reg_top`
+assign slave_isolate_req[EthernetSlvIdx]       = car_regs_reg2hw.periph_isolate.q;
+// Hyperbus isolation follows writes to the peripheral isolate registers in `carfield_reg_top`
+assign hyper_isolate_req                       = car_regs_reg2hw.periph_isolate.q;
+assign slave_isolate_req[PeriphsSlvIdx]        = car_regs_reg2hw.periph_isolate.q;
+assign security_island_isolate_req             = car_regs_reg2hw.security_island_isolate.q;
+
+always_comb begin : gen_assign_isolated_responses
   slave_isolated = '0;
   for (int i = 0; i < Cfg.AxiExtNumSlv; i++) begin
     if (i == SafetyIslandSlvIdx)
-      slave_isolated [i] = slave_isolated_rsp [i] & master_isolated_rsp [SafetyIslandMstIdx];
+      slave_isolated[i] = slave_isolated_rsp[i] & master_isolated_rsp[SafetyIslandMstIdx];
     else if (i == IntClusterSlvIdx)
-      slave_isolated [i] = slave_isolated_rsp [i] & master_isolated_rsp [IntClusterMstIdx];
+      slave_isolated[i] = slave_isolated_rsp[i] & master_isolated_rsp[IntClusterMstIdx];
     else if (i == FPClusterSlvIdx)
-      slave_isolated [i] = slave_isolated_rsp [i] & master_isolated_rsp [FPClusterMstIdx];
+      slave_isolated[i] = slave_isolated_rsp[i] & master_isolated_rsp[FPClusterMstIdx];
     else
-      slave_isolated [i] = slave_isolated_rsp [i];
+      slave_isolated[i] = slave_isolated_rsp[i];
   end
 end
 
+// Safety Island, Integer cluster, FP cluster: master and slave AXI ports
 assign car_regs_hw2reg.safety_island_isolate_status.d = slave_isolated[SafetyIslandSlvIdx];
 assign car_regs_hw2reg.safety_island_isolate_status.de = 1'b1;
 
@@ -815,11 +802,22 @@ assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
 assign car_regs_hw2reg.spatz_cluster_isolate_status.d = slave_isolated[FPClusterSlvIdx];
 assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
 
+// L2 port0, L2 port1, Carfield peripherals
+// L2 requires both ports to be isolated before asserting the isolated status
+assign car_regs_hw2reg.l2_isolate_status.d = slave_isolated[L2Port0SlvIdx] &
+                                             slave_isolated[L2Port1SlvIdx];
+assign car_regs_hw2reg.l2_isolate_status.de = 1'b1;
+
+// Peripheral isolate status is asserted when peripherals or the hyperbus or ethernet assert their
+// isolated status
+assign car_regs_hw2reg.periph_isolate_status.d = slave_isolated[PeriphsSlvIdx] |
+                                                 hyper_isolated_rsp |
+                                                 slave_isolated[EthernetSlvIdx];
+assign car_regs_hw2reg.periph_isolate_status.de = 1'b1;
+
 // security island only has a master port
 assign car_regs_hw2reg.security_island_isolate_status.d = master_isolated_rsp[SecurityIslandMstIdx];
 assign car_regs_hw2reg.security_island_isolate_status.de = 1'b1;
-
-// TODO: propagate isolated signal from security island to register
 
 // hyperbus reg req/rsp
 carfield_a32_d32_reg_req_t reg_hyper_req;
@@ -841,17 +839,20 @@ carfield_axi_slv_rsp_t axi_mbox_rsp;
 // Host Clock Domain
 
 // Interrupts
-logic [CarfieldNumExtIntrs-1:0]      chs_ext_intrs;
-logic [IntClusterNumEoc-1:0] pulpcl_eoc;
+logic [CarfieldNumExtIntrs-1:0] chs_ext_intrs;
+logic [IntClusterNumEoc-1:0]    pulpcl_eoc;
+logic                           l2_ecc_err;
 
 // Edge-triggered interrupts from a different clock domain than cheshire (host clock domain) have
 // been synchronized already. Synchronization of level-sensitive interrupts is handled within the
 // module, before or inside the interrupt controller.
 assign chs_ext_intrs  = {
   // tie unused to 0
-  {(CarfieldNumExtIntrs-21){1'b0}},
+  {(CarfieldNumExtIntrs-22){1'b0}},
   // System peripherals
   car_periph_intrs,        // 16
+  // L2 ECC
+  l2_ecc_err,              // 1
   // Mailboxes
   secd_hostd_mbox_intr,    // 1
   safed_hostd_mbox_intr,   // 1
@@ -1142,7 +1143,6 @@ hyperbus_wrap      #(
 
 // Reconfigurable L2 Memory
 // Host Clock Domain
-logic l2_ecc_err;
 
 l2_wrap #(
   .NumPort      ( NumL2Ports             ),
@@ -1614,8 +1614,8 @@ secure_subsystem_synth_wrap #(
   .async_axi_out_r_data_i  ( axi_mst_ext_r_data  [SecurityIslandMstIdx] ),
   .async_axi_out_r_wptr_i  ( axi_mst_ext_r_wptr  [SecurityIslandMstIdx] ),
   .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [SecurityIslandMstIdx] ),
-  .axi_isolate_i    ( secd_isolate_req                           ),
-  .axi_isolated_o   ( master_isolated_rsp [SecurityIslandMstIdx] ),
+  .axi_isolate_i    ( security_island_isolate_req                ),
+  .axi_isolated_o   ( master_isolated_rsp[SecurityIslandMstIdx] ),
    // Uart
   .ibex_uart_rx_i   ( uart_ot_rx_i  ),
   .ibex_uart_tx_o   ( uart_ot_tx_o  ),

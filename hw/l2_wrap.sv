@@ -154,17 +154,17 @@ typedef struct packed {
 
 localparam map_rule_t [NumRules-1:0] MappingRules = '{
   '{idx       : car_l2_pkg::INTERLEAVE  ,
-    start_addr: L2Port1Base             ,
-    end_addr  : L2Port1Base + L2MemSize},
+    start_addr: L2Port0Base             ,
+    end_addr  : L2Port0Base + L2MemSize},
   '{idx       : car_l2_pkg::NONE_INTER           ,
-    start_addr: L2Port1NonInterlBase             ,
-    end_addr  : L2Port1NonInterlBase + L2MemSize},
+    start_addr: L2Port0NonInterlBase             ,
+    end_addr  : L2Port0NonInterlBase + L2MemSize},
   '{idx       : car_l2_pkg::INTERLEAVE ,
-    start_addr: L2Port2Base            ,
-    end_addr  : L2Port2Base + L2MemSize},
+    start_addr: L2Port1Base            ,
+    end_addr  : L2Port1Base + L2MemSize},
   '{idx       : car_l2_pkg::NONE_INTER          ,
-    start_addr: L2Port2NonInterlBase            ,
-    end_addr  : L2Port2NonInterlBase + L2MemSize}
+    start_addr: L2Port1NonInterlBase            ,
+    end_addr  : L2Port1NonInterlBase + L2MemSize}
 };
 
 car_l2_top #(
