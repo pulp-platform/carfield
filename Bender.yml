@@ -13,7 +13,7 @@ dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.1                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.10                       }
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 6c314fa41f56174edd88f85a899d44b9107d174a } # branch: aottaviano/carfield
-  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 2adb7271438cdb96c19fbaf3e2a6bf89ffeee568 } # branch: lv/phys_in_use
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 4714902ecf23074fb20bb462db4c66d96cc631f5 } # branch: lv/phys_in_use
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: d6ab486b2777bf78c38b49352b5977565a272a58 } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: b0501345b1741fa96b781ef5d845026fec036fd2 } # branch: param_banks
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 78c7e4b188151c7790bb1422b9aeeb28f5e0b588 } # branch: yt/rapidrecovery
