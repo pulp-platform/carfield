@@ -126,7 +126,7 @@ module carfield_top_xilinx
 
   (* dont_touch = "yes" *) wire master_clk;
   (* dont_touch = "yes" *) wire master_sync_rst;
-  (* dont_touch = "yes" *) wire soc_clk, alt_clk;
+  (* dont_touch = "yes" *) wire soc_clk, alt_clk, clk_10;
   (* dont_touch = "yes" *) wire rst_n;
 
   ///////////////////
@@ -179,10 +179,9 @@ module carfield_top_xilinx
     .clk_100 (          ),
     .clk_50  ( soc_clk  ),
     .clk_20  ( alt_clk  ),
-    .clk_10  (          )
+    .clk_10  ( clk_10   )
   );
-  // Use 24 for clk_50 and 9 for clk_20
-  localparam rtc_clk_divider = 24;
+  localparam rtc_clk_divider = 4;
 
   /////////////////////
   // Reset Generator //
@@ -358,7 +357,7 @@ module carfield_top_xilinx
   logic rtc_clk_d, rtc_clk_q;
   logic [4:0] counter_d, counter_q;
 
-  // Divide soc_clk => 1 MHz RTC Clock
+  // Divide clk_10 => 1 MHz RTC Clock
   always_comb begin
     counter_d = counter_q + 1;
     rtc_clk_d = rtc_clk_q;
@@ -369,7 +368,7 @@ module carfield_top_xilinx
     end
   end
 
-  always_ff @(posedge soc_clk, negedge rst_n) begin
+  always_ff @(posedge clk_10, negedge rst_n) begin
     if(~rst_n) begin
       counter_q <= 5'b0;
       rtc_clk_q <= 0;

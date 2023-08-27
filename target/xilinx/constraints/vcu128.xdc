@@ -10,16 +10,15 @@
 set SYS_TCK 10
 create_clock -period $SYS_TCK -name sys_clk [get_pins u_ibufg_sys_clk/O]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins u_ibufg_sys_clk/O]
-set_clock_groups -name sys_clk_async -asynchronous -group {sys_clk}
 
 #############
 # Mig clock #
 #############
 
-# Dram axi clock : 833ps * 4
-set MIG_TCK 3.332
-create_clock -period $MIG_TCK -name dram_axi_clk [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk]
-set_clock_groups -name dram_async -asynchronous -group {dram_axi_clk}
+# Dram axi clock : 750ps * 4
+set MIG_TCK 3
+create_generated_clock -source [get_pins i_dram_wrapper/i_dram/inst/u_ddr4_infrastructure/gen_mmcme4.u_mmcme_adv_inst/CLKOUT0] \
+ -divide_by 1 -add -master_clock mmcm_clkout0 -name dram_axi_clk [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk]
 # Aynch reset in
 set MIG_RST_I [get_pin i_dram_wrapper/i_dram/inst/c0_ddr4_aresetn]
 set_false_path -hold -setup -through $MIG_RST_I
