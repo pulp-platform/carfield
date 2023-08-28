@@ -103,6 +103,17 @@ include $(CAR_SW_DIR)/tests/bare-metal/pulpd/sw.mk
 car-pulpd-sw-offload-tests:
 	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_PULPD_SRC_C),$(CAR_ELFLOAD_PULPD_PATH))
 
+# Litmus tests
+LITMUS_REPO := https://github.com/pulp-platform/CHERI-Litmus.git
+LITMUS_DIR  := $(CAR_SW_DIR)/tests/bare-metal/riscv-litmus-tests
+
+$(LITMUS_DIR):
+	git clone $(LITMUS_REPO) $(LITMUS_DIR)
+
+build-litmus-tests: $(LITMUS_DIR)
+	cd $(LITMUS_DIR)/frontend; ./make.sh
+	cd $(LITMUS_DIR)/binaries; ./make-riscv.sh ../tests/ cheshire 2
+
 # Benchmarks
 
 # Mibench

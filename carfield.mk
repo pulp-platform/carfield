@@ -301,6 +301,37 @@ pulpd-sw-build:
 	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
 	$(MAKE) pulpd-sw-all
 
+# Litmus tests
+LITMUS_WORK_DIR  := work-litmus
+LITMUS_TEST_LIST := $(LITMUS_WORK_DIR)/litmus-tests.list
+LITMUS_TESTS     := $(shell xargs printf '\n%s' < $(LITMUS_TEST_LIST) | cut -b 1-)
+
+$(LITMUS_WORK_DIR):
+	mkdir -p $(LITMUS_WORK_DIR)
+
+$(LITMUS_TEST_LIST): $(LITMUS_WORK_DIR)
+	basename -a `find $(LITMUS_DIR)/binaries/ -name "*.elf" | sed 's/\[/\\\[/g'` > $@
+
+$(LITMUS_TESTS):
+	$(MAKE) car-hw-sim CHS_BOOTMODE=0 CHS_PRELMODE=1 CHS_BINARY=$(LITMUS_DIR)/binaries/$@ | tee $(LITMUS_WORK_DIR)/$@.log
+
+$(LITMUS_WORK_DIR)/%.uart.log: %
+	sed -n 's/^# \[UART\] \(.*\S\)\s*$$/\1/p' $(LITMUS_WORK_DIR)/$<.log > $@
+
+$(LITMUS_WORK_DIR)/%.litmus.log: $(LITMUS_WORK_DIR)/%.uart.log
+	echo "Test $(basename $* .elf) Allowed" > $@
+	echo "Histogram" >> $@
+	cat $< >> $@
+	echo "" >> $@
+
+car-run-litmus-tests: $(LITMUS_TEST_LIST) $(addprefix $(LITMUS_WORK_DIR)/, $(addsuffix .litmus.log,$(LITMUS_TESTS)))
+	cat $^ > $(LITMUS_WORK_DIR)/litmus.log
+
+car-check-litmus-tests: $(LITMUS_WORK_DIR)/litmus.log
+	cd $(LITMUS_DIR) && LITMUS_LOG=$(CURDIR)/$(LITMUS_WORK_DIR)/litmus.log ci/compare_model.sh > $(CURDIR)/$(LITMUS_WORK_DIR)/compare.log
+	grep "Warning positive differences" $(LITMUS_WORK_DIR)/compare.log
+	! grep "Warning negative differences" $(LITMUS_WORK_DIR)/compare.log
+
 ############
 # RTL LINT #
 ############
