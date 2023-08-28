@@ -19,6 +19,8 @@ VIVADO   ?= vitis-2020.2 vivado
 TBENCH   ?= tb_carfield_soc
 VOPTARGS ?=
 
+BENDER_ROOT ?= $(CAR_ROOT)/.bender
+
 # Interrupt configuration in cheshire
 # CLINT interruptible harts
 CLINTCORES     := 4
