@@ -25,8 +25,6 @@ CAR_SW_INCLUDES    = -I$(CAR_SW_DIR)/include -I$(CAR_SW_DIR)/tests/bare-metal/sa
 CAR_SW_LIB_SRCS_S  = $(wildcard $(CAR_SW_DIR)/lib/*.S $(CAR_SW_DIR)/lib/**/*.S)
 CAR_SW_LIB_SRCS_C  = $(wildcard $(CAR_SW_DIR)/lib/*.c $(CAR_SW_DIR)/lib/**/*.c)
 CAR_SW_LIB_SRCS_O  = $(CAR_SW_DEPS_SRCS:.c=.o) $(CAR_SW_LIB_SRCS_S:.S=.o) $(CAR_SW_LIB_SRCS_C:.c=.o)
-# Override CHS_SW_INCLUDE to build ZSL with Carfield specific includes
-CHS_SW_INCLUDES    = $(CAR_SW_INCLUDES)
 
 CAR_SW_LIBS = $(CAR_SW_DIR)/lib/libcarfield.a
 
