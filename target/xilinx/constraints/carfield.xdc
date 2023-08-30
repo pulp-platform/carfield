@@ -4,6 +4,7 @@
 #
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
+
 ###################
 # Global Settings #
 ###################
@@ -196,6 +197,42 @@ set_max_delay -datapath \
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[0].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
  -to [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_dst
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_dst/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_dst/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[2].i_cheshire_ext_mst_cdc_dst
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[2].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[2].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[2].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[2].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
 # i_carfield/i_reconfigurable_l2/gen_cdc_fifos[0].i_dst_cdc
