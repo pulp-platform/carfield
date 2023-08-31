@@ -20,6 +20,9 @@
 
 int main(void)
 {
+  // Init the HW
+  car_init_start();
+
   char str[] = "Cluster boot.\r\n";
   uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
   uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);

@@ -20,6 +20,9 @@
 
 int main(void)
 {
+    // Init the HW
+    car_init_start();
+
     // Safety Island
 
     // We write a bunch of bytes to the safety island's boot register and check
