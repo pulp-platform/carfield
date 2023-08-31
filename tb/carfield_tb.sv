@@ -16,6 +16,7 @@ module tb_carfield_soc;
 
   import uvm_pkg::*;
 
+  // carfield top
   carfield_soc_fixture fix();
 
   typedef enum int {
@@ -36,6 +37,11 @@ module tb_carfield_soc;
   logic       safed_boot_mode;
   bit  [31:0] safed_exit_code;
   bit         safed_exit_status;
+  bit  [31:0] safed_isolated;
+
+  localparam int unsigned SafetyIslandClkEnRegAddr         = 32'h20010070;
+  localparam int unsigned SafetyIslandIsolateRegAddr       = 32'h20010040;
+  localparam int unsigned SafetyIslandIsolateStatusRegAddr = 32'h20010058;
 
   // security island
   string      secd_preload_elf;
@@ -118,6 +124,16 @@ module tb_carfield_soc;
     if (!$value$plusargs("SAFED_BINARY=%s",       safed_preload_elf)) safed_preload_elf = "";
 
     if (safed_preload_elf != "") begin
+
+      $display("Enabling clock and de-isolating Safety Island after PoR for standalone test...");
+      // Clock island after PoR
+      fix.safed_vip.axi_write_32(SafetyIslandClkEnRegAddr, 32'h1);
+      // De-isolate island after PoR
+      fix.safed_vip.axi_write_32(SafetyIslandIsolateRegAddr, 32'h0);
+      //do begin
+      //  fix.safed_vip.axi_poll_bit31(SafetyIslandIsolateStatusRegAddr, safed_isolated, 10);
+      //end while(safed_isolated != 32'h0);
+
       case (safed_boot_mode)
         0: begin
           fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Jtag);
@@ -151,6 +167,9 @@ module tb_carfield_soc;
     if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode)) secd_boot_mode   = 0;
     case(secd_boot_mode)
       0: begin
+        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
+        $display("Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)");
+        fix.set_secure_boot(CarfieldSecureBootOn);
         fix.secd_vip.set_secd_boot_mode(2'b00);
         if (secd_preload_elf != "") begin
           // Wait before security island HW is initialized
