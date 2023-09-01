@@ -18,6 +18,41 @@ We keep all RTL changes relevant for weekly releases here
 
 ### L2 Memory
 
+
+## Weekly 2023_09_01 (weekly_20230901)
+
+### Carfield Top
+- Update AXI-RT configuration
+- Add `mibench` benchmark compilation flow
+- Cleanup and fix variable names in SW makefrag
+- Bump pulp cluster to latest stable version (see `PULP Cluster` changes below)
+- Force hier-icache in Bender.local to use FF instead of SCMs
+- Update bender targets and defines for scripts generation involving pulp cluster
+- Fix and simplify pulp cluster parametrization
+- Add Spatz cluster and L2 isolate and isolate status registers
+- Wire missing isolate and isolate status registers
+- Align HW and SW terminology for L2 ports
+  * Ports were sometimes named 0/1 and other times 1/2
+- Connect L2 ECC error interrupt
+- Extend SW reset basic test
+- Point to open-source opentitan and can_bus
+- Bump hyperbus to latest stable version
+  * Change DQ and RWDS tri-state enable signals before data,
+  relaxing timing through the OE pin
+
+### Cheshire
+- Point to open-source AXI-RT
+
+### Security Island
+- Fix secure boot by using bit enable in memory cuts
+- Bump to latest tech_cells_generic (`0.2.12`) to support bit->byte remapping for `tc_sram_xilinx`
+
+### PULP Cluster
+- Fix address issue. Data/Periph demux did not consider the cluster
+- Use FF-based RF in RedMule
+- Use FFs instead of SCMs in icache
+
+
 ## Weekly 2023_08_14 (weekly_20230814)
 
 ### Carfield Top
