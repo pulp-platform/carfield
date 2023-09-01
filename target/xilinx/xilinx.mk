@@ -6,10 +6,12 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
-PROJECT      ?= carfield
-# Board in     {vcu128}
-BOARD        ?= vcu128
-ip-dir       := $(CAR_XIL_DIR)/xilinx
+PROJECT       ?= carfield
+# Board in      {vcu128}
+BOARD         ?= vcu128
+ip-dir        := $(CAR_XIL_DIR)/xilinx
+USE_ARTIFACTS ?= 0
+
 
 # Select board specific variables
 ifeq ($(BOARD),vcu128)
@@ -67,7 +69,7 @@ $(bit): $(ips) $(CAR_XIL_DIR)/scripts/add_sources.tcl
 	@echo $@
 	@echo $(CAR_XIL_DIR)
 	@echo "Generating IP $(basename $@)"
-	IP_NAME=$(basename $(notdir $@)) ; cd $(ip-dir)/$$IP_NAME && $(MAKE) clean && $(VIVADOENV) VIVADO="$(VIVADO)" $(MAKE)
+	IP_NAME=$(basename $(notdir $@)) ; cd $(ip-dir)/$$IP_NAME && $(MAKE) clean && USE_ARTIFACTS=$(USE_ARTIFACTS) $(VIVADOENV) VIVADO="$(VIVADO)" $(MAKE)
 	IP_NAME=$(basename $(notdir $@)) ; cp $(ip-dir)/$$IP_NAME/$$IP_NAME.srcs/sources_1/ip/$$IP_NAME/$$IP_NAME.xci $@
 
 car-xil-gui:

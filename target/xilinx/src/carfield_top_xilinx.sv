@@ -126,7 +126,7 @@ module carfield_top_xilinx
 
   (* dont_touch = "yes" *) wire master_clk;
   (* dont_touch = "yes" *) wire master_sync_rst;
-  (* dont_touch = "yes" *) wire soc_clk, alt_clk, clk_10;
+  (* dont_touch = "yes" *) wire soc_clk, host_clk, alt_clk, periph_clk, clk_10;
   (* dont_touch = "yes" *) wire rst_n;
 
   ///////////////////
@@ -182,6 +182,8 @@ module carfield_top_xilinx
     .clk_10  ( clk_10   )
   );
   localparam rtc_clk_divider = 4;
+  assign host_clk = soc_clk;
+  assign periph_clk = soc_clk;
 
   /////////////////////
   // Reset Generator //
@@ -269,14 +271,14 @@ module carfield_top_xilinx
   // SPI Adaption //
   //////////////////
 
-  (* mark_debug = "true" *) logic spi_sck_soc;
-  (* mark_debug = "true" *) logic [1:0] spi_cs_soc;
-  (* mark_debug = "true" *) logic [3:0] spi_sd_soc_out;
-  (* mark_debug = "true" *) logic [3:0] spi_sd_soc_in;
+  logic spi_sck_soc;
+  logic [1:0] spi_cs_soc;
+  logic [3:0] spi_sd_soc_out;
+  logic [3:0] spi_sd_soc_in;
 
-  (* mark_debug = "true" *) logic spi_sck_en;
-  (* mark_debug = "true" *) logic [1:0] spi_cs_en;
-  (* mark_debug = "true" *) logic [3:0] spi_sd_en;
+  logic spi_sck_en;
+  logic [1:0] spi_cs_en;
+  logic [3:0] spi_sd_en;
 
 `ifdef USE_SD
   // Assert reset low => Apply power to the SD Card
@@ -354,7 +356,7 @@ module carfield_top_xilinx
   // "RTC" Clock Divider //
   /////////////////////////
 
-  logic rtc_clk_d, rtc_clk_q;
+  (* dont_touch = "yes" *) logic rtc_clk_d, rtc_clk_q;
   logic [4:0] counter_d, counter_q;
 
   // Divide clk_10 => 1 MHz RTC Clock
@@ -509,8 +511,8 @@ module carfield_top_xilinx
       .HypNumPhys   (`HypNumPhys),
       .HypNumChips  (`HypNumChips)
   ) i_carfield (
-      .host_clk_i    (soc_clk),
-      .periph_clk_i  (soc_clk),
+      .host_clk_i    (host_clk),
+      .periph_clk_i  (periph_clk),
       .alt_clk_i     (alt_clk),
       .rt_clk_i      (rtc_clk_q),
       .pwr_on_rst_ni (rst_n),
