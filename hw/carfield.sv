@@ -861,6 +861,7 @@ assign chs_ext_intrs  = {
   pulpcl_eoc               // from integer cluster
 };
 
+`ifndef CHS_NETLIST
 cheshire_wrap #(
   .Cfg                            ( Cfg                          ),
   .ExtHartinfo                    ( '0                           ),
@@ -907,6 +908,9 @@ cheshire_wrap #(
   .AxiIn                          ( AxiIn                        ),
   .AxiOut                         ( AxiOut                       )
 ) i_cheshire_wrap                 (
+`else
+cheshire i_cheshire_wrap                 (
+`endif
   .clk_i              ( host_clk_i         ),
   .rst_ni             ( host_pwr_on_rst_n  ),
   .test_mode_i                    ,
