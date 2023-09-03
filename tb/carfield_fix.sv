@@ -379,6 +379,25 @@ module carfield_soc_fixture;
 
   localparam time ClkPeriodSecdJtag = 20ns;
 
+  // Tristate adapter
+  wire            SPI_D0, SPI_D1, SPI_SCK, SPI_CSB;
+
+  // I/O to INOUT behavioral conversion for security island's peripherals that require it
+  vip_security_island_tristate secd_vip_tristate (
+    // SPI interface
+    .spi_secd_sd_i     ( spi_secd_sd_o    ),
+    .spi_secd_sd_o     ( spi_secd_sd_i    ),
+    .spi_secd_sd_oe_i  ( spi_secd_sd_en   ),
+    .spi_secd_csb_oe_i ( spi_secd_csb_en  ),
+    .spi_secd_csb_i    ( spi_secd_csb_o   ),
+    .spi_secd_sck_oe_i ( spi_secd_sck_en  ),
+    .spi_secd_sck_i    ( spi_secd_sck_o   ),
+    .SPI_D0,
+    .SPI_D1,
+    .SPI_SCK,
+    .SPI_CSB
+  );
+
   // VIP
   vip_security_island_soc #(
     .ClkPeriodSys  ( ClkPeriodSys ),
@@ -401,14 +420,10 @@ module carfield_soc_fixture;
     .jtag_tms          ( jtag_secd_tms    ),
     .jtag_tdi          ( jtag_secd_tdi    ),
     .jtag_tdo          ( jtag_secd_tdo    ),
-    // SPI interface
-    .spi_secd_sd_i     ( spi_secd_sd_o    ),
-    .spi_secd_sd_o     ( spi_secd_sd_i    ),
-    .spi_secd_sd_oe_i  ( spi_secd_sd_en   ),
-    .spi_secd_csb_oe_i ( spi_secd_csb_en  ),
-    .spi_secd_csb_i    ( spi_secd_csb_o   ),
-    .spi_secd_sck_oe_i ( spi_secd_sck_en  ),
-    .spi_secd_sck_i    ( spi_secd_sck_o   )
+    .SPI_D0,
+    .SPI_D1,
+    .SPI_SCK,
+    .SPI_CSB
   );
 
   ///////////////////
