@@ -17,7 +17,7 @@ module vip_security_island_soc
   parameter real         TAppl             = 0.1,
   parameter real         TTest             = 0.9,
   // UART
-  parameter int unsigned UartBaudRate      = 115200,
+  parameter int unsigned UartBaudRate      = 1250000,
   parameter int unsigned UartParityEna     = 0,
   parameter int unsigned UartBurstBytes    = 256,
   parameter int unsigned UartWaitCycles    = 60
