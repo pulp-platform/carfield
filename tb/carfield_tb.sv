@@ -152,10 +152,14 @@ module tb_carfield_soc;
           fix.secd_vip.load_secd_binary(secd_preload_elf);
           fix.secd_vip.jtag_secd_data_preload();
           fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
+          fix.secd_vip.jtag_secd_wait_eoc();
         end
       end 1: begin
         fix.secd_vip.set_secd_boot_mode(2'b01);
         fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
+        repeat(10000)
+            @(posedge fix.clk);
+        fix.secd_vip.jtag_secd_wait_eoc();
       end default: begin
         $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
       end
