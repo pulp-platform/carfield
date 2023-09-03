@@ -56,7 +56,7 @@ SAFED_BINARY   ?=
 SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
 SECD_BINARY   ?=
 SECD_BOOTMODE ?= 0
-SECD_FLASH    ?= $(SECD_ROOT)/sw/tests/opentitan/flash_hmac_smoketest/bazel-out/flash_hmac_smoketest_signed8.vmem
+SECD_FLASH    ?= $(SECD_ROOT)/sw/tests/carfield/flash_carfield_boot/bazel-out/flash_carfield_boot_signed8.vmem
 
 # PULP cluster
 PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
