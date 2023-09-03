@@ -408,8 +408,6 @@ module carfield_soc_fixture;
   ) secd_vip (
     .clk_vip           (                  ),
     .rst_n_vip         (                  ),
-    // secure boot enabled
-    .secure_boot       ( secure_boot      ),
     .bootmode          ( boot_mode_secd   ),
     // UART interface
     .uart_tx           ( uart_secd_tx     ),
@@ -435,6 +433,10 @@ module carfield_soc_fixture;
       $display("Wait for OT to boot...");
       wait (i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
     end
+  endtask
+
+  task set_secure_boot(input logic sb);
+    secure_boot = sb;
   endtask
 
 endmodule

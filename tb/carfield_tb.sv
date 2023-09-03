@@ -18,6 +18,11 @@ module tb_carfield_soc;
 
   carfield_soc_fixture fix();
 
+  typedef enum int {
+    CarfieldSecureBootOff = 'd0,
+    CarfieldSecureBootOn  = 'd1
+  } carfield_secure_boot_e;
+
   // cheshire
   string      chs_preload_elf;
   string      chs_boot_hex;
@@ -155,6 +160,9 @@ module tb_carfield_soc;
           fix.secd_vip.jtag_secd_wait_eoc();
         end
       end 1: begin
+        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
+        $display("Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)");
+        fix.set_secure_boot(CarfieldSecureBootOn);
         fix.secd_vip.set_secd_boot_mode(2'b01);
         fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
         repeat(10000)
