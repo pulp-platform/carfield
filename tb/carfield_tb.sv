@@ -18,6 +18,11 @@ module tb_carfield_soc;
 
   carfield_soc_fixture fix();
 
+  typedef enum int {
+    CarfieldSecureBootOff = 'd0,
+    CarfieldSecureBootOn  = 'd1
+  } carfield_secure_boot_e;
+
   // cheshire
   string      chs_preload_elf;
   string      chs_boot_hex;
@@ -34,6 +39,8 @@ module tb_carfield_soc;
 
   // security island
   string      secd_preload_elf;
+  string      secd_flash_vmem;
+  logic       secd_boot_mode;
 
   logic [63:0] unused;
 
@@ -136,17 +143,35 @@ module tb_carfield_soc;
   // security island standalone
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
+    if (!$value$plusargs("SECD_FLASH=%s",   secd_flash_vmem)) secd_flash_vmem  = "";
     if (!$value$plusargs("SECD_BINARY=%s", secd_preload_elf)) secd_preload_elf = "";
-
-    if (secd_preload_elf != "") begin
-      // Wait before security island HW is initialized
-      repeat(10000)
-        @(posedge fix.clk);
-      fix.secd_vip.debug_secd_module_init();
-      fix.secd_vip.load_secd_binary(secd_preload_elf);
-      fix.secd_vip.jtag_secd_data_preload();
-      fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
-    end
+    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode)) secd_boot_mode   = 0;
+    case(secd_boot_mode)
+      0: begin
+        fix.secd_vip.set_secd_boot_mode(2'b00);
+        if (secd_preload_elf != "") begin
+          // Wait before security island HW is initialized
+          repeat(10000)
+            @(posedge fix.clk);
+          fix.secd_vip.debug_secd_module_init();
+          fix.secd_vip.load_secd_binary(secd_preload_elf);
+          fix.secd_vip.jtag_secd_data_preload();
+          fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
+          fix.secd_vip.jtag_secd_wait_eoc();
+        end
+      end 1: begin
+        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
+        $display("Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)");
+        fix.set_secure_boot(CarfieldSecureBootOn);
+        fix.secd_vip.set_secd_boot_mode(2'b01);
+        fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
+        repeat(10000)
+            @(posedge fix.clk);
+        fix.secd_vip.jtag_secd_wait_eoc();
+      end default: begin
+        $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
+      end
+    endcase
   end
 
   // pulp cluster standalone

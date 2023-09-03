@@ -55,7 +55,8 @@ SAFED_BINARY   ?=
 # Security island
 SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
 SECD_BINARY   ?=
-SECD_BOOTMODE ?=
+SECD_BOOTMODE ?= 0
+SECD_FLASH    ?= $(SECD_ROOT)/sw/tests/carfield/flash_carfield_boot/bazel-out/flash_carfield_boot_signed8.vmem
 
 # PULP cluster
 PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
@@ -96,7 +97,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 0bd54b6d992594847c76a546b3c9b7357567b39c
+CAR_NONFREE_COMMIT ?= 768a777eb4376d3979cc81be9b1046ba70193383
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -195,6 +196,8 @@ car-hw-sim:
 		 set CHS_BINARY $(CHS_BINARY); \
 		 set CHS_IMAGE $(CHS_IMAGE); \
 		 set SECD_BINARY $(SECD_BINARY); \
+		 set SECD_BOOTMODE $(SECD_BOOTMODE); \
+		 set SECD_FLASH $(SECD_FLASH); \
 		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
 		 set SAFED_BINARY $(SAFED_BINARY); \
 		 set PULPD_BINARY $(PULPD_BINARY); \

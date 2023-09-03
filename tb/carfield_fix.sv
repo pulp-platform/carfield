@@ -50,6 +50,7 @@ module carfield_soc_fixture;
   logic [1:0] boot_mode;
   logic       rtc;
 
+  logic [1:0] boot_mode_secd;
   logic [1:0] boot_mode_safed;
 
   logic jtag_hostd_tck;
@@ -92,6 +93,14 @@ module carfield_soc_fixture;
   logic [ 3:0]          spih_sd_o;
   logic [ 3:0]          spih_sd_i;
   logic [ 3:0]          spih_sd_en;
+
+  logic                 spi_secd_sck_o;
+  logic                 spi_secd_sck_en;
+  logic                 spi_secd_csb_o;
+  logic                 spi_secd_csb_en;
+  logic [ 3:0]          spi_secd_sd_o;
+  logic [ 3:0]          spi_secd_sd_i;
+  logic [ 3:0]          spi_secd_sd_en;
 
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_i;
   logic [SlinkNumChan-1:0]                    slink_rcv_clk_o;
@@ -149,7 +158,7 @@ module carfield_soc_fixture;
     .jtag_safety_island_tms_i   ( jtag_safed_tms            ),
     .jtag_safety_island_tdi_i   ( jtag_safed_tdi            ),
     .jtag_safety_island_tdo_o   ( jtag_safed_tdo            ),
-    .bootmode_ot_i              ( '0                        ),
+    .bootmode_ot_i              ( boot_mode_secd            ),
     .bootmode_safe_isln_i       ( boot_mode_safed           ),
     .secure_boot_i              ( secure_boot               ),
     .uart_tx_o                  ( uart_hostd_tx             ),
@@ -169,13 +178,13 @@ module carfield_soc_fixture;
     .spih_sd_o                  ( spih_sd_o                 ),
     .spih_sd_en_o               ( spih_sd_en                ),
     .spih_sd_i                  ( spih_sd_i                 ),
-    .spih_ot_sck_o              (                           ),
-    .spih_ot_sck_en_o           (                           ),
-    .spih_ot_csb_o              (                           ),
-    .spih_ot_csb_en_o           (                           ),
-    .spih_ot_sd_o               (                           ),
-    .spih_ot_sd_en_o            (                           ),
-    .spih_ot_sd_i               ( '0                        ),
+    .spih_ot_sck_o              ( spi_secd_sck_o            ),
+    .spih_ot_sck_en_o           ( spi_secd_sck_en           ),
+    .spih_ot_csb_o              ( spi_secd_csb_o            ),
+    .spih_ot_csb_en_o           ( spi_secd_csb_en           ),
+    .spih_ot_sd_o               ( spi_secd_sd_o             ),
+    .spih_ot_sd_en_o            ( spi_secd_sd_en            ),
+    .spih_ot_sd_i               ( spi_secd_sd_i             ),
     .eth_rxck_i                 ( '0                        ),
     .eth_rxctl_i                ( '0                        ),
     .eth_rxd_i                  ( '0                        ),
@@ -370,6 +379,25 @@ module carfield_soc_fixture;
 
   localparam time ClkPeriodSecdJtag = 20ns;
 
+  // Tristate adapter
+  wire            SPI_D0, SPI_D1, SPI_SCK, SPI_CSB;
+
+  // I/O to INOUT behavioral conversion for security island's peripherals that require it
+  vip_security_island_tristate secd_vip_tristate (
+    // SPI interface
+    .spi_secd_sd_i     ( spi_secd_sd_o    ),
+    .spi_secd_sd_o     ( spi_secd_sd_i    ),
+    .spi_secd_sd_oe_i  ( spi_secd_sd_en   ),
+    .spi_secd_csb_oe_i ( spi_secd_csb_en  ),
+    .spi_secd_csb_i    ( spi_secd_csb_o   ),
+    .spi_secd_sck_oe_i ( spi_secd_sck_en  ),
+    .spi_secd_sck_i    ( spi_secd_sck_o   ),
+    .SPI_D0,
+    .SPI_D1,
+    .SPI_SCK,
+    .SPI_CSB
+  );
+
   // VIP
   vip_security_island_soc #(
     .ClkPeriodSys  ( ClkPeriodSys ),
@@ -378,19 +406,22 @@ module carfield_soc_fixture;
     .TAppl         ( TAppl ),
     .TTest         ( TTest )
   ) secd_vip (
-    .clk_vip   (),
-    .rst_n_vip (),
-    // secure boot enabled
-    .secure_boot  ( secure_boot      ),
+    .clk_vip           (                  ),
+    .rst_n_vip         (                  ),
+    .bootmode          ( boot_mode_secd   ),
     // UART interface
-    .uart_tx      ( uart_secd_tx     ),
-    .uart_rx      ( uart_secd_rx     ),
+    .uart_tx           ( uart_secd_tx     ),
+    .uart_rx           ( uart_secd_rx     ),
     // JTAG interface
-    .jtag_tck     ( jtag_secd_tck    ),
-    .jtag_trst_n  ( jtag_secd_trst_n ),
-    .jtag_tms     ( jtag_secd_tms    ),
-    .jtag_tdi     ( jtag_secd_tdi    ),
-    .jtag_tdo     ( jtag_secd_tdo    )
+    .jtag_tck          ( jtag_secd_tck    ),
+    .jtag_trst_n       ( jtag_secd_trst_n ),
+    .jtag_tms          ( jtag_secd_tms    ),
+    .jtag_tdi          ( jtag_secd_tdi    ),
+    .jtag_tdo          ( jtag_secd_tdo    ),
+    .SPI_D0,
+    .SPI_D1,
+    .SPI_SCK,
+    .SPI_CSB
   );
 
   ///////////////////
@@ -402,6 +433,10 @@ module carfield_soc_fixture;
       $display("Wait for OT to boot...");
       wait (i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
     end
+  endtask
+
+  task set_secure_boot(input logic sb);
+    secure_boot = sb;
   endtask
 
 endmodule
