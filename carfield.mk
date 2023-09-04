@@ -17,7 +17,6 @@ BENDER   ?= bender
 QUESTA   ?= questa-2022.3
 VIVADO   ?= vitis-2020.2 vivado
 TBENCH   ?= tb_carfield_soc
-VOPTARGS ?=
 
 BENDER_ROOT ?= $(CAR_ROOT)/.bender
 
@@ -84,11 +83,14 @@ VENVDIR?=$(WORKDIR)/.venv
 REQUIREMENTS_TXT?=$(wildcard requirements.txt)
 include $(CAR_ROOT)/utils/venv.mk
 
-ifdef gui
-	VSIM_FLAG :=
-	RUN_AND_EXIT := run -all
+QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7
+ifdef DEBUG
+	VOPT_FLAGS := $(QUESTA_FLAGS) +acc
+	VSIM_FLAGS := $(QUESTA_FLAGS)
+	RUN_AND_EXIT := log -r /*; run -all
 else
-	VSIM_FLAG := -c
+	VOPT_FLAGS := $(QUESTA_FLAGS) -O5
+	VSIM_FLAGS := $(QUESTA_FLAGS) -c
 	RUN_AND_EXIT := run -all; exit
 endif
 
@@ -171,6 +173,7 @@ $(CAR_ROOT)/tb/hyp_vip:
 scripts/carfield_compile.tcl:
 	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) $(safed_defs) --vlog-arg="$(VLOG_ARGS)" --compilation-mode separate > $@
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
+	echo 'vopt $(VOPT_FLAGS) $(TBENCH) -o $(TBENCH)_opt' >> $@
 
 .PHONY: car-sim-init
 car-sim-init: chs-sim-init $(CAR_ROOT)/tb/hyp_vip scripts/carfield_compile.tcl
@@ -187,10 +190,10 @@ car-hw-build: car-sim-init
 ## @param TESTNAME=hello_wolrd The name of the test to simulate. This automatically sets the BINARY variable. Defaults to hello_world.
 ## @param MEMTYPE=spm The kind of memory used for preloading the test.
 ## @param BINARY=sw/tests/hello_world/hello_world.spm.elf The path to the elf binary to simulate. Defaults to the path of the test chosen with TESTNAME.
-## @param VOPTARGS="" Additional arguments to Questa's vopt command.
-## @param TBENCH=tb_carfield_soc The toplevel testbench to use. Defaults to 'tb_carfield_soc'.
+## @param TBENCH=tb_carfield_soc_opt The optimised toplevel testbench to use. Defaults to 'tb_carfield_soc_opt'.
+## @param VSIM_FLAGS the flags for the vsim invocation
 car-hw-sim:
-	$(QUESTA) vsim $(VSIM_FLAG) -do \
+	$(QUESTA) vsim $(VSIM_FLAGS) -do \
 		"set CHS_BOOTMODE $(CHS_BOOTMODE); \
 		 set CHS_PRELMODE $(CHS_PRELMODE); \
 		 set CHS_BINARY $(CHS_BINARY); \
@@ -202,10 +205,9 @@ car-hw-sim:
 		 set SAFED_BINARY $(SAFED_BINARY); \
 		 set PULPD_BINARY $(PULPD_BINARY); \
 		 set SPATZCL_BINARY $(SPATZCL_BINARY); \
-		 set VOPTARGS $(VOPTARGS); \
 		 set TESTBENCH $(TBENCH); \
+		 set VSIM_FLAGS \"$(VSIM_FLAGS)\"; \
 		 source $(CAR_ROOT)/scripts/start_carfield.tcl ; \
-		 add log -r sim:/$(TBENCH)/*; \
 		 $(RUN_AND_EXIT)"
 
 .PHONY: car-hw-clean
