@@ -109,14 +109,16 @@
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
     };
+    tcdm@10000000 {
+      reg = <0x0 0x10000000 0x0 0x400000>;
+    };
     soc-ctrl@20010000 {
       compatible = "soc-ctrl,carfield";
       reg = <0x0 0x20010000 0x0 0x1000>;
     };
     safety-island@60000000 {
       compatible = "safety-island,carfield";
-      reg-names = "tcdm", "peripheral";
-      reg = <0x0 0x6000000 0x0 0x20000>, <0x0 0x60300000 0x0 0x100000>;
+      reg = <0x0 0x6000000 0x0 0x800000>;
     };
   };
 };
