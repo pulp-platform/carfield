@@ -104,6 +104,9 @@ module tb_carfield_soc;
       // Eventually wait for HWRoT to end initialization anda ssert Ibex's fetch enable
       fix.passthrough_or_wait_for_secd_hw_init();
 
+      // Wait for the UART to finish reading the current byte
+      wait (fix.chs_vip.uart_reading_byte == 0);
+
       $finish;
     end
   end
