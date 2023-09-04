@@ -147,18 +147,18 @@ $(CAR_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CAR_SW_DIR)/b
 #########################
 # Linux app compilation #
 #########################
-
-CAR_CVA6_SDK      ?= $(realpath cva6-sdk)
-CAR_CROSS_COMPILE := $(CAR_CVA6_SDK)/buildroot/output/host/bin/riscv64-buildroot-linux-gnu-
-CAR_APP_CC        := $(CAR_CROSS_COMPILE)gcc
-CAR_APP_OBJDUMP   := $(CAR_CROSS_COMPILE)objdump
-CAR_APP_CCFLAGS   := -std=gnu99 -O0 -g
-
-%.car.app: %.car.o
-	$(CAR_APP_CC) $(CAR_SW_INCLUDES) -o $@ $<
-
-%.car.dump: %.car.o
-	$(CAR_APP_OBJDUMP) -S -d $< > $@
-
-%.car.o: %.c
-	$(CAR_APP_CC) $(CAR_SW_INCLUDES) $(CAR_APP_CCFLAGS) -c $< -o $@
+#
+#CAR_CVA6_SDK      ?= $(realpath cva6-sdk)
+#CAR_CROSS_COMPILE := $(CAR_CVA6_SDK)/buildroot/output/host/bin/riscv64-buildroot-linux-gnu-
+#CAR_APP_CC        := $(CAR_CROSS_COMPILE)gcc
+#CAR_APP_OBJDUMP   := $(CAR_CROSS_COMPILE)objdump
+#CAR_APP_CCFLAGS   := -std=gnu99 -O0 -g
+#
+#%.car.app: %.car.o
+#	$(CAR_APP_CC) $(CAR_SW_INCLUDES) -o $@ $<
+#
+#%.car.dump: %.car.o
+#	$(CAR_APP_OBJDUMP) -S -d $< > $@
+#
+#%.car.o: %.c
+#	$(CAR_APP_CC) $(CAR_SW_INCLUDES) $(CAR_APP_CCFLAGS) -c $< -o $@

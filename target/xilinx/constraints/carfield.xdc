@@ -33,13 +33,13 @@ set SOC_TCK 20
 ##########
 
 # Host clock
-create_generated_clock -source [get_pins i_xlnx_clk_wiz/inst/mmcme4_adv_inst/CLKOUT1] -divide_by 1 -add -master_clock clk_50_xlnx_clk_wiz -name host_clk [get_nets host_clk]
+create_generated_clock -source [get_pins i_xlnx_clk_wiz/inst/mmcme4_adv_inst/CLKOUT1] -divide_by 1 -name host_clk [get_nets host_clk]
 # Periph clock
-create_generated_clock -source [get_pins i_xlnx_clk_wiz/inst/mmcme4_adv_inst/CLKOUT1] -divide_by 1 -add -master_clock clk_50_xlnx_clk_wiz -name periph_clk [get_pins periph_clk]
+create_generated_clock -source [get_pins i_xlnx_clk_wiz/inst/mmcme4_adv_inst/CLKOUT1] -divide_by 1 -name periph_clk [get_nets periph_clk]
 # Alt clock
 create_generated_clock -source [get_pins i_xlnx_clk_wiz/inst/mmcme4_adv_inst/CLKOUT2] -divide_by 1 -name alt_clk [get_nets alt_clk]
 # Rtc clock is asynchronous
-create_generated_clock -source [get_pins i_xlnx_clk_wiz/inst/mmcme4_adv_inst/CLKOUT3] -divide_by 10 -name rtc_clk [get_nets rtc_clk_q_reg/Q]
+create_generated_clock -source [get_pins i_xlnx_clk_wiz/inst/mmcme4_adv_inst/CLKOUT3] -divide_by 10 -name rtc_clk [get_pins rtc_clk_q_reg/Q]
 set_max_delay -from [get_pin rtc_clk_q_reg/Q] $SOC_TCK
 set_false_path -hold -from [get_pin rtc_clk_q_BUFG_inst/O]
 
@@ -57,40 +57,40 @@ set_clock_groups -name jtag_grp -asynchronous -group {clk_jtag}
 ####################
 
 # Do not optimize anything in them
-set_property DONT_TOUCH TRUE [get_cells -hier *gen_domain_clock_mux*]
+set_property DONT_TOUCH TRUE [get_cells -hier *gen_domain_clock_mux*.i_clk_mux]
 
 # Periph domain
-create_generated_clock -source [get_pins i_carfield/periph_clk_i] -divide_by 1 -name periph_domain_clk [get_pins i_carfield/gen_domain_clock_mux[0].i_clk_mux/clk_o]
+create_generated_clock -source [get_pins i_carfield/gen_domain_clock_mux[0].i_clk_mux/clks_i[2]] -divide_by 1 -name periph_domain_clk [get_pins i_carfield/gen_domain_clock_mux[0].i_clk_mux/clk_o]
 set_case_analysis 0 [get_pins {i_carfield/i_carfield_reg_top/u_periph_clk_sel/q_reg[0]/Q}]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_periph_clk_sel/q_reg[1]/Q}]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_periph_clk_en/q_reg[0]/Q}]
 
 # Safety domain
-create_generated_clock -source [get_pins i_carfield/alt_clk_i] -divide_by 1 -name safety_domain_clk    [get_pins i_carfield/gen_domain_clock_mux[1].i_clk_mux/clk_o]
+create_generated_clock -source [get_pins i_carfield/gen_domain_clock_mux[1].i_clk_mux/clks_i[1]] -divide_by 1 -name safety_domain_clk    [get_pins i_carfield/gen_domain_clock_mux[1].i_clk_mux/clk_o]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_safety_island_clk_sel/q_reg[0]/Q}]
 set_case_analysis 0 [get_pins {i_carfield/i_carfield_reg_top/u_safety_island_clk_sel/q_reg[1]/Q}]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_safety_island_clk_en/q_reg[0]/Q}]
 
 # Security domain
-create_generated_clock -source [get_pins i_carfield/alt_clk_i] -divide_by 1 -name security_domain_clk  [get_pins i_carfield/gen_domain_clock_mux[2].i_clk_mux/clk_o]
+create_generated_clock -source [get_pins i_carfield/gen_domain_clock_mux[2].i_clk_mux/clks_i[1]] -divide_by 1 -name security_domain_clk  [get_pins i_carfield/gen_domain_clock_mux[2].i_clk_mux/clk_o]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_security_island_clk_sel/q_reg[0]/Q}]
 set_case_analysis 0 [get_pins {i_carfield/i_carfield_reg_top/u_security_island_clk_sel/q_reg[1]/Q}]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_security_island_clk_en/q_reg[0]/Q}]
 
 # Pulp domain
-create_generated_clock -source [get_pins i_carfield/alt_clk_i] -divide_by 1 -name pulp_domain_clk      [get_pins i_carfield/gen_domain_clock_mux[3].i_clk_mux/clk_o]
+create_generated_clock -source [get_pins i_carfield/gen_domain_clock_mux[3].i_clk_mux/clks_i[1]] -divide_by 1 -name pulp_domain_clk      [get_pins i_carfield/gen_domain_clock_mux[3].i_clk_mux/clk_o]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_pulp_cluster_clk_sel/q_reg[0]/Q}]
 set_case_analysis 0 [get_pins {i_carfield/i_carfield_reg_top/u_pulp_cluster_clk_sel/q_reg[1]/Q}]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_pulp_cluster_clk_en/q_reg[0]/Q}]
 
 # Spatz domain
-create_generated_clock -source [get_pins i_carfield/alt_clk_i] -divide_by 1 -name spatz_domain_clk     [get_pins i_carfield/gen_domain_clock_mux[4].i_clk_mux/clk_o]
+create_generated_clock -source [get_pins i_carfield/gen_domain_clock_mux[4].i_clk_mux/clks_i[1]] -divide_by 1 -name spatz_domain_clk     [get_pins i_carfield/gen_domain_clock_mux[4].i_clk_mux/clk_o]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_spatz_cluster_clk_sel/q_reg[0]/Q}]
 set_case_analysis 0 [get_pins {i_carfield/i_carfield_reg_top/u_spatz_cluster_clk_sel/q_reg[1]/Q}]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_spatz_cluster_clk_en/q_reg[0]/Q}]
 
 # L2 Domain
-create_generated_clock -source [get_pins i_carfield/host_clk_i] -divide_by 1 -name l2_domain_clk       [get_pins i_carfield/gen_domain_clock_mux[5].i_clk_mux/clk_o]
+create_generated_clock -source [get_pins i_carfield/gen_domain_clock_mux[5].i_clk_mux/clks_i[0]] -divide_by 1 -name l2_domain_clk       [get_pins i_carfield/gen_domain_clock_mux[5].i_clk_mux/clk_o]
 set_case_analysis 0 [get_pins {i_carfield/i_carfield_reg_top/u_l2_clk_sel/q_reg[0]/Q}]
 set_case_analysis 0 [get_pins {i_carfield/i_carfield_reg_top/u_l2_clk_sel/q_reg[1]/Q}]
 set_case_analysis 1 [get_pins {i_carfield/i_carfield_reg_top/u_l2_clk_en/q_reg[0]/Q}]
@@ -170,6 +170,24 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/i_cdc_dst_peripherals/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# i_carfield/gen_no_safety_island.i_safety_island_axi_err/i_cdc_in
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_no_safety_island.i_safety_island_axi_err/i_cdc_in/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_no_safety_island.i_safety_island_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_no_safety_island.i_safety_island_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_no_safety_island.i_safety_island_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
 # i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_in
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
@@ -206,7 +224,25 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
-# i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc
+# i_carfield/gen_no_pulp_cluster.i_pulp_cluster_axi_err/i_cdc_in
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_no_pulp_cluster.i_pulp_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_no_pulp_cluster.i_pulp_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_no_pulp_cluster.i_pulp_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_no_pulp_cluster.i_pulp_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# i_carfield/gen_pulp_cluster.i_integer_cluster/axi_slave_cdc_i
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*reg*/C] \
  -to [get_pins i_carfield/gen_pulp_cluster.i_integer_cluster/axi_slave_cdc_i/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
