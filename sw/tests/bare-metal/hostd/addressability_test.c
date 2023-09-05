@@ -5,8 +5,6 @@
 // Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 //
 
-uint8_t *__base_peripherals, *__base_safety_island;
-
 #include "car_memory_map.h"
 #include "dif/clint.h"
 #include "dif/uart.h"
@@ -163,7 +161,7 @@ int main(void) {
     }
 
     // Safety Island
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR,
+    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR(base_safety_island),
                                     (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR, N_SAMPLES);
     if (errors) {
         char str[] = "3\n";
@@ -209,7 +207,7 @@ int main(void) {
     }
 
     // Safety Island
-    errors += probe_range_lfsr_wwrr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR,
+    errors += probe_range_lfsr_wwrr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR(base_safety_island),
                                     (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR, N_SAMPLES);
     if (errors) {
         char str[] = "9\n";

@@ -14,3 +14,6 @@
 extern void *__base_peripherals;
 extern void *__base_safety_island;
 extern void *__base_soc_ctrl;
+
+extern void *base_safety_island;
+extern void *base_soc_ctrl;

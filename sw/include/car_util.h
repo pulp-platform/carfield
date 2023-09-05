@@ -142,34 +142,34 @@ static inline enum car_clk car_clkd_from_rstd(enum car_rst rst)
 
 void car_set_isolate(enum car_rst rst, enum car_isolation_status status)
 {
-    writew(status, CAR_SOC_CTRL_BASE_ADDR + car_get_ISOLATE_offset(rst));
+    writew(status, CAR_SOC_CTRL_BASE_ADDR(base_soc_ctrl) + car_get_ISOLATE_offset(rst));
     fence();
-    while (readw(CAR_SOC_CTRL_BASE_ADDR + car_get_ISOLATE_STATUS_offset(rst)) !=
+    while (readw(CAR_SOC_CTRL_BASE_ADDR(base_soc_ctrl) + car_get_ISOLATE_STATUS_offset(rst)) !=
 	   status)
 	;
 }
 
 void car_enable_clk(enum car_clk clk)
 {
-    writew(1, CAR_SOC_CTRL_BASE_ADDR + car_get_CLK_EN_offset(clk));
+    writew(1, CAR_SOC_CTRL_BASE_ADDR(base_soc_ctrl) + car_get_CLK_EN_offset(clk));
     fence();
 }
 
 void car_disable_clk(enum car_clk clk)
 {
-    writew(0, CAR_SOC_CTRL_BASE_ADDR + car_get_CLK_EN_offset(clk));
+    writew(0, CAR_SOC_CTRL_BASE_ADDR(base_soc_ctrl) + car_get_CLK_EN_offset(clk));
     fence();
 }
 
 void car_select_clk(enum car_src_clk clk_src, enum car_clk clk)
 {
-    writew(clk_src, CAR_SOC_CTRL_BASE_ADDR + car_get_CLK_SEL_offset(clk));
+    writew(clk_src, CAR_SOC_CTRL_BASE_ADDR(base_soc_ctrl) + car_get_CLK_SEL_offset(clk));
     fence();
 }
 
 void car_set_rst(enum car_rst rst, enum car_rst_status status)
 {
-    writew(status, CAR_SOC_CTRL_BASE_ADDR + car_get_RST_offset(rst));
+    writew(status, CAR_SOC_CTRL_BASE_ADDR(base_soc_ctrl) + car_get_RST_offset(rst));
     fence();
 }
 
@@ -192,15 +192,15 @@ void car_reset_domain(enum car_rst rst)
 void prepare_safed_boot () {
 
 	// Select bootmode
-	volatile uintptr_t *bootmode_addr = (uintptr_t*)CAR_SAFETY_ISLAND_BOOTMODE_ADDR;
+	volatile uintptr_t *bootmode_addr = (uintptr_t*)CAR_SAFETY_ISLAND_BOOTMODE_ADDR(base_safety_island);
 	writew(1, bootmode_addr);
 
 	// Write entry point into boot address
-	volatile uintptr_t *bootaddr_addr = (uintptr_t*)CAR_SAFETY_ISLAND_BOOTADDR_ADDR;
-	writew(CAR_SAFETY_ISLAND_ENTRY_POINT, bootaddr_addr);
+	volatile uintptr_t *bootaddr_addr = (uintptr_t*)CAR_SAFETY_ISLAND_BOOTADDR_ADDR(base_safety_island);
+	writew(CAR_SAFETY_ISLAND_ENTRY_POINT(base_safety_island), bootaddr_addr);
 
 	// Assert fetch enable
-	volatile uintptr_t *fetchen_addr = (uintptr_t*)CAR_SAFETY_ISLAND_FETCHEN_ADDR;
+	volatile uintptr_t *fetchen_addr = (uintptr_t*)CAR_SAFETY_ISLAND_FETCHEN_ADDR(base_safety_island);
 	writew(1, fetchen_addr);
 
 }
@@ -208,7 +208,7 @@ void prepare_safed_boot () {
 uint32_t poll_safed_corestatus () {
 
 	volatile uint32_t corestatus;
-	volatile uintptr_t *corestatus_addr = (uintptr_t*)CAR_SAFETY_ISLAND_CORESTATUS_ADDR;
+	volatile uintptr_t *corestatus_addr = (uintptr_t*)CAR_SAFETY_ISLAND_CORESTATUS_ADDR(base_safety_island);
 	// TODO: Add a timeut to not poll indefinitely
 	while (((uint32_t)readw(corestatus_addr) & 0x80000000) == 0)
 	    ;
@@ -253,16 +253,16 @@ void pulp_cluster_set_bootaddress(uint32_t pulp_boot_addr) {
 
 void pulp_cluster_start() {
 
-  volatile uint32_t *booten_addr = (uint32_t*)(CAR_INT_CLUSTER_BOOTEN_ADDR);
+  volatile uint32_t *booten_addr = (uint32_t*)(CAR_INT_CLUSTER_BOOTEN_ADDR(base_soc_ctrl));
   writew(1, booten_addr);
 
-  volatile uint32_t *fetchen_addr = (uint32_t*)(CAR_INT_CLUSTER_FETCHEN_ADDR);
+  volatile uint32_t *fetchen_addr = (uint32_t*)(CAR_INT_CLUSTER_FETCHEN_ADDR(base_soc_ctrl));
 	writew(1, fetchen_addr);
 }
 
 void pulp_cluster_wait_eoc() {
 
-  volatile uint32_t *pulp_eoc_addr = (uint32_t*)(CAR_INT_CLUSTER_EOC_ADDR);
+  volatile uint32_t *pulp_eoc_addr = (uint32_t*)(CAR_INT_CLUSTER_EOC_ADDR(base_soc_ctrl));
 
   while(!readw(pulp_eoc_addr))
       ;

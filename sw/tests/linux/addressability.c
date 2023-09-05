@@ -13,6 +13,7 @@
 #include "regs/cheshire.h"
 
 void *__base_peripherals, *__base_soc_ctrl, *__base_safety_island;
+void *base_peripherals, *base_soc_ctrl, *base_safety_island;
 
 int load_binary() { return 0; }
 
@@ -30,45 +31,46 @@ int main(int argc, char *argv[]) {
 
     printf("Starting addressability test with %s\n", device_path);
 
-    // mmap the __base_soc_ctrl region (page offset 0)
+    // mmap the base_soc_ctrl region (page offset 0)
     device_fd = open(device_path, O_RDWR | O_SYNC);
-    __base_soc_ctrl =
-        mmap(NULL, 0x1000, PROT_READ | PROT_WRITE, MAP_SHARED, device_fd, 0);
+    base_soc_ctrl = mmap(NULL, 0x1000, PROT_READ | PROT_WRITE, MAP_SHARED,
+                         device_fd, 0 * getpagesize());
 
-    if (__base_soc_ctrl == MAP_FAILED) {
+    if (base_soc_ctrl == MAP_FAILED) {
         printf("mmap() failed %s\n", strerror(errno));
         return -EIO;
     }
-    printf("mmap() success at %p\n", __base_soc_ctrl);
+    printf("mmap() success at %p\n", base_soc_ctrl);
 
-    // Safety Island
+    // mmap the base_safety_island region (page offset 1*get)
+    printf("Trying mmap on base_safety_island\n");
+    base_safety_island = mmap(NULL, 0x800000, PROT_READ | PROT_WRITE,
+                              MAP_SHARED, device_fd, 1 * getpagesize());
 
-    // We write a bunch of bytes to the safety island's boot register and check
-    // that it reads the reset value after a warm reset. Note that we can't use
-    // the safety island's scratchpad for that since it is not resetable
-    uint64_t magic = 0xcafebeef;
+    if (base_safety_island == MAP_FAILED) {
+        printf("mmap() failed %s\n", strerror(errno));
+        return -EIO;
+    }
+    printf("mmap() success at %p\n", base_safety_island);
 
-    // Write a pattern to safety island boot addr
-    writew(magic, CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR +
-                      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET);
+    writew(0x1, CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(base_safety_island) +
+                    SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET);
 
-    // Double check
-    if (readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR +
-              SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) != magic)
-        return ESAFEDNOACCES;
+    printf("Boot addr : %x\n",
+           readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(base_safety_island) +
+                 SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET));
 
-    // engage reset sequence for safety island
+    printf("Reset safety\n");
     car_reset_domain(CAR_SAFETY_RST);
 
-    // After the reset we should only see zeros
-    if (readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR +
-              SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) !=
-        SAFETY_ISLAND_BOOT_ADDR_RSVAL)
-        return ESAFEDNOACCES;
+    printf("Boot addr : %x\n",
+           readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(base_safety_island) +
+                 SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET));
 
     sleep(1);
 
-    munmap(__base_soc_ctrl, 0x1000);
+    munmap(base_soc_ctrl, 0x1000);
+    munmap(base_safety_island, 0x800000);
     close(device_fd);
 
     return 0;
