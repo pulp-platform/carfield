@@ -11,7 +11,10 @@ PROJECT       ?= carfield
 BOARD         ?= vcu128
 ip-dir        := $(CAR_XIL_DIR)/xilinx
 USE_ARTIFACTS ?= 0
+ELABORATION_ONLY ?= 0
 
+
+xilinx_defs  ?= TARGET_XILINX
 
 # Select board specific variables
 ifeq ($(BOARD),vcu128)
@@ -20,7 +23,7 @@ ifeq ($(BOARD),vcu128)
 	XILINX_PORT  ?= 3232
 	FPGA_PATH    ?= xilinx_tcf/Xilinx/091847100638A
 	XILINX_HOST  ?= bordcomputer
-	ips-names    := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
+	ips-names    := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio xilinx_rom_bank_1024x22 xilinx_rom_bank_8192x40
 endif
 
 # Location of ip outputs

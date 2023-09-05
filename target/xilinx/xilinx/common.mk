@@ -31,7 +31,8 @@ $(PROJECT).xpr:
 
 # Generate a sha based on env variables and artifacts_in
 generate_sha256:
-	@echo $(VIVADOENV) $(VIVADO) $(PROJECT) $(ARTIFACTS_IN) > .generated_env
+	@echo $(VIVADO) $(PROJECT) > .generated_env
+	@echo $(VIVADOENV) | tr " " "\n" | grep $(foreach var,$(ARTIFACTS_VARS), $(addprefix -e ,$(var)))  >> .generated_env
 	@sha256sum $(ARTIFACTS_IN) >> .generated_env
 	@sha256sum .generated_env | awk '{print $$1}' > .generated_sha256
 

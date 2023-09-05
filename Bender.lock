@@ -352,7 +352,7 @@ packages:
     - common_cells
     - common_verification
   opentitan:
-    revision: 069b5c3ee6ba95988a374dbfe862c389218757f7
+    revision: 5fc296e5d1cd322f1c098767b6488fef27c8cf0a
     version: null
     source:
       Git: https://github.com/pulp-platform/opentitan.git
@@ -514,7 +514,7 @@ packages:
     - register_interface
     - tech_cells_generic
   tech_cells_generic:
-    revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
+    revision: 7e92d7aae3af501b7f0d96bf902ee84b50e1b5c6
     version: 0.2.13
     source:
       Git: https://github.com/pulp-platform/tech_cells_generic.git

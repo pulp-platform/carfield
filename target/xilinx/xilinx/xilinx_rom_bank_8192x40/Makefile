@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-PROJECT:=xlnx_mig_ddr4
+PROJECT:=xilinx_rom_bank_8192x40
 # The files and variables on which the IP configuration depends
-ARTIFACTS_IN:=Makefile tcl/run.tcl
+ARTIFACTS_IN:=Makefile tcl/run.tcl boot_rom.coe
 ARTIFACTS_VARS:=XILINX_PART XILINX_BOARD BOARD
 
 include ../common.mk
