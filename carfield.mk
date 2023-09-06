@@ -16,7 +16,6 @@ CAR_HW_DIR  := $(CAR_ROOT)/hw
 BENDER   ?= bender
 QUESTA   ?= questa-2022.3
 VIVADO   ?= vitis-2020.2 vivado
-TBENCH   ?= tb_carfield_soc
 
 BENDER_ROOT ?= $(CAR_ROOT)/.bender
 
@@ -68,7 +67,6 @@ SPATZCL_BINARY  ?=
 
 # Default variable values for RTL simulation
 TBENCH         ?= tb_carfield_soc
-OPTARGS        ?=
 
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
