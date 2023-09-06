@@ -1653,6 +1653,44 @@ if (IslandsCfg.EnSpatzCluster) begin : gen_spatz_cluster
    .cluster_probe_o         ( car_regs_hw2reg.spatz_cluster_busy.d  )
   );
 end
+else begin : ge_no_spatz_cluster
+  cdc_dst_axi_err #(
+    .AxiInIdWidth      ( AxiSlvIdWidth              ),
+    .LogDepth          ( LogDepth                   ),
+    .CdcSyncStages     ( SyncStages                 ),
+    .axi_in_aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+    .axi_in_w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+    .axi_in_b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+    .axi_in_ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+    .axi_in_r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+    .axi_in_resp_t     ( carfield_axi_slv_rsp_t     ),
+    .axi_in_req_t      ( carfield_axi_slv_req_t     ),
+    .AsyncAxiInAwWidth ( CarfieldAxiSlvAwWidth      ),
+    .AsyncAxiInWWidth  ( CarfieldAxiSlvWWidth       ),
+    .AsyncAxiInBWidth  ( CarfieldAxiSlvBWidth       ),
+    .AsyncAxiInArWidth ( CarfieldAxiSlvArWidth      ),
+    .AsyncAxiInRWidth  ( CarfieldAxiSlvRWidth       )
+  ) i_spatz_cluster_axi_err (
+    .clk_i                   ( spatz_clk                             ),
+    .rst_ni                  ( spatz_rst_n                           ),
+    .pwr_on_rst_ni           ( spatz_pwr_on_rst_n                    ),
+    .async_axi_in_aw_data_i  ( axi_slv_ext_aw_data [FPClusterSlvIdx] ),
+    .async_axi_in_aw_wptr_i  ( axi_slv_ext_aw_wptr [FPClusterSlvIdx] ),
+    .async_axi_in_aw_rptr_o  ( axi_slv_ext_aw_rptr [FPClusterSlvIdx] ),
+    .async_axi_in_ar_data_i  ( axi_slv_ext_ar_data [FPClusterSlvIdx] ),
+    .async_axi_in_ar_wptr_i  ( axi_slv_ext_ar_wptr [FPClusterSlvIdx] ),
+    .async_axi_in_ar_rptr_o  ( axi_slv_ext_ar_rptr [FPClusterSlvIdx] ),
+    .async_axi_in_w_data_i   ( axi_slv_ext_w_data  [FPClusterSlvIdx] ),
+    .async_axi_in_w_wptr_i   ( axi_slv_ext_w_wptr  [FPClusterSlvIdx] ),
+    .async_axi_in_w_rptr_o   ( axi_slv_ext_w_rptr  [FPClusterSlvIdx] ),
+    .async_axi_in_r_data_o   ( axi_slv_ext_r_data  [FPClusterSlvIdx] ),
+    .async_axi_in_r_wptr_o   ( axi_slv_ext_r_wptr  [FPClusterSlvIdx] ),
+    .async_axi_in_r_rptr_i   ( axi_slv_ext_r_rptr  [FPClusterSlvIdx] ),
+    .async_axi_in_b_data_o   ( axi_slv_ext_b_data  [FPClusterSlvIdx] ),
+    .async_axi_in_b_wptr_o   ( axi_slv_ext_b_wptr  [FPClusterSlvIdx] ),
+    .async_axi_in_b_rptr_i   ( axi_slv_ext_b_rptr  [FPClusterSlvIdx] )
+  );
+end
 
 // Security Island
 logic secd_mbox_intr;

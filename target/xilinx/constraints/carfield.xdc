@@ -57,7 +57,8 @@ set_clock_groups -name jtag_grp -asynchronous -group {clk_jtag}
 ####################
 
 # Do not optimize anything in them
-set_property DONT_TOUCH TRUE [get_cells -hier *gen_domain_clock_mux*.i_clk_mux]
+set_property DONT_TOUCH TRUE [get_cells i_carfield/gen_domain_clock_mux[*].i_clk_mux]
+
 
 # Periph domain
 create_generated_clock -source [get_pins i_carfield/gen_domain_clock_mux[0].i_clk_mux/clks_i[2]] -divide_by 1 -name periph_domain_clk [get_pins i_carfield/gen_domain_clock_mux[0].i_clk_mux/clk_o]
@@ -142,15 +143,28 @@ set_false_path -hold -to [get_ports uart_tx_o]
 # On the AXI CDC as we precisely select the Clk-to-Q path we use a unique set_max_delay -datapath
 # All the delays are assumed to be SOC_TCK (host domain)
 
-# Data on 2 phases and 2 phases clearable
+# Hold and max delay on 2 phases and 2 phases clearable
 set_max_delay -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME =~ cdc_2phase_src* || ORIG_REF_NAME =~ cdc_2phase_src*}]] $SOC_TCK
-# Hold on 2 phases and 2 phases clearable
 set_false_path -hold -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME =~ cdc_2phase_src* || ORIG_REF_NAME =~ cdc_2phase_src*}]]
 
-# Data on 4 phases
+# Hold and max delay on 4 phases
 set_max_delay -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME == cdc_4phase_src || ORIG_REF_NAME == cdc_4phase_src}]] $SOC_TCK
-# Hold on 4 phases
 set_false_path -hold -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME == cdc_4phase_src || ORIG_REF_NAME == cdc_4phase_src}]]
+
+# Hold and max delay on synchronizers
+set all_sync_cells [get_cells -hier -filter {ORIG_REF_NAME=="sync" || REF_NAME=="sync"}]
+set_property KEEP_HIERARCHY SOFT $all_sync_cells
+set_false_path -hold -through [get_pins -of_objects $all_sync_cells -filter {NAME=~*serial_i}]
+set_max_delay -through [get_pins -of_objects $all_sync_cells -filter {NAME=~*serial_i}] $SOC_TCK
+
+# Hold and max delay on pulp synchronizers
+set all_pulp_sync_cells [get_cells -hier -filter {ORIG_REF_NAME=="pulp_sync" || REF_NAME=="pulp_sync"}]
+set_property KEEP_HIERARCHY SOFT $all_pulp_sync_cells
+set_false_path -hold -through [get_pins -of_objects $all_pulp_sync_cells -filter {NAME=~*serial_i}]
+set_max_delay -through [get_pins -of_objects $all_pulp_sync_cells -filter {NAME=~*serial_i}] $SOC_TCK
+
+# Peripherals
+##############
 
 # i_carfield/i_cdc_dst_peripherals
 set_max_delay -datapath \
@@ -170,6 +184,10 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/i_cdc_dst_peripherals/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# Safety Island
+################
+
+# To Safety Island error slave
 # i_carfield/gen_no_safety_island.i_safety_island_axi_err/i_cdc_in
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
@@ -188,6 +206,7 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# To Safety Island slave
 # i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_in
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
@@ -206,6 +225,7 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[2].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# From Safety Island master
 # i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[0].i_cheshire_ext_mst_cdc_dst
 set_max_delay -datapath \
  -from [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/*reg*/C] \
@@ -224,6 +244,10 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/gen_safety_island.i_safety_island_wrap/i_cdc_out/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# Pulp Cluster
+################
+
+# To Pulp cluster error slave
 # i_carfield/gen_no_pulp_cluster.i_pulp_cluster_axi_err/i_cdc_in
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*reg*/C] \
@@ -242,6 +266,7 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# To Pulp cluster slave
 # i_carfield/gen_pulp_cluster.i_integer_cluster/axi_slave_cdc_i
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*reg*/C] \
@@ -260,6 +285,7 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/i_cheshire_wrap/i_intcluster_slv_cdc/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# From Pulp cluster master
 # i_carfield/i_cheshire_wrap/i_intcluster_mst_cdc
 set_max_delay -datapath \
  -from [get_pins i_carfield/gen_pulp_cluster.i_integer_cluster/axi_master_cdc_i/i_cdc_fifo_gray_*/*reg*/C] \
@@ -278,6 +304,29 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/gen_pulp_cluster.i_integer_cluster/axi_master_cdc_i/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# Spatz cluster
+###############
+
+# To Spatz cluster error slave
+# i_carfield/gen_no_spatz_cluster.i_spatz_cluster_axi_err/i_cdc_in
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_no_spatz_cluster.i_spatz_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_no_spatz_cluster.i_spatz_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/gen_no_spatz_cluster.i_spatz_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+set_max_delay -datapath \
+ -from [get_pins i_carfield/gen_no_spatz_cluster.i_spatz_cluster_axi_err/i_cdc_in/i_cdc_fifo_gray_*/*reg*/C] \
+ -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+ $SOC_TCK
+
+# To Spatz cluster slave
 # i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_dst
 set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
@@ -296,6 +345,7 @@ set_max_delay -datapath \
  -to [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[5].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
 
+# From Spatz cluster master
 # i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[2].i_cheshire_ext_mst_cdc_dst
 set_max_delay -datapath \
  -from [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
@@ -313,6 +363,9 @@ set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_mst_dst_cdc[2].i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
  -to [get_pins i_carfield/gen_spatz_cluster.i_fp_cluster_wrapper/i_spatz_cluster_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
+
+# Reconfigurable L2
+###################
 
 # i_carfield/i_reconfigurable_l2/gen_cdc_fifos[0].i_dst_cdc
 set_max_delay -datapath \
@@ -350,17 +403,6 @@ set_max_delay -datapath \
  -from [get_pins i_carfield/i_cheshire_wrap/gen_ext_slv_src_cdc[1].i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
  -to [get_pins i_carfield/i_reconfigurable_l2/gen_cdc_fifos[1].i_dst_cdc/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
  $SOC_TCK
-
-# Hold on axi_cdc and interrupt synchronizers
-set all_sync_cells [get_cells -hier -filter {ORIG_REF_NAME=="sync" || REF_NAME=="sync"}]
-set_property KEEP_HIERARCHY SOFT $all_sync_cells
-set_false_path -hold -through [get_pins -of_objects $all_sync_cells -filter {NAME=~*serial_i}]
-set_max_delay -through [get_pins -of_objects $all_sync_cells -filter {NAME=~*serial_i}] $SOC_TCK
-
-set all_pulp_sync_cells [get_cells -hier -filter {ORIG_REF_NAME=="pulp_sync" || REF_NAME=="pulp_sync"}]
-set_property KEEP_HIERARCHY SOFT $all_pulp_sync_cells
-set_false_path -hold -through [get_pins -of_objects $all_pulp_sync_cells -filter {NAME=~*serial_i}]
-set_max_delay -through [get_pins -of_objects $all_pulp_sync_cells -filter {NAME=~*serial_i}] $SOC_TCK
 
 ####################
 # Reset Generators #
