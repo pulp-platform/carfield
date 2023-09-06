@@ -106,6 +106,10 @@ make car-hw-sim CHS_BOOTMODE=<chs_bootmode> CHS_PRELMODE=<chs_prelmode> CHS_BINA
 make car-hw-sim CHS_BOOTMODE=<chs_bootmode> CHS_PRELMODE=<chs_prelmode> CHS_IMAGE=<chs_binary_path>.car.memh PULPCL_BINARY=<pulpcl_binary> SPATZCL_BINARY=<spatzcl_binary> SECD_BINARY=<secd_binary_path> SAFED_BOOTMODE=<safed_bootmode> SAFED_BINARY=<safed_binary_path>
 ```
 
+### Debugging
+
+Per default, Questasim compilation is performance-optimised and simulation logging is disabled. To enable full visibility, logging, and the Questa GUI, set `DEBUG=1` when executing the steps above.
+
 ## License
 
 Unless specified otherwise in the respective file headers, all code checked into
