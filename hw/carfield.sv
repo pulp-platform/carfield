@@ -1517,21 +1517,21 @@ pulp_cluster #(
 end
 else begin : gen_no_pulp_cluster
   cdc_dst_axi_err #(
-    .AxiInIdWidth      ( AxiSlvIdWidth              ),
-    .LogDepth          ( LogDepth                   ),
-    .CdcSyncStages     ( SyncStages                 ),
-    .axi_in_aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
-    .axi_in_w_chan_t   ( carfield_axi_slv_w_chan_t  ),
-    .axi_in_b_chan_t   ( carfield_axi_slv_b_chan_t  ),
-    .axi_in_ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
-    .axi_in_r_chan_t   ( carfield_axi_slv_r_chan_t  ),
-    .axi_in_resp_t     ( carfield_axi_slv_rsp_t     ),
-    .axi_in_req_t      ( carfield_axi_slv_req_t     ),
-    .AsyncAxiInAwWidth ( CarfieldAxiSlvAwWidth      ),
-    .AsyncAxiInWWidth  ( CarfieldAxiSlvWWidth       ),
-    .AsyncAxiInBWidth  ( CarfieldAxiSlvBWidth       ),
-    .AsyncAxiInArWidth ( CarfieldAxiSlvArWidth      ),
-    .AsyncAxiInRWidth  ( CarfieldAxiSlvRWidth       )
+    .AxiInIdWidth      ( IntClusterAxiIdInWidth       ),
+    .LogDepth          ( LogDepth                     ),
+    .CdcSyncStages     ( SyncStages                   ),
+    .axi_in_aw_chan_t  ( axi_intcluster_slv_aw_chan_t ),
+    .axi_in_w_chan_t   ( axi_intcluster_slv_w_chan_t  ),
+    .axi_in_b_chan_t   ( axi_intcluster_slv_b_chan_t  ),
+    .axi_in_ar_chan_t  ( axi_intcluster_slv_ar_chan_t ),
+    .axi_in_r_chan_t   ( axi_intcluster_slv_r_chan_t  ),
+    .axi_in_resp_t     ( axi_intcluster_slv_rsp_t     ),
+    .axi_in_req_t      ( axi_intcluster_slv_req_t     ),
+    .AsyncAxiInAwWidth ( (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth,IntClusterAxiIdInWidth,Cfg.AxiUserWidth) ),
+    .AsyncAxiInWWidth  ( (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,Cfg.AxiUserWidth) ),
+    .AsyncAxiInBWidth  ( (2**LogDepth)*axi_pkg::b_width(IntClusterAxiIdInWidth,Cfg.AxiUserWidth) ),
+    .AsyncAxiInArWidth ( (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth,IntClusterAxiIdInWidth,Cfg.AxiUserWidth) ),
+    .AsyncAxiInRWidth  ( (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth,IntClusterAxiIdInWidth,Cfg.AxiUserWidth) )
   ) i_pulp_cluster_axi_err (
     .clk_i                   ( pulp_clk                   ),
     .rst_ni                  ( pulp_rst_n                 ),
