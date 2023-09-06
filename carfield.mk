@@ -87,7 +87,7 @@ ifdef DEBUG
 	VSIM_FLAGS := $(QUESTA_FLAGS)
 	RUN_AND_EXIT := log -r /*; run -all
 else
-	VOPT_FLAGS := $(QUESTA_FLAGS) -O5
+	VOPT_FLAGS := $(QUESTA_FLAGS) -O5 +acc=p+tb_carfield_soc. +noacc=p+carfield.
 	VSIM_FLAGS := $(QUESTA_FLAGS) -c
 	RUN_AND_EXIT := run -all; exit
 endif
