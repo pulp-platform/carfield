@@ -19,6 +19,33 @@ We keep all RTL changes relevant for weekly releases here
 ### L2 Memory
 
 
+## Weekly 2023_09_08 (weekly_20230908)
+
+### Carfield Top
+- Add `CHS_NETLIST` define to switch between cheshire RTL codebase or netlist
+- Add secure boot flow job in CI
+- Adapt security island VIP to VIP + tristate module (allows a chip top level already using tristate
+  signals to use the VIP)
+- Move security_island VIP to security island repository
+- Move to three-step compilation flow in Questa to reduce runtime (`vlog`, `vopt`, `vsim`)
+- Add `DEBUG` flag to run a simulation with full visibility on signals and logging. Default is on
+  fast simulation
+- Wait for UART before terminating the simulation
+
+### Cheshire
+
+### Safety Island
+
+### Security Island
+- Add EOC register
+
+### Spatz
+
+### PULP Cluster
+
+### L2 Memory
+
+
 ## Weekly 2023_09_01 (weekly_20230901)
 
 ### Carfield Top
@@ -102,7 +129,7 @@ We keep all RTL changes relevant for weekly releases here
 - Bump AXI to `v0.39.1-beta` and expose `CDCSyncStages`
 - Fixes to support offload within carfield
   - **[Interface]** Increase AXI ID width; interface change for integer cluster macro and cheshire
-    macros
+	macros
 - Add support for rapid recovery
 
 ### L2 Memory
