@@ -12,10 +12,10 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.1                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.10                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 7a2d040f63b24ef2f980866490b072b92217d9b1 } # branch: aottaviano/carfield
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: c1012ae99118bdef4e8ce6b4a4730c2f94deb541 } # branch: aottaviano/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 4714902ecf23074fb20bb462db4c66d96cc631f5 } # branch: lv/phys_in_use
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: d6ab486b2777bf78c38b49352b5977565a272a58 } # branch: main
-  safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: b0501345b1741fa96b781ef5d845026fec036fd2 } # branch: param_banks
+  safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 16933c64909ff45a7d99872ab88a5421084ff794 } # branch: main
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 78c7e4b188151c7790bb1422b9aeeb28f5e0b588 } # branch: yt/rapidrecovery
   opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: 5cc7278736df156a9aadb1f83628d034e9079497 } # branch: carfield_soc
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             version: 1.1.0                                }
