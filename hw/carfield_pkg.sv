@@ -225,6 +225,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   NumCores          : 2,
   CoreMaxTxns       : 8,
   CoreMaxTxnsPerId  : 4,
+  CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
   // Interrupt parameters
   NumExtIrqHarts    : CarfieldNumInterruptibleHarts,
   NumExtInIntrs     : CarfieldNumExtIntrs,
@@ -240,8 +241,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiMstIdWidth     : 2,
   AxiMaxMstTrans    : 8,
   AxiMaxSlvTrans    : 8,
-  AxiUserAmoMsb     : 3, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
-  AxiUserAmoLsb     : 0, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
+  AxiUserAmoMsb     : 3, // Convention: lower AMO bits for cores, MSB for serial link
+  AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
   RegMaxReadTxns    : 8,
   RegMaxWriteTxns   : 8,
   RegAmoNumCuts     : 1,
@@ -331,7 +332,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   SlinkRegionEnd    : 'h2_0000_0000,
   SlinkTxAddrMask   : 'hFFFF_FFFF,
   SlinkTxAddrDomain : 'h0000_0000,
-  SlinkUserAmoBit   : 2,  // Upper atomics bit for serial link
+  SlinkUserAmoBit   : 2,  // Convention: lower AMO bits for cores, MSB for serial link
   // DMA config
   DmaConfMaxReadTxns  : 4,
   DmaConfMaxWriteTxns : 4,
