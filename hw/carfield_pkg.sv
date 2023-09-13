@@ -211,6 +211,7 @@ localparam safety_island_cfg_t SafetyIslandCfg = '{
     default: '0
 };
 
+// verilog_lint: waive-start line-length
 // Cheshire configuration
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
@@ -348,6 +349,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // All non-set values should be zero
   default: '0
 };
+// verilog_lint: waive-stop line-length
 
 // Control which island to add (for FPGA)
 typedef struct packed {
