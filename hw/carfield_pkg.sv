@@ -281,9 +281,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   RegExtNumRules    : NumTotalRegRules,
   // For carfield, PllIdx is the first index of the async reg interfaces. Please add async reg
   // interfaces indices to the left of PllIdx, and sync reg interface indices to its right.
-  RegExtRegionIdx   : '{ 0, 0, 0, 0, L2EccIdx,  PadframeIdx,  PllIdx,  CarRegsIdx  },
-  RegExtRegionStart : '{ 0, 0, 0, 0, L2EccBase, PadframeBase, PllBase, CarRegsBase },
-  RegExtRegionEnd   : '{ 0, 0, 0, 0, L2EccEnd,  PadframeEnd,  PllEnd,  CarRegsEnd  },
+  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, L2EccIdx,  PadframeIdx,  PllIdx,  CarRegsIdx  },
+  RegExtRegionStart : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, L2EccBase, PadframeBase, PllBase, CarRegsBase },
+  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, L2EccEnd,  PadframeEnd,  PllEnd,  CarRegsEnd  },
   // RTC
   RtcFreq           : 32768,
   // Features
@@ -332,7 +332,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   SlinkRegionEnd    : 'h2_0000_0000,
   SlinkTxAddrMask   : 'hFFFF_FFFF,
   SlinkTxAddrDomain : 'h0000_0000,
-  SlinkUserAmoBit   : 2,  // Convention: lower AMO bits for cores, MSB for serial link
+  SlinkUserAmoBit   : 3,  // Convention: lower AMO bits for cores, MSB for serial link
   // DMA config
   DmaConfMaxReadTxns  : 4,
   DmaConfMaxWriteTxns : 4,
