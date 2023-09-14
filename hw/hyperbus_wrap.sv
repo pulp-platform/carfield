@@ -162,7 +162,8 @@ hyperbus           #(
   .RstChipBase      ( RstChipBase      ),
   .RstChipSpace     ( RstChipSpace     ),
   .PhyStartupCycles ( PhyStartupCycles ),
-  .AxiLogDepth      ( AxiLogDepth      )
+  .AxiLogDepth      ( AxiLogDepth      ),
+  .SyncStages       ( CdcSyncStages    )
 ) i_hyperbus        (
   .clk_phy_i        ( clk_i              ),
   .rst_phy_ni       ( rst_ni             ),
