@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: SHL-0.51
 
 overrides:
-  axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.1-beta }
+  axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.1 }
   axi_riscv_atomics:    { git: https://github.com/pulp-platform/axi_riscv_atomics.git     , version: 0.8.1 }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , version: 0.4.1 }
@@ -16,3 +16,4 @@ overrides:
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
   clic:                 { git: "https://github.com/pulp-platform/clic.git"                , rev: bed98f8 }
   fpnew:                { git: "https://github.com/pulp-platform/cvfpu.git"               , rev: pulp-v0.1.3 }
+  cv32e40p:             { git: "https://github.com/pulp-platform/cv32e40p.git"            , rev: e863f576699815b38cc9d80dbdede8ed5efd5991 }

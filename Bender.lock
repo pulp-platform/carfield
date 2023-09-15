@@ -195,7 +195,7 @@ packages:
       Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cv32e40p:
-    revision: 9b77611a1d0c681f4819798d95422b0b895528a2
+    revision: e863f576699815b38cc9d80dbdede8ed5efd5991
     version: null
     source:
       Git: https://github.com/pulp-platform/cv32e40p.git
@@ -452,7 +452,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 16933c64909ff45a7d99872ab88a5421084ff794
+    revision: 83389a5b16df92df6e082728be53cd9c33ec8b8d
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
@@ -462,7 +462,6 @@ packages:
     - axi_obi
     - axi_riscv_atomics
     - clic
-    - cluster_interconnect
     - common_cells
     - cv32e40p
     - fpnew
