@@ -83,8 +83,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 6c00b92158e9359a60f07081be1d806d3a05fdbf
-    version: null
+    revision: b243310dd33b31e4e2ca5229aac20df25cfc45d5
+    version: 0.0.0-alpha
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -127,7 +127,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: c1012ae99118bdef4e8ce6b4a4730c2f94deb541
+    revision: 1b4e73e1e99d7fb452893385a979d548fa8524d5
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -213,6 +213,14 @@ packages:
     - common_cells
     - fpnew
     - tech_cells_generic
+  ethernet:
+    revision: 8b0cee7ef143b4c637a875664881232ac1c518a5
+    version: null
+    source:
+      Git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git
+    dependencies:
+    - axi
+    - common_verification
   event_unit_flex:
     revision: 53fb3a1093aaaedfe883739fd8a3155d601210bc
     version: null
@@ -302,7 +310,7 @@ packages:
       Git: git@github.com:pulp-platform/icache-intc.git
     dependencies: []
   idma:
-    revision: 437ffa9dac5dea0daccfd3e8ae604d4f6ae2cdf1
+    revision: 73716841c8a4c0dfb68164a4a4017212db7cbcfd
     version: null
     source:
       Git: https://github.com/pulp-platform/idma.git
@@ -426,8 +434,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: 3b2bf592100b769977c76e51812c55cd742882f6
-    version: 0.4.1
+    revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
+    version: 0.4.2
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:

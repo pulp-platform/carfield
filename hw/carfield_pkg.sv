@@ -91,8 +91,9 @@ localparam int unsigned CarfieldNumTimerIntrs = CarfieldNumAdvTimerIntrs +
                         CarfieldNumAdvTimerEvents + CarfieldNumSysTimerIntrs;
 localparam int unsigned CarfieldNumWdtIntrs = 5;
 localparam int unsigned CarfieldNumCanIntrs = 1;
+localparam int unsigned CarfieldNumEthIntrs = 1;
 localparam int unsigned CarfieldNumPeriphsIntrs = CarfieldNumTimerIntrs +
-                        CarfieldNumWdtIntrs + CarfieldNumCanIntrs;
+                        CarfieldNumWdtIntrs + CarfieldNumCanIntrs + CarfieldNumEthIntrs;
 
 localparam int unsigned NumApbMst = 5;
 
@@ -240,8 +241,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiDataWidth      : 64,
   AxiUserWidth      : 10,  // {CACHE_PARTITIONING(5), ECC_ERROR(1), ATOPS(4)}
   AxiMstIdWidth     : 2,
-  AxiMaxMstTrans    : 8,
-  AxiMaxSlvTrans    : 8,
+  AxiMaxMstTrans    : 24,
+  AxiMaxSlvTrans    : 24,
   AxiUserAmoMsb     : 3, // Convention: lower AMO bits for cores, MSB for serial link
   AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
   RegMaxReadTxns    : 8,
@@ -312,8 +313,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   LlcSetAssoc       : 8,
   LlcNumLines       : 256,
   LlcNumBlocks      : 8,
-  LlcMaxReadTxns    : 8,
-  LlcMaxWriteTxns   : 8,
+  LlcMaxReadTxns    : 16,
+  LlcMaxWriteTxns   : 16,
   LlcAmoNumCuts     : 1,
   LlcAmoPostCut     : 1,
   LlcOutConnect     : 1,
@@ -338,9 +339,14 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   DmaConfMaxReadTxns  : 4,
   DmaConfMaxWriteTxns : 4,
   DmaConfAmoNumCuts   : 1,
+  DmaNumAxInFlight    : 16,
+  DmaMemSysDepth      : 8,
+  DmaJobFifoDepth     : 2,
+  DmaRAWCouplingAvail : 1,
   DmaConfAmoPostCut   : 1,
+  DmaConfEnableTwoD   : 1,
   // GPIOs
-  GpioInputSyncs    : 1,
+  GpioInputSyncs      : 1,
   // AXI RT
   AxiRtNumPending     : 16,
   AxiRtWBufferDepth   : 16,

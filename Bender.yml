@@ -10,9 +10,9 @@ package:
     - "Robert Balas <balasr@iis.ee.ethz.ch>"
 
 dependencies:
-  register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.1                                }
+  register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.10                       }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: c1012ae99118bdef4e8ce6b4a4730c2f94deb541 } # branch: aottaviano/carfield
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 1b4e73e1e99d7fb452893385a979d548fa8524d5 } # branch: aottaviano/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: v0.0.3                                   } 
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: d6ab486b2777bf78c38b49352b5977565a272a58 } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 83389a5b16df92df6e082728be53cd9c33ec8b8d } # branch: main
@@ -25,6 +25,7 @@ dependencies:
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379 } # branch: pulp
   spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: v0.4.3                                   }
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
+  ethernet:           { git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git,  rev: 8b0cee7ef143b4c637a875664881232ac1c518a5 } # branch: aottaviano/carfield-dev
 
 
 workspace:

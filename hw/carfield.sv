@@ -9,6 +9,7 @@
 
 `include "cheshire/typedef.svh"
 `include "axi/typedef.svh"
+`include "axi/assign.svh"
 `include "apb/typedef.svh"
 
 /// Top-level implementation of Carfield
@@ -182,6 +183,7 @@ logic       car_sys_timer_lo_intr, car_sys_timer_hi_intr,  car_sys_timer_lo_intr
 logic [3:0] car_adv_timer_intrs, car_adv_timer_events, car_adv_timer_intrs_sync, car_adv_timer_events_sync;
 logic [4:0] car_wdt_intrs;
 logic       car_can_intr;
+logic       car_eth_intr;
 
 // Carfield peripheral interrupts
 // Propagate edge-triggered interrupts between periph and host clock domains
@@ -230,6 +232,7 @@ edge_propagator i_sync_sys_timer_hi_intr (
 
 // Collect carfield peripheral interrupts to feed cheshire in the host domain
 assign car_periph_intrs = {
+  car_eth_intr,               // 1
   car_sys_timer_hi_intr_sync, // 1
   car_sys_timer_lo_intr_sync, // 1
   car_adv_timer_events_sync,  // 4
@@ -848,9 +851,9 @@ logic                           l2_ecc_err;
 // module, before or inside the interrupt controller.
 assign chs_ext_intrs  = {
   // tie unused to 0
-  {(CarfieldNumExtIntrs-22){1'b0}},
+  {(CarfieldNumExtIntrs-23){1'b0}},
   // System peripherals
-  car_periph_intrs,        // 16
+  car_periph_intrs,        // 17
   // L2 ECC
   l2_ecc_err,              // 1
   // Mailboxes
@@ -1843,22 +1846,58 @@ axi_cdc_dst #(
   .dst_resp_i                 ( axi_ethernet_rsp    )
 );
 
-// TODO connect ethernet
-axi_err_slv #(
- .AxiIdWidth  ( AxiSlvIdWidth          ),
- .axi_req_t   ( carfield_axi_slv_req_t ),
- .axi_resp_t  ( carfield_axi_slv_rsp_t ),
- .Resp        ( axi_pkg::RESP_DECERR   ),
- .ATOPs       ( 1'b0                   ),
- .MaxTrans    ( 4                      )
-) i_axi_err_slv_ethernet (
-  .clk_i      ( periph_clk             ),
-  .rst_ni     ( periph_pwr_on_rst_n    ), // TODO: currently not sw resettable no isolate
-  .test_i     ( test_mode_i            ),
-  // slave port
-  .slv_req_i  ( axi_ethernet_req       ),
-  .slv_resp_o ( axi_ethernet_rsp       )
+AXI_BUS #(
+  .AXI_ADDR_WIDTH( Cfg.AddrWidth    ),
+  .AXI_DATA_WIDTH( Cfg.AxiDataWidth ),
+  .AXI_ID_WIDTH  ( AxiSlvIdWidth    ),
+  .AXI_USER_WIDTH( Cfg.AxiUserWidth )
+) axi_ethernet ();
+
+`AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_ethernet_req);
+`AXI_ASSIGN_TO_RESP(axi_ethernet_rsp, axi_ethernet);
+
+logic eth_phy_clk0, eth_phy_clk90;
+
+// Generate 0deg and 90deg PHY clock. Inside the IP, it is indicated these clocks should be 125MHz.
+// Here, we generate a clock that is half the frequency of periph_clk (eth_phy_clk0) and shift it by
+// 90deg (eth_phy_clk90). Alternatively, use a delay line.
+hyperbus_clk_gen ddr_clk (
+    .clk_i    ( periph_clk    ),
+    .rst_ni   ( periph_rst_n  ),
+    .clk0_o   ( eth_phy_clk0  ),
+    .clk90_o  ( eth_phy_clk90 ),
+    .clk180_o (               ),
+    .clk270_o (               ),
+    .rst_no   (               )
 );
+
+eth_rgmii #(
+  .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
+  .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+  .AXI_ID_WIDTH   ( AxiSlvIdWidth    ),
+  .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
+) i_eth_rgmii (
+  .clk_i        ( periph_clk ),
+  .clk_200MHz_i ( '0 ),            // Only used with FPGA mapping for genesysII in IDELAYCTRL cell's
+                                   // ref clk (see IP)
+  .rst_ni       ( periph_rst_n  ),
+  .eth_clk_i    ( eth_phy_clk90 ), // quadrature (90deg) clk to `phy_tx_clk_i`
+
+  .ethernet     ( axi_ethernet ),
+
+  .eth_rxck     ( eth_rxck_i  ),
+  .eth_rxctl    ( eth_rxctl_i ),
+  .eth_rxd      ( eth_rxd_i   ),
+
+  .eth_txck     ( eth_txck_o  ),
+  .eth_txctl    ( eth_txctl_o ),
+  .eth_txd      ( eth_txd_o   ),
+
+  .eth_rst_n    ( eth_rst_n_o  ),
+  .phy_tx_clk_i ( eth_phy_clk0 ),  // in phase (0deg) clk
+  .eth_irq      ( car_eth_intr )
+);
+
 end
 
 // APB peripherals
