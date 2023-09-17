@@ -18,6 +18,35 @@ We keep all RTL changes relevant for weekly releases here
 
 ### L2 Memory
 
+## Weekly 2023_09_15 (weekly_20230915)
+
+### Carfield Top
+- Integrate Ethernet IP
+- Add litmus test flow to repo and CI
+- Bump cheshire and safety island
+- Bump hyperbus
+- Bump register interface (fix sub-byte access)
+
+### Cheshire
+- Remove pointer to closed-source `bus_error_unit` and point to `unbent` (open-source)
+- Cleanup `unbent` integration in cheshire
+- Tune interconnect parameters (AXI-4 crossbar, DMA, LLC)
+- Add 2D capabilities to system DMA
+
+### Safety Island
+- Fix FPU bug (mismatch in used package)
+
+### Security Island
+
+### Spatz
+
+### PULP Cluster
+
+### L2 Memory
+
+### Hyperbus
+- Expose CDC sync stages parameter
+
 
 ## Weekly 2023_09_08 (weekly_20230908)
 
