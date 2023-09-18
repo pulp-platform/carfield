@@ -243,8 +243,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiMstIdWidth     : 2,
   AxiMaxMstTrans    : 24,
   AxiMaxSlvTrans    : 24,
-  AxiUserAmoMsb     : 3, // Convention: lower AMO bits for cores, MSB for serial link
-  AxiUserAmoLsb     : 0, // Convention: lower AMO bits for cores, MSB for serial link
+  AxiUserAmoMsb     : 3, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
+  AxiUserAmoLsb     : 0, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
   RegMaxReadTxns    : 8,
   RegMaxWriteTxns   : 8,
   RegAmoNumCuts     : 1,

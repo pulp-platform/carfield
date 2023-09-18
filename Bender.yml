@@ -11,9 +11,9 @@ package:
 
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
-  axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.0-beta.10                       }
+  axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 2528f80156eecb124a717800e54b9f92aa167a41 } # branch: main
-  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: v0.0.3                                   } 
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             version: 0.0.3                                } 
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: d6ab486b2777bf78c38b49352b5977565a272a58 } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 83389a5b16df92df6e082728be53cd9c33ec8b8d } # branch: main
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 78c7e4b188151c7790bb1422b9aeeb28f5e0b588 } # branch: yt/rapidrecovery
@@ -23,7 +23,7 @@ dependencies:
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379 } # branch: pulp
-  spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: 664b583b76d73e1e3ef2faf88d94ffd8f8abda52 } # branch: main
+  spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: 31d651d280fb8657780aec21c047590be12ea065 } # branch: main
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
   ethernet:           { git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git,  rev: 2b6f916d3f25f9829713faeef6adc799e861744c } # branch: aottaviano/carfield-dev
 
