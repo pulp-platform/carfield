@@ -214,7 +214,7 @@ packages:
     - fpnew
     - tech_cells_generic
   ethernet:
-    revision: 8b0cee7ef143b4c637a875664881232ac1c518a5
+    revision: 2b6f916d3f25f9829713faeef6adc799e861744c
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git
