@@ -1895,7 +1895,14 @@ eth_rgmii #(
 
   .eth_rst_n    ( eth_rst_n_o  ),
   .phy_tx_clk_i ( eth_phy_clk0 ),  // in phase (0deg) clk
-  .eth_irq      ( car_eth_intr )
+
+  // MDIO
+  .eth_mdio_i    ( eth_md_i   ),
+  .eth_mdio_o    ( eth_md_o   ),
+  .eth_mdio_oe_o ( eth_md_oe  ),
+  .eth_mdc_o     ( eth_mdc_o  ),
+
+  .eth_irq       ( car_eth_intr )
 );
 
 end
