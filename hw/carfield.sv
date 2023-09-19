@@ -1856,21 +1856,6 @@ AXI_BUS #(
 `AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_ethernet_req);
 `AXI_ASSIGN_TO_RESP(axi_ethernet_rsp, axi_ethernet);
 
-logic eth_phy_clk0, eth_phy_clk90;
-
-// Generate 0deg and 90deg PHY clock. Inside the IP, it is indicated these clocks should be 125MHz.
-// Here, we generate a clock that is half the frequency of periph_clk (eth_phy_clk0) and shift it by
-// 90deg (eth_phy_clk90). Alternatively, use a delay line.
-hyperbus_clk_gen ddr_clk (
-    .clk_i    ( periph_clk    ),
-    .rst_ni   ( periph_rst_n  ),
-    .clk0_o   ( eth_phy_clk0  ),
-    .clk90_o  ( eth_phy_clk90 ),
-    .clk180_o (               ),
-    .clk270_o (               ),
-    .rst_no   (               )
-);
-
 eth_rgmii #(
   .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
   .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
@@ -1881,7 +1866,9 @@ eth_rgmii #(
   .clk_200MHz_i ( '0 ),            // Only used with FPGA mapping for genesysII in IDELAYCTRL cell's
                                    // ref clk (see IP)
   .rst_ni       ( periph_rst_n  ),
-  .eth_clk_i    ( eth_phy_clk90 ), // quadrature (90deg) clk to `phy_tx_clk_i`
+  .eth_clk_i    ( '0 ), // quadrature (90deg) clk to `phy_tx_clk_i` -> disabled when `USE_CLK90 ==
+                        // FALSE` in ethernet IP. See `eth_mac_1g_rgmii_fifo`. Changing the clock
+                        // phase is left to PHY chips on the PCB.
 
   .ethernet     ( axi_ethernet ),
 
@@ -1894,7 +1881,7 @@ eth_rgmii #(
   .eth_txd      ( eth_txd_o   ),
 
   .eth_rst_n    ( eth_rst_n_o  ),
-  .phy_tx_clk_i ( eth_phy_clk0 ),  // in phase (0deg) clk
+  .phy_tx_clk_i ( periph_clk   ),  // in phase (0deg) clk
 
   // MDIO
   .eth_mdio_i    ( eth_md_i   ),
