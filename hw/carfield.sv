@@ -1840,10 +1840,10 @@ axi_cdc_dst #(
   .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-  .dst_clk_i                  ( periph_clk          ),
-  .dst_rst_ni                 ( periph_pwr_on_rst_n ),
-  .dst_req_o                  ( axi_ethernet_req    ),
-  .dst_resp_i                 ( axi_ethernet_rsp    )
+  .dst_clk_i                  ( periph_clk       ),
+  .dst_rst_ni                 ( periph_rst_n     ),
+  .dst_req_o                  ( axi_ethernet_req ),
+  .dst_resp_i                 ( axi_ethernet_rsp )
 );
 
 AXI_BUS #(
