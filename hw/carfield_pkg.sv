@@ -296,7 +296,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   Gpio              : 1,
   Dma               : 1,
   SerialLink        : 1,
-  Vga               : 1,
+  Vga               : 0,
   AxiRt             : 1,
   Clic              : 1,
   IrqRouter         : 1,
@@ -320,12 +320,6 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   LlcOutConnect     : 1,
   LlcOutRegionStart : 'h8000_0000,
   LlcOutRegionEnd   : 'h1_0000_0000,
-  // VGA: RGB332
-  VgaRedWidth       : 3,
-  VgaGreenWidth     : 3,
-  VgaBlueWidth      : 2,
-  VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
-  VgaVCountWidth    : 24, // TODO: See above
   // Serial Link: map other chip's lower 32bit to 'h1_000_0000
   SlinkMaxTxnsPerId : 4,
   SlinkMaxUniqIds   : 4,
