@@ -11,6 +11,7 @@ module l2_wrap
   import axi_pkg::*;
   import car_l2_pkg::*;
 #(
+  parameter cheshire_pkg::cheshire_cfg_t Cfg = CarfieldCfgDefault,
   /// AXI Ports settings
   parameter int unsigned NumPort      = 2,
   parameter int unsigned AxiAddrWidth = 48,
@@ -183,6 +184,8 @@ car_l2_top #(
   .ATM_USER_ID_LSB     ( AxiUserAmoLsb   ),
   .ATM_RISCV_WORD      ( 64              ),
   .ATM_NUM_CUTS        ( L2AmoNumCuts    ),
+  .AXI_USER_ECC_ERR    ( 1'b1            ),
+  .AXI_USER_ECC_ERR_BIT( Cfg.AxiUserErrLsb ),
   .l2_ecc_reg_req_t    ( l2_ecc_reg_req_t),
   .l2_ecc_reg_rsp_t    ( l2_ecc_reg_rsp_t),
   .axi_req_t           ( axi_async_req_t ),
@@ -194,8 +197,10 @@ car_l2_top #(
   .axi_req_i           ( axi_async_req   ),
   .axi_resp_o          ( axi_async_rsp   ),
   .l2_ecc_reg_req_i    ( l2_ecc_reg_req  ),
-  .l2_ecc_reg_rsp_o    ( l2_ecc_reg_rsp  ),
-  .ecc_error_o         ( ecc_error_o     )
+  .l2_ecc_reg_rsp_o    ( l2_ecc_reg_rsp  )
 );
+
+// Signal tied to avoid changing the interface
+assign ecc_error_o = '0;
 
 endmodule: l2_wrap

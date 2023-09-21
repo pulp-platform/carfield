@@ -239,12 +239,14 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // Interconnect
   AddrWidth         : 48,
   AxiDataWidth      : 64,
-  AxiUserWidth      : 10,  // {CACHE_PARTITIONING(5), ECC_ERROR(1), ATOPS(4)}
+  AxiUserWidth      : 10,  // {CACHE_PARTITIONING(5[9:5]), ECC_ERROR(1[4:4]), ATOPS(4[3:0])}
   AxiMstIdWidth     : 2,
   AxiMaxMstTrans    : 24,
   AxiMaxSlvTrans    : 24,
   AxiUserAmoMsb     : 3, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
   AxiUserAmoLsb     : 0, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
+  AxiUserErrBits    : 1,
+  AxiUserErrLsb     : 4,
   RegMaxReadTxns    : 8,
   RegMaxWriteTxns   : 8,
   RegAmoNumCuts     : 1,

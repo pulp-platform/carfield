@@ -1153,6 +1153,7 @@ hyperbus_wrap      #(
 // Host Clock Domain
 
 l2_wrap #(
+  .Cfg          ( Cfg                    ),
   .NumPort      ( NumL2Ports             ),
   .AxiAddrWidth ( Cfg.AddrWidth          ),
   .AxiDataWidth ( Cfg.AxiDataWidth       ),
@@ -1253,18 +1254,29 @@ assign safed_intrs = {
 if (IslandsCfg.EnSafetyIsland) begin : gen_safety_island
 safety_island_synth_wrapper #(
   .SafetyIslandCfg          ( SafetyIslandCfg            ),
+
   .AxiAddrWidth             ( Cfg.AddrWidth              ),
   .AxiDataWidth             ( Cfg.AxiDataWidth           ),
   .AxiUserWidth             ( Cfg.AxiUserWidth           ),
   .AxiInIdWidth             ( AxiSlvIdWidth              ),
   .AxiOutIdWidth            ( Cfg.AxiMstIdWidth          ),
+
+  .AxiUserAtop              ( 1'b1                       ),
+  .AxiUserAtopMsb           ( Cfg.AxiUserAmoMsb          ),
+  .AxiUserAtopLsb           ( Cfg.AxiUserAmoLsb          ),
+  .AxiUserEccErr            ( Cfg.AxiUserErrBits         ),
+  .AxiUserEccErrBit         ( Cfg.AxiUserErrLsb          ),
+
+  .DefaultUser              ( 10'b00000_0_0101           ),
   .LogDepth                 ( LogDepth                   ),
   .CdcSyncStages            ( SyncStages                 ),
   .SyncStages               ( SyncStages                 ),
+
   .SafetyIslandBaseAddr     ( SafetyIslandBase           ),
   .SafetyIslandAddrRange    ( SafetyIslandSize           ),
   .SafetyIslandMemOffset    ( SafetyIslandMemOffset      ),
   .SafetyIslandPeriphOffset ( SafetyIslandPerOffset      ),
+
   .axi_in_aw_chan_t         ( carfield_axi_slv_aw_chan_t ),
   .axi_in_w_chan_t          ( carfield_axi_slv_w_chan_t  ),
   .axi_in_b_chan_t          ( carfield_axi_slv_b_chan_t  ),
@@ -1272,6 +1284,7 @@ safety_island_synth_wrapper #(
   .axi_in_r_chan_t          ( carfield_axi_slv_r_chan_t  ),
   .axi_in_req_t             ( carfield_axi_slv_req_t     ),
   .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
+
   .axi_out_aw_chan_t        ( carfield_axi_mst_aw_chan_t ),
   .axi_out_w_chan_t         ( carfield_axi_mst_w_chan_t  ),
   .axi_out_b_chan_t         ( carfield_axi_mst_b_chan_t  ),
@@ -1279,11 +1292,13 @@ safety_island_synth_wrapper #(
   .axi_out_r_chan_t         ( carfield_axi_mst_r_chan_t  ),
   .axi_out_req_t            ( carfield_axi_mst_req_t     ),
   .axi_out_resp_t           ( carfield_axi_mst_rsp_t     ),
+
   .AsyncAxiInAwWidth        ( CarfieldAxiSlvAwWidth      ),
   .AsyncAxiInWWidth         ( CarfieldAxiSlvWWidth       ),
   .AsyncAxiInBWidth         ( CarfieldAxiSlvBWidth       ),
   .AsyncAxiInArWidth        ( CarfieldAxiSlvArWidth      ),
   .AsyncAxiInRWidth         ( CarfieldAxiSlvRWidth       ),
+
   .AsyncAxiOutAwWidth       ( CarfieldAxiMstAwWidth      ),
   .AsyncAxiOutWWidth        ( CarfieldAxiMstWWidth       ),
   .AsyncAxiOutBWidth        ( CarfieldAxiMstBWidth       ),
