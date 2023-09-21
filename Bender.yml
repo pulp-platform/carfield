@@ -26,6 +26,7 @@ dependencies:
   spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: 31d651d280fb8657780aec21c047590be12ea065 } # branch: main
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
   ethernet:           { git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git,  rev: 2b6f916d3f25f9829713faeef6adc799e861744c } # branch: aottaviano/carfield-dev
+  riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg.git,            version: 0.8.0 }
 
 
 workspace:
