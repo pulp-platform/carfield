@@ -5,5 +5,6 @@
 # Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>
 
 CAR_ROOT ?= $(shell pwd)
+BENDER   ?= bender -d $(CAR_ROOT)
 
 include carfield.mk
