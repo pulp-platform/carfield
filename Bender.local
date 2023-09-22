@@ -10,7 +10,7 @@ overrides:
   redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "482d2f5" } # branch: yt/rapidrecovery
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.13                                }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"           , version: =0.8.0                                 }
-  idma:                 { git: "https://github.com/pulp-platform/idma.git"                , rev: 73716841c8a4c0dfb68164a4a4017212db7cbcfd   }
+  idma:                 { git: "https://github.com/pulp-platform/idma.git"                , version: 0.5.1                                  }
   hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: fac03040e4901daad29c141fc481f7c5d3758e99   }
   scm:                  { git: "https://github.com/pulp-platform/scm.git"                 , rev: 74426dee36f28ae1c02f7635cf844a0156145320   }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
