@@ -30,8 +30,15 @@ PULPD_HEADER_TARGETS := $(patsubst $(PULPD_SW_DIR)/%, $(CAR_SW_DIR)/tests/bare-m
 $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.h: $(PULPD_SW_DIR)/%/build/test/test | venv
 	$(VENV)/python $(CAR_ROOT)/scripts/elf2header.py --binary $< --vectors $@
 
+# Convert compiled binaries to slm for hyperram
+PULPD_SLM_TARGETS := $(patsubst $(PULPD_SW_DIR)/%, $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram0.slm, $(PULPD_TEST_DIRS))
+PULPD_SLM_TARGETS += $(patsubst $(PULPD_SW_DIR)/%, $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram1.slm, $(PULPD_TEST_DIRS))
+
+$(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram0.slm $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram1.slm: $(PULPD_SW_DIR)/%/build/test/test | venv
+	$(VENV)/python $(CAR_ROOT)/scripts/elf2slm.py --binary=$< --vectors=$(CAR_SW_DIR)/tests/bare-metal/pulpd/$*.hyperram
+
 # Global targets
-pulpd-sw-all: $(PULPD_BUILD_TARGETS) $(PULPD_HEADER_TARGETS)
+pulpd-sw-all: $(PULPD_BUILD_TARGETS) $(PULPD_HEADER_TARGETS) $(PULPD_SLM_TARGETS)
 
 pulpd-sw-clean:
 	# Clean all the directories in 'tests'

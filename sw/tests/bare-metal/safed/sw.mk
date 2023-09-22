@@ -27,10 +27,16 @@ SAFED_HEADER_TARGETS := $(patsubst $(SAFED_SW_DIR)/tests/%, $(CAR_SW_DIR)/tests/
 
 $(CAR_SW_DIR)/tests/bare-metal/safed/%.h: $(SAFED_SW_DIR)/tests/%/build | venv
 	$(VENV)/python $(CAR_ROOT)/scripts/elf2header.py --binary $</$*/$* --vectors $@
-#	xxd -i $</$*/$* > $@ )
+
+# Convert compiled binaries to slm files for hyperram
+SAFED_SLM_TARGETS := $(patsubst $(SAFED_SW_DIR)/tests/%, $(CAR_SW_DIR)/tests/bare-metal/safed/%.hyperram0.slm, $(SAFED_TEST_DIRS))
+SAFED_SLM_TARGETS += $(patsubst $(SAFED_SW_DIR)/tests/%, $(CAR_SW_DIR)/tests/bare-metal/safed/%.hyperram1.slm, $(SAFED_TEST_DIRS))
+
+$(CAR_SW_DIR)/tests/bare-metal/safed/%.hyperram0.slm $(CAR_SW_DIR)/tests/bare-metal/safed/%.hyperram1.slm: $(SAFED_SW_DIR)/tests/%/build | venv
+	$(VENV)/python $(CAR_ROOT)/scripts/elf2slm.py --binary=$</$*/$* --vectors=$(CAR_SW_DIR)/tests/bare-metal/safed/$*.hyperram
 
 # Global targets
-safed-sw-all: $(SAFED_BUILD_TARGETS) $(SAFED_HEADER_TARGETS)
+safed-sw-all: $(SAFED_BUILD_TARGETS) $(SAFED_HEADER_TARGETS) $(SAFED_SLM_TARGETS)
 
 safed-sw-clean:
 	# Clean all the directories in 'tests'
