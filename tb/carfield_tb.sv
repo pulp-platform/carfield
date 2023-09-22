@@ -50,6 +50,11 @@ module tb_carfield_soc;
 
   logic [63:0] unused;
 
+  // timing format for $display("...$t..", $realtime)
+  initial begin : timing_format
+    $timeformat(-9, 0, "ns", 9);
+  end : timing_format
+
   // Cheshire standalone binary execution
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
