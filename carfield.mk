@@ -73,6 +73,15 @@ SPATZD_BENDER_DIR ?= $(shell which $(BENDER))
 # Default variable values for RTL simulation
 TBENCH         ?= tb_carfield_soc
 
+# Defines for hyperram model preload at time 0
+HYP_USER_PRELOAD      ?= 0
+HYP0_PRELOAD_MEM_FILE ?= ""
+HYP1_PRELOAD_MEM_FILE ?= ""
+
+RUNTIME_DEFINES := +define+HYP_USER_PRELOAD=$(HYP_USER_PRELOAD)
+RUNTIME_DEFINES += +define+HYP0_PRELOAD_MEM_FILE=$(HYP0_PRELOAD_MEM_FILE)
+RUNTIME_DEFINES += +define+HYP1_PRELOAD_MEM_FILE=$(HYP1_PRELOAD_MEM_FILE)
+
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
 include $(CAR_ROOT)/bender-common.mk
@@ -174,7 +183,7 @@ $(CAR_ROOT)/tb/hyp_vip:
 
 .PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) $(safed_defs) --vlog-arg="$(VLOG_ARGS)" --compilation-mode separate > $@
+	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) $(safed_defs) --vlog-arg="$(VLOG_ARGS) $(RUNTIME_DEFINES)" --compilation-mode separate > $@
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 	echo 'vopt $(VOPT_FLAGS) $(TBENCH) -o $(TBENCH)_opt' >> $@
 
@@ -197,7 +206,8 @@ car-hw-build: car-sim-init
 ## @param VSIM_FLAGS the flags for the vsim invocation
 car-hw-sim:
 	$(QUESTA) vsim $(VSIM_FLAGS) -do \
-		"set SECURE_BOOT $(SECURE_BOOT); \
+		"set HYP_USER_PRELOAD $(HYP_USER_PRELOAD); \
+		 set SECURE_BOOT $(SECURE_BOOT); \
 		 set CHS_BOOTMODE $(CHS_BOOTMODE); \
 		 set CHS_PRELMODE $(CHS_PRELMODE); \
 		 set CHS_BINARY $(CHS_BINARY); \
