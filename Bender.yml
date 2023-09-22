@@ -23,7 +23,7 @@ dependencies:
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379 } # branch: pulp
-  spatz:              { git: git@iis-git.ee.ethz.ch:spatz/spatz.git,                    rev: v0.4.3                                   }
+  spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: 664b583b76d73e1e3ef2faf88d94ffd8f8abda52 } # branch: main
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
   ethernet:           { git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git,  rev: 2b6f916d3f25f9829713faeef6adc799e861744c } # branch: aottaviano/carfield-dev
 
