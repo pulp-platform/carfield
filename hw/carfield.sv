@@ -1351,6 +1351,7 @@ assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
 
 if (IslandsCfg.EnPulpCluster) begin : gen_pulp_cluster
+`ifndef INT_CLUSTER_NETLIST
 pulp_cluster #(
   .NB_CORES                       ( IntClusterNumCores        ),
   .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts    ),
@@ -1394,6 +1395,9 @@ pulp_cluster #(
   .BaseAddr                       ( IntClusterBase            ),
   .CdcSynchStages                 ( SyncStages                )
 ) i_integer_cluster            (
+`else
+int_cluster i_integer_cluster            (
+`endif
   .clk_i                       ( pulp_clk                                  ),
   .rst_ni                      ( pulp_rst_n                                ),
   .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                         ),
