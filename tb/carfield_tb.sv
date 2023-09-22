@@ -130,28 +130,33 @@ module tb_carfield_soc;
 
     if (safed_preload_elf != "") begin
 
-      $display("Enabling clock and de-isolating Safety Island after PoR for standalone test...");
+      // set boot mode before reset
+      case (safed_boot_mode)
+        0: begin
+          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Jtag);
+        end 1: begin
+          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
+       end default: begin
+          $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
+        end
+      endcase
+
+      fix.safed_vip.safed_wait_for_reset();
+
       $display("[TB] %t - Enabling safety island clock for stand-alone tests ", $realtime);
       // Clock island after PoR
       fix.safed_vip.axi_write_32(SafetyIslandClkEnRegAddr, 32'h1);
       $display("[TB] %t - De-isolate safety island for stand-alone tests ", $realtime);
       // De-isolate island after PoR
       fix.safed_vip.axi_write_32(SafetyIslandIsolateRegAddr, 32'h0);
-      //do begin
-      //  fix.safed_vip.axi_poll_bit31(SafetyIslandIsolateStatusRegAddr, safed_isolated, 10);
-      //end while(safed_isolated != 32'h0);
 
       case (safed_boot_mode)
         0: begin
-          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Jtag);
-          fix.safed_vip.safed_wait_for_reset();
           fix.safed_vip.jtag_safed_init();
           fix.safed_vip.jtag_write_test(32'h6000_1000, 32'hABBA_ABBA);
           fix.safed_vip.jtag_safed_elf_run(safed_preload_elf);
           fix.safed_vip.jtag_safed_wait_for_eoc(safed_exit_code, safed_exit_status);
         end 1: begin
-          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
-          fix.safed_vip.safed_wait_for_reset();
           fix.safed_vip.axi_safed_elf_run(safed_preload_elf);
           fix.safed_vip.axi_safed_wait_for_eoc(safed_exit_code, safed_exit_status);
        end default: begin
