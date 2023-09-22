@@ -127,7 +127,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 1b4e73e1e99d7fb452893385a979d548fa8524d5
+    revision: 4fbb6b0bcd15aaa2c1e60362821ad895f40b93ba
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -321,7 +321,7 @@ packages:
     - register_interface
   irq_router:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
-    version: null
+    version: 0.0.1-beta.1
     source:
       Git: https://github.com/pulp-platform/irq_router.git
     dependencies:
@@ -511,8 +511,8 @@ packages:
     - riscv-dbg
     - tech_cells_generic
   tech_cells_generic:
-    revision: 298b7297d220ba2601d0f24f684f97ff32f61123
-    version: 0.2.12
+    revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
+    version: 0.2.13
     source:
       Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:
