@@ -103,7 +103,12 @@ module vip_carfield_soc
   for (genvar p=0; p<HypNumPhys; p++) begin : sdf_annotation
      for (genvar l=0; l<HypNumChips; l++) begin : sdf_annotation
         initial begin
+`ifndef PATH_TO_HYP_SDF
            automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
+`else
+           automatic string sdf_file_path;
+           if (!$value$plusargs("PATH_TO_HYP_SDF=%s", sdf_file_path)) sdf_file_path = "";
+`endif
            $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
            $display("Mem (%d,%d)",p,l);
         end
