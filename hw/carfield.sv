@@ -1840,10 +1840,10 @@ axi_cdc_dst #(
   .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
   .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
   .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-  .dst_clk_i                  ( periph_clk          ),
-  .dst_rst_ni                 ( periph_pwr_on_rst_n ),
-  .dst_req_o                  ( axi_ethernet_req    ),
-  .dst_resp_i                 ( axi_ethernet_rsp    )
+  .dst_clk_i                  ( periph_clk       ),
+  .dst_rst_ni                 ( periph_rst_n     ),
+  .dst_req_o                  ( axi_ethernet_req ),
+  .dst_resp_i                 ( axi_ethernet_rsp )
 );
 
 AXI_BUS #(
@@ -1856,32 +1856,113 @@ AXI_BUS #(
 `AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_ethernet_req);
 `AXI_ASSIGN_TO_RESP(axi_ethernet_rsp, axi_ethernet);
 
-logic eth_phy_clk0, eth_phy_clk90;
+// The Ethernet RGMII interfaces mandates a clock of 125MHz (in 1GBit mode) for both TX and RX
+// clocks. We generate a 125MHz clock starting from the `periph_clk`. The (integer) division value
+// is SW-programmable.
+localparam int unsigned EthRgmiiPhyClkDivWidth = 20;
+// We assume a peripheral clock of 250MHz to get the 125MHz clock for the RGMII interface. Hence,
+// the default division value after PoR is 250/125.
+localparam int unsigned EthRgmiiPhyClkDivDefaultValue = 2;
+logic [EthRgmiiPhyClkDivWidth-1:0] eth_rgmii_phy_clk_div_value;
+logic                     eth_rgmii_phy_clk_div_value_valid;
+logic                     eth_rgmii_phy_clk_div_value_ready;
+logic                     eth_rgmii_phy_clk0;
 
-// Generate 0deg and 90deg PHY clock. Inside the IP, it is indicated these clocks should be 125MHz.
-// Here, we generate a clock that is half the frequency of periph_clk (eth_phy_clk0) and shift it by
-// 90deg (eth_phy_clk90). Alternatively, use a delay line.
-hyperbus_clk_gen ddr_clk (
-    .clk_i    ( periph_clk    ),
-    .rst_ni   ( periph_rst_n  ),
-    .clk0_o   ( eth_phy_clk0  ),
-    .clk90_o  ( eth_phy_clk90 ),
-    .clk180_o (               ),
-    .clk270_o (               ),
-    .rst_no   (               )
+// The register file does not support back pressure directly. I.e the hardware side cannot tell
+// the regfile that a reg value cannot be written at the moment. This is a problem since the clk
+// divider input of the clk_int_div module will stall the transaction until it is safe to change
+// the clock division factor. The stream_deposit module converts between these two protocols
+// (write-pulse only protocol <-> ready-valid protocol). See the documentation in the header of
+// the module for more details.
+lossy_valid_to_stream #(
+  .DATA_WIDTH(EthRgmiiPhyClkDivWidth)
+) i_eth_rgmii_phy_clk_div_config_decouple (
+  .clk_i   ( periph_clk   ),
+  .rst_ni  ( periph_rst_n ),
+  .valid_i ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.qe ),
+  .data_i  ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.q ),
+  .valid_o ( eth_rgmii_phy_clk_div_value_valid ),
+  .ready_i ( eth_rgmii_phy_clk_div_value_ready ),
+  .data_o  ( eth_rgmii_phy_clk_div_value       ),
+  .busy_o  ( )
 );
 
+(* no_ungroup *)
+(* no_boundary_optimization *)
+clk_int_div #(
+  .DIV_VALUE_WIDTH       ( EthRgmiiPhyClkDivWidth ),
+  .DEFAULT_DIV_VALUE     ( EthRgmiiPhyClkDivDefaultValue ),
+  .ENABLE_CLOCK_IN_RESET ( 0   )
+) i_eth_rgmii_phy_clk_int_div (
+    .clk_i          ( periph_clk              ),
+    .rst_ni         ( periph_rst_n            ),
+    .en_i           ( car_regs_reg2hw.eth_rgmii_phy_clk_div_en.q ),
+    .test_mode_en_i ( test_mode_i             ),
+    .div_i          ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.q ),
+    .div_valid_i    ( eth_rgmii_phy_clk_div_value_valid ),
+    .div_ready_o    ( eth_rgmii_phy_clk_div_value_ready ),
+    .clk_o          ( eth_rgmii_phy_clk0 ),
+    .cycl_count_o   (                   )
+);
+
+
+// The Ethernet MDIO interfaces mandates a clock of 2.5MHz. We generate a 2.5MHz clock starting from
+// the `periph_clk`. The (integer) division value is SW-programmable.
+localparam int unsigned EthMdioClkDivWidth = 20;
+// We assume a default peripheral clock of 250 MHz to get the 2.5MHz required for the MDIO
+// interface. Hence, the default division value after PoR is 250/2.5
+localparam int unsigned EthMdioClkDivDefaultValue = 100;
+logic [EthRgmiiPhyClkDivWidth-1:0] eth_mdio_clk_div_value;
+logic                     eth_mdio_clk_div_value_valid;
+logic                     eth_mdio_clk_div_value_ready;
+logic                     eth_mdio_clk;
+
+lossy_valid_to_stream #(
+  .DATA_WIDTH(EthMdioClkDivWidth)
+) i_eth_mdio_clk_div_config_decouple (
+  .clk_i   ( periph_clk   ),
+  .rst_ni  ( periph_rst_n ),
+  .valid_i ( car_regs_reg2hw.eth_mdio_clk_div_value.qe ),
+  .data_i  ( car_regs_reg2hw.eth_mdio_clk_div_value.q ),
+  .valid_o ( eth_mdio_clk_div_value_valid ),
+  .ready_i ( eth_mdio_clk_div_value_ready ),
+  .data_o  ( eth_mdio_clk_div_value       ),
+  .busy_o  ( )
+);
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+clk_int_div #(
+  .DIV_VALUE_WIDTH       ( EthMdioClkDivWidth ),
+  .DEFAULT_DIV_VALUE     ( EthMdioClkDivDefaultValue ),
+  .ENABLE_CLOCK_IN_RESET ( 0   )
+) i_eth_mdio_clk_int_div (
+    .clk_i          ( periph_clk   ),
+    .rst_ni         ( periph_rst_n ),
+    .en_i           ( car_regs_reg2hw.eth_mdio_clk_div_en.q ),
+    .test_mode_en_i ( test_mode_i ),
+    .div_i          ( car_regs_reg2hw.eth_mdio_clk_div_value.q ),
+    .div_valid_i    ( eth_mdio_clk_div_value_valid ),
+    .div_ready_o    ( eth_mdio_clk_div_value_ready ),
+    .clk_o          ( eth_mdio_clk ),
+    .cycl_count_o   (              )
+);
+
+// Ethernet IP
 eth_rgmii #(
   .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
   .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
   .AXI_ID_WIDTH   ( AxiSlvIdWidth    ),
   .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
 ) i_eth_rgmii (
-  .clk_i        ( periph_clk ),
+  .clk_i        ( eth_mdio_clk ),
   .clk_200MHz_i ( '0 ),            // Only used with FPGA mapping for genesysII in IDELAYCTRL cell's
                                    // ref clk (see IP)
-  .rst_ni       ( periph_rst_n  ),
-  .eth_clk_i    ( eth_phy_clk90 ), // quadrature (90deg) clk to `phy_tx_clk_i`
+  .rst_ni       ( periph_rst_n ),
+  .eth_clk_i    ( '0 ), // quadrature (90deg) clk to `phy_tx_clk_i` -> disabled when `USE_CLK90 ==
+                        // FALSE` in ethernet IP. See `eth_mac_1g_rgmii_fifo`. In carfieldv1,
+                        // USE_CLK90 == 0, hence changing the clock phase is left to PHY chips on
+                        // the PCB.
 
   .ethernet     ( axi_ethernet ),
 
@@ -1894,8 +1975,15 @@ eth_rgmii #(
   .eth_txd      ( eth_txd_o   ),
 
   .eth_rst_n    ( eth_rst_n_o  ),
-  .phy_tx_clk_i ( eth_phy_clk0 ),  // in phase (0deg) clk
-  .eth_irq      ( car_eth_intr )
+  .phy_tx_clk_i ( eth_rgmii_phy_clk0 ),  // in phase (0deg) clk
+
+  // MDIO
+  .eth_mdio_i    ( eth_md_i   ),
+  .eth_mdio_o    ( eth_md_o   ),
+  .eth_mdio_oe_o ( eth_md_oe  ),
+  .eth_mdc_o     ( eth_mdc_o  ),
+
+  .eth_irq       ( car_eth_intr )
 );
 
 end

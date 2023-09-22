@@ -62,3 +62,8 @@ L2_SRAM_CONFIG0,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
 L2_SRAM_CONFIG1,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
 L2_SRAM_CONFIG2,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
 L2_SRAM_CONFIG3,32,rw,hro,0,0,L2 RAM cfg pins -margin adjustments-
+ETH_RGMII_PHY_CLK_DIV_EN,1,rw,hro,1,1,Ethernet RGMII PHY clock divider enable bit
+ETH_RGMII_PHY_CLK_DIV_VALUE,20,rw,hro,1,100,Ethernet RGMII PHY clock divider value
+ETH_MDIO_CLK_DIV_EN,1,rw,hro,1,1,Ethernet MDIO clock divider enable bit
+ETH_MDIO_CLK_DIV_VALUE,20,rw,hro,1,100,Ethernet MDIO clock divider value
+

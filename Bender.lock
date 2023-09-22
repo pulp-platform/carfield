@@ -214,7 +214,7 @@ packages:
     - fpnew
     - tech_cells_generic
   ethernet:
-    revision: 8b0cee7ef143b4c637a875664881232ac1c518a5
+    revision: 2b6f916d3f25f9829713faeef6adc799e861744c
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git
@@ -524,8 +524,8 @@ packages:
       Git: https://github.com/pulp-platform/timer_unit.git
     dependencies: []
   unbent:
-    revision: 791420b326c6455595b4444c02f05f180b99dd06
-    version: 0.1.1
+    revision: 89ea12018002e6fae51f88e25320e79f57db8073
+    version: 0.1.5
     source:
       Git: https://github.com/pulp-platform/unbent.git
     dependencies:
