@@ -76,8 +76,9 @@ int main(void)
     car_reset_domain(CAR_L2_RST);
 
     // Security Island
-    // We can't access anything so this needs to be checked manually
-    car_reset_domain(CAR_SECURITY_RST);
+    // We can't access anything so this needs to be checked manually In secure boot mode, the
+    // security island can't be software resetted, which is why we disable this for now
+    // car_reset_domain(CAR_SECURITY_RST);
 
     return 0;
 }
