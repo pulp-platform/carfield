@@ -139,6 +139,9 @@ int probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int sa
 
 int main(void) {
 
+    // Init the HW
+    car_init_start();
+
     int errors = 0;
 
     // Probe an address range with pseudo-random values and read after each write

@@ -16,6 +16,7 @@ module tb_carfield_soc;
 
   import uvm_pkg::*;
 
+  // carfield top
   carfield_soc_fixture fix();
 
   typedef enum int {
@@ -36,6 +37,11 @@ module tb_carfield_soc;
   logic       safed_boot_mode;
   bit  [31:0] safed_exit_code;
   bit         safed_exit_status;
+  bit  [31:0] safed_isolated;
+
+  localparam int unsigned SafetyIslandClkEnRegAddr         = 32'h20010070;
+  localparam int unsigned SafetyIslandIsolateRegAddr       = 32'h20010040;
+  localparam int unsigned SafetyIslandIsolateStatusRegAddr = 32'h20010058;
 
   // security island
   string      secd_preload_elf;
@@ -43,6 +49,11 @@ module tb_carfield_soc;
   logic       secd_boot_mode;
 
   logic [63:0] unused;
+
+  // timing format for $display("...$t..", $realtime)
+  initial begin : timing_format
+    $timeformat(-9, 0, "ns", 9);
+  end : timing_format
 
   // Cheshire standalone binary execution
   initial begin
@@ -72,7 +83,7 @@ module tb_carfield_soc;
             // Cheshire
             is_dram = uvm_re_match("dram",chs_preload_elf);
             if(~is_dram) begin
-              $display("Wait the hyperram");
+              $display("[TB] %t - Wait for HyperRAM", $realtime);
               repeat(120000)
                 @(posedge fix.clk);
             end
@@ -118,17 +129,34 @@ module tb_carfield_soc;
     if (!$value$plusargs("SAFED_BINARY=%s",       safed_preload_elf)) safed_preload_elf = "";
 
     if (safed_preload_elf != "") begin
+
+      // set boot mode before reset
       case (safed_boot_mode)
         0: begin
           fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Jtag);
-          fix.safed_vip.safed_wait_for_reset();
+        end 1: begin
+          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
+       end default: begin
+          $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
+        end
+      endcase
+
+      fix.safed_vip.safed_wait_for_reset();
+
+      $display("[TB] %t - Enabling safety island clock for stand-alone tests ", $realtime);
+      // Clock island after PoR
+      fix.safed_vip.axi_write_32(SafetyIslandClkEnRegAddr, 32'h1);
+      $display("[TB] %t - De-isolate safety island for stand-alone tests ", $realtime);
+      // De-isolate island after PoR
+      fix.safed_vip.axi_write_32(SafetyIslandIsolateRegAddr, 32'h0);
+
+      case (safed_boot_mode)
+        0: begin
           fix.safed_vip.jtag_safed_init();
           fix.safed_vip.jtag_write_test(32'h6000_1000, 32'hABBA_ABBA);
           fix.safed_vip.jtag_safed_elf_run(safed_preload_elf);
           fix.safed_vip.jtag_safed_wait_for_eoc(safed_exit_code, safed_exit_status);
         end 1: begin
-          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
-          fix.safed_vip.safed_wait_for_reset();
           fix.safed_vip.axi_safed_elf_run(safed_preload_elf);
           fix.safed_vip.axi_safed_wait_for_eoc(safed_exit_code, safed_exit_status);
        end default: begin
@@ -151,6 +179,9 @@ module tb_carfield_soc;
     if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode)) secd_boot_mode   = 0;
     case(secd_boot_mode)
       0: begin
+        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
+        $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
+        fix.set_secure_boot(CarfieldSecureBootOn);
         fix.secd_vip.set_secd_boot_mode(2'b00);
         if (secd_preload_elf != "") begin
           // Wait before security island HW is initialized
@@ -164,7 +195,7 @@ module tb_carfield_soc;
         end
       end 1: begin
         // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
-        $display("Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)");
+        $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
         fix.set_secure_boot(CarfieldSecureBootOn);
         fix.secd_vip.set_secd_boot_mode(2'b01);
         fix.secd_vip.spih_norflash_preload(secd_flash_vmem);

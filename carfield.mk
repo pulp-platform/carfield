@@ -292,11 +292,12 @@ $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
 	$(MAKE) -C $(PULPD_ROOT) regression-tests
 
 # For independent boot of an island, we allow to compile the binary standalone.
-.PHONY: safed-sw-build pulpd-sw-build
+.PHONY: safed-sw-build
 safed-sw-build:
 	. $(CAR_ROOT)/scripts/safed-env.sh; \
 	$(MAKE) safed-sw-all
 
+.PHONY: pulpd-sw-build
 pulpd-sw-build:
 	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
 	$(MAKE) pulpd-sw-all
@@ -342,6 +343,7 @@ SPYGLASS_DEFS += $(synth_defs)
 
 ## @section Carfield SoC Utilities
 
+.PHONY:lint
 ## Run Spyglass Lint on the entire RTL
 lint:
 	$(MAKE) -C scripts lint bender_defs="$(SPYGLASS_DEFS)" bender_targs="$(SPYGLASS_TARGS)" > make.log

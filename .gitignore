@@ -11,8 +11,21 @@ work/
 /.venv/
 /logs/
 /working_dir/
+/uart
 
+# sw auto-generated
 sw/tests/bare-metal/safed/*.h
+sw/tests/bare-metal/pulpd/*.h
+
+# ctags, etags ...
+TAGS
+
+# symlinks
+/cheshire
+/opentitan
+/pulp_cluster
+/safety_island
+/spatz
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

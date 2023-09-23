@@ -188,6 +188,48 @@ void car_reset_domain(enum car_rst rst)
     car_set_isolate(rst, CAR_ISOLATE_DISABLE);
 }
 
+void car_enable_domain(enum car_rst rst)
+{
+    car_enable_clk(car_clkd_from_rstd(rst));
+    car_set_isolate(rst, CAR_ISOLATE_DISABLE);
+}
+
+void car_disable_domain(enum car_rst rst)
+{
+    car_disable_clk(car_clkd_from_rstd(rst));
+    car_set_isolate(rst, CAR_ISOLATE_ENABLE);
+}
+
+// De-isolate and ungate domains at startup. In non-secure boot mode, only the host domain is
+// de-isolated and ungated after POR. In secure boot mode, both the host domain and the security
+// domain are de-isolated and ungated after POR. Note that L2 and peripheral domain are always-on
+// after POR.
+void car_enable_all_domains()
+{
+    // Safety Island
+    car_enable_domain(CAR_SAFETY_RST);
+
+    // Security Island
+    car_enable_domain(CAR_SECURITY_RST);
+
+    // PULP Island
+    car_enable_domain(CAR_PULP_RST);
+
+    // Spatz Island
+    car_enable_domain(CAR_SPATZ_RST);
+}
+
+void car_init_start()
+{
+    car_enable_all_domains();
+}
+
+void car_init_stop()
+{
+    // TODO: init destructors list
+}
+
+
 // Safety Island offload
 void prepare_safed_boot () {
 

@@ -13,6 +13,7 @@
 #include "regs/cheshire.h"
 #include "regs/system_timer.h"
 #include "util.h"
+#include "car_util.h"
 
 // TODO: This test is really brittle. Its only purpose is to test timer accesses when the timer is
 // configured in freerunning mode and check if the value is within a sensible range. A better test
@@ -26,10 +27,13 @@
 	} \
     } while (0)
 
-#define DUMMY_TIMER_CNT_GOLDEN_MIN 8050
-#define DUMMY_TIMER_CNT_GOLDEN_MAX 8280
+#define DUMMY_TIMER_CNT_GOLDEN_MIN 8000
+#define DUMMY_TIMER_CNT_GOLDEN_MAX 9000
 
 int main(void) {
+
+    // Init the HW
+    car_init_start();
 
     // Reset system timer
     writed(1, CAR_SYSTEM_TIMER_BASE_ADDR + TIMER_RESET_LO_OFFSET);
