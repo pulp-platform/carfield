@@ -248,6 +248,7 @@ car-hw-init: spatz-hw-init chs-hw-init
 
 .PHONY: spatz-hw-init
 spatz-hw-init:
+	$(MAKE) -C $(SPATZCL_ROOT) hw/ip/snitch/src/riscv_instr.sv
 	$(MAKE) -C $(SPATZCL_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(CAR_HW_DIR)/cfg/spatz_carfield.hjson bootrom
 
 .PHONY: chs-hw-init
