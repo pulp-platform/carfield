@@ -19,11 +19,6 @@ module tb_carfield_soc;
   // carfield top
   carfield_soc_fixture fix();
 
-  typedef enum int {
-    CarfieldSecureBootOff = 'd0,
-    CarfieldSecureBootOn  = 'd1
-  } carfield_secure_boot_e;
-
   // cheshire
   string      chs_preload_elf;
   string      chs_boot_hex;
@@ -50,6 +45,8 @@ module tb_carfield_soc;
 
   logic [63:0] unused;
 
+  logic        secure_boot;
+
   // timing format for $display("...$t..", $realtime)
   initial begin : timing_format
     $timeformat(-9, 0, "ns", 9);
@@ -58,12 +55,14 @@ module tb_carfield_soc;
   // Cheshire standalone binary execution
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
-    if (!$value$plusargs("CHS_BOOTMODE=%d", boot_mode))         boot_mode         = 0;
-    if (!$value$plusargs("CHS_PRELMODE=%d", preload_mode))      preload_mode      = 0;
-    if (!$value$plusargs("CHS_BINARY=%s",   chs_preload_elf))   chs_preload_elf   = "";
-    if (!$value$plusargs("CHS_IMAGE=%s",    chs_boot_hex))      chs_boot_hex      = "";
+    if (!$value$plusargs("SECURE_BOOT=%d",  secure_boot))     secure_boot     = 0;
+    if (!$value$plusargs("CHS_BOOTMODE=%d", boot_mode))       boot_mode       = 0;
+    if (!$value$plusargs("CHS_PRELMODE=%d", preload_mode))    preload_mode    = 0;
+    if (!$value$plusargs("CHS_BINARY=%s",   chs_preload_elf)) chs_preload_elf = "";
+    if (!$value$plusargs("CHS_IMAGE=%s",    chs_boot_hex))    chs_boot_hex    = "";
 
     // Set boot mode and preload boot image if there is one
+    fix.set_secure_boot(secure_boot);
     fix.chs_vip.set_boot_mode(boot_mode);
     fix.chs_vip.i2c_eeprom_preload(chs_boot_hex);
     fix.chs_vip.spih_norflash_preload(chs_boot_hex);
@@ -125,8 +124,12 @@ module tb_carfield_soc;
   // safety island standalone
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
-    if (!$value$plusargs("SAFED_BOOTMODE=%d",     safed_boot_mode))   safed_boot_mode   = 0;
-    if (!$value$plusargs("SAFED_BINARY=%s",       safed_preload_elf)) safed_preload_elf = "";
+    if (!$value$plusargs("SECURE_BOOT=%d",    secure_boot))       secure_boot      = 0;
+    if (!$value$plusargs("SAFED_BOOTMODE=%d", safed_boot_mode))   safed_boot_mode   = 0;
+    if (!$value$plusargs("SAFED_BINARY=%s",   safed_preload_elf)) safed_preload_elf = "";
+
+    // set secure boot mode
+    fix.set_secure_boot(secure_boot);
 
     if (safed_preload_elf != "") begin
 
@@ -164,9 +167,6 @@ module tb_carfield_soc;
         end
       endcase
 
-      // Eventually wait for HWRoT to end initialization and assert Ibex's fetch enable
-      fix.passthrough_or_wait_for_secd_hw_init();
-
       $finish;
     end
   end
@@ -174,14 +174,15 @@ module tb_carfield_soc;
   // security island standalone
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
-    if (!$value$plusargs("SECD_FLASH=%s",   secd_flash_vmem)) secd_flash_vmem  = "";
-    if (!$value$plusargs("SECD_BINARY=%s", secd_preload_elf)) secd_preload_elf = "";
-    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode)) secd_boot_mode   = 0;
+    if (!$value$plusargs("SECURE_BOOT=%d",   secure_boot))      secure_boot      = 0;
+    if (!$value$plusargs("SECD_FLASH=%s",    secd_flash_vmem))  secd_flash_vmem  = "";
+    if (!$value$plusargs("SECD_BINARY=%s",   secd_preload_elf)) secd_preload_elf = "";
+    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode))   secd_boot_mode   = 0;
     case(secd_boot_mode)
       0: begin
         // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
         $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
-        fix.set_secure_boot(CarfieldSecureBootOn);
+        fix.set_secure_boot(secure_boot);
         fix.secd_vip.set_secd_boot_mode(2'b00);
         if (secd_preload_elf != "") begin
           // Wait before security island HW is initialized
@@ -196,7 +197,7 @@ module tb_carfield_soc;
       end 1: begin
         // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
         $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
-        fix.set_secure_boot(CarfieldSecureBootOn);
+        fix.set_secure_boot(secure_boot);
         fix.secd_vip.set_secd_boot_mode(2'b01);
         fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
         repeat(10000)

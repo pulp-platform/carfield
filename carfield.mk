@@ -39,6 +39,9 @@ CHS_ROOT ?= $(shell $(BENDER) path cheshire)
 # Include cheshire's makefrag only if the dependency was cloned
 -include $(CHS_ROOT)/cheshire.mk
 
+# Secure boot
+SECURE_BOOT ?= 0
+
 CHS_BOOTMODE ?= 0 # default passive bootmode
 CHS_PRELMODE ?= 1 # default serial link preload
 CHS_BINARY   ?=
@@ -192,7 +195,8 @@ car-hw-build: car-sim-init
 ## @param VSIM_FLAGS the flags for the vsim invocation
 car-hw-sim:
 	$(QUESTA) vsim $(VSIM_FLAGS) -do \
-		"set CHS_BOOTMODE $(CHS_BOOTMODE); \
+		"set SECURE_BOOT $(SECURE_BOOT); \
+		 set CHS_BOOTMODE $(CHS_BOOTMODE); \
 		 set CHS_PRELMODE $(CHS_PRELMODE); \
 		 set CHS_BINARY $(CHS_BINARY); \
 		 set CHS_IMAGE $(CHS_IMAGE); \
