@@ -11,6 +11,7 @@ set flags ""
 if {[info exists VSIM_FLAGS]}     { append flags "${VSIM_FLAGS}" }
 
 set pargs ""
+if {[info exists SECURE_BOOT]}    { append pargs "+SECURE_BOOT=${SECURE_BOOT} "       }
 if {[info exists CHS_BOOTMODE]}   { append pargs "+CHS_BOOTMODE=${CHS_BOOTMODE} "     }
 if {[info exists CHS_PRELMODE]}   { append pargs "+CHS_PRELMODE=${CHS_PRELMODE} "     }
 if {[info exists CHS_BINARY]}     { append pargs "+CHS_BINARY=${CHS_BINARY} "         }
