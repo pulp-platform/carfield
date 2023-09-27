@@ -65,7 +65,7 @@ packages:
     - axi
     - common_cells
   axi_obi:
-    revision: 81e8db2098ff668efb2474772af426499705e543
+    revision: 4ca45fa0129d7731ce7d40667882acec45a0f487
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/axi_obi.git
@@ -114,7 +114,7 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   car_l2:
-    revision: d6ab486b2777bf78c38b49352b5977565a272a58
+    revision: 0143fb296e3614adf8894ff7335cc3f9b92783bd
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git
@@ -460,7 +460,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 83389a5b16df92df6e082728be53cd9c33ec8b8d
+    revision: 79a598622a1c082d7c4c0be8238114da388d1c91
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
@@ -497,7 +497,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: 664b583b76d73e1e3ef2faf88d94ffd8f8abda52
+    revision: 31d651d280fb8657780aec21c047590be12ea065
     version: null
     source:
       Git: https://github.com/pulp-platform/spatz.git
