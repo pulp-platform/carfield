@@ -12,7 +12,6 @@
 package carfield_pkg;
 
 import cheshire_pkg::*;
-import safety_island_pkg::*;
 
 localparam int unsigned CarfieldNumExtIntrs           = 32; // Number of external interrupts
 localparam int unsigned CarfieldNumInterruptibleHarts = 2;  // Spatz (2 Snitch cores)
@@ -184,8 +183,35 @@ typedef enum hartid_t {
   PulpHartIdOffs      = 'd32
 } hartid_offs_e;
 
+
+localparam int unsigned MaxHartId = 63;
+localparam int unsigned IntClusterNumCores = 12;
+localparam bit [MaxHartId:0] SafetyIslandExtHarts =
+  {MaxHartId+1{1'b0}} | (((1<<IntClusterNumCores) - 1) << PulpHartIdOffs);
+
+localparam dm::hartinfo_t PulpHartInfo = '{
+  zero1: '0,
+  nscratch: 2,
+  zero0: '0,
+  dataaccess: 1'b1,
+  datasize: dm::DataCount,
+  dataaddr: dm::DataAddr
+};
+function automatic dm::hartinfo_t [MaxHartId:0] pulp_hart_info(bit [MaxHartId:0] available);
+  for (int i = 0; i <= MaxHartId; i++) begin
+    if (available[i]) begin
+      pulp_hart_info[i] = PulpHartInfo;
+    end else begin
+      pulp_hart_info[i] = '0;
+    end
+  end
+endfunction
+
+localparam dm::hartinfo_t [MaxHartId:0] SafetyIslandExtHartinfo =
+  pulp_hart_info(SafetyIslandExtHarts);
+
 // Safety island configuration
-localparam safety_island_cfg_t SafetyIslandCfg = '{
+localparam safety_island_pkg::safety_island_cfg_t SafetyIslandCfg = '{
     HartId:             SafetyIslHartIdOffs,
     BankNumBytes:       32'h0001_0000,
     NumBanks:           2,
@@ -396,7 +422,6 @@ localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
 /******************************/
 /* Integer Cluster Parameters */
 /******************************/
-localparam int unsigned IntClusterNumCores = 12;
 localparam int unsigned IntClusterNumHwpePorts = 9;
 localparam int unsigned IntClusterNumDmas = 4;
 localparam int unsigned IntClusterNumMstPer = 1;
@@ -411,8 +436,10 @@ localparam int unsigned IntClusterSetAssociative = 4;
 localparam int unsigned IntClusterNumCacheBanks = 2;
 localparam int unsigned IntClusterNumCacheLines = 1;
 localparam int unsigned IntClusterCacheSize = 4*1024;
-localparam int unsigned IntClusterDbgStart = 32'h1A110000;
-localparam int unsigned IntClusterRomBoot = 32'h1A000000;
+localparam int unsigned IntClusterDbgStart = SafetyIslandBase+
+                                             SafetyIslandPerOffset+
+                                             safety_island_pkg::DebugAddrOffset;
+localparam int unsigned IntClusterRomBoot = 32'h1A000000; // To Fix!
 localparam int unsigned IntClusterBootAddr = L2Port1Base;
 localparam int unsigned IntClusterInstrRdataWidth = 32;
 localparam int unsigned IntClusterFpu = 0;

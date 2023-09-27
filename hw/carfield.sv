@@ -289,6 +289,13 @@ logic [CheshireNumIntHarts-1:0] pulpcl_hostd_mbox_intr;  // from pulp cluster to
 logic [CheshireNumIntHarts-1:0] secd_hostd_mbox_intr;    // from security island to host domain
 logic [CheshireNumIntHarts-1:0] safed_hostd_mbox_intr;   // from safety island to host domain
 
+// Integer Cluster
+logic [IntClusterNumCores-1:0] pulpcl_dbg_reqs;
+
+// Safety Island
+logic [MaxHartId:0] safed_dbg_reqs;
+assign pulpcl_dbg_reqs = safed_dbg_reqs[PulpHartIdOffs+:IntClusterNumCores];
+
 // Generate indices and get maps for all ports
 localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
 localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
@@ -1277,6 +1284,10 @@ safety_island_synth_wrapper #(
   .SafetyIslandMemOffset    ( SafetyIslandMemOffset      ),
   .SafetyIslandPeriphOffset ( SafetyIslandPerOffset      ),
 
+  .NumDebug                 ( MaxHartId+1                ),
+  .SelectableHarts          ( SafetyIslandExtHarts       ),
+  .HartInfo                 ( SafetyIslandExtHartinfo    ),
+
   .axi_in_aw_chan_t         ( carfield_axi_slv_aw_chan_t ),
   .axi_in_w_chan_t          ( carfield_axi_slv_w_chan_t  ),
   .axi_in_b_chan_t          ( carfield_axi_slv_b_chan_t  ),
@@ -1315,7 +1326,7 @@ safety_island_synth_wrapper #(
   .axi_isolate_i          ( slave_isolate_req [SafetyIslandSlvIdx]   ), // To SoC Bus
   .axi_isolated_o         ( master_isolated_rsp [SafetyIslandMstIdx] ),
   .irqs_i                 ( safed_intrs                              ),
-  .debug_req_o            (                                          ),
+  .debug_req_o            ( safed_dbg_reqs                           ),
   .jtag_tck_i             ( jtag_safety_island_tck_i                 ),
   .jtag_trst_ni           ( jtag_safety_island_trst_ni               ),
   .jtag_tms_i             ( jtag_safety_island_tms_i                 ),
@@ -1432,7 +1443,7 @@ int_cluster i_integer_cluster            (
   .dma_pe_evt_valid_o          (                                           ),
   .dma_pe_irq_ack_i            ( '1                                        ),
   .dma_pe_irq_valid_o          (                                           ),
-  .dbg_irq_valid_i             ( '0                                        ),
+  .dbg_irq_valid_i             ( pulpcl_dbg_reqs                           ),
   .mbox_irq_i                  ( pulpcl_mbox_intr                          ),
   .pf_evt_ack_i                ( '1                                        ),
   .pf_evt_valid_o              (                                           ),
