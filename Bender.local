@@ -16,5 +16,5 @@ overrides:
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
   clic:                 { git: "https://github.com/pulp-platform/clic.git"                , rev: bed98f8 }
   fpnew:                { git: "https://github.com/pulp-platform/cvfpu.git"               , rev: pulp-v0.1.3 }
-  cv32e40p:             { git: "https://github.com/pulp-platform/cv32e40p.git"            , rev: e863f576699815b38cc9d80dbdede8ed5efd5991 }
-  axi_rt:               { git: "https://github.com/pulp-platform/axi_rt.git"              , version: =0.0.0-alpha                         }
+  cv32e40p:             { git: "https://github.com/pulp-platform/cv32e40p.git"            , rev: e863f576699815b38cc9d80dbdede8ed5efd5991   }
+  axi_rt:               { git: "https://github.com/pulp-platform/axi_rt.git"              , version: =0.0.0-alpha.3                         }
