@@ -34,9 +34,9 @@ module carfield_soc_fixture;
   localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
-  localparam time         ClkPeriodSys  = 5ns;
-  localparam time         ClkPeriodJtag = 20ns;
-  localparam time         ClkPeriodRtc  = 30518ns;
+  localparam time         ClkPeriodSys  = 10ns;
+  localparam time         ClkPeriodJtag = 40ns;
+  localparam time         ClkPeriodRtc  = 30520ns;
   localparam int unsigned RstCycles     = 5;
   localparam real         TAppl         = 0.1;
   localparam real         TTest         = 0.9;
