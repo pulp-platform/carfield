@@ -241,8 +241,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiDataWidth      : 64,
   AxiUserWidth      : 10,  // {CACHE_PARTITIONING(5[9:5]), ECC_ERROR(1[4:4]), ATOPS(4[3:0])}
   AxiMstIdWidth     : 2,
-  AxiMaxMstTrans    : 24,
-  AxiMaxSlvTrans    : 24,
+  AxiMaxMstTrans    : 64,
+  AxiMaxSlvTrans    : 64,
   AxiUserAmoMsb     : 3, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
   AxiUserAmoLsb     : 0, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
   AxiUserErrBits    : 1,
@@ -315,8 +315,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   LlcSetAssoc       : 8,
   LlcNumLines       : 256,
   LlcNumBlocks      : 8,
-  LlcMaxReadTxns    : 16,
-  LlcMaxWriteTxns   : 16,
+  LlcMaxReadTxns    : 32,
+  LlcMaxWriteTxns   : 32,
   LlcAmoNumCuts     : 1,
   LlcAmoPostCut     : 1,
   LlcOutConnect     : 1,
@@ -335,17 +335,17 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   DmaConfMaxReadTxns  : 4,
   DmaConfMaxWriteTxns : 4,
   DmaConfAmoNumCuts   : 1,
-  DmaNumAxInFlight    : 16,
-  DmaMemSysDepth      : 8,
-  DmaJobFifoDepth     : 2,
+  DmaNumAxInFlight    : 24,
+  DmaMemSysDepth      : 16,
+  DmaJobFifoDepth     : 4,
   DmaRAWCouplingAvail : 1,
   DmaConfAmoPostCut   : 1,
   DmaConfEnableTwoD   : 1,
   // GPIOs
   GpioInputSyncs      : 1,
   // AXI RT
-  AxiRtNumPending     : 16,
-  AxiRtWBufferDepth   : 16,
+  AxiRtNumPending     : 32,
+  AxiRtWBufferDepth   : 32,
   AxiRtNumAddrRegions : 2,
   AxiRtCutPaths       : 1,
   // All non-set values should be zero
