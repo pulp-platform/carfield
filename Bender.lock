@@ -127,7 +127,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 2528f80156eecb124a717800e54b9f92aa167a41
+    revision: 498ef7079b7a31ba28dcaf31801f1818382d9009
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -524,10 +524,11 @@ packages:
       Git: https://github.com/pulp-platform/timer_unit.git
     dependencies: []
   unbent:
-    revision: 89ea12018002e6fae51f88e25320e79f57db8073
-    version: 0.1.5
+    revision: e9c9d5cfb635f2d4668c816ce9235798cfecb297
+    version: 0.1.6
     source:
       Git: https://github.com/pulp-platform/unbent.git
     dependencies:
+    - axi
     - common_cells
     - register_interface
