@@ -284,9 +284,9 @@ car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibe
 safed-sw-init: $(SAFED_ROOT) $(SAFED_SW_DIR)/pulp-runtime $(SAFED_SW_DIR)/pulp-freertos
 
 $(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
-	$(MAKE) -C $(SAFED_ROOT) pulp-runtime
+	$(MAKE) -C $(SAFED_ROOT) pulp-runtime BENDER="$(BENDER)"
 $(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
-	$(MAKE) -C $(SAFED_ROOT) pulp-freertos
+	$(MAKE) -C $(SAFED_ROOT) pulp-freertos BENDER="$(BENDER)"
 
 # PULP Cluster
 pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
