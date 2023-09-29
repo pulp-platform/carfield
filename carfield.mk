@@ -100,7 +100,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 3b373387e920564ded2acde7c8dba7e3756b70ec
+CAR_NONFREE_COMMIT ?= ee53375509b47125e1c79a1da543998270f4dcbb
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -284,9 +284,9 @@ car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibe
 safed-sw-init: $(SAFED_ROOT) $(SAFED_SW_DIR)/pulp-runtime $(SAFED_SW_DIR)/pulp-freertos
 
 $(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
-	$(MAKE) -C $(SAFED_ROOT) pulp-runtime
+	$(MAKE) -C $(SAFED_ROOT) pulp-runtime BENDER="$(BENDER)"
 $(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
-	$(MAKE) -C $(SAFED_ROOT) pulp-freertos
+	$(MAKE) -C $(SAFED_ROOT) pulp-freertos BENDER="$(BENDER)"
 
 # PULP Cluster
 pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
