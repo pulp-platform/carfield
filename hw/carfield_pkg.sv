@@ -226,6 +226,9 @@ localparam safety_island_pkg::safety_island_cfg_t SafetyIslandCfg = '{
     ClicIntCtlBits:     8,
     UseSSClic:          0,
     UseUSClic:          0,
+    UseVSClic:          0,
+    UseVSPrio:          0,
+    NVsCtxts:           0,
     UseFastIrq:         1,
     UseFpu:             1,
     UseIntegerCluster:  1,
@@ -261,6 +264,11 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   NumExtOutIntrTgts : 1,
   NumExtOutIntrs    : CarfieldNumExtIntrs+$bits(cheshire_int_intr_t),
   ClicIntCtlBits    : 8,
+  ClicUseSMode      : 1,
+  ClicUseUMode      : 0,
+  ClicUseVsMode     : 1,
+  ClicUseVsModePrio : 1,
+  ClicNumVsCtxts    : 2, // TODO: choose appropriately
   NumExtIntrSyncs   : SyncStages,
   // Interconnect
   AddrWidth         : 48,
