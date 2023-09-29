@@ -127,7 +127,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 9399feaf947ea1fcd3feff677875e08fed85193f
+    revision: 1b1b0be11589fb2405eb01894e1f68c264fb2e73
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -205,7 +205,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: a34c7aa3fa0e02f0fc3578558df71b2992ad0bb1
+    revision: 1d63cfa682ae4c7c1ee7e35f40eaf72e93131c54
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git

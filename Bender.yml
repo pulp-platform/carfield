@@ -12,7 +12,7 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 9399feaf947ea1fcd3feff677875e08fed85193f } # branch: llc-partition
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 1b1b0be11589fb2405eb01894e1f68c264fb2e73 } # branch: aottaviano/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             version: 0.0.3                                } 
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 0143fb296e3614adf8894ff7335cc3f9b92783bd } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 9389370e4612f13abf0707c45f19bb5f9f7c3bda } # branch: michaero/carfield
