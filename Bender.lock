@@ -243,14 +243,6 @@ packages:
       Git: https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
     dependencies:
     - common_cells
-  fpu_interco:
-    revision: 4aec4b68424947b0c4cf25fd7c4b907cb9ec3dfa
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/fpu_interco.git
-    dependencies:
-    - fpnew
-    - riscv
   hci:
     revision: b2e6f391aa6c10c03f45b693d80a0aaddecf169b
     version: null
@@ -382,7 +374,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 78c7e4b188151c7790bb1422b9aeeb28f5e0b588
+    revision: 53d4751499039a2de2d0a1b75b1bbc433f60c918
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -396,7 +388,6 @@ packages:
     - common_cells
     - cv32e40p
     - event_unit_flex
-    - fpu_interco
     - hci
     - hier-icache
     - ibex
@@ -411,7 +402,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   redmule:
-    revision: 886ad5ecf5fd908e0c0b278c22914a76a704eda3
+    revision: 80a5acb543b1626c9627cf5e64e0d84bca1848ba
     version: null
     source:
       Git: https://github.com/pulp-platform/redmule.git
@@ -444,7 +435,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: dd086242d10f248b4051a1fc67ae2b35b989c29c
+    revision: ae45f76e316f19782037b5629ab5f159fd1d0d4c
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
