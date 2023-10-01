@@ -72,6 +72,7 @@ sources:
     files:
       - target/xilinx/src/carfield_top_xilinx.sv
       - target/xilinx/src/dram_wrapper.sv
+      - target/xilinx/src/cdc_dst_axi_err.sv
       - target/xilinx/src/overrides/tc_clk_xilinx.sv
 
   - target: intel16_elab_only

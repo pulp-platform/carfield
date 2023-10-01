@@ -22,6 +22,10 @@ module carfield_top_xilinx
   input logic         cpu_resetn,
 `endif
 
+  // System clock for clk_wiz
+  input logic         sys_clk_p,
+  input logic         sys_clk_n,
+
 `ifdef USE_SWITCHES
   input logic         testmode_i,
   input logic [1:0]   boot_mode_i,
@@ -60,13 +64,10 @@ module carfield_top_xilinx
 `endif
 
 `ifdef USE_QSPI
-  output logic        qspi_clk,
-  input  logic        qspi_dq0,
-  input  logic        qspi_dq1,
-  input  logic        qspi_dq2,
-  input  logic        qspi_dq3,
-  output logic        qspi_cs_b,
-`endif
+`ifndef USE_STARTUPE3
+  // TODO: off-chip qspi interface
+`endif // USE_STARTUPE3
+`endif // USE_QSPI
 
 `ifdef USE_VGA
   // VGA Colour signals
@@ -93,11 +94,6 @@ module carfield_top_xilinx
   `DDR3_INTF
 `endif
 
-`ifdef USE_CLK_WIZ
-  input clk_in1_p,
-  input clk_in1_n,
-`endif
-
   // Phy interface for Hyperbus
 `ifdef USE_HYPERBUS
   // Physical interace: HyperBus PADs
@@ -115,6 +111,10 @@ module carfield_top_xilinx
 
 );
 
+  ///////////////////////////
+  // Clk reset definitions //
+  ///////////////////////////
+
   `ifdef USE_RESET
   logic cpu_resetn;
   assign cpu_resetn = ~cpu_reset;
@@ -124,11 +124,9 @@ module carfield_top_xilinx
   `endif
   logic sys_rst;
 
-  (* dont_touch = "yes" *) wire master_clk;
-  (* dont_touch = "yes" *) wire master_sync_rst;
-  (* dont_touch = "yes" *) wire soc_clk;
-  (* dont_touch = "yes" *) wire rst_n;
-
+  wire clk_100, clk_50, clk_20, clk_10;
+  wire soc_clk, host_clk, alt_clk, periph_clk;
+  (* dont_touch = "yes" *)  wire rst_n;
 
   ///////////////////
   // GPIOs         // 
@@ -153,6 +151,52 @@ module carfield_top_xilinx
   assign jtag_trst_ni = '1;
 `endif
 
+  //////////////////
+  // Clock Wizard //
+  //////////////////
+
+  wire sys_clk;
+
+  // Get from the diff board pins a single ended buffered clock that
+  // can be sent to clk_wiz and DDR separately (without cascading MMCMs)
+  // As sys_clk frequency depends on the boards /!\ in IPs configurations
+  IBUFDS #
+  (
+    .IBUF_LOW_PWR ("FALSE")
+  )
+  u_ibufg_sys_clk
+  (
+    .I  (sys_clk_p),
+    .IB (sys_clk_n),
+    .O  (sys_clk)
+  );
+
+
+  xlnx_clk_wiz i_xlnx_clk_wiz (
+    .clk_in1 ( sys_clk  ),
+    .reset   ( '0       ),
+    .clk_100 ( clk_100  ),
+    .clk_50  ( clk_50   ),
+    .clk_20  ( clk_20   ),
+    .clk_10  ( clk_10   )
+  );
+  localparam rtc_clk_divider = 4;
+  assign soc_clk = clk_50;
+  assign alt_clk = clk_20;
+  assign host_clk = soc_clk;
+  assign periph_clk = soc_clk;
+
+  /////////////////////
+  // Reset Generator //
+  /////////////////////
+
+  rstgen i_rstgen_main (
+    .clk_i        ( soc_clk                  ),
+    .rst_ni       ( ~sys_rst                 ),
+    .test_mode_i  ( testmode_i              ),
+    .rst_no       ( rst_n                    ),
+    .init_no      (                          ) // keep open
+  );
 
   ///////////////////
   // VIOs          //
@@ -178,63 +222,6 @@ module carfield_top_xilinx
   assign boot_mode = boot_mode_i;
   assign boot_mode_safety = boot_mode_safety_i;
 `endif
-
-
-  //////////////////
-  // Clock Wizard // 
-  //////////////////
-
-`ifdef USE_CLK_WIZ
-  xlnx_clk_wiz i_xlnx_clk_wiz (
-    .clk_in1_p,
-    .clk_in1_n,
-    .reset(master_clk),
-    // 50 MHz clock out
-    .clk_out1( soc_clk )
-  );
-
-  //rstgen i_rstgen_main (
-  //  .clk_i        ( soc_clk          ),
-  //  .rst_ni       ( ~sys_rst         ),
-  //  .test_mode_i  ( testmode_i       ),
-  //  .rst_no       ( rst_n            ),
-  //  .init_no      (                  ) // keep open
-  //);
-  assign rst_n = ~sys_rst;
-`endif
-
-
-  //////////////////
-  // DRAM WRAPPER //
-  //////////////////
-
-`ifdef USE_DDR
-
-  dram_wrapper #(
-    .axi_soc_aw_chan_t ( axi_llc_aw_chan_t ),
-    .axi_soc_w_chan_t  ( axi_llc_w_chan_t ),
-    .axi_soc_b_chan_t  ( axi_llc_b_chan_t ),
-    .axi_soc_ar_chan_t ( axi_llc_ar_chan_t ),
-    .axi_soc_r_chan_t  ( axi_llc_r_chan_t ),
-    .axi_soc_req_t     (axi_llc_req_t),
-    .axi_soc_resp_t    (axi_llc_rsp_t)
-  ) i_dram_wrapper (
-    // Rst
-    .sys_rst_i                  ( cpu_reset   ),
-    .soc_resetn_i               ( rst_n       ),
-    .soc_clk_i                  ( soc_clk     ),
-    // Clk rst out
-    .dram_clk_o                 ( master_clk           ),
-    .dram_rst_o                 ( master_sync_reset    ),
-    // Axi
-    .soc_req_i                  ( '0  ),
-    .soc_rsp_o                  (     ),
-    // Phy
-    .*
-  );
-
-`endif
-
 
   //////////////////
   // I2C Adaption //
@@ -293,13 +280,6 @@ module carfield_top_xilinx
   logic spi_sck_en;
   logic [1:0] spi_cs_en;
   logic [3:0] spi_sd_en;
-  logic spi_sck_en_n;
-  logic [1:0] spi_cs_en_n;
-  logic [3:0] spi_sd_en_n;
-
-  assign spi_sck_en = ~spi_sck_en_n;
-  assign spi_cs_en = ~spi_cs_en_n;
-  assign spi_sd_en = ~spi_sd_en_n;
 
 `ifdef USE_SD
   // Assert reset low => Apply power to the SD Card
@@ -320,32 +300,78 @@ module carfield_top_xilinx
   assign spi_sd_soc_in[3] = 1'b0;
 `endif
 
-`ifdef USE_QSPI
-  assign qspi_clk  = spi_sck_en    ? spi_sck_soc       : 1'b1;
-  assign qspi_cs_b = spi_cs_soc[0];
-  assign spi_sd_soc_in[1] = qspi_dq0;
-`endif
+  //////////////////
+  // QSPI         //
+  //////////////////
 
+`ifdef USE_QSPI
+  logic                 qspi_clk;
+  logic                 qspi_clk_ts;
+  logic [3:0]           qspi_dqi;
+  logic [3:0]           qspi_dqo_ts;
+  logic [3:0]           qspi_dqo;
+  logic [SpihNumCs-1:0] qspi_cs_b;
+  logic [SpihNumCs-1:0] qspi_cs_b_ts;
+
+  assign qspi_clk      = spi_sck_soc;
+  assign qspi_cs_b     = spi_cs_soc;
+  assign qspi_dqo      = spi_sd_soc_out;
+  assign spi_sd_soc_in = qspi_dqi;
+  // Tristate - Enable
+  assign qspi_clk_ts  = ~spi_sck_en;
+  assign qspi_cs_b_ts = ~spi_cs_en;
+  assign qspi_dqo_ts  = ~spi_sd_en;
+
+  // On VCU128/ZCU102, SPI ports are not directly available
+`ifdef USE_STARTUPE3
+  STARTUPE3 #(
+     .PROG_USR("FALSE"),
+     .SIM_CCLK_FREQ(0.0)
+  )
+  STARTUPE3_inst (
+     .CFGCLK    (),
+     .CFGMCLK   (),
+     .DI        (qspi_dqi),
+     .EOS       (),
+     .PREQ      (),
+     .DO        (qspi_dqo),
+     .DTS       (qspi_dqo_ts),
+     .FCSBO     (qspi_cs_b[1]),
+     .FCSBTS    (qspi_cs_b_ts[1]),
+     .GSR       (1'b0),
+     .GTS       (1'b0),
+     .KEYCLEARB (1'b1),
+     .PACK      (1'b0),
+     .USRCCLKO  (qspi_clk),
+     .USRCCLKTS (qspi_clk_ts),
+     .USRDONEO  (1'b1),
+     .USRDONETS (1'b1)
+  );
+`else
+  // TODO: off-chip qspi interface
+`endif // USE_STARTUPE3
+
+`endif // USE_QSPI
 
   /////////////////////////
   // "RTC" Clock Divider //
   /////////////////////////
 
-  logic rtc_clk_d, rtc_clk_q;
+  (* dont_touch = "yes" *) logic rtc_clk_d, rtc_clk_q;
   logic [4:0] counter_d, counter_q;
 
-  // Divide soc_clk (20 MHz) by 20 => 1 MHz RTC Clock
+  // Divide clk_10 => 1 MHz RTC Clock
   always_comb begin
     counter_d = counter_q + 1;
     rtc_clk_d = rtc_clk_q;
 
-    if(counter_q == 19) begin
+    if(counter_q == rtc_clk_divider) begin
       counter_d = 5'b0;
       rtc_clk_d = ~rtc_clk_q;
     end
   end
 
-  always_ff @(posedge soc_clk, negedge rst_n) begin
+  always_ff @(posedge clk_10, negedge rst_n) begin
     if(~rst_n) begin
       counter_q <= 5'b0;
       rtc_clk_q <= 0;
@@ -368,7 +394,6 @@ module carfield_top_xilinx
     .fan_pwm_o     ( fan_pwm    )
   );
 `endif
-
 
   //////////////////
   // Carfield Cfg //
@@ -400,6 +425,71 @@ module carfield_top_xilinx
     default         : '1
   };
 
+  ///////////////////
+  // LLC interface //
+  ///////////////////
+
+`ifdef NO_HYPERBUS // bender-xilinx.mk
+  localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
+  localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth+$clog2(AxiIn.num_in)+Cfg.LlcNotBypass;
+  localparam int unsigned LlcArWidth = (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth,LlcIdWidth,Cfg.AxiUserWidth);
+  localparam int unsigned LlcAwWidth = (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth,LlcIdWidth,Cfg.AxiUserWidth);
+  localparam int unsigned LlcBWidth  = (2**LogDepth)*axi_pkg::b_width(LlcIdWidth,Cfg.AxiUserWidth);
+  localparam int unsigned LlcRWidth  = (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth,LlcIdWidth,Cfg.AxiUserWidth);
+  localparam int unsigned LlcWWidth  = (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,Cfg.AxiUserWidth);
+  // LLC interface
+  logic [LlcArWidth-1:0] llc_ar_data;
+  logic [    LogDepth:0] llc_ar_wptr;
+  logic [    LogDepth:0] llc_ar_rptr;
+  logic [LlcAwWidth-1:0] llc_aw_data;
+  logic [    LogDepth:0] llc_aw_wptr;
+  logic [    LogDepth:0] llc_aw_rptr;
+  logic [ LlcBWidth-1:0] llc_b_data;
+  logic [    LogDepth:0] llc_b_wptr;
+  logic [    LogDepth:0] llc_b_rptr;
+  logic [ LlcRWidth-1:0] llc_r_data;
+  logic [    LogDepth:0] llc_r_wptr;
+  logic [    LogDepth:0] llc_r_rptr;
+  logic [ LlcWWidth-1:0] llc_w_data;
+  logic [    LogDepth:0] llc_w_wptr;
+  logic [    LogDepth:0] llc_w_rptr;
+  // Axi interface
+  carfield_axi_llc_req_t llc_req;
+  carfield_axi_llc_rsp_t llc_rsp;
+
+  axi_cdc_dst      #(
+  .LogDepth     ( LogDepth                   ),
+  .axi_req_t    ( carfield_axi_llc_req_t     ),
+  .axi_resp_t   ( carfield_axi_llc_rsp_t     ),
+  .w_chan_t     ( carfield_axi_llc_w_chan_t  ),
+  .b_chan_t     ( carfield_axi_llc_b_chan_t  ),
+  .ar_chan_t    ( carfield_axi_llc_ar_chan_t ),
+  .r_chan_t     ( carfield_axi_llc_r_chan_t  ),
+  .aw_chan_t    ( carfield_axi_llc_aw_chan_t )
+  ) i_hyper_cdc_dst (
+  .async_data_slave_aw_data_i ( llc_aw_data ),
+  .async_data_slave_aw_wptr_i ( llc_aw_wptr ),
+  .async_data_slave_aw_rptr_o ( llc_aw_rptr ),
+  .async_data_slave_w_data_i  ( llc_w_data  ),
+  .async_data_slave_w_wptr_i  ( llc_w_wptr  ),
+  .async_data_slave_w_rptr_o  ( llc_w_rptr  ),
+  .async_data_slave_b_data_o  ( llc_b_data  ),
+  .async_data_slave_b_wptr_o  ( llc_b_wptr  ),
+  .async_data_slave_b_rptr_i  ( llc_b_rptr  ),
+  .async_data_slave_ar_data_i ( llc_ar_data ),
+  .async_data_slave_ar_wptr_i ( llc_ar_wptr ),
+  .async_data_slave_ar_rptr_o ( llc_ar_rptr ),
+  .async_data_slave_r_data_o  ( llc_r_data  ),
+  .async_data_slave_r_wptr_o  ( llc_r_wptr  ),
+  .async_data_slave_r_rptr_i  ( llc_r_rptr  ),
+  // synchronous master port
+  .dst_clk_i                  ( soc_clk     ),
+  .dst_rst_ni                 ( rst_n       ),
+  .dst_req_o                  ( llc_req   ),
+  .dst_resp_i                 ( llc_rsp   )
+);
+`endif // NO_HYPERBUS
+
   //////////////////
   // Carfield SoC //
   //////////////////
@@ -411,12 +501,20 @@ module carfield_top_xilinx
       .IslandsCfg(IslandsCfg),
       .reg_req_t(carfield_reg_req_t),
       .reg_rsp_t(carfield_reg_rsp_t),
+`ifdef NO_HYPERBUS
+      .LlcIdWidth   ( LlcIdWidth ),
+      .LlcArWidth   ( LlcArWidth ),
+      .LlcAwWidth   ( LlcAwWidth ),
+      .LlcBWidth    ( LlcBWidth  ),
+      .LlcRWidth    ( LlcRWidth  ),
+      .LlcWWidth    ( LlcWWidth  ),
+`endif
       .HypNumPhys   (`HypNumPhys),
       .HypNumChips  (`HypNumChips)
   ) i_carfield (
-      .host_clk_i    (soc_clk),
-      .periph_clk_i  (soc_clk),
-      .alt_clk_i     (soc_clk),
+      .host_clk_i    (host_clk),
+      .periph_clk_i  (periph_clk),
+      .alt_clk_i     (alt_clk),
       .rt_clk_i      (rtc_clk_q),
       .pwr_on_rst_ni (rst_n),
       .test_mode_i   (testmode_i),
@@ -464,49 +562,68 @@ module carfield_top_xilinx
       .i2c_scl_i                 (),
       .i2c_scl_en_o              (),
       // SPI Host Interface
-      .spih_sck_o                (),
-      .spih_sck_en_o             (),
-      .spih_csb_o                (),
-      .spih_csb_en_o             (),
-      .spih_sd_o                 (),
-      .spih_sd_en_o              (),
-      .spih_sd_i                 (),
+      .spih_sck_o                (spi_sck_soc),
+      .spih_sck_en_o             (spi_sck_en),
+      .spih_csb_o                (spi_cs_soc),
+      .spih_csb_en_o             (spi_cs_en),
+      .spih_sd_o                 (spi_sd_soc_out),
+      .spih_sd_en_o              (spi_sd_en),
+      .spih_sd_i                 (spi_sd_soc_in),
       // GPIO interface
       .gpio_i                    (),
       .gpio_o                    (),
       .gpio_en_o                 (),
+`ifdef NO_HYPERBUS
+      // LLC Interface
+      .llc_ar_data,
+      .llc_ar_wptr,
+      .llc_ar_rptr,
+      .llc_aw_data,
+      .llc_aw_wptr,
+      .llc_aw_rptr,
+      .llc_b_data,
+      .llc_b_wptr,
+      .llc_b_rptr,
+      .llc_r_data,
+      .llc_r_wptr,
+      .llc_r_rptr,
+      .llc_w_data,
+      .llc_w_wptr,
+      .llc_w_rptr,
+`endif
       // Serial link interface
       .slink_rcv_clk_i           (),
       .slink_rcv_clk_o           (),
       .slink_i                   (),
       .slink_o                   ()
-
-      // LLC (DRAM) Interace
-      //.llc_ar_data,
-      //.llc_ar_wptr,
-      //.llc_ar_rptr,
-      //.llc_aw_data,
-      //.llc_aw_wptr,
-      //.llc_aw_rptr,
-      //.llc_b_data,
-      //.llc_b_wptr,
-      //.llc_b_rptr,
-      //.llc_r_data,
-      //.llc_r_wptr,
-      //.llc_r_rptr,
-      //.llc_w_data,
-      //.llc_w_wptr,
-      //.llc_w_rptr,
-      //.hyper_cs_n_wire,
-      //.hyper_ck_wire,
-      //.hyper_ck_n_wire,
-      //.hyper_rwds_o,
-      //.hyper_rwds_i,
-      //.hyper_rwds_oe,
-      //.hyper_dq_i,
-      //.hyper_dq_o,
-      //.hyper_dq_oe,
-      //.hyper_reset_n_wire
   );
+
+  //////////////////
+  // DRAM WRAPPER //
+  //////////////////
+
+`ifdef USE_DDR
+  dram_wrapper #(
+    .axi_soc_aw_chan_t ( carfield_axi_llc_aw_chan_t ),
+    .axi_soc_w_chan_t  ( carfield_axi_llc_w_chan_t  ),
+    .axi_soc_b_chan_t  ( carfield_axi_llc_b_chan_t  ),
+    .axi_soc_ar_chan_t ( carfield_axi_llc_ar_chan_t ),
+    .axi_soc_r_chan_t  ( carfield_axi_llc_r_chan_t  ),
+    .axi_soc_req_t     ( carfield_axi_llc_req_t     ),
+    .axi_soc_resp_t    ( carfield_axi_llc_rsp_t     )
+  ) i_dram_wrapper (
+    // Rst
+    .sys_rst_i                  ( sys_rst   ),
+    .soc_resetn_i               ( rst_n     ),
+    .soc_clk_i                  ( soc_clk   ),
+    // Sys clk
+    .dram_clk_i                 ( sys_clk   ),
+    // Axi
+    .soc_req_i                  ( llc_req  ),
+    .soc_rsp_o                  ( llc_rsp  ),
+    // Phy
+    .*
+  );
+`endif
 
 endmodule

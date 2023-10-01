@@ -25,6 +25,14 @@ module carfield
   parameter islands_cfg_t IslandsCfg = carfield_pkg::IslandsCfgDefault,
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2,
+`ifdef NO_HYPERBUS // bender-xilinx.mk
+  parameter int unsigned LlcIdWidth,
+  parameter int unsigned LlcArWidth,
+  parameter int unsigned LlcAwWidth,
+  parameter int unsigned LlcBWidth,
+  parameter int unsigned LlcRWidth,
+  parameter int unsigned LlcWWidth,
+`endif
   parameter type reg_req_t           = logic,
   parameter type reg_rsp_t           = logic
 ) (
@@ -122,6 +130,7 @@ module carfield
   output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
   input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
   output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
+`ifndef NO_HYPERBUS // bender-xilinx.mk
   // HyperBus interface
   output logic [HypNumPhys-1:0][HypNumChips-1:0]      hyper_cs_no,
   output logic [HypNumPhys-1:0]                       hyper_ck_o,
@@ -133,6 +142,25 @@ module carfield
   output logic [HypNumPhys-1:0][7:0]                  hyper_dq_o,
   output logic [HypNumPhys-1:0]                       hyper_dq_oe_o,
   output logic [HypNumPhys-1:0]                       hyper_reset_no,
+`else
+  // LLC interface
+  output logic [LlcArWidth-1:0] llc_ar_data,
+  output logic [    LogDepth:0] llc_ar_wptr,
+  input  logic [    LogDepth:0] llc_ar_rptr,
+  output logic [LlcAwWidth-1:0] llc_aw_data,
+  output logic [    LogDepth:0] llc_aw_wptr,
+  input  logic [    LogDepth:0] llc_aw_rptr,
+  input  logic [ LlcBWidth-1:0] llc_b_data,
+  input  logic [    LogDepth:0] llc_b_wptr,
+  output logic [    LogDepth:0] llc_b_rptr,
+  input  logic [ LlcRWidth-1:0] llc_r_data,
+  input  logic [    LogDepth:0] llc_r_wptr,
+  output logic [    LogDepth:0] llc_r_rptr,
+  output logic [ LlcWWidth-1:0] llc_w_data,
+  output logic [    LogDepth:0] llc_w_wptr,
+  input  logic [    LogDepth:0] llc_w_rptr,
+`endif // NO_HYPERBUS
+
   // External reg interface slaves (async)
   // Currently for PLL and Padframe
   output logic     [1:0]                              ext_reg_async_slv_req_o,
@@ -401,6 +429,7 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 carfield_reg_req_t [iomsb(NumSyncRegSlv):0] ext_reg_req;
 carfield_reg_rsp_t [iomsb(NumSyncRegSlv):0] ext_reg_rsp;
 
+`ifndef NO_HYPERBUS // bender-xilinx.mk
 localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth   +
                                      $clog2(AxiIn.num_in)+
                                      Cfg.LlcNotBypass    ;
@@ -423,12 +452,6 @@ localparam int unsigned LlcWWidth  = (2**LogDepth)*
                                       axi_pkg::w_width(Cfg.AxiDataWidth,
                                                        Cfg.AxiUserWidth );
 
-logic hyper_isolate_req, hyper_isolated_rsp;
-logic security_island_isolate_req;
-
-logic [iomsb(Cfg.AxiExtNumSlv-1):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
-logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
-
 logic [LlcArWidth-1:0] llc_ar_data;
 logic [    LogDepth:0] llc_ar_wptr;
 logic [    LogDepth:0] llc_ar_rptr;
@@ -444,6 +467,14 @@ logic [    LogDepth:0] llc_r_rptr;
 logic [ LlcWWidth-1:0] llc_w_data;
 logic [    LogDepth:0] llc_w_wptr;
 logic [    LogDepth:0] llc_w_rptr;
+
+`endif // NO_HYPERBUS
+
+logic hyper_isolate_req, hyper_isolated_rsp;
+logic security_island_isolate_req;
+
+logic [iomsb(Cfg.AxiExtNumSlv-1):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
+logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
 // All AXI Slaves (except the Integer Cluster and the Mailbox)
 logic [iomsb(Cfg.AxiExtNumSlv-2):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
@@ -1091,6 +1122,7 @@ cheshire i_cheshire_wrap                 (
   .vga_blue_o  (                 )
 );
 
+`ifndef NO_HYPERBUS // bender-xilinx.mk
 // Hyperbus
 hyperbus_wrap      #(
   .NumChips         ( HypNumChips                           ),
@@ -1162,6 +1194,7 @@ hyperbus_wrap      #(
   .hyper_dq_oe_o,
   .hyper_reset_no
 );
+`endif // NO_HYPERBUS
 
 // Reconfigurable L2 Memory
 // Host Clock Domain
@@ -1383,6 +1416,42 @@ if (IslandsCfg.EnSafetyIsland) begin : gen_safety_island
 end
 else begin : gen_no_safety_island
   assign jtag_safety_island_tdo_o = jtag_safety_island_tdi_i;
+  cdc_dst_axi_err #(
+    .AxiInIdWidth      ( AxiSlvIdWidth              ),
+    .LogDepth          ( LogDepth                   ),
+    .CdcSyncStages     ( SyncStages                 ),
+    .axi_in_aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+    .axi_in_w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+    .axi_in_b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+    .axi_in_ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+    .axi_in_r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+    .axi_in_resp_t     ( carfield_axi_slv_rsp_t     ),
+    .axi_in_req_t      ( carfield_axi_slv_req_t     ),
+    .AsyncAxiInAwWidth ( CarfieldAxiSlvAwWidth      ),
+    .AsyncAxiInWWidth  ( CarfieldAxiSlvWWidth       ),
+    .AsyncAxiInBWidth  ( CarfieldAxiSlvBWidth       ),
+    .AsyncAxiInArWidth ( CarfieldAxiSlvArWidth      ),
+    .AsyncAxiInRWidth  ( CarfieldAxiSlvRWidth       )
+  ) i_safety_island_axi_err (
+    .clk_i                   ( safety_clk                               ),
+    .rst_ni                  ( safety_rst_n                             ),
+    .pwr_on_rst_ni           ( safety_pwr_on_rst_n                      ),
+    .async_axi_in_aw_data_i  ( axi_slv_ext_aw_data [SafetyIslandSlvIdx] ),
+    .async_axi_in_aw_wptr_i  ( axi_slv_ext_aw_wptr [SafetyIslandSlvIdx] ),
+    .async_axi_in_aw_rptr_o  ( axi_slv_ext_aw_rptr [SafetyIslandSlvIdx] ),
+    .async_axi_in_ar_data_i  ( axi_slv_ext_ar_data [SafetyIslandSlvIdx] ),
+    .async_axi_in_ar_wptr_i  ( axi_slv_ext_ar_wptr [SafetyIslandSlvIdx] ),
+    .async_axi_in_ar_rptr_o  ( axi_slv_ext_ar_rptr [SafetyIslandSlvIdx] ),
+    .async_axi_in_w_data_i   ( axi_slv_ext_w_data  [SafetyIslandSlvIdx] ),
+    .async_axi_in_w_wptr_i   ( axi_slv_ext_w_wptr  [SafetyIslandSlvIdx] ),
+    .async_axi_in_w_rptr_o   ( axi_slv_ext_w_rptr  [SafetyIslandSlvIdx] ),
+    .async_axi_in_r_data_o   ( axi_slv_ext_r_data  [SafetyIslandSlvIdx] ),
+    .async_axi_in_r_wptr_o   ( axi_slv_ext_r_wptr  [SafetyIslandSlvIdx] ),
+    .async_axi_in_r_rptr_i   ( axi_slv_ext_r_rptr  [SafetyIslandSlvIdx] ),
+    .async_axi_in_b_data_o   ( axi_slv_ext_b_data  [SafetyIslandSlvIdx] ),
+    .async_axi_in_b_wptr_o   ( axi_slv_ext_b_wptr  [SafetyIslandSlvIdx] ),
+    .async_axi_in_b_rptr_i   ( axi_slv_ext_b_rptr  [SafetyIslandSlvIdx] )
+  );
 end
 
 // PULP integer cluster
@@ -1497,6 +1566,47 @@ int_cluster i_integer_cluster            (
   .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
 );
 end
+else begin : gen_no_pulp_cluster
+  cdc_dst_axi_err #(
+    .AxiInIdWidth      ( IntClusterAxiIdInWidth       ),
+    .LogDepth          ( LogDepth                     ),
+    .CdcSyncStages     ( SyncStages                   ),
+    .axi_in_aw_chan_t  ( axi_intcluster_slv_aw_chan_t ),
+    .axi_in_w_chan_t   ( axi_intcluster_slv_w_chan_t  ),
+    .axi_in_b_chan_t   ( axi_intcluster_slv_b_chan_t  ),
+    .axi_in_ar_chan_t  ( axi_intcluster_slv_ar_chan_t ),
+    .axi_in_r_chan_t   ( axi_intcluster_slv_r_chan_t  ),
+    .axi_in_resp_t     ( axi_intcluster_slv_rsp_t     ),
+    .axi_in_req_t      ( axi_intcluster_slv_req_t     ),
+    .AsyncAxiInAwWidth ( (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth,IntClusterAxiIdInWidth,
+                                                         Cfg.AxiUserWidth)),
+    .AsyncAxiInWWidth  ( (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,Cfg.AxiUserWidth) ),
+    .AsyncAxiInBWidth  ( (2**LogDepth)*axi_pkg::b_width(IntClusterAxiIdInWidth,Cfg.AxiUserWidth) ),
+    .AsyncAxiInArWidth ( (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth,IntClusterAxiIdInWidth,
+                                                         Cfg.AxiUserWidth)),
+    .AsyncAxiInRWidth  ( (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth,IntClusterAxiIdInWidth,
+                                                        Cfg.AxiUserWidth))
+  ) i_pulp_cluster_axi_err (
+    .clk_i                   ( pulp_clk                   ),
+    .rst_ni                  ( pulp_rst_n                 ),
+    .pwr_on_rst_ni           ( pulp_pwr_on_rst_n          ),
+    .async_axi_in_aw_data_i  ( axi_slv_intcluster_aw_data ),
+    .async_axi_in_aw_wptr_i  ( axi_slv_intcluster_aw_wptr ),
+    .async_axi_in_aw_rptr_o  ( axi_slv_intcluster_aw_rptr ),
+    .async_axi_in_ar_data_i  ( axi_slv_intcluster_ar_data ),
+    .async_axi_in_ar_wptr_i  ( axi_slv_intcluster_ar_wptr ),
+    .async_axi_in_ar_rptr_o  ( axi_slv_intcluster_ar_rptr ),
+    .async_axi_in_w_data_i   ( axi_slv_intcluster_w_data  ),
+    .async_axi_in_w_wptr_i   ( axi_slv_intcluster_w_wptr  ),
+    .async_axi_in_w_rptr_o   ( axi_slv_intcluster_w_rptr  ),
+    .async_axi_in_r_data_o   ( axi_slv_intcluster_r_data  ),
+    .async_axi_in_r_wptr_o   ( axi_slv_intcluster_r_wptr  ),
+    .async_axi_in_r_rptr_i   ( axi_slv_intcluster_r_rptr  ),
+    .async_axi_in_b_data_o   ( axi_slv_intcluster_b_data  ),
+    .async_axi_in_b_wptr_o   ( axi_slv_intcluster_b_wptr  ),
+    .async_axi_in_b_rptr_i   ( axi_slv_intcluster_b_rptr  )
+  );
+end
 
 // Floating Point Spatz Cluster
 
@@ -1601,6 +1711,44 @@ if (IslandsCfg.EnSpatzCluster) begin : gen_spatz_cluster
    .async_axi_out_r_wptr_i  ( axi_mst_ext_r_wptr  [FPClusterMstIdx] ),
    .async_axi_out_r_rptr_o  ( axi_mst_ext_r_rptr  [FPClusterMstIdx] ),
    .cluster_probe_o         ( car_regs_hw2reg.spatz_cluster_busy.d  )
+  );
+end
+else begin : gen_no_spatz_cluster
+  cdc_dst_axi_err #(
+    .AxiInIdWidth      ( AxiSlvIdWidth              ),
+    .LogDepth          ( LogDepth                   ),
+    .CdcSyncStages     ( SyncStages                 ),
+    .axi_in_aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+    .axi_in_w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+    .axi_in_b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+    .axi_in_ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+    .axi_in_r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+    .axi_in_resp_t     ( carfield_axi_slv_rsp_t     ),
+    .axi_in_req_t      ( carfield_axi_slv_req_t     ),
+    .AsyncAxiInAwWidth ( CarfieldAxiSlvAwWidth      ),
+    .AsyncAxiInWWidth  ( CarfieldAxiSlvWWidth       ),
+    .AsyncAxiInBWidth  ( CarfieldAxiSlvBWidth       ),
+    .AsyncAxiInArWidth ( CarfieldAxiSlvArWidth      ),
+    .AsyncAxiInRWidth  ( CarfieldAxiSlvRWidth       )
+  ) i_spatz_cluster_axi_err (
+    .clk_i                   ( spatz_clk                             ),
+    .rst_ni                  ( spatz_rst_n                           ),
+    .pwr_on_rst_ni           ( spatz_pwr_on_rst_n                    ),
+    .async_axi_in_aw_data_i  ( axi_slv_ext_aw_data [FPClusterSlvIdx] ),
+    .async_axi_in_aw_wptr_i  ( axi_slv_ext_aw_wptr [FPClusterSlvIdx] ),
+    .async_axi_in_aw_rptr_o  ( axi_slv_ext_aw_rptr [FPClusterSlvIdx] ),
+    .async_axi_in_ar_data_i  ( axi_slv_ext_ar_data [FPClusterSlvIdx] ),
+    .async_axi_in_ar_wptr_i  ( axi_slv_ext_ar_wptr [FPClusterSlvIdx] ),
+    .async_axi_in_ar_rptr_o  ( axi_slv_ext_ar_rptr [FPClusterSlvIdx] ),
+    .async_axi_in_w_data_i   ( axi_slv_ext_w_data  [FPClusterSlvIdx] ),
+    .async_axi_in_w_wptr_i   ( axi_slv_ext_w_wptr  [FPClusterSlvIdx] ),
+    .async_axi_in_w_rptr_o   ( axi_slv_ext_w_rptr  [FPClusterSlvIdx] ),
+    .async_axi_in_r_data_o   ( axi_slv_ext_r_data  [FPClusterSlvIdx] ),
+    .async_axi_in_r_wptr_o   ( axi_slv_ext_r_wptr  [FPClusterSlvIdx] ),
+    .async_axi_in_r_rptr_i   ( axi_slv_ext_r_rptr  [FPClusterSlvIdx] ),
+    .async_axi_in_b_data_o   ( axi_slv_ext_b_data  [FPClusterSlvIdx] ),
+    .async_axi_in_b_wptr_o   ( axi_slv_ext_b_wptr  [FPClusterSlvIdx] ),
+    .async_axi_in_b_rptr_i   ( axi_slv_ext_b_rptr  [FPClusterSlvIdx] )
   );
 end
 
