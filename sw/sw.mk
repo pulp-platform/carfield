@@ -20,7 +20,7 @@ car-sw-all: car-sw-libs car-sw-tests
 .PHONY: car-sw-all car-sw-libs car-sw-headers car-sw-tests
 
 # Libraries
-CAR_PULPD_BARE ?= $(CAR_SW_DIR)/tests/bare-metal/pulpd
+CAR_PULPD_BARE    ?= $(CAR_SW_DIR)/tests/bare-metal/pulpd
 CAR_SW_INCLUDES    = -I$(CAR_SW_DIR)/include -I$(CAR_SW_DIR)/tests/bare-metal/safed -I$(CAR_PULPD_BARE) -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
 CAR_SW_LIB_SRCS_S  = $(wildcard $(CAR_SW_DIR)/lib/*.S $(CAR_SW_DIR)/lib/**/*.S)
 CAR_SW_LIB_SRCS_C  = $(wildcard $(CAR_SW_DIR)/lib/*.c $(CAR_SW_DIR)/lib/**/*.c)
@@ -140,3 +140,48 @@ mibench-automotive-basicmath: automotive-basicmath
 mibench-automotive-bitcount: automotive-bitcount
 mibench-automotive-qsort: automotive-qsort
 mibench-automotive-susan: automotive-susan
+
+###################
+# GPT Linux image #
+###################
+
+# Create full Linux disk image
+$(CAR_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CAR_SW_DIR)/boot/carfield.dtb $(CAR_SW_DIR)/boot/install64/fw_payload.bin $(CAR_SW_DIR)/boot/install64/uImage
+	truncate -s $(CHS_SW_DISK_SIZE) $@
+	sgdisk --clear -g --set-alignment=1 \
+		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \
+		--new=2:128:159 --typecode=2:$(CHS_SW_DTB_TGUID) \
+		--new=3:2048:8191 --typecode=3:$(CHS_SW_FW_TGUID) \
+		--new=4:8192:24575 --typecode=4:8300 \
+		--new=5:24576:0 --typecode=5:8200 \
+		$@
+	dd if=$(word 1,$^) of=$@ bs=512 seek=64 conv=notrunc
+	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
+	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
+	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
+
+#########################
+# Linux app compilation #
+#########################
+
+CAR_CVA6_SDK      ?= $(realpath cva6-sdk)
+CAR_CROSS_COMPILE := $(CAR_CVA6_SDK)/buildroot/output/host/bin/riscv64-buildroot-linux-gnu-
+CAR_APP_CC        := $(CAR_CROSS_COMPILE)gcc
+CAR_APP_OBJDUMP   := $(CAR_CROSS_COMPILE)objdump
+CAR_APP_CCFLAGS   := -std=gnu99 -O0 -g -DLINUX_APP -fdata-sections -ffunction-sections
+CAR_APP_LDFLAGS   := -Wl,--gc-sections
+
+CAR_SW_APP_SRCS_C = $(wildcard $(CAR_SW_DIR)/tests/linux/*.c)
+CAR_SW_APPS	= $(CAR_SW_APP_SRCS_C:.c=.car.app)
+
+car-sw-apps: $(CAR_SW_APPS)
+	cp $(CAR_SW_APPS) $(CAR_CVA6_SDK)/rootfs/root/tests
+
+%.car.app: %.car.app.o
+	$(CAR_APP_CC) $(CAR_SW_INCLUDES) $(CAR_APP_LDFLAGS) -o $@ $<
+
+%.car.app.dump: %.car.app.o
+	$(CAR_APP_OBJDUMP) -S -d $< > $@
+
+%.car.app.o: %.c
+	$(CAR_APP_CC) $(CAR_SW_INCLUDES) $(CAR_APP_CCFLAGS) -c $< -o $@
