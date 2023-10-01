@@ -1403,7 +1403,7 @@ pulp_cluster #(
   .L2_SIZE                        ( L2MemSize                 ),
   .USE_REDUCED_TAG                ( "TRUE"                    ),
   .DEBUG_START_ADDR               ( IntClusterDbgStart        ),
-  .ROM_BOOT_ADDR                  ( IntClusterRomBoot         ),
+  .ROM_BOOT_ADDR                  ( IntClusterBootAddr        ),
   .BOOT_ADDR                      ( IntClusterBootAddr        ),
   .INSTR_RDATA_WIDTH              ( IntClusterInstrRdataWidth ),
   .CLUST_FPU                      ( IntClusterFpu             ),
