@@ -11,6 +11,8 @@ PROJECT      ?= carfield
 BOARD        ?= vcu128
 ip-dir       := $(CAR_XIL_DIR)/xilinx
 
+ELABORATION_ONLY ?= 0
+
 # Select board specific variables
 ifeq ($(BOARD),vcu128)
 	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
@@ -61,8 +63,8 @@ $(mcs): $(bit)
 # Compile bitstream
 $(bit): $(ips) $(CAR_XIL_DIR)/scripts/add_sources.tcl
 	@mkdir -p $(out)
-	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
-	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/$(PROJECT)* $(out)
+	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl -tclargs $(ELABORATION_ONLY)
+	if [ "$(ELABORATION_ONLY)" -eq 0 ]; then cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/$(PROJECT)* $(out); fi
 
 # Generate ips
 %.xci:
