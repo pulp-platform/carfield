@@ -352,7 +352,7 @@ packages:
     - common_cells
     - common_verification
   opentitan:
-    revision: 5cc7278736df156a9aadb1f83628d034e9079497
+    revision: e446a0e65310e7668540fad252f23f14ece7845c
     version: null
     source:
       Git: https://github.com/pulp-platform/opentitan.git
