@@ -416,7 +416,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 482d2f5ed05f25c851f4048f1bd402cc0d2b58b6
+    revision: ecb92caca3f1872360623448397bb9a06d0c2c96
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -452,7 +452,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 2e0c060c28f80b2ce6a9a1eec9a15fc325482809
+    revision: 9389370e4612f13abf0707c45f19bb5f9f7c3bda
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
