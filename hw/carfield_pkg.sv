@@ -383,7 +383,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
 };
 // verilog_lint: waive-stop line-length
 
-// Control which island to add (for FPGA)
+// Control which island to add
 typedef struct packed {
   bit     EnPulpCluster;
   bit     EnSafetyIsland;
@@ -400,7 +400,7 @@ localparam islands_cfg_t IslandsCfgDefault = '{
   EnSpatzCluster  : 1,
   EnOpenTitan     : 1,
   EnCan           : 1,
-  EnEthernet      : 1,
+  EnEthernet      : 0,
   default         : '1
 };
 
