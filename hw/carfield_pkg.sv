@@ -348,6 +348,11 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   LlcOutConnect     : 1,
   LlcOutRegionStart : 'h8000_0000,
   LlcOutRegionEnd   : 'h1_0000_0000,
+  LlcUserMsb        : 9,
+  LlcUserLsb        : 5,
+  LlcCachePartition : 1,
+  LlcMaxPartition   : 16,
+  LlcRemapHash      : axi_llc_pkg::Modulo,
   // VGA: RGB332; carfield doesn't have a vga, but widths are required for top-level pins anyway.
   VgaRedWidth       : 3,
   VgaGreenWidth     : 3,
