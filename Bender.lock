@@ -127,7 +127,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 9399feaf947ea1fcd3feff677875e08fed85193f
+    revision: 58803e12a253f3e79ba960167dc1ac77e8f8529c
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -152,7 +152,7 @@ packages:
     - tagger
     - unbent
   clic:
-    revision: bed98f88761ca86706c36c4c33ac600d88c42373
+    revision: 9f3ead92e9ce4c867af7eae6fc64d1f5cd065ddf
     version: null
     source:
       Git: https://github.com/pulp-platform/clic.git
@@ -205,7 +205,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: a34c7aa3fa0e02f0fc3578558df71b2992ad0bb1
+    revision: 8ab94b8477a2dba4ec837d5d49841ee8ef973c32
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -452,7 +452,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 9389370e4612f13abf0707c45f19bb5f9f7c3bda
+    revision: 620905a836a10ec1246bc392bb5af1cfdfd32d64
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
