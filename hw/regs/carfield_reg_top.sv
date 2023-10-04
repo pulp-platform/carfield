@@ -1176,7 +1176,7 @@ module carfield_reg_top #(
   prim_subreg #(
     .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (2'h0)
+    .RESVAL  (2'h1)
   ) u_l2_clk_sel (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),

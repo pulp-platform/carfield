@@ -37,7 +37,7 @@ SAFETY_ISLAND_CLK_SEL,2,rw,hro,0,1,"Safety Island pll select (0 -> host pll, 1 -
 SECURITY_ISLAND_CLK_SEL,2,rw,hro,0,1,"Security Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
 PULP_CLUSTER_CLK_SEL,2,rw,hro,0,1,"PULP Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
 SPATZ_CLUSTER_CLK_SEL,2,rw,hro,0,1,"Spatz Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
-L2_CLK_SEL,2,rw,hro,0,0,"L2 Memory pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
+L2_CLK_SEL,2,rw,hro,0,1,"L2 Memory pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)"
 PERIPH_CLK_DIV_VALUE,24,rw,hro,1,1,Periph Domain clk divider value
 SAFETY_ISLAND_CLK_DIV_VALUE,24,rw,hro,1,1,Safety Island clk divider value
 SECURITY_ISLAND_CLK_DIV_VALUE,24,rw,hro,1,1,Security Island clk divider value
