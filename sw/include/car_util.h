@@ -205,6 +205,13 @@ void car_disable_domain(enum car_rst rst)
     car_set_isolate(rst, CAR_ISOLATE_ENABLE);
 }
 
+// Provide a default weak implementation to init clock after PoR. Define as strong symbol if
+// required (for PLL configuration, clk mux selection signals, clk dividers division values, etc)
+__attribute__((weak)) void car_clk_init()
+{
+
+}
+
 // De-isolate and ungate domains at startup. In non-secure boot mode, only the host domain is
 // de-isolated and ungated after POR. In secure boot mode, both the host domain and the security
 // domain are de-isolated and ungated after POR. Note that L2 and peripheral domain are always-on
@@ -226,6 +233,7 @@ void car_enable_all_domains()
 
 void car_init_start()
 {
+    car_clk_init();
     car_enable_all_domains();
 }
 
