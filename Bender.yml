@@ -12,7 +12,7 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 58803e12a253f3e79ba960167dc1ac77e8f8529c } # branch: aottaviano/carfield
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 93877a2b475a136af1173caefeb0bc01f42ce220 } # branch: aottaviano/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             version: 0.0.3                                } 
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 0143fb296e3614adf8894ff7335cc3f9b92783bd } # branch: main
   safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 620905a836a10ec1246bc392bb5af1cfdfd32d64 } # branch: michaero/carfield
@@ -23,7 +23,7 @@ dependencies:
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379 } # branch: pulp
-  spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: 31d651d280fb8657780aec21c047590be12ea065 } # branch: main
+  spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: d0f7bd44867fb47aa35e4df1695d8789586517fb } # branch: aottaviano/spatz-carfield
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
   ethernet:           { git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git,  rev: 2b6f916d3f25f9829713faeef6adc799e861744c } # branch: aottaviano/carfield-dev
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg.git,            version: 0.8.0 }
