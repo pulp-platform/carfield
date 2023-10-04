@@ -17,6 +17,7 @@
 
 #include "regs/safety_soc_ctrl.h"
 #include "regs/soc_ctrl.h"
+#include "regs/spatz_cluster_peripheral.h"
 
 // Base addresses provided at link time
 extern void *__base_l2;
@@ -93,7 +94,32 @@ extern void *__base_l2;
 #define CAR_PAD_CFG_BASE_ADDR        (CAR_PERIPHS_BASE_ADDR + CAR_PAD_CFG_OFFSET)
 #define CAR_SOC_CTRL_BASE_ADDR       (CAR_PERIPHS_BASE_ADDR + CAR_SOC_CTRL_OFFSET)
 
+// Mailbox
+#define CAR_NUM_MAILBOXES            25
 #define CAR_MBOX_BASE_ADDR           0x40000000
+
+#define MBOX_INT_SND_STAT_OFFSET     0x00
+#define MBOX_INT_SND_SET_OFFSET      0x04
+#define MBOX_INT_SND_CLR_OFFSET      0x08
+#define MBOX_INT_SND_EN_OFFSET       0x0C
+#define MBOX_INT_RCV_STAT_OFFSET     0x40
+#define MBOX_INT_RCV_SET_OFFSET      0x44
+#define MBOX_INT_RCV_CLR_OFFSET      0x48
+#define MBOX_INT_RCV_EN_OFFSET       0x4C
+#define MBOX_LETTER0_OFFSET          0x80
+#define MBOX_LETTER1_OFFSET          0x84
+
+#define MBOX_CAR_INT_SND_STAT(id)		  (CAR_MBOX_BASE_ADDR + MBOX_INT_SND_STAT_OFFSET + (id*0x100))
+#define MBOX_CAR_INT_SND_SET(id)          (CAR_MBOX_BASE_ADDR + MBOX_INT_SND_SET_OFFSET  + (id*0x100))
+#define MBOX_CAR_INT_SND_CLR(id)          (CAR_MBOX_BASE_ADDR + MBOX_INT_SND_CLR_OFFSET  + (id*0x100))
+#define MBOX_CAR_INT_SND_EN(id)           (CAR_MBOX_BASE_ADDR + MBOX_INT_SND_EN_OFFSET   + (id*0x100))
+#define MBOX_CAR_INT_RCV_STAT(id)         (CAR_MBOX_BASE_ADDR + MBOX_INT_RCV_STAT_OFFSET + (id*0x100))
+#define MBOX_CAR_INT_RCV_SET(id)          (CAR_MBOX_BASE_ADDR + MBOX_INT_RCV_SET_OFFSET  + (id*0x100))
+#define MBOX_CAR_INT_RCV_CLR(id)          (CAR_MBOX_BASE_ADDR + MBOX_INT_RCV_CLR_OFFSET  + (id*0x100))
+#define MBOX_CAR_INT_RCV_EN(id)           (CAR_MBOX_BASE_ADDR + MBOX_INT_RCV_EN_OFFSET   + (id*0x100))
+#define MBOX_CAR_LETTER0(id)              (CAR_MBOX_BASE_ADDR + MBOX_LETTER0_OFFSET      + (id*0x100))
+#define MBOX_CAR_LETTER1(id)              (CAR_MBOX_BASE_ADDR + MBOX_LETTER1_OFFSET      + (id*0x100))
+
 
 // PLL
 #define CAR_PLL_BASE_ADDRESS         0x20020000
