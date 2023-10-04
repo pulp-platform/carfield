@@ -48,7 +48,7 @@ HOST_FETCH_ENABLE,1,ro,hro,0,0,Host Domain fetch enable
 SAFETY_ISLAND_FETCH_ENABLE,1,rw,hro,0,0,Safety Island fetch enable
 SECURITY_ISLAND_FETCH_ENABLE,1,rw,hro,0,0,Security Island fetch enable
 PULP_CLUSTER_FETCH_ENABLE,1,rw,hro,0,0,PULP Cluster fetch enable
-SPATZ_CLUSTER_FETCH_ENABLE,1,rw,hro,0,0,Spatz Cluster fetch enable
+SPATZ_CLUSTER_DEBUG_REQ,2,rw,hro,0,0,Spatz Cluster debug req
 HOST_BOOT_ADDR,32,rw,hro,0,0x1000,Host boot address
 SAFETY_ISLAND_BOOT_ADDR,32,rw,hro,0,0x70000000,Safety Island boot address
 SECURITY_ISLAND_BOOT_ADDR,32,rw,hro,0,0x70000000,Security Island boot address

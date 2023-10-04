@@ -551,14 +551,14 @@
       ],
     }
 
-    { name: "SPATZ_CLUSTER_FETCH_ENABLE",
-      desc: "Spatz Cluster fetch enable",
+    { name: "SPATZ_CLUSTER_DEBUG_REQ",
+      desc: "Spatz Cluster debug req",
       swaccess: "rw",
       hwaccess: "hro",
       resval: "0",
       hwqe: "0",
       fields: [
-        { bits: "0:0" }
+        { bits: "1:0" }
       ],
     }
 
