@@ -1587,8 +1587,8 @@ end
 
 // Security Island
 logic secd_mbox_intr;
-
 if (IslandsCfg.EnOpenTitan) begin : gen_secure_subsystem
+`ifndef SECD_NETLIST
 secure_subsystem_synth_wrap #(
   .HartIdOffs            ( OpnTitHartIdOffs           ),
   .AxiAddrWidth          ( Cfg.AddrWidth              ),
@@ -1621,6 +1621,9 @@ secure_subsystem_synth_wrap #(
   .CdcSyncStages         ( SyncStages                 ),
   .SyncStages            ( SyncStages                 )
 ) i_security_island (
+`else
+security_island i_security_island (
+`endif
   .clk_i            ( security_clk    ),
   .clk_ref_i        ( rt_clk_i        ),
   .rst_ni           ( security_rst_n  ),
