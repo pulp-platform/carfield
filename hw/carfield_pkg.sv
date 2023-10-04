@@ -32,6 +32,14 @@ typedef enum int {
   L2DomainIdx         = 'd5
 } carfield_domains_e;
 
+// Clock dividers integer value after PoR
+localparam int unsigned PeriphDomainClkDivValue     = 1;
+localparam int unsigned SafedDomainClkDivValue      = 1;
+localparam int unsigned SecdDomainClkDivValue       = 1;
+localparam int unsigned IntClusterDomainClkDivValue = 1;
+localparam int unsigned FPClusterDomainClkDivValue  = 1;
+localparam int unsigned L2DomainClkDivValue         = 1;
+
 typedef enum byte_bt {
   L2Port0SlvIdx      = 'd0,
   L2Port1SlvIdx      = 'd1,
