@@ -20,6 +20,8 @@ if {[info exists SECD_BOOTMODE]}  { append pargs "+SECD_BOOTMODE=${SECD_BOOTMODE
 if {[info exists SECD_FLASH]}     { append pargs "+SECD_FLASH=${SECD_FLASH} "         }
 if {[info exists SAFED_BOOTMODE]} { append pargs "+SAFED_BOOTMODE=${SAFED_BOOTMODE} " }
 if {[info exists SAFED_BINARY]}   { append pargs "+SAFED_BINARY=${SAFED_BINARY} "     }
+if {[info exists SPATZD_BOOTMODE]} { append pargs "+SPATZD_BOOTMODE=${SPATZD_BOOTMODE} " }
+if {[info exists SPATZD_BINARY]  } { append pargs "+SPATZD_BINARY=${SPATZD_BINARY} "     }
 if {[info exists CHS_IMAGE]}      { append pargs "+CHS_IMAGE=${CHS_IMAGE} "           }
 
 eval "vsim ${TESTBENCH}_opt -t 1ps" ${flags} ${pargs}

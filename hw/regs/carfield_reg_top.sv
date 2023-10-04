@@ -201,9 +201,9 @@ module carfield_reg_top #(
   logic pulp_cluster_fetch_enable_qs;
   logic pulp_cluster_fetch_enable_wd;
   logic pulp_cluster_fetch_enable_we;
-  logic spatz_cluster_fetch_enable_qs;
-  logic spatz_cluster_fetch_enable_wd;
-  logic spatz_cluster_fetch_enable_we;
+  logic [1:0] spatz_cluster_debug_req_qs;
+  logic [1:0] spatz_cluster_debug_req_wd;
+  logic spatz_cluster_debug_req_we;
   logic [31:0] host_boot_addr_qs;
   logic [31:0] host_boot_addr_wd;
   logic host_boot_addr_we;
@@ -1467,19 +1467,19 @@ module carfield_reg_top #(
   );
 
 
-  // R[spatz_cluster_fetch_enable]: V(False)
+  // R[spatz_cluster_debug_req]: V(False)
 
   prim_subreg #(
-    .DW      (1),
+    .DW      (2),
     .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_spatz_cluster_fetch_enable (
+    .RESVAL  (2'h0)
+  ) u_spatz_cluster_debug_req (
     .clk_i   (clk_i    ),
     .rst_ni  (rst_ni  ),
 
     // from register interface
-    .we     (spatz_cluster_fetch_enable_we),
-    .wd     (spatz_cluster_fetch_enable_wd),
+    .we     (spatz_cluster_debug_req_we),
+    .wd     (spatz_cluster_debug_req_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1487,10 +1487,10 @@ module carfield_reg_top #(
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.spatz_cluster_fetch_enable.q ),
+    .q      (reg2hw.spatz_cluster_debug_req.q ),
 
     // to register interface (read)
-    .qs     (spatz_cluster_fetch_enable_qs)
+    .qs     (spatz_cluster_debug_req_qs)
   );
 
 
@@ -2004,7 +2004,7 @@ module carfield_reg_top #(
     addr_hit[46] = (reg_addr == CARFIELD_SAFETY_ISLAND_FETCH_ENABLE_OFFSET);
     addr_hit[47] = (reg_addr == CARFIELD_SECURITY_ISLAND_FETCH_ENABLE_OFFSET);
     addr_hit[48] = (reg_addr == CARFIELD_PULP_CLUSTER_FETCH_ENABLE_OFFSET);
-    addr_hit[49] = (reg_addr == CARFIELD_SPATZ_CLUSTER_FETCH_ENABLE_OFFSET);
+    addr_hit[49] = (reg_addr == CARFIELD_SPATZ_CLUSTER_DEBUG_REQ_OFFSET);
     addr_hit[50] = (reg_addr == CARFIELD_HOST_BOOT_ADDR_OFFSET);
     addr_hit[51] = (reg_addr == CARFIELD_SAFETY_ISLAND_BOOT_ADDR_OFFSET);
     addr_hit[52] = (reg_addr == CARFIELD_SECURITY_ISLAND_BOOT_ADDR_OFFSET);
@@ -2224,8 +2224,8 @@ module carfield_reg_top #(
   assign pulp_cluster_fetch_enable_we = addr_hit[48] & reg_we & !reg_error;
   assign pulp_cluster_fetch_enable_wd = reg_wdata[0];
 
-  assign spatz_cluster_fetch_enable_we = addr_hit[49] & reg_we & !reg_error;
-  assign spatz_cluster_fetch_enable_wd = reg_wdata[0];
+  assign spatz_cluster_debug_req_we = addr_hit[49] & reg_we & !reg_error;
+  assign spatz_cluster_debug_req_wd = reg_wdata[1:0];
 
   assign host_boot_addr_we = addr_hit[50] & reg_we & !reg_error;
   assign host_boot_addr_wd = reg_wdata[31:0];
@@ -2470,7 +2470,7 @@ module carfield_reg_top #(
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[0] = spatz_cluster_fetch_enable_qs;
+        reg_rdata_next[1:0] = spatz_cluster_debug_req_qs;
       end
 
       addr_hit[50]: begin
