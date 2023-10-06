@@ -583,12 +583,12 @@ logic [NumDomains-1:0] rsts_n;
 //    every target domain to use different clock frequencies.
 // 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
 
-localparam int unsigned DomainClkDivValue[NumDomains] = '{PeriphDomainClkDivValue     ,
-                                                          SafedDomainClkDivValue      ,
-                                                          SecdDomainClkDivValue       ,
-                                                          IntClusterDomainClkDivValue ,
-                                                          FPClusterDomainClkDivValue  ,
-                                                          L2DomainClkDivValue         };
+localparam int unsigned DomainClkDivValue[NumDomains-1:0] = '{PeriphDomainClkDivValue     ,
+                                                              SafedDomainClkDivValue      ,
+                                                              SecdDomainClkDivValue       ,
+                                                              IntClusterDomainClkDivValue ,
+                                                              FPClusterDomainClkDivValue  ,
+                                                              L2DomainClkDivValue         };
 
 for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
   clk_mux_glitch_free #(
