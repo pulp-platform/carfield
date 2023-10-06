@@ -464,7 +464,7 @@ localparam int unsigned IntClusterCacheSize = 4*1024;
 localparam int unsigned IntClusterDbgStart = SafetyIslandBase+
                                              SafetyIslandPerOffset+
                                              safety_island_pkg::DebugAddrOffset;
-localparam int unsigned IntClusterBootAddr = L2Port1Base;
+localparam int unsigned IntClusterBootAddr = L2Port0Base;
 localparam int unsigned IntClusterInstrRdataWidth = 32;
 localparam int unsigned IntClusterFpu = 0;
 localparam int unsigned IntClusterFpuDivSqrt = 0;
