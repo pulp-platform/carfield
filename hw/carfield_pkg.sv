@@ -451,8 +451,6 @@ localparam int unsigned IntClusterNumHwpePorts = 9;
 localparam int unsigned IntClusterNumDmas = 4;
 localparam int unsigned IntClusterNumMstPer = 1;
 localparam int unsigned IntClusterNumSlvPer = 10;
-localparam int unsigned IntClusterAlias = 1;
-localparam int unsigned IntClusterAliasBase = 12'h000;
 localparam int unsigned IntClusterTcdmSize = 256*1024;
 localparam int unsigned IntClusterTcdmBanks = 16;
 localparam int unsigned IntClusterHwpePresent = 1;
@@ -464,7 +462,7 @@ localparam int unsigned IntClusterCacheSize = 4*1024;
 localparam int unsigned IntClusterDbgStart = SafetyIslandBase+
                                              SafetyIslandPerOffset+
                                              safety_island_pkg::DebugAddrOffset;
-localparam int unsigned IntClusterBootAddr = L2Port1Base;
+localparam int unsigned IntClusterBootAddr = L2Port0Base;
 localparam int unsigned IntClusterInstrRdataWidth = 32;
 localparam int unsigned IntClusterFpu = 0;
 localparam int unsigned IntClusterFpuDivSqrt = 0;

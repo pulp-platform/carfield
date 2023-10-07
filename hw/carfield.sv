@@ -1396,8 +1396,6 @@ pulp_cluster #(
   .NB_DMAS                        ( IntClusterNumDmas         ),
   .NB_MPERIPHS                    ( IntClusterNumMstPer       ),
   .NB_SPERIPHS                    ( IntClusterNumSlvPer       ),
-  .CLUSTER_ALIAS                  ( IntClusterAlias           ),
-  .CLUSTER_ALIAS_BASE             ( IntClusterAliasBase       ),
   .SynchStages                    ( SyncStages                ),
   .TCDM_SIZE                      ( IntClusterTcdmSize        ),
   .NB_TCDM_BANKS                  ( IntClusterTcdmBanks       ),
