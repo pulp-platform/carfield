@@ -728,7 +728,7 @@ axi_id_remap            #(
 
 // Async reg interface:
 // See carfield_pkg.sv for indices referring to sync and async reg interfaces.
-for (genvar i = 0; i < Cfg.RegExtNumSlv - NumAsyncRegSlv; i++) begin : gen_ext_reg_async
+for (genvar i = 0; i < NumAsyncRegSlv; i++) begin : gen_ext_reg_async
   reg_cdc_src #(
     .CDC_KIND ( "cdc_4phase"              ),
     .req_t     ( cheshire_reg_ext_req_t   ),
