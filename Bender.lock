@@ -65,7 +65,7 @@ packages:
     - axi
     - common_cells
   axi_obi:
-    revision: 4ca45fa0129d7731ce7d40667882acec45a0f487
+    revision: f8605eadbb15b8de7a0833843403e991be04a15b
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/axi_obi.git
@@ -452,7 +452,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 620905a836a10ec1246bc392bb5af1cfdfd32d64
+    revision: cc541a6cf5995eea29dd255db68fbe7d2cd10af6
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
