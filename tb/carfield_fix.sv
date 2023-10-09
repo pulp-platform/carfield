@@ -431,7 +431,7 @@ module carfield_soc_fixture;
   ///////////////////
 
   task passthrough_or_wait_for_secd_hw_init();
-    if (i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable != lc_ctrl_pkg::On) begin
+    if (secure_boot && i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable != lc_ctrl_pkg::On) begin
       $display("Wait for OT to boot...");
       wait (i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
     end
