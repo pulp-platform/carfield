@@ -106,8 +106,7 @@ module vip_carfield_soc
 `ifndef PATH_TO_HYP_SDF
            automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
 `else
-           automatic string sdf_file_path;
-           if (!$value$plusargs("PATH_TO_HYP_SDF=%s", sdf_file_path)) sdf_file_path = "";
+           automatic string sdf_file_path = `PATH_TO_HYP_SDF;
 `endif
            $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
            $display("Mem (%d,%d)",p,l);
