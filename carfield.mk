@@ -311,9 +311,9 @@ pulpd-sw-build:
 	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
 	$(MAKE) pulpd-sw-all
 
-.PHONY: spatzd-sw-build
-spatzd-sw-build:
-	$(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(SPATZD_BENDER_DIR) LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson -B sw
+#.PHONY: spatzd-sw-build
+#spatzd-sw-build:
+#	$(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(SPATZD_BENDER_DIR) LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) −B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson HTIF_SERVER=NO sw.vsim
 
 # Litmus tests
 LITMUS_WORK_DIR  := work-litmus
