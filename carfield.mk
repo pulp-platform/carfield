@@ -247,17 +247,13 @@ car-checkout: car-checkout-deps
 ## Initialize carfield by generating cheshire and spatz registers and wrapper, respectively
 ## This step takes care of the generation of the missing hardware, or an update of the configuration
 ## of some IPs, such as the PLIC or CLINT.
-car-hw-init: spatz-hw-init chs-hw-init
+car-hw-init: spatzd-hw-init chs-hw-init
 
-.PHONY: spatz-hw-init
-spatz-hw-init:
+.PHONY: spatzd-hw-init
+spatzd-hw-init:
 	$(MAKE) -C $(SPATZD_ROOT) hw/ip/snitch/src/riscv_instr.sv
 	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson bootrom
 	cp  $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h  $(CAR_SW_DIR)/include/regs/
-
-.PHONY: spatz-sw-init
-spatz-sw-init:
-	$(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(SPATZD_BENDER_DIR) LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) -B SPATZ_CLUSTER_CFG=$(CAR_HW_DIR)/cfg/spatz_carfield.hjson sw.vsim
 
 .PHONY: chs-hw-init
 ## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
@@ -314,6 +310,10 @@ safed-sw-build:
 pulpd-sw-build:
 	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
 	$(MAKE) pulpd-sw-all
+
+.PHONY: spatzd-sw-build
+spatzd-sw-build:
+	$(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(SPATZD_BENDER_DIR) LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson -B sw
 
 # Litmus tests
 LITMUS_WORK_DIR  := work-litmus
