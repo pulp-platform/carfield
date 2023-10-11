@@ -101,15 +101,16 @@ module tb_carfield_soc;
     fix.chs_vip.i2c_eeprom_preload(chs_boot_hex);
     fix.chs_vip.spih_norflash_preload(chs_boot_hex);
 
-    // Wait for reset
-    fix.chs_vip.wait_for_reset();
-
-    // Writing max burst length in Hyperbus configuration registers to
-    // prevent the Verification IPs from triggering timing checks.
-    $display("[TB] INFO: Configuring Hyperbus through serial link.");
-    fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
-
     if (chs_preload_elf != "" || chs_boot_hex != "") begin
+
+      // Wait for reset
+      fix.chs_vip.wait_for_reset();
+
+      // Writing max burst length in Hyperbus configuration registers to
+      // prevent the Verification IPs from triggering timing checks.
+      $display("[TB] INFO: Configuring Hyperbus through serial link.");
+      fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
+
       // When Cheshire is offloading to safety island, the latter should be set in passive preloaded
       // bootmode
       fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
