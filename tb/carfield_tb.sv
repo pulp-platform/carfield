@@ -170,20 +170,17 @@ module tb_carfield_soc;
     // set secure boot mode
     fix.set_secure_boot(secure_boot);
 
+    // set boot mode before reset
+    fix.safed_vip.set_safed_boot_mode(safed_boot_mode);
+
     if (safed_preload_elf != "") begin
 
-      // set boot mode before reset
-      case (safed_boot_mode)
-        0: begin
-          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Jtag);
-        end 1: begin
-          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
-       end default: begin
-          $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
-        end
-      endcase
-
       fix.safed_vip.safed_wait_for_reset();
+
+      // Writing max burst length in Hyperbus configuration registers to
+      // prevent the Verification IPs from triggering timing checks.
+      $display("[TB] INFO: Configuring Hyperbus through serial link.");
+      fix.safed_vip.axi_write_32(HyperbusTburstMax, 32'd128);
 
       $display("[TB] %t - Enabling safety island clock for stand-alone tests ", $realtime);
       // Clock island after PoR
