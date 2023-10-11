@@ -57,7 +57,7 @@ SAFED_BINARY   ?=
 SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
 SECD_BINARY   ?=
 SECD_BOOTMODE ?= 0
-SECD_FLASH    ?= $(SECD_ROOT)/sw/tests/carfield/flash_carfield_boot/bazel-out/flash_carfield_boot_signed8.vmem
+SECD_IMAGE    ?=
 
 # PULP cluster
 PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
@@ -204,7 +204,7 @@ car-hw-sim:
 		 set CHS_IMAGE $(CHS_IMAGE); \
 		 set SECD_BINARY $(SECD_BINARY); \
 		 set SECD_BOOTMODE $(SECD_BOOTMODE); \
-		 set SECD_FLASH $(SECD_FLASH); \
+		 set SECD_IMAGE $(SECD_IMAGE); \
 		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
 		 set SAFED_BINARY $(SAFED_BINARY); \
 		 set PULPD_BINARY $(PULPD_BINARY); \

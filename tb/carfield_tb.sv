@@ -214,16 +214,27 @@ module tb_carfield_soc;
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("SECURE_BOOT=%d",   secure_boot))      secure_boot      = 0;
-    if (!$value$plusargs("SECD_FLASH=%s",    secd_flash_vmem))  secd_flash_vmem  = "";
+    if (!$value$plusargs("SECD_IMAGE=%s",    secd_flash_vmem))  secd_flash_vmem  = "";
     if (!$value$plusargs("SECD_BINARY=%s",   secd_preload_elf)) secd_preload_elf = "";
-    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode))   secd_boot_mode   = 0;
-    case(secd_boot_mode)
-      0: begin
-        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
-        $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
-        fix.set_secure_boot(secure_boot);
-        fix.secd_vip.set_secd_boot_mode(2'b00);
-        if (secd_preload_elf != "") begin
+    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode))   secd_boot_mode = 0;
+
+    // set secure boot mode
+    fix.set_secure_boot(secure_boot);
+
+    // set bootmode
+    fix.secd_vip.set_secd_boot_mode(secd_boot_mode);
+
+    if (secd_preload_elf != "" || secd_flash_vmem != "") begin
+      // Wait for reset
+      fix.chs_vip.wait_for_reset();
+
+      // Writing max burst length in Hyperbus configuration registers to
+      // prevent the Verification IPs from triggering timing checks.
+      $display("[TB] INFO: Configuring Hyperbus through serial link.");
+      fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
+
+      case(secd_boot_mode)
+        0: begin
           // Wait before security island HW is initialized
           repeat(10000)
             @(posedge fix.clk);
@@ -232,20 +243,16 @@ module tb_carfield_soc;
           fix.secd_vip.jtag_secd_data_preload();
           fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
           fix.secd_vip.jtag_secd_wait_eoc();
+        end 1: begin
+          fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
+          repeat(10000)
+              @(posedge fix.clk);
+          fix.secd_vip.jtag_secd_wait_eoc();
+        end default: begin
+          $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
         end
-      end 1: begin
-        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
-        $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
-        fix.set_secure_boot(secure_boot);
-        fix.secd_vip.set_secd_boot_mode(2'b01);
-        fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
-        repeat(10000)
-            @(posedge fix.clk);
-        fix.secd_vip.jtag_secd_wait_eoc();
-      end default: begin
-        $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
-      end
-    endcase
+      endcase
+    end
   end
 
   // pulp cluster standalone
