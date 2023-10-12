@@ -5,7 +5,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 set partNumber $::env(XILINX_PART)
-set boardName  $::env(XILINX_BOARD)
+set boardName  $::env(XILINX_BOARD_LONG)
 
 set ipName xlnx_vio
 

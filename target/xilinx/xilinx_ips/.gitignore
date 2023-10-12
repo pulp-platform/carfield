@@ -1,0 +1,10 @@
+*.cache
+*.gen
+*.hw
+*.srcs
+*.xpr
+component.xml
+xgui
+*.jou
+*.log
+add_sources.*

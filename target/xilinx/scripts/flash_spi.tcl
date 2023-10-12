@@ -7,14 +7,14 @@
 
 open_hw_manager
 
-connect_hw_server -url $::env(HOST):$::env(PORT)
-open_hw_target $::env(HOST):$::env(PORT)/$::env(FPGA_PATH)
+connect_hw_server -url $::env(XILINX_HOST):$::env(XILINX_PORT)
+open_hw_target $::env(XILINX_HOST):$::env(XILINX_PORT)/$::env(XILINX_FPGA_PATH)
 
 set file $::env(FILE)
 set offset $::env(OFFSET)
 set mcs_file image.mcs
 
-if {$::env(BOARD) eq "vcu128"} {
+if {$::env(XILINX_BOARD) eq "vcu128"} {
   set hw_device [get_hw_devices xcvu37p_0]
   set hw_mem_device [lindex [get_cfgmem_parts {mt25qu02g-spi-x1_x2_x4}] 0]
 }

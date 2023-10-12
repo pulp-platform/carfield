@@ -4,19 +4,21 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
-
+#
 # Replace files in a bender script with override version
 
-for f in `find src/overrides -not -type d -printf "%f\n"`; do
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
+for f in `find $SCRIPT_DIR/../src/overrides -not -type d -printf "%f\n"`; do
   echo "Removing $f"
-  grep -v -P "(?<!overrides/)${f}" $1 > overrides-tmp
-  diff overrides-tmp $@ | grep ">\|<"
-  cp overrides-tmp $1
+  grep -v -P "(?<!overrides/)${f}" $1 > /tmp/overrides-tmp
+  diff /tmp/overrides-tmp $@ | grep ">\|<"
+  cp /tmp/overrides-tmp $1
 done
 
-for f in `find src/overrides -not -type d -printf "%f\n"`; do
+for f in `find $SCRIPT_DIR/../src/overrides -not -type d -printf "%f\n"`; do
   echo "Removing $f"
-  grep -v -P "(?<!overrides/)${f}" $1 > overrides-tmp
-  diff overrides-tmp $@ | grep ">\|<"
-  cp overrides-tmp $1
+  grep -v -P "(?<!overrides/)${f}" $1 > /tmp/overrides-tmp
+  diff /tmp/overrides-tmp $@ | grep ">\|<"
+  cp /tmp/overrides-tmp $1
 done

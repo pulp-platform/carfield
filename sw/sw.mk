@@ -35,6 +35,9 @@ car-sw-libs: $(CAR_SW_LIBS)
 
 # Compilation
 
+carfield_%.dtb: carfield_%.dts
+	$(CHS_SW_DTC) -I dts -O dtb -i $(CAR_SW_DIR)/boot -o $@ $<
+
 # All objects require up-to-date patches and headers
 %.car.o: %.c
 	@echo $(CAR_SW_INCLUDES)
@@ -145,9 +148,15 @@ mibench-automotive-susan: automotive-susan
 # GPT Linux image #
 ###################
 
+CAR_SW_DISK_SIZE := 16M
+
+$(CAR_SW_DIR)/boot/install64/%:
+	@echo "Error: Linux images not found, did you build the cva6-sdk?"
+	@exit 1
+
 # Create full Linux disk image
-$(CAR_SW_DIR)/boot/linux.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CAR_SW_DIR)/boot/carfield.dtb $(CAR_SW_DIR)/boot/install64/fw_payload.bin $(CAR_SW_DIR)/boot/install64/uImage
-	truncate -s $(CHS_SW_DISK_SIZE) $@
+$(CAR_SW_DIR)/boot/linux_carfield_%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CAR_SW_DIR)/boot/carfield_%.dtb $(CAR_SW_DIR)/boot/install64/fw_payload.bin $(CAR_SW_DIR)/boot/install64/uImage
+	truncate -s $(CAR_SW_DISK_SIZE) $@
 	sgdisk --clear -g --set-alignment=1 \
 		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \
 		--new=2:128:159 --typecode=2:$(CHS_SW_DTB_TGUID) \
