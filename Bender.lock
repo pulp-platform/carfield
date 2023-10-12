@@ -375,7 +375,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 8356888056441d6cf5b94e348a0817264b9b1b8c
+    revision: 4d1558ac660ad445f62ffe44415ca6efc4240cf6
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -416,7 +416,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: f206f5ecbfaa028f9eae6f0efaed9e34631d9171
+    revision: f3b1bc9b2e816fe1b51147ceafa8955326d1b466
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
