@@ -2079,6 +2079,11 @@ axi_err_slv #(
   .slv_resp_o ( axi_ethernet_rsp       )
 );
 
+assign car_eth_intr = '0;
+assign eth_md_o     = '0;
+assign eth_md_oe    = '0;
+assign eth_mdc_o    = '0;
+
 end
 
 // APB peripherals
