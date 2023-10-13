@@ -1501,8 +1501,10 @@ end
 logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr;
 // mti (machine timer interrupt) : hostd (RISC-V clint)
 // verilog_lint: waive-start line-length
-logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr = { chs_mti[FPClusterIntrHart1Idx], chs_mti[FPClusterIntrHart0Idx] };
+logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr;
 // verilog_lint: waive-stop line-length
+
+assign spatzcl_timer_intr = { chs_mti[FPClusterIntrHart1Idx], chs_mti[FPClusterIntrHart0Idx] };
 
 if (IslandsCfg.EnSpatzCluster) begin : gen_spatz_cluster
   spatz_cluster_wrapper #(
