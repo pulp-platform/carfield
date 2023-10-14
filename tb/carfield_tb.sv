@@ -48,7 +48,7 @@ module tb_carfield_soc;
   // hyperbus
   localparam int unsigned HyperbusTburstMax = 32'h20009008;
 
-  //FP Spatz Cluster
+  // FP Spatz Cluster
   string      spatzd_preload_elf;
   logic [1:0] spatzd_boot_mode;
   bit  [31:0] spatzd_exit_code;
@@ -56,7 +56,11 @@ module tb_carfield_soc;
   doub_bt     spatzd_binary_entry;
   doub_bt     spatzd_reg_value;
 
-  //MailBox
+  localparam int unsigned SpatzdClkEnRegAddr         = 32'h2001007c;
+  localparam int unsigned SpatzdIsolateRegAddr       = 32'h2001004c;
+  localparam int unsigned SpatzdIsolateStatusRegAddr = 32'h20010064;
+
+  // MailBox
   parameter logic [31:0] CAR_MBOX_BASE             = 32'h40000000;
   parameter logic [31:0] CAR_NUM_MAILBOXES         = 32'h25;
   parameter logic [31:0] MBOX_INT_SND_STAT_OFFSET  = 32'h00;
@@ -97,15 +101,16 @@ module tb_carfield_soc;
     fix.chs_vip.i2c_eeprom_preload(chs_boot_hex);
     fix.chs_vip.spih_norflash_preload(chs_boot_hex);
 
-    // Wait for reset
-    fix.chs_vip.wait_for_reset();
-
-    // Writing max burst length in Hyperbus configuration registers to
-    // prevent the Verification IPs from triggering timing checks.
-    $display("[TB] INFO: Configuring Hyperbus through serial link.");
-    fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
-
     if (chs_preload_elf != "" || chs_boot_hex != "") begin
+
+      // Wait for reset
+      fix.chs_vip.wait_for_reset();
+
+      // Writing max burst length in Hyperbus configuration registers to
+      // prevent the Verification IPs from triggering timing checks.
+      $display("[TB] INFO: Configuring Hyperbus through serial link.");
+      fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
+
       // When Cheshire is offloading to safety island, the latter should be set in passive preloaded
       // bootmode
       fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
@@ -166,20 +171,17 @@ module tb_carfield_soc;
     // set secure boot mode
     fix.set_secure_boot(secure_boot);
 
+    // set boot mode before reset
+    fix.safed_vip.set_safed_boot_mode(safed_boot_mode);
+
     if (safed_preload_elf != "") begin
 
-      // set boot mode before reset
-      case (safed_boot_mode)
-        0: begin
-          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Jtag);
-        end 1: begin
-          fix.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
-       end default: begin
-          $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
-        end
-      endcase
-
       fix.safed_vip.safed_wait_for_reset();
+
+      // Writing max burst length in Hyperbus configuration registers to
+      // prevent the Verification IPs from triggering timing checks.
+      $display("[TB] INFO: Configuring Hyperbus through serial link.");
+      fix.safed_vip.axi_write_32(HyperbusTburstMax, 32'd128);
 
       $display("[TB] %t - Enabling safety island clock for stand-alone tests ", $realtime);
       // Clock island after PoR
@@ -210,16 +212,27 @@ module tb_carfield_soc;
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
     if (!$value$plusargs("SECURE_BOOT=%d",   secure_boot))      secure_boot      = 0;
-    if (!$value$plusargs("SECD_FLASH=%s",    secd_flash_vmem))  secd_flash_vmem  = "";
+    if (!$value$plusargs("SECD_IMAGE=%s",    secd_flash_vmem))  secd_flash_vmem  = "";
     if (!$value$plusargs("SECD_BINARY=%s",   secd_preload_elf)) secd_preload_elf = "";
-    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode))   secd_boot_mode   = 0;
-    case(secd_boot_mode)
-      0: begin
-        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
-        $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
-        fix.set_secure_boot(secure_boot);
-        fix.secd_vip.set_secd_boot_mode(2'b00);
-        if (secd_preload_elf != "") begin
+    if (!$value$plusargs("SECD_BOOTMODE=%d", secd_boot_mode))   secd_boot_mode = 0;
+
+    // set secure boot mode
+    fix.set_secure_boot(secure_boot);
+
+    // set bootmode
+    fix.secd_vip.set_secd_boot_mode(secd_boot_mode);
+
+    if (secd_preload_elf != "" || secd_flash_vmem != "") begin
+      // Wait for reset
+      fix.chs_vip.wait_for_reset();
+
+      // Writing max burst length in Hyperbus configuration registers to
+      // prevent the Verification IPs from triggering timing checks.
+      $display("[TB] INFO: Configuring Hyperbus through serial link.");
+      fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
+
+      case(secd_boot_mode)
+        0: begin
           // Wait before security island HW is initialized
           repeat(10000)
             @(posedge fix.clk);
@@ -228,20 +241,16 @@ module tb_carfield_soc;
           fix.secd_vip.jtag_secd_data_preload();
           fix.secd_vip.jtag_secd_wakeup(32'hE0000080);
           fix.secd_vip.jtag_secd_wait_eoc();
+        end 1: begin
+          fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
+          repeat(10000)
+              @(posedge fix.clk);
+          fix.secd_vip.jtag_secd_wait_eoc();
+        end default: begin
+          $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
         end
-      end 1: begin
-        // Go in secure bootmode to let the Security island be de-isolated and clocked after PoR
-        $display("[TB] %t - Entering secure boot mode for Security island after PoR (clock enable and de-isolation handled in HW)", $realtime);
-        fix.set_secure_boot(secure_boot);
-        fix.secd_vip.set_secd_boot_mode(2'b01);
-        fix.secd_vip.spih_norflash_preload(secd_flash_vmem);
-        repeat(10000)
-            @(posedge fix.clk);
-        fix.secd_vip.jtag_secd_wait_eoc();
-      end default: begin
-        $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
-      end
-    endcase
+      endcase
+    end
   end
 
   // pulp cluster standalone
@@ -250,13 +259,30 @@ module tb_carfield_soc;
   // spatz cluster standalone
   initial begin
     // Fetch plusargs or use safe (fail-fast) defaults
-    if (!$value$plusargs("SPATZD_BOOTMODE=%d",     spatzd_boot_mode))   spatzd_boot_mode   = 0;
-    if (!$value$plusargs("SPATZD_BINARY=%s",       spatzd_preload_elf)) spatzd_preload_elf = "";
+    if (!$value$plusargs("SECURE_BOOT=%d",     secure_boot))        secure_boot        = 0;
+    if (!$value$plusargs("SPATZD_BOOTMODE=%d", spatzd_boot_mode))   spatzd_boot_mode   = 0;
+    if (!$value$plusargs("SPATZD_BINARY=%s",   spatzd_preload_elf)) spatzd_preload_elf = "";
 
-    // Wait for reset
-    fix.chs_vip.wait_for_reset();
+    // set secure boot mode
+    fix.set_secure_boot(secure_boot);
 
     if (spatzd_preload_elf != "") begin
+
+      // Wait for reset
+      fix.chs_vip.wait_for_reset();
+
+      // Writing max burst length in Hyperbus configuration registers to
+      // prevent the Verification IPs from triggering timing checks.
+      $display("[TB] INFO: Configuring Hyperbus through serial link.");
+      fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
+
+      $display("[TB] %t - Enabling spatz clock for stand-alone tests ", $realtime);
+      // Clock island after PoR
+      fix.chs_vip.slink_write_32(SpatzdClkEnRegAddr, 32'h1);
+      $display("[TB] %t - De-isolate spatz for stand-alone tests ", $realtime);
+      // De-isolate island after PoR
+      fix.chs_vip.slink_write_32(SpatzdIsolateRegAddr, 32'h0);
+
       case (spatzd_boot_mode)
         0: begin
           // JTAG
@@ -300,7 +326,7 @@ module tb_carfield_soc;
           $display("[SLINK SPATZD] Write the CSR %x of spatz with the entry point %x", spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry);
           fix.chs_vip.slink_write_32(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry);
 
-          // Set interrupt on mailbox mailbox id MBOX_SPATZ_CORE0_ID and MBOX_SPATZ_CORE1_ID
+          // Set interrupt on mailbox ids MBOX_SPATZ_CORE0_ID and MBOX_SPATZ_CORE1_ID
           spatzd_reg_value = 64'h1;
           $display("[SLINK SPATZD] Set mailbox interrupt ID  %x at %x ",MBOX_SPATZ_CORE0_ID, CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100));
           fix.chs_vip.slink_write_32(CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) , spatzd_reg_value);
@@ -308,7 +334,7 @@ module tb_carfield_soc;
           $display("[SLINK SPATZD] Set mailbox interrupt ID  %x at %x ",MBOX_SPATZ_CORE0_ID, CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100));
           fix.chs_vip.slink_write_32(CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) , spatzd_reg_value);
 
-          // Enable interrupt on mailbox id MBOX_SPATZ_CORE0_ID and MBOX_SPATZ_CORE1_ID
+          // Enable interrupt on mailbox ids MBOX_SPATZ_CORE0_ID and MBOX_SPATZ_CORE1_ID
           $display("[SLINK SPATZD] Enable mailbox interrupt ID  %x at %x ",MBOX_SPATZ_CORE0_ID, CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) ,spatzd_reg_value);
           fix.chs_vip.slink_write_32(CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) , spatzd_reg_value);
 
@@ -318,8 +344,8 @@ module tb_carfield_soc;
           // Poll memory address for Spatz EOC
           fix.chs_vip.slink_poll_bit0(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_EOC_EXIT_OFFSET, spatzd_exit_code, 20);
           spatzd_exit_code >>= 1;
-          if (spatzd_exit_code) $error("[JTAG SPATZ] FAILED: return code %0d", spatzd_exit_code);
-          else $display("[JTAG SPATZ] SUCCESS");
+          if (spatzd_exit_code) $error("[SLINK SPATZ] FAILED: return code %0d", spatzd_exit_code);
+          else $display("[SLINK SPATZ] SUCCESS");
         end
 
         default: begin

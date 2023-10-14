@@ -489,7 +489,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: d0f7bd44867fb47aa35e4df1695d8789586517fb
+    revision: 2191fce502191995c2c670f6edb84b9b8370de86
     version: null
     source:
       Git: https://github.com/pulp-platform/spatz.git

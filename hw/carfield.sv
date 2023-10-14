@@ -1507,6 +1507,7 @@ logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr;
 assign spatzcl_timer_intr = { chs_mti[FPClusterIntrHart1Idx], chs_mti[FPClusterIntrHart0Idx] };
 
 if (IslandsCfg.EnSpatzCluster) begin : gen_spatz_cluster
+`ifndef FP_CLUSTER_NETLIST
   spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth     ),
     .AxiDataWidth             ( Cfg.AxiDataWidth  ),
@@ -1548,7 +1549,10 @@ if (IslandsCfg.EnSpatzCluster) begin : gen_spatz_cluster
     .AsyncAxiOutBWidth        ( CarfieldAxiMstBWidth  ),
     .AsyncAxiOutArWidth       ( CarfieldAxiMstArWidth ),
     .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
-    )i_fp_cluster_wrapper(
+    ) i_fp_cluster_wrapper (
+`else
+  spatz_cluster_wrapper i_fp_cluster_wrapper (
+`endif
     .clk_i           ( spatz_clk            ),
     .rst_ni          ( spatz_rst_n          ),
     .pwr_on_rst_ni   ( spatz_pwr_on_rst_n   ),

@@ -6,4 +6,4 @@
 # set up environment variables for rtl simulation
 ROOTD=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)
 export LLVM_SPATZ_DIR=/usr/pack/riscv-1.0-kgf/spatz-llvm-2023.08.10
-export GCC_SPATZ_DIR=
+export GCC_SPATZ_DIR=/usr/pack/riscv-1.0-kgf/spatz-gcc-7.1.1

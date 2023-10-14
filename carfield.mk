@@ -57,7 +57,7 @@ SAFED_BINARY   ?=
 SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
 SECD_BINARY   ?=
 SECD_BOOTMODE ?= 0
-SECD_FLASH    ?= $(SECD_ROOT)/sw/tests/carfield/flash_carfield_boot/bazel-out/flash_carfield_boot_signed8.vmem
+SECD_IMAGE    ?=
 
 # PULP cluster
 PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
@@ -102,7 +102,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= ee52807ef225e82c87c2dc803dc5767ab70909ca
+CAR_NONFREE_COMMIT ?= ad53d26c79eb8a2582f8d4be8005aad997144d5b
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
@@ -204,7 +204,7 @@ car-hw-sim:
 		 set CHS_IMAGE $(CHS_IMAGE); \
 		 set SECD_BINARY $(SECD_BINARY); \
 		 set SECD_BOOTMODE $(SECD_BOOTMODE); \
-		 set SECD_FLASH $(SECD_FLASH); \
+		 set SECD_IMAGE $(SECD_IMAGE); \
 		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
 		 set SAFED_BINARY $(SAFED_BINARY); \
 		 set PULPD_BINARY $(PULPD_BINARY); \
@@ -247,17 +247,13 @@ car-checkout: car-checkout-deps
 ## Initialize carfield by generating cheshire and spatz registers and wrapper, respectively
 ## This step takes care of the generation of the missing hardware, or an update of the configuration
 ## of some IPs, such as the PLIC or CLINT.
-car-hw-init: spatz-hw-init chs-hw-init
+car-hw-init: spatzd-hw-init chs-hw-init
 
-.PHONY: spatz-hw-init
-spatz-hw-init:
+.PHONY: spatzd-hw-init
+spatzd-hw-init:
 	$(MAKE) -C $(SPATZD_ROOT) hw/ip/snitch/src/riscv_instr.sv
 	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson bootrom
 	cp  $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h  $(CAR_SW_DIR)/include/regs/
-
-.PHONY: spatz-sw-init
-spatz-sw-init:
-	$(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(SPATZD_BENDER_DIR) LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) -B SPATZ_CLUSTER_CFG=$(CAR_HW_DIR)/cfg/spatz_carfield.hjson sw.vsim
 
 .PHONY: chs-hw-init
 ## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
@@ -314,6 +310,10 @@ safed-sw-build:
 pulpd-sw-build:
 	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
 	$(MAKE) pulpd-sw-all
+
+#.PHONY: spatzd-sw-build
+#spatzd-sw-build:
+#	$(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(SPATZD_BENDER_DIR) LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) −B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson HTIF_SERVER=NO sw.vsim
 
 # Litmus tests
 LITMUS_WORK_DIR  := work-litmus
