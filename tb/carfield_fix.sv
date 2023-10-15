@@ -243,7 +243,14 @@ module carfield_soc_fixture;
 
   // Verification IPs for carfield
   vip_carfield_soc #(
-    .DutCfg        ( DutCfg ),
+    .DutCfg         ( DutCfg ),
+    // Determine whether we preload the hyperram model or not User preload. If 0, the memory model
+    // is not preloaded at time 0.
+    .HypUserPreload ( `HYP_USER_PRELOAD ),
+    // Mem files for hyperram model. The argument is considered only if HypUserPreload==1 in the
+    // memory model.
+    .Hyp0UserPreloadMemFile ( `HYP0_PRELOAD_MEM_FILE ),
+    .Hyp1UserPreloadMemFile ( `HYP1_PRELOAD_MEM_FILE ),
     .ClkPeriodSys  ( ClkPeriodSys ),
     .ClkPeriodJtag ( ClkPeriodJtag ),
     .ClkPeriodRtc  ( ClkPeriodRtc),
@@ -257,8 +264,7 @@ module carfield_soc_fixture;
     // We use the clock/reset generated in cheshire VIP
     .clk_vip (),
     .rst_n_vip (),
-    // Multiplex incoming AXI req/rsp and convert t
-    // hrough serial link
+    // Multiplex incoming AXI req/rsp and convert through serial link
     .axi_slvs_req ( ext_to_vip_req ),
     .axi_slvs_rsp ( ext_to_vip_rsp ),
     .axi_muxed_req ( axi_muxed_req ),

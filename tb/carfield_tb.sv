@@ -48,11 +48,10 @@ module tb_carfield_soc;
   // hyperbus
   localparam int unsigned HyperbusTburstMax = 32'h20009008;
 
-  // FP Spatz Cluster
+  // spatz cluster
   string      spatzd_preload_elf;
   logic [1:0] spatzd_boot_mode;
   bit  [31:0] spatzd_exit_code;
-  bit         spatzd_exit_status;
   doub_bt     spatzd_binary_entry;
   doub_bt     spatzd_reg_value;
 
@@ -60,7 +59,26 @@ module tb_carfield_soc;
   localparam int unsigned SpatzdIsolateRegAddr       = 32'h2001004c;
   localparam int unsigned SpatzdIsolateStatusRegAddr = 32'h20010064;
 
-  // MailBox
+  // pulp cluster
+  // Useful register addresses
+  localparam int unsigned CarL2StartAddr             = 32'h7800_0000;
+  localparam int unsigned CarDramStartAddr           = 32'h8000_0000;
+  localparam int unsigned PulpdNumCores              = 4;
+  localparam int unsigned PulpdBootAddrL2            = CarL2StartAddr + 32'h8080;
+  localparam int unsigned PulpdBootAddrDram          = CarDramStartAddr + 32'h8080;
+  localparam int unsigned PulpdBootAddr              = 32'h50200040;
+  localparam int unsigned CarSocCtrlPulpdFetchEnAddr = 32'h200100c0;
+  localparam int unsigned CarSocCtrlPulpdBootEnAddr  = 32'h200100dc;
+  localparam int unsigned CarSocCtrlPulpdBusyAddr    = 32'h200100e4;
+  localparam int unsigned CarSocCtrlPulpdEocAddr     = 32'h200100e8;
+  // sim variables
+  string      pulpd_preload_elf;
+  logic [1:0] pulpd_boot_mode;
+  bit  [31:0] pulpd_exit_code;
+  doub_bt     pulpd_binary_entry;
+  doub_bt     pulpd_reg_value;
+
+  // mailbox unit
   parameter logic [31:0] CAR_MBOX_BASE             = 32'h40000000;
   parameter logic [31:0] CAR_NUM_MAILBOXES         = 32'h25;
   parameter logic [31:0] MBOX_INT_SND_STAT_OFFSET  = 32'h00;
@@ -80,6 +98,9 @@ module tb_carfield_soc;
   logic [63:0] unused;
 
   logic        secure_boot;
+
+  // Decide whether to preload hyperram model at time 0
+  logic        hyp_user_preload;
 
   // timing format for $display("...$t..", $realtime)
   initial begin : timing_format
@@ -137,6 +158,7 @@ module tb_carfield_soc;
             fix.chs_vip.uart_debug_elf_run_and_wait(chs_preload_elf, exit_code);
           end 3: begin  // Secure boot: Opentitan booting CVA6
             fix.chs_vip.slink_elf_preload(chs_preload_elf, unused);
+            // We check the EOC with the JTAG
             fix.chs_vip.jtag_init();
             fix.chs_vip.jtag_wait_for_eoc(exit_code);
           end default: begin
@@ -254,7 +276,110 @@ module tb_carfield_soc;
   end
 
   // pulp cluster standalone
-  // TODO
+  initial begin
+    // Fetch plusargs or use safe (fail-fast) defaults
+    if (!$value$plusargs("PULPD_BOOTMODE=%d",     pulpd_boot_mode))    pulpd_boot_mode   = 0;
+    if (!$value$plusargs("PULPD_BINARY=%s",       pulpd_preload_elf))  pulpd_preload_elf = "";
+    if (!$value$plusargs("HYP_USER_PRELOAD=%s",   hyp_user_preload))   hyp_user_preload  = 0;
+
+    // Wait for reset
+    fix.chs_vip.wait_for_reset();
+
+    if (pulpd_preload_elf != "") begin
+      case (pulpd_boot_mode)
+        0: begin
+          // JTAG
+          $display("[JTAG PULPD] Init ");
+          fix.chs_vip.jtag_init();
+          $display("[JTAG PULPD] Halt the core and load the binary to L2 ");
+          fix.chs_vip.jtag_elf_halt_load(pulpd_preload_elf, pulpd_binary_entry );
+
+          // boot
+          // Write bootaddress to each core
+          $display("[SLINK PULPD] Write PULP cluster boot address for each core");
+          for (int c = 0; c < PulpdNumCores; c++) begin
+            fix.chs_vip.jtag_write_reg32(PulpdBootAddrL2, c*32'h4 + PulpdBootAddrDram);
+          end
+          // Write boot enable
+          $display("[SLINK PULPD] Write PULP cluster boot enable");
+          fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdBootEnAddr, 32'h1);
+          // Write fetch enable
+          $display("[SLINK PULPD] Write PULP cluster fetch enable");
+          fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdFetchEnAddr, 32'h1);
+
+          // Poll memory address for PULP EOC
+          fix.chs_vip.jtag_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
+          pulpd_exit_code >>= 1;
+          if (pulpd_exit_code) $error("[JTAG PULP] FAILED: return code %0d", pulpd_exit_code);
+          else $display("[JTAG PULP] SUCCESS");
+        end
+
+        1: begin
+          // serial link
+
+          // preload
+          $display("[SLINK PULPD] Preload the binary to L2 ");
+          fix.chs_vip.slink_elf_preload(pulpd_preload_elf, pulpd_binary_entry);
+
+          // boot
+          // Write bootaddress to each core
+          $display("[SLINK PULPD] Write PULP cluster boot address for each core");
+          for (int c = 0; c < PulpdNumCores; c++) begin
+            fix.chs_vip.slink_write_32(PulpdBootAddrL2, c*32'h4 + PulpdBootAddrDram);
+          end
+          // Write boot enable
+          $display("[SLINK PULPD] Write PULP cluster boot enable");
+          fix.chs_vip.slink_write_32(CarSocCtrlPulpdBootEnAddr, 32'h1);
+          // Write fetch enable
+          $display("[SLINK PULPD] Write PULP cluster fetch enable");
+          fix.chs_vip.slink_write_32(CarSocCtrlPulpdFetchEnAddr, 32'h1);
+
+          // Poll memory address for PULP EOC
+          fix.chs_vip.slink_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
+          pulpd_exit_code >>= 1;
+          if (pulpd_exit_code) $error("[SLINK PULP] FAILED: return code %0d", pulpd_exit_code);
+          else $display("[SLINK PULP] SUCCESS");
+        end
+        default: begin
+          $fatal(1, "Unsupported boot mode %d (reserved)!", pulpd_boot_mode);
+        end
+      endcase
+
+      $finish;
+    end
+
+    // Fast preload of hyperram
+    if (hyp_user_preload != 0 && pulpd_preload_elf == "") begin
+      $warning( "[TB] - Instantly preload hyperram0 and hyperrram1 models at time 0. This preload \
+                mode should be used for simulation only, because it does not check whether we can \
+                preload the hyperram using physical interfaces, e.g., JTAG or SL. If there is enough \
+                confidence physical interfaces are working correctly with a gate-level netlist, this \
+                mode could be used to speed up the simulation, but at your own risk. You were \
+                warned. \n");
+      // Hyperrams models are preloaded at time 0. Preferably, this bootflow is used with cluster
+      // accelerators, but can be extended to other islands as well. We check the EOC with the JTAG
+
+      // Write bootaddress to each core
+      $display("[SLINK PULPD] Write PULP cluster boot address for each core");
+      for (int c = 0; c < PulpdNumCores; c++) begin
+        fix.chs_vip.slink_write_32(PulpdBootAddrL2, c*32'h4 + PulpdBootAddrDram);
+      end
+      // Write boot enable
+      $display("[SLINK PULPD] Write PULP cluster boot enable");
+      fix.chs_vip.slink_write_32(CarSocCtrlPulpdBootEnAddr, 32'h1);
+      // Write fetch enable
+      $display("[SLINK PULPD] Write PULP cluster fetch enable");
+      fix.chs_vip.slink_write_32(CarSocCtrlPulpdFetchEnAddr, 32'h1);
+
+      // Poll memory address for PULP EOC
+      fix.chs_vip.slink_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
+      pulpd_exit_code >>= 1;
+      if (pulpd_exit_code) $error("[SLINK PULP] FAILED: return code %0d", pulpd_exit_code);
+      else $display("[SLINK PULP] SUCCESS");
+
+      $finish;
+    end
+  end
 
   // spatz cluster standalone
   initial begin
@@ -352,6 +477,7 @@ module tb_carfield_soc;
           $fatal(1, "Unsupported boot mode %d (reserved)!", spatzd_boot_mode);
         end
       endcase
+
       $finish;
     end
   end

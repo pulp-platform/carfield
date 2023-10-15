@@ -14,8 +14,11 @@ module vip_carfield_soc
   parameter cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault,
   parameter type         axi_slv_ext_req_t = logic,
   parameter type         axi_slv_ext_rsp_t = logic,
-  parameter int unsigned HypNumPhys  = 2,
-  parameter int unsigned HypNumChips = 2,
+  parameter int unsigned HypNumPhys     = 2,
+  parameter int unsigned HypNumChips    = 2,
+  parameter int unsigned HypUserPreload = 0,
+  parameter string Hyp0UserPreloadMemFile = "",
+  parameter string Hyp1UserPreloadMemFile = "",
   // Timing
   parameter time         ClkPeriodSys      = 5ns,
   parameter time         ClkPeriodJtag     = 20ns,
@@ -77,11 +80,14 @@ module vip_carfield_soc
   // Hyperbus //
   //////////////
 
+  localparam string HypUserPreloadMemFiles [HypNumPhys] = '{Hyp0UserPreloadMemFile, Hyp1UserPreloadMemFile};
+
   for (genvar i=0; i<HypNumPhys; i++) begin : hyperrams
     for (genvar j=0; j<HypNumChips; j++) begin : chips
       s27ks0641 #(
-        /*.mem_file_name ( "s27ks0641.mem"    ),*/
-        .TimingModel ( "S27KS0641DPBHI020"    )
+        .UserPreload   ( HypUserPreload ),
+        .mem_file_name ( HypUserPreloadMemFiles[i] ),
+        .TimingModel ( "S27KS0641DPBHI020" )
       ) dut (
         .DQ7      ( pad_hyper_dq[i][7]  ),
         .DQ6      ( pad_hyper_dq[i][6]  ),
@@ -95,7 +101,7 @@ module vip_carfield_soc
         .CSNeg    ( pad_hyper_csn[i][j] ),
         .CK       ( pad_hyper_ck[i]     ),
         .CKNeg    ( pad_hyper_ckn[i]    ),
-        .RESETNeg ( pad_hyper_resetn[i]  )
+        .RESETNeg ( pad_hyper_resetn[i] )
       );
     end
   end
