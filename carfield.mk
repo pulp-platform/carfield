@@ -111,7 +111,7 @@ endif
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= ad53d26c79eb8a2582f8d4be8005aad997144d5b
+CAR_NONFREE_COMMIT ?= d9750dcbb7bebb1eb24ad79be2f0fa0b7b438af2
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
