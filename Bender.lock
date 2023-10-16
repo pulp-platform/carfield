@@ -254,7 +254,7 @@ packages:
     - hwpe-stream
     - l2_tcdm_hybrid_interco
   hier-icache:
-    revision: fac03040e4901daad29c141fc481f7c5d3758e99
+    revision: a971e364bf8090cf77fafad995b480c1ac7ea4e0
     version: null
     source:
       Git: https://github.com/pulp-platform/hier-icache.git
@@ -375,7 +375,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: e363672d9913fa72bf6fe1e2fecc74049c107684
+    revision: b38a18b1594f1aa4faf8b15e426a276be7ead3aa
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
