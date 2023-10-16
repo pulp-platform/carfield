@@ -18,6 +18,8 @@ init:
 subpipe:
   stage: nonfree
   needs: [ init ]
+  variables:
+    PARENT_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
   trigger:
     include:
       - artifact: nonfree/ci.yml
