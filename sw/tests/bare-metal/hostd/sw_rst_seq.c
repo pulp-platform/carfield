@@ -66,7 +66,7 @@ int main(void)
     if (readw(CAR_INT_CLUSTER_BOOT_ADDR_REG) != magic)
 	return EINTCLNOACCES;
 
-    volatile uint32_t pulp_boot_addr_rst_value = 0x78000000;
+    volatile uint32_t pulp_boot_addr_rst_value = 0x78008080;
     car_reset_domain(CAR_PULP_RST);
     if (readw(CAR_INT_CLUSTER_BOOT_ADDR_REG) != pulp_boot_addr_rst_value)
 	return EINTCLNOACCES;
