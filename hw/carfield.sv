@@ -2089,6 +2089,10 @@ assign car_eth_intr = '0;
 assign eth_md_o     = '0;
 assign eth_md_oe    = '0;
 assign eth_mdc_o    = '0;
+assign eth_rst_n_o  = '0;
+assign eth_txck_o   = '0;
+assign eth_txctl_o  = '0;
+assign eth_txd_o    = '0;
 
 end
 
