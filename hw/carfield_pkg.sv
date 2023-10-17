@@ -399,6 +399,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiRtWBufferDepth   : 32,
   AxiRtNumAddrRegions : 2,
   AxiRtCutPaths       : 1,
+  AxiRtEnableChecks   : 0,
   // All non-set values should be zero
   default: '0
 };
