@@ -120,8 +120,8 @@ class stim(object):
         
   def __gen_stim_interleaved_slm(self, filename, width):
 
-    filename0 = filename + "0.sml"
-    filename1 = filename + "1.sml"
+    filename0 = filename + "0.slm"
+    filename1 = filename + "1.slm"
     
     self.dump('  Generating to file: ' + filename0 )
 
@@ -167,7 +167,7 @@ class stim(object):
       file.write('return 0; \n }\n')
                  
             
-  def __parse_binaries(self, width):
+  def __parse_binaries(self, width, start_section):
 
     self.mem = {}
 
@@ -192,7 +192,7 @@ class stim(object):
                           load = True
                           break
 
-                    if load:
+                    if load and addr >= int(start_section, 16):
 
                       self.dump('  Handling section (base: 0x%x, size: 0x%x)' % (addr, size))
 
@@ -209,9 +209,9 @@ class stim(object):
                       self.dump('  Bypassing section (base: 0x%x, size: 0x%x)' % (addr, size))
 
 
-  def gen_stim_interleaved_slm(self, stim_file):
+  def gen_stim_interleaved_slm(self, stim_file, start_section):
 
-      self.__parse_binaries(4)
+      self.__parse_binaries(4, start_section)
 
       self.__gen_stim_interleaved_slm(stim_file, 4)
       
@@ -621,6 +621,7 @@ if __name__ == "__main__":
 
   parser.add_argument("--binary", dest="binary", default=None, help="Specify input binary")
   parser.add_argument("--vectors", dest="vectors", default=None, help="Specify output vectors file")
+  parser.add_argument("--start_section", dest="start_section", default="0x0", help="Specify start address of the segments to be dumped")
 
   args = parser.parse_args()
 
@@ -635,5 +636,5 @@ if __name__ == "__main__":
 
 #    stim_gen.gen_stim_single_hyperram(args.vectors)
 
-    stim_gen.gen_stim_interleaved_slm(args.vectors)
+    stim_gen.gen_stim_interleaved_slm(args.vectors, args.start_section)
 
