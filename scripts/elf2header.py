@@ -150,7 +150,7 @@ class stim(object):
       file.write('return 0; \n }\n')
 
 
-  def __parse_binaries(self, width):
+  def __parse_binaries(self, width, start_section):
 
     self.mem = {}
 
@@ -175,8 +175,7 @@ class stim(object):
                           load = True
                           break
 
-                    if load:
-
+                    if load and addr >= int(start_section, 16):
                       self.dump('  Handling section (base: 0x%x, size: 0x%x)' % (addr, size))
 
                       self.__add_mem(addr, size, data, width)
@@ -193,9 +192,9 @@ class stim(object):
 
 
 
-  def gen_stim_header_32(self, stim_file):
+  def gen_stim_header_32(self, stim_file, start_section):
 
-    self.__parse_binaries(4)
+    self.__parse_binaries(4, start_section)
 
     self.__gen_stim_header(stim_file, 4)
 
@@ -593,6 +592,7 @@ if __name__ == "__main__":
 
   parser.add_argument("--binary", dest="binary", default=None, help="Specify input binary")
   parser.add_argument("--vectors", dest="vectors", default=None, help="Specify output vectors file")
+  parser.add_argument("--start_section", dest="start_section", default="0x0", help="Specify start address of the segments to be dumped")
 
   args = parser.parse_args()
 
@@ -605,4 +605,4 @@ if __name__ == "__main__":
 
     stim_gen.add_binary(args.binary)
 
-    stim_gen.gen_stim_header_32(args.vectors)
+    stim_gen.gen_stim_header_32(args.vectors, args.start_section)

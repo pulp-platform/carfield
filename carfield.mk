@@ -60,8 +60,10 @@ SECD_BOOTMODE ?= 0
 SECD_IMAGE    ?=
 
 # PULP cluster
-PULPD_ROOT   ?= $(shell $(BENDER) path pulp_cluster)
-PULPD_BINARY ?=
+PULPD_ROOT      ?= $(shell $(BENDER) path pulp_cluster)
+PULPD_BINARY    ?=
+PULPD_TEST_NAME ?=
+PULPD_BOOTMODE  ?=
 
 # Spatz cluster
 SPATZD_ROOT     ?= $(shell $(BENDER) path spatz)
@@ -75,12 +77,17 @@ TBENCH         ?= tb_carfield_soc
 
 # Defines for hyperram model preload at time 0
 HYP_USER_PRELOAD      ?= 0
-HYP0_PRELOAD_MEM_FILE ?= ""
-HYP1_PRELOAD_MEM_FILE ?= ""
+ifeq ($(HYP_USER_PRELOAD), 1)
+	HYP0_PRELOAD_MEM_FILE ?= "$(CAR_ROOT)/sw/tests/bare-metal/pulpd/$(PULPD_TEST_NAME).hyperram0.slm"
+	HYP1_PRELOAD_MEM_FILE ?= "$(CAR_ROOT)/sw/tests/bare-metal/pulpd/$(PULPD_TEST_NAME).hyperram1.slm"
+else
+	HYP0_PRELOAD_MEM_FILE ?= ""
+	HYP1_PRELOAD_MEM_FILE ?= ""
+endif
 
 RUNTIME_DEFINES := +define+HYP_USER_PRELOAD="$(HYP_USER_PRELOAD)"
-RUNTIME_DEFINES += +define+HYP0_PRELOAD_MEM_FILE="$(HYP0_PRELOAD_MEM_FILE)"
-RUNTIME_DEFINES += +define+HYP1_PRELOAD_MEM_FILE="$(HYP1_PRELOAD_MEM_FILE)"
+RUNTIME_DEFINES += +define+HYP0_PRELOAD_MEM_FILE=\"$(HYP0_PRELOAD_MEM_FILE)\"
+RUNTIME_DEFINES += +define+HYP1_PRELOAD_MEM_FILE=\"$(HYP1_PRELOAD_MEM_FILE)\"
 
 # Include bender targets and defines for common usage and synth verification
 # (the following includes are mandatory)
@@ -217,6 +224,7 @@ car-hw-sim:
 		 set SECD_IMAGE $(SECD_IMAGE); \
 		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
 		 set SAFED_BINARY $(SAFED_BINARY); \
+		 set PULPD_BOOTMODE $(PULPD_BOOTMODE); \
 		 set PULPD_BINARY $(PULPD_BINARY); \
 		 set SPATZD_BINARY $(SPATZD_BINARY); \
 		 set SPATZD_BOOTMODE $(SPATZD_BOOTMODE);\

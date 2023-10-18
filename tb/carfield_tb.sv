@@ -61,16 +61,19 @@ module tb_carfield_soc;
 
   // pulp cluster
   // Useful register addresses
-  localparam int unsigned CarL2StartAddr             = 32'h7800_0000;
-  localparam int unsigned CarDramStartAddr           = 32'h8000_0000;
-  localparam int unsigned PulpdNumCores              = 4;
-  localparam int unsigned PulpdBootAddrL2            = CarL2StartAddr + 32'h8080;
-  localparam int unsigned PulpdBootAddrDram          = CarDramStartAddr + 32'h8080;
-  localparam int unsigned PulpdBootAddr              = 32'h50200040;
-  localparam int unsigned CarSocCtrlPulpdFetchEnAddr = 32'h200100c0;
-  localparam int unsigned CarSocCtrlPulpdBootEnAddr  = 32'h200100dc;
-  localparam int unsigned CarSocCtrlPulpdBusyAddr    = 32'h200100e4;
-  localparam int unsigned CarSocCtrlPulpdEocAddr     = 32'h200100e8;
+  localparam int unsigned CarL2StartAddr                      = 32'h7800_0000;
+  localparam int unsigned CarDramStartAddr                    = 32'h8000_0000;
+  localparam int unsigned PulpdNumCores                       = 12;
+  localparam int unsigned PulpdBootAddrL2                     = CarL2StartAddr + 32'h8080;
+  localparam int unsigned PulpdBootAddrDram                   = CarDramStartAddr + 32'h8080;
+  localparam int unsigned PulpdBootAddr                       = 32'h50200040;
+  localparam int unsigned CarSocCtrlPulpdClkEnRegAddr         = 32'h20010078;
+  localparam int unsigned CarSocCtrlPulpdIsolateRegAddr       = 32'h20010048;
+  localparam int unsigned CarSocCtrlPulpdIsolateStatusRegAddr = 32'h20010060;
+  localparam int unsigned CarSocCtrlPulpdFetchEnAddr          = 32'h200100c0;
+  localparam int unsigned CarSocCtrlPulpdBootEnAddr           = 32'h200100dc;
+  localparam int unsigned CarSocCtrlPulpdBusyAddr             = 32'h200100e4;
+  localparam int unsigned CarSocCtrlPulpdEocAddr              = 32'h200100e8;
   // sim variables
   string      pulpd_preload_elf;
   logic [1:0] pulpd_boot_mode;
@@ -94,6 +97,8 @@ module tb_carfield_soc;
 
   parameter logic [31:0] MBOX_SPATZ_CORE0_ID = 32'h0;
   parameter logic [31:0] MBOX_SPATZ_CORE1_ID = 32'h1;
+
+  parameter int unsigned HyperRstCycles = 120100;
 
   logic [63:0] unused;
 
@@ -144,7 +149,7 @@ module tb_carfield_soc;
             is_dram = uvm_re_match("dram",chs_preload_elf);
             if(~is_dram) begin
               $display("[TB] %t - Wait for HyperRAM", $realtime);
-              repeat(120000)
+              repeat(HyperRstCycles)
                 @(posedge fix.clk);
             end
             fix.chs_vip.jtag_init();
@@ -285,6 +290,13 @@ module tb_carfield_soc;
     // Wait for reset
     fix.chs_vip.wait_for_reset();
 
+    $display("[TB] %t - Enabling PULP cluster clock for stand-alone tests ", $realtime);
+    // Clock island after PoR
+    fix.chs_vip.slink_write_32(CarSocCtrlPulpdClkEnRegAddr, 32'h1);
+    $display("[TB] %t - De-isolate PULP cluster for stand-alone tests ", $realtime);
+    // De-isolate island after PoR
+    fix.chs_vip.slink_write_32(CarSocCtrlPulpdIsolateRegAddr, 32'h0);
+
     if (pulpd_preload_elf != "") begin
       case (pulpd_boot_mode)
         0: begin
@@ -298,7 +310,7 @@ module tb_carfield_soc;
           // Write bootaddress to each core
           $display("[SLINK PULPD] Write PULP cluster boot address for each core");
           for (int c = 0; c < PulpdNumCores; c++) begin
-            fix.chs_vip.jtag_write_reg32(PulpdBootAddrL2, c*32'h4 + PulpdBootAddrDram);
+            fix.chs_vip.jtag_write_reg32(PulpdBootAddr + c*32'h4, PulpdBootAddrL2);
           end
           // Write boot enable
           $display("[SLINK PULPD] Write PULP cluster boot enable");
@@ -325,7 +337,7 @@ module tb_carfield_soc;
           // Write bootaddress to each core
           $display("[SLINK PULPD] Write PULP cluster boot address for each core");
           for (int c = 0; c < PulpdNumCores; c++) begin
-            fix.chs_vip.slink_write_32(PulpdBootAddrL2, c*32'h4 + PulpdBootAddrDram);
+            fix.chs_vip.jtag_write_reg32(PulpdBootAddr + c*32'h4, PulpdBootAddrL2);
           end
           // Write boot enable
           $display("[SLINK PULPD] Write PULP cluster boot enable");
@@ -359,10 +371,21 @@ module tb_carfield_soc;
       // Hyperrams models are preloaded at time 0. Preferably, this bootflow is used with cluster
       // accelerators, but can be extended to other islands as well. We check the EOC with the JTAG
 
+      $display("[TB] %t - Wait for HyperRAM", $realtime);
+      repeat(HyperRstCycles)
+        @(posedge fix.clk);
+
+      $display("[TB] %t - Enabling PULP cluster clock for stand-alone tests ", $realtime);
+      // Clock island after PoR
+      fix.chs_vip.slink_write_32(CarSocCtrlPulpdClkEnRegAddr, 32'h1);
+      $display("[TB] %t - De-isolate PULP cluster for stand-alone tests ", $realtime);
+      // De-isolate island after PoR
+      fix.chs_vip.slink_write_32(CarSocCtrlPulpdIsolateRegAddr, 32'h0);
+
       // Write bootaddress to each core
       $display("[SLINK PULPD] Write PULP cluster boot address for each core");
       for (int c = 0; c < PulpdNumCores; c++) begin
-        fix.chs_vip.slink_write_32(PulpdBootAddrL2, c*32'h4 + PulpdBootAddrDram);
+        fix.chs_vip.slink_write_32(PulpdBootAddr + c*32'h4, PulpdBootAddrDram);
       end
       // Write boot enable
       $display("[SLINK PULPD] Write PULP cluster boot enable");
