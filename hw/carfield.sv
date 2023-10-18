@@ -1166,6 +1166,7 @@ hyperbus_wrap      #(
 // Reconfigurable L2 Memory
 // Host Clock Domain
 
+`ifndef L2_WRAP_NETLIST
 l2_wrap #(
   .Cfg          ( Cfg                    ),
   .NumPort      ( NumL2Ports             ),
@@ -1189,6 +1190,9 @@ l2_wrap #(
   .l2_ecc_reg_req_t ( carfield_reg_req_t ),
   .l2_ecc_reg_rsp_t ( carfield_reg_rsp_t )
 ) i_reconfigurable_l2 (
+`else
+l2_wrap i_reconfigurable_l2 (
+`endif
   .clk_i               ( l2_clk                               ),
   .rst_ni              ( l2_rst_n                             ),
   .pwr_on_rst_ni       ( l2_pwr_on_rst_n                      ),
