@@ -290,14 +290,15 @@ module tb_carfield_soc;
     // Wait for reset
     fix.chs_vip.wait_for_reset();
 
-    $display("[TB] %t - Enabling PULP cluster clock for stand-alone tests ", $realtime);
-    // Clock island after PoR
-    fix.chs_vip.slink_write_32(CarSocCtrlPulpdClkEnRegAddr, 32'h1);
-    $display("[TB] %t - De-isolate PULP cluster for stand-alone tests ", $realtime);
-    // De-isolate island after PoR
-    fix.chs_vip.slink_write_32(CarSocCtrlPulpdIsolateRegAddr, 32'h0);
-
     if (pulpd_preload_elf != "") begin
+      
+      $display("[TB] %t - Enabling PULP cluster clock for stand-alone tests ", $realtime);
+      // Clock island after PoR
+      fix.chs_vip.slink_write_32(CarSocCtrlPulpdClkEnRegAddr, 32'h1);
+      $display("[TB] %t - De-isolate PULP cluster for stand-alone tests ", $realtime);
+      // De-isolate island after PoR
+      fix.chs_vip.slink_write_32(CarSocCtrlPulpdIsolateRegAddr, 32'h0);
+
       case (pulpd_boot_mode)
         0: begin
           // JTAG

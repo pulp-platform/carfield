@@ -19,10 +19,6 @@ PULPD_TEST_DIRS := $(filter-out $(wildcard $(PULPD_ROOT)/regression-tests/parall
 # simulation when preloading the L2 memory using JTAG and Serial Link.
 remove_sections := --remove-section .l1cluster_g --remove-section .bss_l1
 
-# We remove memory sections allocated in the cluster TCDM from the dumped headers and slm files. This prevents
-# CVA6/JTAG/Serial Link from uselessly write zeroes in the the TCDM at the start of the offloading procedure.
-start_section := 0x50040000
-
 # Generate the list of build targets based on the directories
 PULPD_BUILD_TARGETS := $(addsuffix /build,$(PULPD_TEST_DIRS))
 
@@ -31,23 +27,23 @@ PULPD_BUILD_TARGETS := $(addsuffix /build,$(PULPD_TEST_DIRS))
 $(PULPD_SW_DIR)/%/build: $(PULPD_ROOT) | venv
 	# Compile
 	$(MAKE) -C $(PULPD_SW_DIR)/$* all
-	cp $@/test/test $@/test/$*.bin
-	$(PULPD_RISCV)-objcopy $(remove_sections) $@/test/test
 	cp $@/test/test $(CAR_PULPD_SW)/$*.elf
+	$(PULPD_RISCV)-objcopy $(remove_sections) $(CAR_PULPD_SW)/$*.elf
+	cp $(CAR_PULPD_SW)/$*.elf $@/test/test.elf
 	@echo $(PULPD_SW_DIR)
 
 # Convert compiled binaries to header files
 PULPD_HEADER_TARGETS := $(patsubst $(PULPD_SW_DIR)/%, $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.h, $(PULPD_TEST_DIRS))
 
 $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.h: $(PULPD_SW_DIR)/%/build/test/test | venv
-	$(VENV)/python $(CAR_ROOT)/scripts/elf2header.py --binary $< --vectors $@ --start_section=$(start_section)
+	$(VENV)/python $(CAR_ROOT)/scripts/elf2header.py --binary $< --vectors $@
 
 # Convert compiled binaries to slm for hyperram
 PULPD_SLM_TARGETS := $(patsubst $(PULPD_SW_DIR)/%, $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram0.slm, $(PULPD_TEST_DIRS))
 PULPD_SLM_TARGETS += $(patsubst $(PULPD_SW_DIR)/%, $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram1.slm, $(PULPD_TEST_DIRS))
 
-$(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram0.slm $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram1.slm: $(PULPD_SW_DIR)/%/build/test/test | venv
-	$(VENV)/python $(CAR_ROOT)/scripts/elf2slm.py --binary=$< --vectors=$(CAR_SW_DIR)/tests/bare-metal/pulpd/$*.hyperram --start_section=$(start_section)
+$(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram0.slm $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.hyperram1.slm: $(PULPD_SW_DIR)/%/build/test/test.elf | venv
+	$(VENV)/python $(CAR_ROOT)/scripts/elf2slm.py --binary=$< --vectors=$(CAR_SW_DIR)/tests/bare-metal/pulpd/$*.hyperram
 
 # Global targets
 pulpd-sw-all: $(PULPD_BUILD_TARGETS) $(PULPD_HEADER_TARGETS) $(PULPD_SLM_TARGETS)
