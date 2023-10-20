@@ -153,10 +153,12 @@ module tb_carfield_soc;
                 @(posedge fix.clk);
             end
             fix.chs_vip.jtag_init();
+            $display("[TB] %t - Loading '%s' through JTAG", $realtime, chs_preload_elf);
             fix.chs_vip.jtag_elf_run(chs_preload_elf);
             fix.chs_vip.jtag_wait_for_eoc(exit_code);
           end 1: begin  // Standalone Serial Link passive preload
             // Cheshire
+            $display("[TB] %t - Loading '%s' through SLINK", $realtime, chs_preload_elf);
             fix.chs_vip.slink_elf_run(chs_preload_elf);
             fix.chs_vip.slink_wait_for_eoc(exit_code);
           end 2: begin // Standalone UART passive preload
@@ -174,6 +176,7 @@ module tb_carfield_soc;
         $fatal(1, "Unsupported boot mode %d (SD Card)!", boot_mode);
       end else begin
         // Autonomous boot: Only poll return code
+        $display("[TB] %t - Entering autonomous boot mode", $realtime);
         fix.chs_vip.jtag_init();
         fix.chs_vip.jtag_wait_for_eoc(exit_code);
       end
@@ -185,6 +188,8 @@ module tb_carfield_soc;
       wait (fix.chs_vip.uart_reading_byte == 0);
 
       $finish;
+    end else begin
+      $display("[TB] %t - Cheshire not executing no binary provided", $realtime);
     end
   end
 
