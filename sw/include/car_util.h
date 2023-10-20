@@ -12,7 +12,9 @@
 #include "car_memory_map.h"
 #include "car_properties.h"
 #include "regs/soc_ctrl.h"
+#include "regs/irq_router.h"
 #include "io.h"
+#include "bits.h"
 
 // execution error codes
 #define EHOSTDEXEC  1 // Execution error host domain
@@ -27,6 +29,8 @@
 #define EFPCLNOACCES    9 // Access error in floating point cluster
 #define EPERIPHNOACCES 10 // Access error in peripheral domain
 
+#define CAR_ERR_OK       0
+#define CAR_ERR_FAIL    20
 // Clock and reset control
 
 // for the calculation check safety island top
@@ -227,6 +231,62 @@ void car_init_start()
 void car_init_stop()
 {
     // TODO: init destructors list
+}
+
+int car_irq_router_enable(int irq, enum car_irq_router_target target)
+{
+    if ((~BIT_MASK(IRQ_ROUTER_NUM_TARGETS) & target) != 0)
+	return CAR_ERR_FAIL;
+
+    if (irq >= IRQ_ROUTER_NUM_IRQ_SRCS)
+	return CAR_ERR_FAIL;
+
+    // preserve previous enabled irqs
+    uint32_t val = readw(CAR_IRQ_ROUTER_BASE_ADDR + IRQ_ROUTER_IRQ_TARGET_MASK_REG_OFFSET(irq));
+    writew(target | val, CAR_IRQ_ROUTER_BASE_ADDR + IRQ_ROUTER_IRQ_TARGET_MASK_REG_OFFSET(irq));
+
+    return CAR_ERR_OK;
+}
+
+int car_irq_router_range_enable(int lower, int upper, enum car_irq_router_target target)
+{
+    if (lower >= upper)
+	return CAR_ERR_FAIL;
+
+    for (int k = lower; k < upper; k++) {
+	if (car_irq_router_enable(k, target) != CAR_ERR_OK)
+	    return CAR_ERR_FAIL;
+    }
+
+    return CAR_ERR_OK;
+}
+
+int car_irq_router_disable(int irq, enum car_irq_router_target target)
+{
+    if ((~BIT_MASK(IRQ_ROUTER_NUM_TARGETS) & target) != 0)
+	return CAR_ERR_FAIL;
+
+    if (irq >= IRQ_ROUTER_NUM_IRQ_SRCS)
+	return CAR_ERR_FAIL;
+
+    // preserve previous enabled irqs
+    uint32_t val = readw(CAR_IRQ_ROUTER_BASE_ADDR + IRQ_ROUTER_IRQ_TARGET_MASK_REG_OFFSET(irq));
+    writew(val & ~target, CAR_IRQ_ROUTER_BASE_ADDR + IRQ_ROUTER_IRQ_TARGET_MASK_REG_OFFSET(irq));
+
+    return CAR_ERR_OK;
+}
+
+int car_irq_router_range_disable(int lower, int upper, enum car_irq_router_target target)
+{
+    if (lower >= upper)
+	return CAR_ERR_FAIL;
+
+    for (int k = lower; k < upper; k++) {
+	if (car_irq_router_disable(k, target) != CAR_ERR_OK)
+	    return CAR_ERR_FAIL;
+    }
+
+    return CAR_ERR_OK;
 }
 
 
