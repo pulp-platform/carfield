@@ -127,7 +127,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 9eae1a9c76c137c94ce92a8442eda0b44d39eaa2
+    revision: 0a06d3f13a074cee01ded62cef2d6eb1142e6d8b
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -153,7 +153,7 @@ packages:
     - unbent
   clic:
     revision: 9f3ead92e9ce4c867af7eae6fc64d1f5cd065ddf
-    version: null
+    version: 3.0.0-rc2
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -205,7 +205,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: 8ab94b8477a2dba4ec837d5d49841ee8ef973c32
+    revision: ec242579ea25a1f6bef7235591814dd1e475f90c
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
