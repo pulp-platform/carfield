@@ -3,5 +3,4 @@
 *.elf
 *.memh
 *.slm
-*.h
 benchmarks/

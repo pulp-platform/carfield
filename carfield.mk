@@ -102,7 +102,7 @@ VENVDIR?=$(WORKDIR)/.venv
 REQUIREMENTS_TXT?=$(wildcard requirements.txt)
 include $(CAR_ROOT)/utils/venv.mk
 
-QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7
+QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7 +UVM_NO_RELNOTES
 ifdef DEBUG
 	VOPT_FLAGS := $(QUESTA_FLAGS) +acc
 	VSIM_FLAGS := $(QUESTA_FLAGS)

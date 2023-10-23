@@ -74,6 +74,13 @@ extern void *__base_l2;
 #define CAR_HYPERRAM_END_ADDR  0x80800000
 
 // Peripheral devices
+// from cheshire
+#define CAR_BOOTROM_BASE_ADDR        0x000002000000
+#define CAR_CLINT_BASE_ADDR          0x000002040000 // for both cores
+#define CAR_IRQ_ROUTER_BASE_ADDR     0x000002080000
+#define CAR_IRQ_AXI_REALM_BASE_ADDR  0x0000020c0000
+
+// from carfield proper
 #define CAR_PERIPHS_BASE_ADDR        0x20000000
 
 #define CAR_ETHERNET_OFFSET          0x0000
