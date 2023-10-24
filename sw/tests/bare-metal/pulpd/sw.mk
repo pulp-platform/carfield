@@ -13,7 +13,6 @@
 CAR_PULPD_SW := $(CAR_SW_DIR)/tests/bare-metal/pulpd
 PULPD_SW_DIR := $(PULPD_ROOT)/regression-tests/carfield
 PULPD_TEST_DIRS := $(wildcard $(PULPD_ROOT)/regression-tests/carfield/*)
-PULPD_TEST_DIRS := $(filter-out $(wildcard $(PULPD_ROOT)/regression-tests/carfield/*.cfg),$(PULPD_TEST_DIRS))
 
 # We remove unneded TCDM sections directly from the binary we want to generate. This speeds up the standalone
 # simulation when preloading the L2 memory using JTAG and Serial Link.
