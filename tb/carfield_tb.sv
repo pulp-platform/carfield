@@ -67,6 +67,7 @@ module tb_carfield_soc;
   localparam int unsigned PulpdBootAddrL2                     = CarL2StartAddr + 32'h8080;
   localparam int unsigned PulpdBootAddrDram                   = CarDramStartAddr + 32'h8080;
   localparam int unsigned PulpdBootAddr                       = 32'h50200040;
+  localparam int unsigned PulpdRetAddr                        = 32'h50200100;
   localparam int unsigned CarSocCtrlPulpdClkEnRegAddr         = 32'h20010078;
   localparam int unsigned CarSocCtrlPulpdIsolateRegAddr       = 32'h20010048;
   localparam int unsigned CarSocCtrlPulpdIsolateStatusRegAddr = 32'h20010060;
@@ -78,6 +79,7 @@ module tb_carfield_soc;
   string      pulpd_preload_elf;
   logic [1:0] pulpd_boot_mode;
   bit  [31:0] pulpd_exit_code;
+  bit  [31:0] pulpd_ret_val;
   doub_bt     pulpd_binary_entry;
   doub_bt     pulpd_reg_value;
 
@@ -327,8 +329,8 @@ module tb_carfield_soc;
 
           // Poll memory address for PULP EOC
           fix.chs_vip.jtag_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
-          pulpd_exit_code >>= 1;
-          if (pulpd_exit_code) $error("[JTAG PULP] FAILED: return code %0d", pulpd_exit_code);
+          fix.slink_read_reg(PulpdRetAddr, pulpd_ret_val, 20);
+          if (pulpd_ret_val[30:0] != 'h0) $error("[JTAG PULP] FAILED: return code %x", pulpd_ret_val);
           else $display("[JTAG PULP] SUCCESS");
         end
 
@@ -343,7 +345,7 @@ module tb_carfield_soc;
           // Write bootaddress to each core
           $display("[SLINK PULPD] Write PULP cluster boot address for each core");
           for (int c = 0; c < PulpdNumCores; c++) begin
-            fix.chs_vip.jtag_write_reg32(PulpdBootAddr + c*32'h4, PulpdBootAddrL2);
+            fix.chs_vip.slink_write_32(PulpdBootAddr + c*32'h4, PulpdBootAddrL2);
           end
           // Write boot enable
           $display("[SLINK PULPD] Write PULP cluster boot enable");
@@ -354,8 +356,8 @@ module tb_carfield_soc;
 
           // Poll memory address for PULP EOC
           fix.chs_vip.slink_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
-          pulpd_exit_code >>= 1;
-          if (pulpd_exit_code) $error("[SLINK PULP] FAILED: return code %0d", pulpd_exit_code);
+          fix.slink_read_reg(PulpdRetAddr, pulpd_ret_val, 20);
+          if (pulpd_ret_val[30:0] != 'h0) $error("[JTAG PULP] FAILED: return code %x", pulpd_ret_val);
           else $display("[SLINK PULP] SUCCESS");
         end
         default: begin
@@ -402,8 +404,8 @@ module tb_carfield_soc;
 
       // Poll memory address for PULP EOC
       fix.chs_vip.slink_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
-      pulpd_exit_code >>= 1;
-      if (pulpd_exit_code) $error("[SLINK PULP] FAILED: return code %0d", pulpd_exit_code);
+      fix.slink_read_reg(PulpdRetAddr, pulpd_ret_val, 20);
+      if (pulpd_ret_val[30:0] != 'h0) $error("[JTAG PULP] FAILED: return code %x", pulpd_ret_val);
       else $display("[SLINK PULP] SUCCESS");
 
       $finish;

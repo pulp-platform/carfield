@@ -448,4 +448,15 @@ module carfield_soc_fixture;
     secure_boot = sb;
   endtask
 
+  task automatic slink_read_reg(
+    input doub_bt addr,
+    output word_bt data,
+    input int unsigned idle_cycles
+  );
+    axi_data_t beats [$];
+    #(ClkPeriodSys * idle_cycles);
+    chs_vip.slink_read_beats(addr, 2, 0, beats);
+    data = beats[0];
+  endtask
+
 endmodule
