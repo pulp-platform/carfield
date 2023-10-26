@@ -12,6 +12,7 @@ work/
 /logs/
 /working_dir/
 /uart
+/stdout
 
 # sw auto-generated
 sw/tests/bare-metal/safed/*.h
