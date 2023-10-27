@@ -1745,6 +1745,7 @@ axi_to_axi_lite #(
   .AxiUserWidth   ( Cfg.AxiUserWidth                ),
   .AxiMaxWriteTxns( 1                               ),
   .AxiMaxReadTxns ( 1                               ),
+  .FullBW         ( 1                               ),
   .FallThrough    ( 1                               ),
   .full_req_t     ( carfield_axi_d32_slv_req_t      ),
   .full_resp_t    ( carfield_axi_d32_slv_rsp_t      ),
