@@ -30,6 +30,7 @@ int main(void)
   load_binary();
 
   volatile uint32_t pulp_boot_default = 0x78008080;
+  volatile uint32_t pulp_ret_val = 0;
 
   pulp_cluster_set_bootaddress(pulp_boot_default);
 
@@ -41,6 +42,8 @@ int main(void)
 
   pulp_cluster_wait_eoc();
 
-  return 0;
+  pulp_ret_val = pulp_cluster_get_return();
+
+  return pulp_ret_val;
 
 }

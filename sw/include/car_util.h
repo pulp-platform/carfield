@@ -371,4 +371,9 @@ void pulp_cluster_wait_eoc() {
 
 }
 
+uint32_t pulp_cluster_get_return(){
+  volatile uint32_t *pulp_return_addr = (uint32_t*)(CAR_INT_CLUSTER_RETURN_ADDR);
+  return readw(pulp_return_addr);
+}
+
 #endif
