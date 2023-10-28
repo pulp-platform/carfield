@@ -316,15 +316,15 @@ module tb_carfield_soc;
 
           // boot
           // Write bootaddress to each core
-          $display("[SLINK PULPD] Write PULP cluster boot address for each core");
+          $display("[JTAG PULPD] Write PULP cluster boot address for each core");
           for (int c = 0; c < PulpdNumCores; c++) begin
             fix.chs_vip.jtag_write_reg32(PulpdBootAddr + c*32'h4, PulpdBootAddrL2);
           end
           // Write boot enable
-          $display("[SLINK PULPD] Write PULP cluster boot enable");
+          $display("[JTAG PULPD] Write PULP cluster boot enable");
           fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdBootEnAddr, 32'h1);
           // Write fetch enable
-          $display("[SLINK PULPD] Write PULP cluster fetch enable");
+          $display("[JTAG PULPD] Write PULP cluster fetch enable");
           fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdFetchEnAddr, 32'h1);
 
           // Poll memory address for PULP EOC
@@ -357,7 +357,7 @@ module tb_carfield_soc;
           // Poll memory address for PULP EOC
           fix.chs_vip.slink_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
           fix.slink_read_reg(PulpdRetAddr, pulpd_ret_val, 20);
-          if (pulpd_ret_val[30:0] != 'h0) $error("[JTAG PULP] FAILED: return code %x", pulpd_ret_val);
+          if (pulpd_ret_val[30:0] != 'h0) $error("[SLINK PULP] FAILED: return code %x", pulpd_ret_val);
           else $display("[SLINK PULP] SUCCESS");
         end
         default: begin
