@@ -661,50 +661,6 @@
       ],
     }
 
-    { name: "L2_SRAM_CONFIG0",
-      desc: "L2 RAM cfg pins -margin adjustments-",
-      swaccess: "rw",
-      hwaccess: "hro",
-      resval: "0",
-      hwqe: "0",
-      fields: [
-        { bits: "31:0" }
-      ],
-    }
-
-    { name: "L2_SRAM_CONFIG1",
-      desc: "L2 RAM cfg pins -margin adjustments-",
-      swaccess: "rw",
-      hwaccess: "hro",
-      resval: "0",
-      hwqe: "0",
-      fields: [
-        { bits: "31:0" }
-      ],
-    }
-
-    { name: "L2_SRAM_CONFIG2",
-      desc: "L2 RAM cfg pins -margin adjustments-",
-      swaccess: "rw",
-      hwaccess: "hro",
-      resval: "0",
-      hwqe: "0",
-      fields: [
-        { bits: "31:0" }
-      ],
-    }
-
-    { name: "L2_SRAM_CONFIG3",
-      desc: "L2 RAM cfg pins -margin adjustments-",
-      swaccess: "rw",
-      hwaccess: "hro",
-      resval: "0",
-      hwqe: "0",
-      fields: [
-        { bits: "31:0" }
-      ],
-    }
-
     { name: "ETH_RGMII_PHY_CLK_DIV_EN",
       desc: "Ethernet RGMII PHY clock divider enable bit",
       swaccess: "rw",
