@@ -241,7 +241,7 @@ assign car_periph_intrs = {
   car_wdt_intrs               // 5
 };
 
-// Mailbox unit
+// Mailbox unit interrupts
 
 localparam int unsigned CheshireNumIntHarts = Cfg.NumCores;
 localparam int unsigned SafedNumIntHarts    = 1;
@@ -264,7 +264,7 @@ localparam int unsigned NumMailboxes           = NumMailboxesHostd + NumMailboxe
 // verilog_lint: waive-stop line-length
 
 // Interrupt lines
-logic [NumMailboxes-1:0] snd_mbox_intrs, rcv_mbox_intrs;
+logic [NumMailboxes-1:0] snd_mbox_intrs;
 
 // Floating point cluster (Spatz cluster)
 
@@ -398,8 +398,8 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 // verilog_lint: waive-stop line-length
 
 // External register interface synchronous with Cheshire's clock domain
-carfield_reg_req_t [iomsb(NumSyncRegSlv):0] ext_reg_req;
-carfield_reg_rsp_t [iomsb(NumSyncRegSlv):0] ext_reg_rsp;
+carfield_reg_req_t [iomsb(NumSyncRegSlv):0] ext_reg_req, ext_reg_req_cut;
+carfield_reg_rsp_t [iomsb(NumSyncRegSlv):0] ext_reg_rsp, ext_reg_rsp_cut;
 
 localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth   +
                                      $clog2(AxiIn.num_in)+
@@ -756,14 +756,29 @@ assign debug_signals_o.host_pwr_on_rst_n = host_pwr_on_rst_n;
 // Carfield Control and Status registers
 //
 
+// Cut synchronous register interface
+for (genvar i=0; i<NumSyncRegSlv; i++ ) begin : gen_chs_ext_reg_cut
+  reg_cut #(
+    .req_t ( carfield_reg_req_t ),
+    .rsp_t ( carfield_reg_rsp_t )
+  ) i_chs_sync_ext_reg_cut (
+    .clk_i     ( host_clk_i ),
+    .rst_ni    ( host_pwr_on_rst_n ),
+    .src_req_i ( ext_reg_req ),
+    .src_rsp_o ( ext_reg_rsp ),
+    .dst_req_o ( ext_reg_req_cut ),
+    .dst_rsp_i ( ext_reg_rsp_cut )
+  );
+end
+
 carfield_reg_top #(
   .reg_req_t(carfield_reg_req_t),
   .reg_rsp_t(carfield_reg_rsp_t)
 ) i_carfield_reg_top (
   .clk_i (host_clk_i),
   .rst_ni (host_pwr_on_rst_n),
-  .reg_req_i(ext_reg_req[CarRegsIdx]),
-  .reg_rsp_o(ext_reg_rsp[CarRegsIdx]),
+  .reg_req_i(ext_reg_req_cut[CarRegsIdx]),
+  .reg_rsp_o(ext_reg_rsp_cut[CarRegsIdx]),
   .reg2hw (car_regs_reg2hw),
   .hw2reg (car_regs_hw2reg),
   .devmode_i (1'b1)
@@ -845,9 +860,9 @@ carfield_a32_d32_reg_rsp_t reg_hyper_rsp;
 carfield_a32_d32_reg_req_t reg_wdt_req;
 carfield_a32_d32_reg_rsp_t reg_wdt_rsp;
 
-// Mailbox unit
-carfield_axi_slv_req_t axi_mbox_req;
-carfield_axi_slv_rsp_t axi_mbox_rsp;
+// mailbox
+carfield_axi_slv_req_t axi_mbox_req, axi_amo_mbox_req, axi_amo_cut_mbox_req;
+carfield_axi_slv_rsp_t axi_mbox_rsp, axi_amo_mbox_rsp, axi_amo_cut_mbox_rsp;
 
 //////////////////
 // Carfield IPs //
@@ -1693,75 +1708,78 @@ else begin : gen_no_secure_subsystem
   assign jtag_ot_tdo_o = jtag_ot_tdi_i;
 end
 
-// Security Island Mailbox
-// Host Clock Domain
+// Mailbox unit
 
-// Convert to 32-bit datawidth
-// verilog_lint: waive-start line-length
-`AXI_TYPEDEF_ALL_CT(carfield_axi_d32_slv, carfield_axi_d32_slv_req_t, carfield_axi_d32_slv_rsp_t, logic [Cfg.AddrWidth-1:0], logic [AxiSlvIdWidth-1:0], logic [31:0], logic [3:0], logic [Cfg.AxiUserWidth-1:0])
-// verilog_lint: waive-stop line-length
+// Shim atomics, which are not supported in reg
+// TODO: should we use a filter instead here?
+axi_riscv_atomics_structs #(
+  .AxiAddrWidth     ( Cfg.AddrWidth          ),
+  .AxiDataWidth     ( Cfg.AxiDataWidth       ),
+  .AxiIdWidth       ( AxiSlvIdWidth          ),
+  .AxiUserWidth     ( Cfg.AxiUserWidth       ),
+  .AxiMaxReadTxns   ( Cfg.RegMaxReadTxns     ),
+  .AxiMaxWriteTxns  ( Cfg.RegMaxWriteTxns    ),
+  .AxiUserAsId      ( 1                      ),
+  .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb      ),
+  .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb      ),
+  .RiscvWordWidth   ( 64                     ),
+  .NAxiCuts         ( Cfg.RegAmoNumCuts      ),
+  .axi_req_t        ( carfield_axi_slv_req_t ),
+  .axi_rsp_t        ( carfield_axi_slv_rsp_t )
+) i_atomics_mbox (
+  .clk_i         ( host_clk_i        ),
+  .rst_ni        ( host_pwr_on_rst_n ),
+  .axi_slv_req_i ( axi_mbox_req     ),
+  .axi_slv_rsp_o ( axi_mbox_rsp     ),
+  .axi_mst_req_o ( axi_amo_mbox_req ),
+  .axi_mst_rsp_i ( axi_amo_mbox_rsp )
+);
 
-carfield_axi_d32_slv_req_t axi_d32_mbox_req;
-carfield_axi_d32_slv_rsp_t axi_d32_mbox_rsp;
-
-axi_dw_converter #(
-  .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth              ),
-  .AxiMstPortDataWidth  ( 32                            ),
-  .AxiAddrWidth         ( Cfg.AddrWidth                 ),
-  .AxiIdWidth           ( AxiSlvIdWidth                 ),
-  .aw_chan_t            ( carfield_axi_slv_aw_chan_t    ),
-  .mst_w_chan_t         ( carfield_axi_d32_slv_w_chan_t ),
-  .slv_w_chan_t         ( carfield_axi_slv_w_chan_t     ),
-  .b_chan_t             ( carfield_axi_slv_b_chan_t     ),
-  .ar_chan_t            ( carfield_axi_slv_ar_chan_t    ),
-  .mst_r_chan_t         ( carfield_axi_d32_slv_r_chan_t ),
-  .slv_r_chan_t         ( carfield_axi_slv_r_chan_t     ),
-  .axi_mst_req_t        ( carfield_axi_d32_slv_req_t    ),
-  .axi_mst_resp_t       ( carfield_axi_d32_slv_rsp_t    ),
-  .axi_slv_req_t        ( carfield_axi_slv_req_t        ),
-  .axi_slv_resp_t       ( carfield_axi_slv_rsp_t        )
-) i_axi_dw_converter_mailbox (
-  .clk_i      ( host_clk_i       ),
+// AXI cut
+axi_cut #(
+  .Bypass     ( ~Cfg.RegAmoPostCut ),
+  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+  .axi_req_t  ( carfield_axi_slv_req_t     ),
+  .axi_resp_t ( carfield_axi_slv_rsp_t     )
+) i_cut_mbox (
+  .clk_i      ( host_clk_i ),
   .rst_ni     ( host_pwr_on_rst_n ),
-  .slv_req_i  ( axi_mbox_req     ),
-  .slv_resp_o ( axi_mbox_rsp     ),
-  .mst_req_o  ( axi_d32_mbox_req ),
-  .mst_resp_i ( axi_d32_mbox_rsp )
+  .slv_req_i  ( axi_amo_mbox_req     ),
+  .slv_resp_o ( axi_amo_mbox_rsp     ),
+  .mst_req_o  ( axi_amo_cut_mbox_req ),
+  .mst_resp_i ( axi_amo_cut_mbox_rsp )
 );
 
-// AXI to AXI lite conversion
+// Convert from AXI to reg protocol
+carfield_reg_req_t reg_mbox_req;
+carfield_reg_rsp_t reg_mbox_rsp;
 
-// verilog_lint: waive-start line-length
-`AXI_LITE_TYPEDEF_ALL_CT(carfield_axi_lite_d32, carfield_axi_lite_d32_slv_req_t, carfield_axi_lite_d32_slv_rsp_t, logic [Cfg.AddrWidth-1:0], logic [31:0], logic [3:0])
-// verilog_lint: waive-stop line-length
-
-carfield_axi_lite_d32_slv_req_t axi_lite_d32_mbox_req;
-carfield_axi_lite_d32_slv_rsp_t axi_lite_d32_mbox_rsp;
-
-axi_to_axi_lite #(
-  .AxiAddrWidth   ( Cfg.AddrWidth                   ),
-  .AxiDataWidth   ( 32                              ),
-  .AxiIdWidth     ( AxiSlvIdWidth                   ),
-  .AxiUserWidth   ( Cfg.AxiUserWidth                ),
-  .AxiMaxWriteTxns( 1                               ),
-  .AxiMaxReadTxns ( 1                               ),
-  .FallThrough    ( 1                               ),
-  .full_req_t     ( carfield_axi_d32_slv_req_t      ),
-  .full_resp_t    ( carfield_axi_d32_slv_rsp_t      ),
-  .lite_req_t     ( carfield_axi_lite_d32_slv_req_t ),
-  .lite_resp_t    ( carfield_axi_lite_d32_slv_rsp_t )
-) i_axi_to_axi_lite_mailbox (
-  .clk_i     ( host_clk_i            ),
-  .rst_ni    ( host_pwr_on_rst_n     ),
-  .test_i    ( test_mode_i           ),
-  .slv_req_i ( axi_d32_mbox_req      ),
-  .slv_resp_o( axi_d32_mbox_rsp      ),
-  .mst_req_o ( axi_lite_d32_mbox_req ),
-  .mst_resp_i( axi_lite_d32_mbox_rsp )
+axi_to_reg_v2 #(
+  .AxiAddrWidth ( Cfg.AddrWidth    ),
+  .AxiDataWidth ( Cfg.AxiDataWidth ),
+  .AxiIdWidth   ( AxiSlvIdWidth    ),
+  .AxiUserWidth ( Cfg.AxiUserWidth ),
+  .RegDataWidth ( AxiNarrowDataWidth ), // 32-bit
+  .axi_req_t    ( carfield_axi_slv_req_t ),
+  .axi_rsp_t    ( carfield_axi_slv_rsp_t ),
+  .reg_req_t    ( carfield_reg_req_t ),
+  .reg_rsp_t    ( carfield_reg_rsp_t )
+) i_axi_to_reg_v2_mbox (
+  .clk_i     ( host_clk_i ),
+  .rst_ni    ( host_pwr_on_rst_n ),
+  .axi_req_i ( axi_amo_cut_mbox_req ),
+  .axi_rsp_o ( axi_amo_cut_mbox_rsp ),
+  .reg_req_o ( reg_mbox_req ),
+  .reg_rsp_i ( reg_mbox_rsp ),
+  .reg_id_o  ( ),
+  .busy_o    ( )
 );
 
-// Mailboxes
-// Assign interrupts from the mailbox unit
+// Interrupts assignment for mailbox unit
 
 // verilog_lint: waive-start line-length
 
@@ -1843,21 +1861,18 @@ assign spatzcl_mbox_intr = hostd_spatzcl_mbox_intr_ored | safed_spatzcl_mbox_int
 assign pulpcl_mbox_intr = hostd_pulpcl_mbox_intr_ored | safed_pulpcl_mbox_intr;
 // For the security island. OR together interrupts coming from the host domain and the safe domain
 assign secd_mbox_intr = hostd_secd_mbox_intr_ored | safed_secd_mbox_intr;
-// For the host domain
-// TODO: add
 
-axi_lite_mailbox_unit #(
-  .AXI_ADDR_WIDTH  ( Cfg.AddrWidth                   ),
-  .axi_lite_req_t  ( carfield_axi_lite_d32_slv_req_t ),
-  .axi_lite_resp_t ( carfield_axi_lite_d32_slv_rsp_t ),
-  .NumMbox          ( NumMailboxes                   )
+mailbox_unit #(
+  .reg_req_t( carfield_reg_req_t ),
+  .reg_rsp_t( carfield_reg_rsp_t ),
+  .NumMbox  ( NumMailboxes )
 ) i_mailbox_unit (
-  .clk_i            ( host_clk_i             ),
-  .rst_ni           ( host_pwr_on_rst_n      ),
-  .axi_lite_req_i   ( axi_lite_d32_mbox_req  ),
-  .axi_lite_rsp_o   ( axi_lite_d32_mbox_rsp  ),
-  .snd_irq_o        ( snd_mbox_intrs         ),
-  .rcv_irq_o        ( rcv_mbox_intrs         )
+  .clk_i     ( host_clk_i ),
+  .rst_ni    ( host_pwr_on_rst_n ),
+  .reg_req_i ( reg_mbox_req ),
+  .reg_rsp_o ( reg_mbox_rsp ),
+  .snd_irq_o ( snd_mbox_intrs ),
+  .rcv_irq_o ( )
 );
 
 // Carfield peripherals
