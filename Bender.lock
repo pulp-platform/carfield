@@ -375,7 +375,7 @@ packages:
     dependencies:
     - axi_slice
   pulp_cluster:
-    revision: 450eb8780a3fe62cac6bcb0b34542ede2bc7c3c0
+    revision: de93f2001ee0a6fca1dc11f6dd95119d8e6aadfb
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -416,7 +416,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: f3b1bc9b2e816fe1b51147ceafa8955326d1b466
+    revision: 32023555679cfdb8a0a073ad4c17fc3a5d1ddea5
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -436,7 +436,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: 8d1fac5542625f30551f3bfd44f512e83c6a6a50
+    revision: a1dcae35edae6092ddbf92c424690cb903b678d5
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
