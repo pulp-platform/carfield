@@ -398,8 +398,8 @@ localparam int unsigned IntClusterAxiMstRWidth  =
 // verilog_lint: waive-stop line-length
 
 // External register interface synchronous with Cheshire's clock domain
-carfield_reg_req_t [iomsb(NumSyncRegSlv):0] ext_reg_req;
-carfield_reg_rsp_t [iomsb(NumSyncRegSlv):0] ext_reg_rsp;
+carfield_reg_req_t [iomsb(NumSyncRegSlv):0] ext_reg_req, ext_reg_req_cut;
+carfield_reg_rsp_t [iomsb(NumSyncRegSlv):0] ext_reg_rsp, ext_reg_rsp_cut;
 
 localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth   +
                                      $clog2(AxiIn.num_in)+
@@ -756,14 +756,29 @@ assign debug_signals_o.host_pwr_on_rst_n = host_pwr_on_rst_n;
 // Carfield Control and Status registers
 //
 
+// Cut synchronous register interface
+for (genvar i=0; i<NumSyncRegSlv; i++ ) begin : gen_chs_ext_reg_cut
+  reg_cut #(
+    .req_t ( carfield_reg_req_t ),
+    .rsp_t ( carfield_reg_rsp_t )
+  ) i_chs_sync_ext_reg_cut (
+    .clk_i     ( host_clk_i ),
+    .rst_ni    ( host_pwr_on_rst_n ),
+    .src_req_i ( ext_reg_req ),
+    .src_rsp_o ( ext_reg_rsp ),
+    .dst_req_o ( ext_reg_req_cut ),
+    .dst_rsp_i ( ext_reg_rsp_cut )
+  );
+end
+
 carfield_reg_top #(
   .reg_req_t(carfield_reg_req_t),
   .reg_rsp_t(carfield_reg_rsp_t)
 ) i_carfield_reg_top (
   .clk_i (host_clk_i),
   .rst_ni (host_pwr_on_rst_n),
-  .reg_req_i(ext_reg_req[CarRegsIdx]),
-  .reg_rsp_o(ext_reg_rsp[CarRegsIdx]),
+  .reg_req_i(ext_reg_req_cut[CarRegsIdx]),
+  .reg_rsp_o(ext_reg_rsp_cut[CarRegsIdx]),
   .reg2hw (car_regs_reg2hw),
   .hw2reg (car_regs_hw2reg),
   .devmode_i (1'b1)
