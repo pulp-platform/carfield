@@ -226,9 +226,9 @@ localparam safety_island_pkg::safety_island_cfg_t SafetyIslandCfg = '{
     // JTAG ID code:
     // LSB                        [0]:     1'h1
     // PULP Platform Manufacturer [11:1]:  11'h6d9
-    // Part Number                [27:12]: 16'h0000 --> TBD!
+    // Part Number                [27:12]: 16'hca71
     // Version                    [31:28]: 4'h1
-    PulpJtagIdCode:     32'h1_0000_db3,
+    PulpJtagIdCode:     32'h1_ca71_db3,
     NumTimers:          1,
     UseClic:            1,
     ClicIntCtlBits:     8,
@@ -346,7 +346,12 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   IrqRouter         : 1,
   BusErr            : 1,
   // Debug
-  DbgIdCode         : CheshireIdCode,
+  DbgIdCode         : '{
+    version: 4'h1,
+    part_num: 16'hca70,
+    manufacturer: JtagPulpManufacturer,
+    _one: 1
+  },
   DbgMaxReqs        : 4,
   DbgMaxReadTxns    : 4,
   DbgMaxWriteTxns   : 4,
