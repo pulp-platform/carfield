@@ -25,9 +25,6 @@
 
 int main(void) {
 
-    // Init the HW
-    car_init_start();
-
     // enable and configure axi rt with fragmentation of 8 beats
     __axirt_claim(1, 1);
     __axirt_set_len_limit_group(7, 0);

@@ -21,7 +21,8 @@
 int main(void)
 {
   // Init the HW
-  car_init_start();
+  // PULP Island
+  car_enable_domain(CAR_PULP_RST);
 
   char str[] = "Cluster boot.\r\n";
   uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
