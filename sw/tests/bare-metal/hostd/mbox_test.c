@@ -55,8 +55,5 @@ void trap_vector (void){
    writew(0x0, 0x40000C04);
    writew(0x0, 0x40000C0C);
    writew(0x1, 0x40000C08);
-   char str[] = "[CVA6] Mailbox test succeed!\r\n";
-   uart_write_str(&__base_uart, str, sizeof(str));
-   uart_write_flush(&__base_uart);
    return;
 }

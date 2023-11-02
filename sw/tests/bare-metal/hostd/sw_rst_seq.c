@@ -20,8 +20,17 @@
 
 int main(void)
 {
-    // Init the HW
-    car_init_start();
+    // Safety Island
+    car_enable_domain(CAR_SAFETY_RST);
+
+    // Security Island
+//    car_enable_domain(CAR_SECURITY_RST);
+
+    // PULP Island
+    car_enable_domain(CAR_PULP_RST);
+
+    // Spatz Island
+    car_enable_domain(CAR_SPATZ_RST);
 
     // Safety Island
 

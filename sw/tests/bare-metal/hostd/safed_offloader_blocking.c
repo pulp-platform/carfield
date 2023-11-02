@@ -22,10 +22,11 @@ extern int load_safed_payload ();
 
 int main(void)
 {
-        // Init the HW
-        car_init_start();
+	// Init the HW
+	// Safety Island
+	car_enable_domain(CAR_SAFETY_RST);
 
-        // Here we assume that the offloader has to poll a status register to catch the end of
+	// Here we assume that the offloader has to poll a status register to catch the end of
 	// computation of the Safety Island. Therefore, the offloading is blocking.
 	uint32_t ret = safed_offloader_blocking();
 

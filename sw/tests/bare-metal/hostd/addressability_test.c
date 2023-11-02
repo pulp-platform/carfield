@@ -140,7 +140,14 @@ int probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int sa
 int main(void) {
 
     // Init the HW
-    car_init_start();
+    // Safety Island
+    car_enable_domain(CAR_SAFETY_RST);
+
+    // PULP Island
+    car_enable_domain(CAR_PULP_RST);
+
+    // Spatz Island
+    car_enable_domain(CAR_SPATZ_RST);
 
     int errors = 0;
 
