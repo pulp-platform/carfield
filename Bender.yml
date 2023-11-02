@@ -15,7 +15,7 @@ dependencies:
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 0a06d3f13a074cee01ded62cef2d6eb1142e6d8b } # branch: aottaviano/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             version: 0.0.4                                } 
   car_l2:             { git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git,       rev: 0143fb296e3614adf8894ff7335cc3f9b92783bd } # branch: main
-  safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 14bb7d082f92f1839c8c6a506a9b8206a7d493e3 } # branch: michaero/carfield
+  safety_island:      { git: git@iis-git.ee.ethz.ch:carfield/safety-island.git,         rev: 94575df898371cd9e595844ebb4117a2f6eecc36 } # branch: michaero/carfield
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: de93f2001ee0a6fca1dc11f6dd95119d8e6aadfb } # branch: yt/rapidrecovery
   opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: 74e7d6ca17e6a46e727ae2ae11177611232eaeb9 } # branch: carfield_soc
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             version: 1.1.0                                }
