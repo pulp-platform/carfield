@@ -861,8 +861,10 @@ carfield_a32_d32_reg_req_t reg_wdt_req;
 carfield_a32_d32_reg_rsp_t reg_wdt_rsp;
 
 // mailbox
-carfield_axi_slv_req_t axi_mbox_req, axi_amo_mbox_req, axi_amo_cut_mbox_req;
-carfield_axi_slv_rsp_t axi_mbox_rsp, axi_amo_mbox_rsp, axi_amo_cut_mbox_rsp;
+carfield_axi_slv_req_t axi_mbox_req, axi_amo_mbox_req,
+  axi_pre_amo_cut_mbox_req, axi_post_amo_cut_mbox_req;
+carfield_axi_slv_rsp_t axi_mbox_rsp, axi_amo_mbox_rsp,
+  axi_pre_amo_cut_mbox_rsp, axi_post_amo_cut_mbox_rsp;
 
 //////////////////
 // Carfield IPs //
@@ -1710,6 +1712,25 @@ end
 
 // Mailbox unit
 
+// AXI cut
+axi_cut #(
+  .Bypass     ( 1'b0 ),
+  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+  .axi_req_t  ( carfield_axi_slv_req_t     ),
+  .axi_resp_t ( carfield_axi_slv_rsp_t     )
+) i_cut_pre_amo_mbox (
+  .clk_i      ( host_clk_i ),
+  .rst_ni     ( host_pwr_on_rst_n ),
+  .slv_req_i  ( axi_mbox_req     ),
+  .slv_resp_o ( axi_mbox_rsp     ),
+  .mst_req_o  ( axi_pre_amo_cut_mbox_req ),
+  .mst_resp_i ( axi_pre_amo_cut_mbox_rsp )
+);
+
 // Shim atomics, which are not supported in reg
 // TODO: should we use a filter instead here?
 axi_riscv_atomics_structs #(
@@ -1723,14 +1744,14 @@ axi_riscv_atomics_structs #(
   .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb      ),
   .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb      ),
   .RiscvWordWidth   ( 64                     ),
-  .NAxiCuts         ( Cfg.RegAmoNumCuts      ),
+  .NAxiCuts         ( 0                      ),
   .axi_req_t        ( carfield_axi_slv_req_t ),
   .axi_rsp_t        ( carfield_axi_slv_rsp_t )
 ) i_atomics_mbox (
   .clk_i         ( host_clk_i        ),
   .rst_ni        ( host_pwr_on_rst_n ),
-  .axi_slv_req_i ( axi_mbox_req     ),
-  .axi_slv_rsp_o ( axi_mbox_rsp     ),
+  .axi_slv_req_i ( axi_pre_amo_cut_mbox_req     ),
+  .axi_slv_rsp_o ( axi_pre_amo_cut_mbox_rsp     ),
   .axi_mst_req_o ( axi_amo_mbox_req ),
   .axi_mst_rsp_i ( axi_amo_mbox_rsp )
 );
@@ -1745,13 +1766,13 @@ axi_cut #(
   .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
   .axi_req_t  ( carfield_axi_slv_req_t     ),
   .axi_resp_t ( carfield_axi_slv_rsp_t     )
-) i_cut_mbox (
+) i_cut_post_amo_mbox (
   .clk_i      ( host_clk_i ),
   .rst_ni     ( host_pwr_on_rst_n ),
   .slv_req_i  ( axi_amo_mbox_req     ),
   .slv_resp_o ( axi_amo_mbox_rsp     ),
-  .mst_req_o  ( axi_amo_cut_mbox_req ),
-  .mst_resp_i ( axi_amo_cut_mbox_rsp )
+  .mst_req_o  ( axi_post_amo_cut_mbox_req ),
+  .mst_resp_i ( axi_post_amo_cut_mbox_rsp )
 );
 
 // Convert from AXI to reg protocol
@@ -1771,8 +1792,8 @@ axi_to_reg_v2 #(
 ) i_axi_to_reg_v2_mbox (
   .clk_i     ( host_clk_i ),
   .rst_ni    ( host_pwr_on_rst_n ),
-  .axi_req_i ( axi_amo_cut_mbox_req ),
-  .axi_rsp_o ( axi_amo_cut_mbox_rsp ),
+  .axi_req_i ( axi_post_amo_cut_mbox_req ),
+  .axi_rsp_o ( axi_post_amo_cut_mbox_rsp ),
   .reg_req_o ( reg_mbox_req ),
   .reg_rsp_i ( reg_mbox_rsp ),
   .reg_id_o  ( ),
