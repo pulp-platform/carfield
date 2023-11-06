@@ -109,6 +109,8 @@ module tb_carfield_soc;
   // Decide whether to preload hyperram model at time 0
   logic        hyp_user_preload;
 
+  logic        chs_mem_rand;
+
   // timing format for $display("...$t..", $realtime)
   initial begin : timing_format
     $timeformat(-9, 0, "ns", 9);
@@ -122,6 +124,7 @@ module tb_carfield_soc;
     if (!$value$plusargs("CHS_PRELMODE=%d", preload_mode))    preload_mode    = 0;
     if (!$value$plusargs("CHS_BINARY=%s",   chs_preload_elf)) chs_preload_elf = "";
     if (!$value$plusargs("CHS_IMAGE=%s",    chs_boot_hex))    chs_boot_hex    = "";
+    if (!$value$plusargs("CHS_MEM_RAND=%d", chs_mem_rand))   chs_mem_rand    = 0;
 
     // Set boot mode and preload boot image if there is one
     fix.set_secure_boot(secure_boot);
@@ -133,6 +136,27 @@ module tb_carfield_soc;
 
       // Wait for reset
       fix.chs_vip.wait_for_reset();
+
+      // We need to initialize memories after the reset due to limitations of the memory models.
+      if (chs_mem_rand) begin
+`ifdef CHS_NETLIST
+`define CAR_XSTR(x) `"x`"
+        $display("[TB] INFO: Randomizing LLC memory contents of %s where NUM=0..7", `CAR_XSTR(`CHS_LLC_MACRO_HIER(>NUM<)));
+        for (int i = 0; i < 2048; i++) begin
+          // Deterministic randomization of memories. Use simulator arguments to set seed.
+          `CHS_LLC_MACRO_HIER(0)[i] = {$urandom(), $urandom()};
+          `CHS_LLC_MACRO_HIER(1)[i] = {$urandom(), $urandom()};
+          `CHS_LLC_MACRO_HIER(2)[i] = {$urandom(), $urandom()};
+          `CHS_LLC_MACRO_HIER(3)[i] = {$urandom(), $urandom()};
+          `CHS_LLC_MACRO_HIER(4)[i] = {$urandom(), $urandom()};
+          `CHS_LLC_MACRO_HIER(5)[i] = {$urandom(), $urandom()};
+          `CHS_LLC_MACRO_HIER(6)[i] = {$urandom(), $urandom()};
+          `CHS_LLC_MACRO_HIER(7)[i] = {$urandom(), $urandom()};
+        end
+`else // !`ifdef CHS_NETLIST
+        $display("[TB] INFO: Randomizing LLC memory not supported for RTL sim. Use +initmem");
+`endif
+      end
 
       // Writing max burst length in Hyperbus configuration registers to
       // prevent the Verification IPs from triggering timing checks.
