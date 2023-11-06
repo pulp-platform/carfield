@@ -32,9 +32,6 @@
 
 int main(void) {
 
-    // Init the HW
-    car_init_start();
-
     // Reset system timer
     writed(1, CAR_SYSTEM_TIMER_BASE_ADDR + TIMER_RESET_LO_OFFSET);
 
