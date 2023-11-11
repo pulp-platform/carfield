@@ -452,7 +452,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 94575df898371cd9e595844ebb4117a2f6eecc36
+    revision: 3e9d4882cafff3580af5130dd94fea91a5c28d9b
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
