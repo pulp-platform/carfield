@@ -444,15 +444,15 @@ packages:
     - fpnew
     - tech_cells_generic
   riscv-dbg:
-    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
-    version: 0.8.0
+    revision: 358f90110220adf7a083f8b65d157e836d706236
+    version: 0.8.1
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: 94575df898371cd9e595844ebb4117a2f6eecc36
+    revision: 3e9d4882cafff3580af5130dd94fea91a5c28d9b
     version: null
     source:
       Git: git@iis-git.ee.ethz.ch:carfield/safety-island.git
