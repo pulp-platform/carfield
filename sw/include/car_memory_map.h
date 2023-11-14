@@ -83,6 +83,7 @@ extern void *__base_l2;
 #define CAR_IRQ_AXI_REALM_BASE_ADDR  0x0000020c0000
 #define CAR_CHESHIRE_CFG_BASE_ADDR   0x000003000000
 #define CAR_LLC_CFG_BASE_ADDR        0x000003001000
+#define CAR_CLIC_CFG_BASE_ADDR(id)   0x000008000000
 
 // from carfield proper
 #define CAR_PERIPHS_BASE_ADDR        0x20000000

@@ -127,7 +127,7 @@ packages:
     - register_interface
     - tech_cells_generic
   cheshire:
-    revision: 0a06d3f13a074cee01ded62cef2d6eb1142e6d8b
+    revision: 99b654154f3c60db08d33d07e0885b44b5d846c1
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -152,8 +152,8 @@ packages:
     - tagger
     - unbent
   clic:
-    revision: 9f3ead92e9ce4c867af7eae6fc64d1f5cd065ddf
-    version: 3.0.0-rc2
+    revision: 0ff9f07e0a492bff046dfe24399b1e1e82d557b7
+    version: 3.0.0-for-carfield
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -444,8 +444,8 @@ packages:
     - fpnew
     - tech_cells_generic
   riscv-dbg:
-    revision: 358f90110220adf7a083f8b65d157e836d706236
-    version: 0.8.1
+    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
+    version: 0.8.0
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
