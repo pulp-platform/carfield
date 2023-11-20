@@ -8,6 +8,9 @@ spatz
 /working_dir/
 /stdout
 
+# Documentation site
+site/
+
 # sw auto-generated
 sw/tests/bare-metal/safed/*.h
 sw/tests/bare-metal/pulpd/*.h
