@@ -6,27 +6,21 @@
 # Christopher Reinwardt <creinwar@student.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
-PROJECT      ?= carfield
-# Board in     {genesys2, zcu102, vcu128}
-BOARD        ?= vcu128
-ip-dir       := $(CAR_XIL_DIR)/xilinx
+PROJECT       ?= carfield
+# Board in      {vcu128}
+BOARD         ?= vcu128
+ip-dir        := $(CAR_XIL_DIR)/xilinx
+USE_ARTIFACTS ?= 0
+
 
 # Select board specific variables
 ifeq ($(BOARD),vcu128)
 	XILINX_PART  ?= xcvu37p-fsvh2892-2L-e
 	XILINX_BOARD ?= xilinx.com:vcu128:part0:1.0
-	ips-names    := xlnx_clk_wiz xlnx_vio
-endif
-ifeq ($(BOARD),genesys2)
-	XILINX_PART  ?= xc7k325tffg900-2
-	XILINX_BOARD ?= digilentinc.com:genesys2:part0:1.1
-	ips-names    := xlnx_mig_7_ddr3 xlnx_clk_wiz xlnx_vio
-	FPGA_PATH    ?= xilinx_tcf/Digilent/200300A8C60DB
-endif
-ifeq ($(BOARD),zcu102)
-	XILINX_PART    ?= xczu9eg-ffvb1156-2-e
-	XILINX_BOARD   ?= xilinx.com:zcu102:part0:3.4
-	ips-names      := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
+	XILINX_PORT  ?= 3232
+	FPGA_PATH    ?= xilinx_tcf/Xilinx/091847100638A
+	XILINX_HOST  ?= bordcomputer
+	ips-names    := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
 endif
 
 # Location of ip outputs
@@ -48,9 +42,14 @@ VIVADOENV ?=  PROJECT=$(PROJECT)            \
               PORT=$(XILINX_PORT)           \
               HOST=$(XILINX_HOST)           \
               FPGA_PATH=$(FPGA_PATH)        \
-              BIT=$(bit)
+              BIT=$(bit)                    \
+              IP_PATHS="$(foreach ip-name,$(ips-names),xilinx/$(ip-name)/$(ip-name).srcs/sources_1/ip/$(ip-name)/$(ip-name).xci)" \
+              ROUTED_DCP=$(ROUTED_DCP)      \
+              CHECK_TIMING=$(CHECK_TIMING)  \
+			  ELABORATION_ONLY=$(ELABORATION_ONLY)
+
 MODE        ?= gui
-VIVADOFLAGS ?= -nojournal -mode $(MODE) -source scripts/prologue.tcl
+VIVADOFLAGS ?= -nojournal -mode $(MODE)
 
 car-xil-all: $(bit)
 
@@ -61,15 +60,19 @@ $(mcs): $(bit)
 # Compile bitstream
 $(bit): $(ips) $(CAR_XIL_DIR)/scripts/add_sources.tcl
 	@mkdir -p $(out)
-	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
-	cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/$(PROJECT)* $(out)
+	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/prologue.tcl -source scripts/run.tcl
+	@if [[ -z ${ELABORATION_ONLY} ]] || [ "${ELABORATION_ONLY}" -eq "0" ]; then \
+		cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.ltx $(out); \
+		cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*_routed.dcp $(out); \
+		cp $(CAR_XIL_DIR)/$(PROJECT).runs/impl_1/*.bit $(out); \
+	fi
 
 # Generate ips
 %.xci:
 	@echo $@
 	@echo $(CAR_XIL_DIR)
 	@echo "Generating IP $(basename $@)"
-	IP_NAME=$(basename $(notdir $@)) ; cd $(ip-dir)/$$IP_NAME && $(MAKE) clean && $(VIVADOENV) VIVADO="$(VIVADO)" $(MAKE)
+	IP_NAME=$(basename $(notdir $@)) ; cd $(ip-dir)/$$IP_NAME && make clean && USE_ARTIFACTS=$(USE_ARTIFACTS) VIVADOENV="$(subst ",\",$(VIVADOENV))" VIVADO="$(VIVADO)" make
 	IP_NAME=$(basename $(notdir $@)) ; cp $(ip-dir)/$$IP_NAME/$$IP_NAME.srcs/sources_1/ip/$$IP_NAME/$$IP_NAME.xci $@
 
 car-xil-gui:
@@ -78,7 +81,10 @@ car-xil-gui:
 
 car-xil-program: #$(bit)
 	@echo "Programming board $(BOARD) ($(XILINX_PART))"
-	cd $(CAR_XIL_DIR) && $(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
+	$(VIVADOENV) $(VIVADO) $(VIVADOFLAGS) -source $(CAR_XIL_DIR)/scripts/program.tcl
+
+car-xil-flash: $(CAR_SW_DIR)/boot/linux.gpt.bin
+	$(VIVADOENV) FILE=$< OFFSET=0 $(VIVADO) $(VIVADOFLAGS) -source $(CAR_XIL_DIR)/scripts/flash_spi.tcl
 
 car-xil-clean:
 	cd $(CAR_XIL_DIR) && rm -rf scripts/add_sources.tcl* *.log *.jou *.str *.mif *.xci *.xpr .Xil/ $(out) $(PROJECT).srcs $(PROJECT).cache $(PROJECT).hw $(PROJECT).ioplanning $(PROJECT).ip_user_files $(PROJECT).runs $(PROJECT).sim
