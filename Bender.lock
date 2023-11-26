@@ -113,19 +113,6 @@ packages:
     source:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
-  car_l2:
-    revision: 0143fb296e3614adf8894ff7335cc3f9b92783bd
-    version: null
-    source:
-      Git: git@iis-git.ee.ethz.ch:carfield/carfield_l2_mem.git
-    dependencies:
-    - axi
-    - axi_riscv_atomics
-    - common_cells
-    - common_verification
-    - redundancy_cells
-    - register_interface
-    - tech_cells_generic
   cheshire:
     revision: 99b654154f3c60db08d33d07e0885b44b5d846c1
     version: null
@@ -213,6 +200,19 @@ packages:
     - axi
     - common_cells
     - fpnew
+    - tech_cells_generic
+  dyn_mem:
+    revision: 480590062742230dc9bd4050358a15b4747bdf34
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/dyn_spm.git
+    dependencies:
+    - axi
+    - axi_riscv_atomics
+    - common_cells
+    - common_verification
+    - redundancy_cells
+    - register_interface
     - tech_cells_generic
   ethernet:
     revision: 2b6f916d3f25f9829713faeef6adc799e861744c
