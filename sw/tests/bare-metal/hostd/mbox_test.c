@@ -19,6 +19,10 @@
 static dif_rv_plic_t plic0;
 
 int main(int argc, char const *argv[]) {
+
+    // Put SMP Hart to sleep
+    if (hart_id() != 0) wfi();
+
     int mbox_id = 60;                                             // index of mbox irq in the irq vector input to the PLIC
     int prio = 0x1;
     int a,b,c,d,e;

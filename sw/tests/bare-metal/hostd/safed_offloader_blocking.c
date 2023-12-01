@@ -22,6 +22,10 @@ extern int load_safed_payload ();
 
 int main(void)
 {
+
+  // Put SMP Hart to sleep
+  if (hart_id() != 0) wfi();
+
 	// Init the HW
 	// Safety Island
 	car_enable_domain(CAR_SAFETY_RST);

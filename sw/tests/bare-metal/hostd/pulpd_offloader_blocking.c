@@ -20,6 +20,10 @@
 
 int main(void)
 {
+
+  // Put SMP Hart to sleep
+  if (hart_id() != 0) wfi();
+
   // Init the HW
   // PULP Island
   car_enable_domain(CAR_PULP_RST);

@@ -46,7 +46,7 @@ packages:
     dependencies:
     - axi_slice
   axi_llc:
-    revision: 7d7fc1349d4915a657de535a491bc26fbf0d2cfa
+    revision: 76933aa7fa8ff5c8ccbc075f6af4fca4d8416d17
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -114,7 +114,7 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: 0c95210cf242c384fafe3019e84b8974c3ff1e92
+    revision: ad8513e13ea62e4999fafcea49d9222d0975de9f
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -133,6 +133,7 @@ packages:
     - idma
     - irq_router
     - opentitan_peripherals
+    - redundancy_cells
     - register_interface
     - riscv-dbg
     - serial_link
@@ -192,7 +193,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: ec242579ea25a1f6bef7235591814dd1e475f90c
+    revision: 6c6265e9e94494eac446f56c999e8c5dce63fbe8
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -416,7 +417,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 5616a36f5e51d6f07f1c8bca15194077657e197d
+    revision: 09cd9514d52145530fa432e6692ed33aec6c04b6
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git

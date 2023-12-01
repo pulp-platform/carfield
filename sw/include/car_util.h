@@ -12,8 +12,10 @@
 #include "car_memory_map.h"
 #include "car_params.h"
 #include "car_properties.h"
+#include "regs/cheshire.h"
 #include "regs/soc_ctrl.h"
 #include "regs/irq_router.h"
+#include "regs/clint.h"
 #include "io.h"
 #include "bits.h"
 
@@ -375,6 +377,17 @@ void pulp_cluster_wait_eoc() {
 uint32_t pulp_cluster_get_return(){
   volatile uint32_t *pulp_return_addr = (uint32_t*)(CAR_INT_CLUSTER_RETURN_ADDR(car_integer_cluster));
   return readw(pulp_return_addr);
+}
+
+// Wake up sleeping hart using CLINT
+static inline void wakeup_hart(unsigned int hart_id) {
+  writew(0x1, CAR_CLINT_BASE_ADDR + 0x4*(hart_id));
+  writew(0x0, CAR_CLINT_BASE_ADDR + 0x4*(hart_id));
+}
+
+// Write synchronization request in Cheshire's dedicated register
+static inline void sync_req(){
+  writew(readw(CHESHIRE_HARTS_SYNC) | (0x1 << hart_id()), CHESHIRE_HARTS_SYNC);
 }
 
 #endif
