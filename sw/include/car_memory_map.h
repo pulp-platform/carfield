@@ -25,6 +25,32 @@ extern void *__base_l2;
 
 // Main Islands and accelerators
 
+// Cheshire
+#define CHESHIRE_REGS_BASE_ADDR 0X03000000
+#define CHESHIRE_NUM_INT_HARTS  CHESHIRE_REGS_BASE_ADDR + CHESHIRE_NUM_INT_HARTS_REG_OFFSET
+#define CHESHIRE_HARTS_SYNC     CHESHIRE_REGS_BASE_ADDR + CHESHIRE_HARTS_SYNC_REG_OFFSET
+
+// CVA6 HMR Unit
+#define HMR_BASE_ADDR               0x0300B000
+#define HMR_CORE_OFFS               0x100
+#define HMR_DMR_OFFS                0x200
+#define HMR_TMR_OFFS                0x300
+#define HMR_CORE_INCREMENT          0x010
+#define HMR_CORE_SLL                0x004
+#define HMR_DMR_INCREMENT           0x010
+#define HMR_DMR_SLL                 0x004
+#define HMR_TMR_INCREMENT           0x010
+#define HMR_TMR_SLL                 0x004
+
+// Stack Pointer storage register
+#define HMR_CORE_REGS_SP_STORE_REG_OFFSET 0x8
+#define HMR_DMR_ENABLE_OFFS         0x0
+#define HMR_DMR_CFG_REG_OFFS        0x4
+#define HMR_DMR_CHECKPOINT_REG_OFFS 0x8
+#define HMR_DMR_ENABLE              HMR_BASE_ADDR + HMR_DMR_OFFS + HMR_DMR_ENABLE_OFFS
+#define HMR_DMR_CFG                 HMR_BASE_ADDR + HMR_DMR_OFFS + HMR_DMR_CFG_REG_OFFS
+#define HMR_DMR_CHECKPOINT          HMR_BASE_ADDR + HMR_DMR_OFFS + HMR_DMR_CHECKPOINT_REG_OFFS
+
 // L2 port 0
 #define CAR_L2_SPM_PORT0_INTERLEAVED_BASE_ADDR(BASE) BASE
 #define CAR_L2_SPM_PORT0_INTERLEAVED_END_ADDR(BASE)  (BASE + 0x100000)

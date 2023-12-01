@@ -139,6 +139,9 @@ int probe_range_lfsr_wwrr(volatile uintptr_t from, volatile uintptr_t to, int sa
 
 int main(void) {
 
+    // Put SMP Hart to sleep
+    if (hart_id() != 0) wfi();
+
     // Init the HW
     // Safety Island
     car_enable_domain(CAR_SAFETY_RST);
