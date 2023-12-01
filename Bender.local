@@ -7,7 +7,7 @@ overrides:
   axi_riscv_atomics:    { git: https://github.com/pulp-platform/axi_riscv_atomics.git     , version: 0.8.2 }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , version: 0.4.1 }
-  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "5616a36f5e51d6f07f1c8bca15194077657e197d" } # branch: yt/rapidrecovery
+  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "936edf25252efc610051b7b944c6506d2f8cfb2b" } # branch: astral
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.13                                }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"           , version: =0.8.0                                 }
   idma:                 { git: "https://github.com/pulp-platform/idma.git"                , version: 0.5.1                                  }
