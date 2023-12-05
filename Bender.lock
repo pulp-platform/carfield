@@ -214,14 +214,6 @@ packages:
     - redundancy_cells
     - register_interface
     - tech_cells_generic
-  ethernet:
-    revision: 2b6f916d3f25f9829713faeef6adc799e861744c
-    version: null
-    source:
-      Git: git@iis-git.ee.ethz.ch:bslk/iis-ethernet/fe-ethernet.git
-    dependencies:
-    - axi
-    - common_verification
   event_unit_flex:
     revision: 28e0499374117c7b0ef4c6ad81b60d7526af886f
     version: null
@@ -374,6 +366,14 @@ packages:
       Git: https://github.com/pulp-platform/per2axi.git
     dependencies:
     - axi_slice
+  pulp-ethernet:
+    revision: bdc8031ab270a49da28df269266ce9ab9a133636
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/pulp-ethernet.git
+    dependencies:
+    - axi
+    - common_verification
   pulp_cluster:
     revision: de93f2001ee0a6fca1dc11f6dd95119d8e6aadfb
     version: null
