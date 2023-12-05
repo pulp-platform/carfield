@@ -35,6 +35,10 @@ static int probe_rw(uint64_t addr, uint32_t val)
 
 int main(void)
 {
+
+    // Put SMP Hart to sleep
+    if (hart_id() != 0) wfi();
+
     int err = 0;
 
     // Init UART
