@@ -19,6 +19,9 @@
 
 int main(void) {
 
+    // Put SMP Hart to sleep
+    if (hart_id() != 0) wfi();
+
     // Init the HW
     car_init_start();
 

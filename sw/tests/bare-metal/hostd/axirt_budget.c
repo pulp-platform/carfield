@@ -25,6 +25,9 @@
 
 int main(void) {
 
+    // Put SMP Hart to sleep
+    if (hart_id() != 0) wfi();
+
     // enable and configure axi rt with fragmentation of 8 beats
     __axirt_claim(1, 1);
     __axirt_set_len_limit_group(7, 0);

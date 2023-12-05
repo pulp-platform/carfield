@@ -32,6 +32,9 @@
 
 int main(void) {
 
+    // Put SMP Hart to sleep
+    if (hart_id() != 0) wfi();
+
     // Reset system timer
     writed(1, CAR_SYSTEM_TIMER_BASE_ADDR + TIMER_RESET_LO_OFFSET);
 
