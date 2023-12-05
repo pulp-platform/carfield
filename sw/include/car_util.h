@@ -12,8 +12,10 @@
 #include "car_memory_map.h"
 #include "car_params.h"
 #include "car_properties.h"
+#include "regs/cheshire.h"
 #include "regs/soc_ctrl.h"
 #include "regs/irq_router.h"
+#include "regs/clint.h"
 #include "io.h"
 #include "bits.h"
 

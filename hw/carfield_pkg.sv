@@ -345,7 +345,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   Clic              : 1,
   IrqRouter         : 1,
   BusErr            : 1,
+  HmrUnit           : 1,
   Cva6DMR           : 1,
+  Cva6DMRFixed      : 0,
   RapidRecovery     : 0,
   // Debug
   DbgIdCode         : '{
