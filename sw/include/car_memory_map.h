@@ -24,6 +24,9 @@
 extern void *__base_l2;
 
 // Main Islands and accelerators
+// Cheshire
+#define CHESHIRE_REGS_BASE_ADDR 0X03000000
+#define CHESHIRE_NUM_INT_HARTS CHESHIRE_REGS_BASE_ADDR + CHESHIRE_NUM_INT_HARTS_REG_OFFSET
 
 // L2 port 0
 #define CAR_L2_SPM_PORT0_INTERLEAVED_BASE_ADDR(BASE) BASE
