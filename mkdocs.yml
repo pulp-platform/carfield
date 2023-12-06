@@ -26,3 +26,7 @@ nav:
 - Home:
   - index.md
   - Getting Started: gs.md
+- Targets:
+  - tg/index.md
+  - Simulation: tg/sim.md
+  - Xilinx FPGAs: tg/xilinx.md
