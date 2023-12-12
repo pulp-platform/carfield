@@ -379,4 +379,15 @@ uint32_t pulp_cluster_get_return(){
   return readw(pulp_return_addr);
 }
 
+// Wake up sleeping hart using CLINT
+static inline void wakeup_hart(unsigned int hart_id) {
+  writew(0x1, CAR_CLINT_BASE_ADDR + 0x4*(hart_id));
+  writew(0x0, CAR_CLINT_BASE_ADDR + 0x4*(hart_id));
+}
+
+// Write synchronization request in Cheshire's dedicated register
+static inline void sync_req(){
+  writew(readw(CHESHIRE_HARTS_SYNC) | (0x1 << hart_id()), CHESHIRE_HARTS_SYNC);
+}
+
 #endif
