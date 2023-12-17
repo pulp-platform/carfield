@@ -2,13 +2,21 @@
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
 #
-# Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+# Author: Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+
+set project $::env(XILINX_PROJECT)
+
+create_project $project . -force -part $::env(XILINX_PART)
+set_property board_part $::env(XILINX_BOARD_LONG) [current_project]
+
+# set number of threads to 8 (maximum, unfortunately)
+set_param general.maxThreads 8
 
 # Contraints files selection
-switch $::env(BOARD) {
+switch $::env(XILINX_BOARD) {
   "genesys2" - "kc705" - "vc707" - "vcu128" - "zcu102" {
-    import_files -fileset constrs_1 -norecurse constraints/$::env(BOARD).xdc
-    import_files -fileset constrs_1 -norecurse constraints/$::env(PROJECT).xdc
+    import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
+    import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_PROJECT).xdc
   }
   default {
       exit 1
@@ -16,7 +24,7 @@ switch $::env(BOARD) {
 }
 
 # Ips selection
-set ips $::env(IP_PATHS)
+set ips $::env(XILINX_IP_PATHS)
 read_ip $ips
 
 source scripts/add_sources.tcl
@@ -25,16 +33,16 @@ set_property top ${project}_top_xilinx [current_fileset]
 
 update_compile_order -fileset sources_1
 
-if {[info exists ::env(ELABORATION_ONLY)] && $::env(ELABORATION_ONLY)==1} {
-  puts "Running with ELABORATION_ONLY"
+if {[info exists ::env(XILINX_ELABORATION_ONLY)] && $::env(XILINX_ELABORATION_ONLY)==1} {
+  puts "Running with XILINX_ELABORATION_ONLY"
   set_property XPM_LIBRARIES XPM_MEMORY [current_project]
   
   synth_design -rtl -name rtl_1 -sfcu
 
 } else {
-  # Runtime optimized due to the low frequency (20MHz)
-  set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
-  set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+  # Runtime optimized due to the low frequency (50/20MHz)
+  # set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
+  # set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
   
   set_property XPM_LIBRARIES XPM_MEMORY [current_project]
   
@@ -113,7 +121,7 @@ if {[info exists ::env(ELABORATION_ONLY)] && $::env(ELABORATION_ONLY)==1} {
   open_run impl_1
   
   set timingrep [report_timing_summary -no_header -no_detailed_paths -return_string]
-  if {[info exists ::env(CHECK_TIMING)] && $::env(CHECK_TIMING)==1} {
+  if {[info exists ::env(XILINX_CHECK_TIMING)] && $::env(XILINX_CHECK_TIMING)==1} {
     if {! [string match -nocase {*timing constraints are met*} $timingrep]} {
       send_msg_id {USER 1-1} ERROR {Timing constraints were not met.}
       return -code error

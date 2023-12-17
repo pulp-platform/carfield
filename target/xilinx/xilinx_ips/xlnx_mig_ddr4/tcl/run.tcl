@@ -5,7 +5,7 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 set partNumber $::env(XILINX_PART)
-set boardName  $::env(XILINX_BOARD)
+set boardName  $::env(XILINX_BOARD_LONG)
 
 set ipName xlnx_mig_ddr4
 
@@ -15,7 +15,7 @@ set_property board_part $boardName [current_project]
 create_ip -name ddr4 -vendor xilinx.com -library ip -version 2.2 -module_name $ipName
 
 
-if {$::env(BOARD) eq "vcu128"} {
+if {$::env(XILINX_BOARD) eq "vcu128"} {
   set_property -dict [list CONFIG.C0.DDR4_Clamshell {true} \
                            CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
                            CONFIG.System_Clock {No_Buffer} \
@@ -35,7 +35,7 @@ if {$::env(BOARD) eq "vcu128"} {
                            CONFIG.C0.DDR4_AxiSelection {true} \
                       ] [get_ips $ipName]
 
-} elseif {$::env(BOARD) eq "zcu102"} {
+} elseif {$::env(XILINX_BOARD) eq "zcu102"} {
   set_property -dict [list CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_062} \
                            CONFIG.C0.DDR4_TimePeriod {833} \
                            CONFIG.C0.DDR4_InputClockPeriod {3332} \

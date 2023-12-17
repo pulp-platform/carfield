@@ -38,6 +38,11 @@
       };
     };
   };
+  sysclk: virt_50mhz {
+    #clock-cells = <0>;
+    compatible = "fixed-clock";
+    clock-frequency = <50000000>;
+  };
   soc: soc {
     #address-cells = <2>;
     #size-cells = <2>;
@@ -47,6 +52,10 @@
       compatible = "riscv,debug-013";
       reg-names = "control";
       reg = <0x0 0x0 0x0 0x1000>;
+    };
+    ctrl-regs@3000000 {
+      compatible = "eth,control-regs";
+      reg = <0x0 0x3000000 0x0 0x1000>;
     };
     axi_llc@3001000 {
       compatible = "eth,axi-llc";
@@ -108,6 +117,11 @@
       riscv,max-priority = <7>;
       riscv,ndev = <51>;
       reg = <0x0 0x4000000 0x0 0x4000000>;
+    };
+    gpio@3005000 {
+      compatible = "gpio,carfield";
+      reg = <0x0 0x3005000 0x0 0x1000>;
+      interrupts-extended = <&PLIC0 19 &PLIC0 21 &PLIC0 22 &PLIC0 24>;
     };
     tcdm@10000000 {
       reg = <0x0 0x10000000 0x0 0x400000>;

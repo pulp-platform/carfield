@@ -95,7 +95,7 @@ module carfield_top_xilinx
 `endif
 
   // Phy interface for Hyperbus
-`ifdef USE_HYPERBUS
+`ifndef GEN_NO_HYPERBUS
   // Physical interace: HyperBus PADs
   // Attention CS0 correspond to CS1 on the FMC (see constraints)
   inout  [`HypNumPhys-1:0][`HypNumChips-1:0] pad_hyper_csn,
@@ -429,7 +429,7 @@ module carfield_top_xilinx
   // LLC interface //
   ///////////////////
 
-`ifdef NO_HYPERBUS // bender-xilinx.mk
+`ifdef GEN_NO_HYPERBUS // bender-xilinx.mk
   localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
   localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth+$clog2(AxiIn.num_in)+Cfg.LlcNotBypass;
   localparam int unsigned LlcArWidth = (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth,LlcIdWidth,Cfg.AxiUserWidth);
@@ -488,7 +488,7 @@ module carfield_top_xilinx
   .dst_req_o                  ( llc_req   ),
   .dst_resp_i                 ( llc_rsp   )
 );
-`endif // NO_HYPERBUS
+`endif // GEN_NO_HYPERBUS
 
   //////////////////
   // Carfield SoC //
@@ -501,7 +501,7 @@ module carfield_top_xilinx
       .IslandsCfg(IslandsCfg),
       .reg_req_t(carfield_reg_req_t),
       .reg_rsp_t(carfield_reg_rsp_t),
-`ifdef NO_HYPERBUS
+`ifdef GEN_NO_HYPERBUS
       .LlcIdWidth   ( LlcIdWidth ),
       .LlcArWidth   ( LlcArWidth ),
       .LlcAwWidth   ( LlcAwWidth ),
@@ -573,7 +573,7 @@ module carfield_top_xilinx
       .gpio_i                    (),
       .gpio_o                    (),
       .gpio_en_o                 (),
-`ifdef NO_HYPERBUS
+`ifdef GEN_NO_HYPERBUS
       // LLC Interface
       .llc_ar_data,
       .llc_ar_wptr,
