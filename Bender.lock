@@ -46,7 +46,7 @@ packages:
     dependencies:
     - axi_slice
   axi_llc:
-    revision: 76933aa7fa8ff5c8ccbc075f6af4fca4d8416d17
+    revision: d79a00b8673b814efacbbe9bf106103407fc401b
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -114,7 +114,7 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: ad8513e13ea62e4999fafcea49d9222d0975de9f
+    revision: 74756f851447e3ad1643299baa17220e1365b400
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -193,7 +193,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: 6c6265e9e94494eac446f56c999e8c5dce63fbe8
+    revision: 6503a4c88ff2e274724cbebce8d25fb883d8b8a8
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -417,7 +417,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 09cd9514d52145530fa432e6692ed33aec6c04b6
+    revision: 3fbd080e479f194f68e51dbe262e62c4362868bd
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -427,8 +427,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
-    version: 0.4.2
+    revision: e4b20be8833180863ebc64675c93b1694239c505
+    version: null
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
