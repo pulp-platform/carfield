@@ -26,6 +26,8 @@ CAR_SIM_DIR := $(CAR_TGT_DIR)/sim
 # Questasim
 CAR_VSIM_DIR := $(CAR_TGT_DIR)/sim/vsim
 
+TECH_ROOT   := $(CAR_ROOT)/tech
+
 BENDER      ?= bender
 BENDER_ROOT ?= $(CAR_ROOT)/.bender
 BENDER_PATH ?= $(shell which $(BENDER))
@@ -354,6 +356,14 @@ car-check-litmus-tests: $(LITMUS_WORK_DIR)/litmus.log
 	cd $(LITMUS_DIR) && LITMUS_LOG=$(CURDIR)/$(LITMUS_WORK_DIR)/litmus.log ci/compare_model.sh > $(CURDIR)/$(LITMUS_WORK_DIR)/compare.log
 	grep "Warning positive differences" $(LITMUS_WORK_DIR)/compare.log
 	! grep "Warning negative differences" $(LITMUS_WORK_DIR)/compare.log
+
+##############
+# Technology #
+##############
+tech-repo := git@iis-git.ee.ethz.ch:Astral/gf12.git
+tech-init:
+	git clone $(tech-repo) tech
+	$(MAKE) -C $(TECH_ROOT) init
 
 ########
 # Help #

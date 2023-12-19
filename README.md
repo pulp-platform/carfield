@@ -58,6 +58,10 @@ make help
 
 The Make files are autodocumented.
 
+### Technology
+
+It is possible to initialize an available technology design flow by running `make tech-init` after cloning the repo.
+
 ## License
 
 Unless specified otherwise in the respective file headers, all code checked into this repository is
