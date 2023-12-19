@@ -102,7 +102,16 @@ sources:
 
   - target: all(synthesis, not(fpga))
     files:
+      # - tech/sourcecode/macros/sram_256x32.v
+      # - tech/sourcecode/macros/sram_128x40.v
+      # - tech/sourcecode/macros/sram_256x128.v
+      # - tech/sourcecode/macros/sram_256x44.v
+      # - tech/sourcecode/macros/sram_256x46.v
+      # - tech/sourcecode/tc_clk.sv
+      # - tech/sourcecode/tc_sram.sv
       - target/synth/src/carfield_synth_wrap.sv
+
+
 
   - target: all(xilinx, fpga, xilinx_vanilla, xilinx_bd)
     files:
@@ -124,6 +133,13 @@ sources:
 
   - target: intel16_elab_only
     files:
+      # - tech/sourcecode/macros/sram_256x32.v
+      # - tech/sourcecode/macros/sram_128x40.v
+      # - tech/sourcecode/macros/sram_256x128.v
+      # - tech/sourcecode/macros/sram_256x44.v
+      # - tech/sourcecode/macros/sram_256x46.v
+      # - tech/sourcecode/tc_clk.sv
+      # - tech/sourcecode/tc_sram.sv
       - nonfree/intel16/sourcecode/tc_clk.sv
       - nonfree/intel16/sourcecode/tc_sram.sv
       - nonfree/intel16/sourcecode/configurable_delay.sv
