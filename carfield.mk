@@ -12,6 +12,7 @@ CAR_ROOT    ?= $(shell $(BENDER) path carfield)
 CAR_SW_DIR  := $(CAR_ROOT)/sw
 CAR_XIL_DIR := $(CAR_ROOT)/target/xilinx
 CAR_HW_DIR  := $(CAR_ROOT)/hw
+TECH_ROOT   := $(CAR_ROOT)/tech
 
 BENDER   ?= bender
 QUESTA   ?= questa-2022.3
@@ -384,6 +385,14 @@ lint:
 #############
 
 include $(CAR_XIL_DIR)/xilinx.mk
+
+##############
+# Technology #
+##############
+tech-repo := git@iis-git.ee.ethz.ch:Astral/gf12.git
+tech-init:
+	git clone $(tech-repo) -b yt/develop tech
+	$(MAKE) -C $(TECH_ROOT) init
 
 ##############
 # Benchmarks #
