@@ -46,7 +46,7 @@ packages:
     dependencies:
     - axi_slice
   axi_llc:
-    revision: 76933aa7fa8ff5c8ccbc075f6af4fca4d8416d17
+    revision: d79a00b8673b814efacbbe9bf106103407fc401b
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -114,7 +114,7 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: ad8513e13ea62e4999fafcea49d9222d0975de9f
+    revision: ae0a483e0d320d9cacb9f2bb2a8e7a4e5f033477
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
