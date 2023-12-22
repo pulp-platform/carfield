@@ -1,0 +1,6 @@
+sim/vsim/modelsim.ini
+sim/vsim/carfield_compile.tcl
+sim/vsimtranscript
+sim/vsim/work/
+sim/vsim/uart/
+sim/src/hyp_vip
