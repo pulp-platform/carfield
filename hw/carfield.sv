@@ -602,7 +602,7 @@ logic [NumDomains-1:0] pwr_on_rsts_n;
 logic [NumDomains-1:0] rsts_n;
 
 
-// Each of the 5 clock gateable domains (periph, safety island, security island, spatz and pulp
+// Each of the 6 clock gateable domains (periph, safety island, security island, l2, spatz and pulp
 // cluster) have the following clock distribution scheme:
 // 1. For each domain the user selects one of 3 different clock sources (host clock, alt clock and
 //    per clock). Each of these main clocks are either supplied externally, by a dedicated PLL per
