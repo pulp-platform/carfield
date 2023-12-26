@@ -75,6 +75,18 @@ sources:
       # - tech/sourcecode/tc_sram.sv
       - target/synth/carfield_synth_wrap.sv
 
+  - target: tech_sim
+    files:
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_128x40m2b1w0.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x32m2b1w1.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x44m2b1w1.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x46m2b1w1.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x64m2b1w1.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x128m2b1w1.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_1024x64m4b1w1.v
+      # - tech/sourcecode/tc_clk.sv
+      - tech/sourcecode/tc_sram.sv
+
   - target: all(xilinx, fpga, xilinx_vanilla)
     files:
       - target/xilinx/src/cdc_dst_axi_err.sv

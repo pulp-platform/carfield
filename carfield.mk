@@ -104,6 +104,11 @@ REQUIREMENTS_TXT?=$(wildcard requirements.txt)
 include $(CAR_ROOT)/utils/venv.mk
 
 QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7 +UVM_NO_RELNOTES
+ifeq ($(TECH_SIM), 1)
+	QUESTA_FLAGS += +nospecify
+	QUESTA_FLAGS += -suppress 13271
+endif
+
 ifdef DEBUG
 	VOPT_FLAGS := $(QUESTA_FLAGS) +acc
 	VSIM_FLAGS := $(QUESTA_FLAGS)
@@ -191,7 +196,7 @@ $(CAR_ROOT)/tb/hyp_vip:
 
 .PHONY: scripts/carfield_compile.tcl
 scripts/carfield_compile.tcl:
-	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) $(safed_defs) --vlog-arg="$(VLOG_ARGS) $(RUNTIME_DEFINES)" --compilation-mode separate > $@
+	$(BENDER) script vsim $(common_targs) $(sim_targs) $(sim_defs) $(common_defs) $(safed_defs) --vlog-arg="$(VLOG_ARGS) $(RUNTIME_DEFINES)" --compilation-mode separate > $@
 	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
 	echo 'vopt $(VOPT_FLAGS) $(TBENCH) -o $(TBENCH)_opt' >> $@
 
