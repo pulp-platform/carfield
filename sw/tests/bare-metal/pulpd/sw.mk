@@ -26,6 +26,7 @@ PULPD_BUILD_TARGETS := $(addsuffix /build,$(PULPD_TEST_DIRS))
 $(PULPD_SW_DIR)/%/build: $(PULPD_ROOT) | venv
 	# Compile
 	$(MAKE) -C $(PULPD_SW_DIR)/$* all
+	$(MAKE) -C $(PULPD_SW_DIR)/$* dis > $(CAR_PULPD_SW)/$*.dump
 	cp $@/test/test $(CAR_PULPD_SW)/$*.elf
 	$(PULPD_RISCV)-objcopy $(remove_sections) $(CAR_PULPD_SW)/$*.elf
 	cp $(CAR_PULPD_SW)/$*.elf $@/test/test.elf
