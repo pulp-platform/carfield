@@ -1,3 +1,0 @@
-## Bootmodes
-
-To be completed

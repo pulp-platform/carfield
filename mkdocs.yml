@@ -29,4 +29,9 @@ nav:
 - Targets:
   - tg/index.md
   - Simulation: tg/sim.md
+  - Synthesis: tg/synth.md
   - Xilinx FPGAs: tg/xilinx.md
+- User Manual:
+  - um/index.md
+  - Architecture: um/arch.md
+  - Software Stack: um/sw.md
