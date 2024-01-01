@@ -93,19 +93,13 @@ define offload_tests_template
 	)
 endef
 
-#################
-# Safety Island #
-#################
-
+# Safety Island offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk
 
 car-safed-sw-offload-tests:
 	$(call offload_tests_template,$(SAFED_HEADER_TARGETS),safed,$(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C),$(CAR_ELFLOAD_BLOCKING_SAFED_PATH))
 
-###################
-# Integer Cluster #
-###################
-
+# Integer Cluster offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/pulpd/sw.mk
 
 car-pulpd-sw-offload-tests:
@@ -134,6 +128,7 @@ LDFLAGS  := $(CAR_SW_LDFLAGS)
 LDLIBS   += $(CHS_SW_LIBS)
 LDLIBS   += $(CAR_SW_LIBS)
 LDLINK   := -T$(CAR_LD_DIR)/l2.ld
+ELF_PREFIX := l2
 
 -include $(MIBENCH_DIR)/mibench.mk
 
