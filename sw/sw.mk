@@ -35,7 +35,7 @@ car-sw-libs: $(CAR_SW_LIBS)
 
 # Compilation
 
-carfield_%.dtb: carfield_%.dts
+carfield_%.dtb: carfield_%.dts $(wildcard $(CAR_SW_DIR)/boot/*.dtsi)
 	$(CHS_SW_DTC) -I dts -O dtb -i $(CAR_SW_DIR)/boot -o $@ $<
 
 # All objects require up-to-date patches and headers
@@ -164,6 +164,19 @@ $(CAR_SW_DIR)/boot/linux_carfield_%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CA
 	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
 	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
 	dd if=sw/boot/linux_carfield_bd_vcu128.gpt.bin of=sw/boot/linux.gpt.min.bin bs=512 count=8192 && cp sw/boot/linux.gpt.min.bin sw/boot/linux_carfield_bd_vcu128.gpt.bin
+
+# Create Uboot disk image
+$(CAR_SW_DIR)/boot/uboot_carfield_%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CAR_SW_DIR)/boot/carfield_%.dtb $(CAR_SW_DIR)/boot/install64/fw_payload.bin
+	truncate -s $(CAR_SW_DISK_SIZE) $@
+	sgdisk --clear -g --set-alignment=1 \
+		--new=1:64:96 --typecode=1:$(CHS_SW_ZSL_TGUID) \
+		--new=2:128:159 --typecode=2:$(CHS_SW_DTB_TGUID) \
+		--new=3:2048:8191 --typecode=3:$(CHS_SW_FW_TGUID) \
+		--new=4:8192:0 --typecode=4:8200 \
+		$@
+	dd if=$(word 1,$^) of=$@ bs=512 seek=64 conv=notrunc
+	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
+	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
 
 #########################
 # Linux app compilation #

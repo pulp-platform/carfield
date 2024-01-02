@@ -45,6 +45,11 @@ $(CAR_XIL_DIR)/flavor_bd/out/%.bit: $(xilinx_ips_paths_bd) $(CAR_XIL_DIR)/flavor
 	cd $(CAR_XIL_DIR)/flavor_bd && $(vivado_env_bd) $(VIVADO) $(VIVADO_FLAGS) -source scripts/run.tcl
 	find $(CAR_XIL_DIR)/flavor_bd -name "*.ltx" -o -name "*.bit" -o -name "*routed.rpt" | xargs -I {} cp {} $(CAR_XIL_DIR)/flavor_bd/out
 
+# This vivado script loads a binary device tree at 0x80000000 (for the Host PCIe driver to read)
+# Generate me with: make `realpath target/xilinx/flavor_bd/scripts/send_dtb_carfield_pcie.tcl`
+$(CAR_XIL_DIR)/flavor_bd/scripts/send_dtb_%.tcl: $(CAR_SW_DIR)/boot/%.dtb
+	$(PYTHON) $(CAR_XIL_DIR)/scripts/bin2jtag.py -c32 -b 80000000 -d hw_axi_1 $< > $@
+
 car-xil-clean-bd:
 	cd $(CAR_XIL_DIR)/flavor_bd && rm -rf scripts/add_includes.tcl* *.log *.jou *.str *.mif carfield_$(XILINX_BOARD) .Xil/
 

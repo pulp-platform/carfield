@@ -88,6 +88,10 @@ car-xil-program:
 car-xil-flash: $(CAR_SW_DIR)/boot/linux_carfield_$(XILINX_FLAVOR)_$(XILINX_BOARD).gpt.bin
 	$(vivado_env) FILE=$< OFFSET=0 $(VIVADO) $(VIVADO_FLAGS) -source $(CAR_XIL_DIR)/scripts/flash_spi.tcl
 
+# Flash uboot image
+car-xil-flash-uboot: $(CAR_SW_DIR)/boot/uboot_carfield_$(XILINX_FLAVOR)_$(XILINX_BOARD).gpt.bin
+	$(vivado_env) FILE=$< OFFSET=0 $(VIVADO) $(VIVADO_FLAGS) -source $(CAR_XIL_DIR)/scripts/flash_spi.tcl
+
 car-xil-clean: car-xil-clean-vanilla car-xil-clean-bd xilinx-ip-clean-all
 
-.PHONY: car-xil-program car-xil-flash car-xil-clean car-xil-all
+.PHONY: car-xil-program car-xil-clean car-xil-all

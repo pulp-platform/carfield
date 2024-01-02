@@ -13,11 +13,6 @@ if {[string first "xlnx_vio" $::env(IPS)] != -1} {
     source ips/xlnx_vio/questa/compile.do
 }}
 
-if {[string first "xlnx_mig_7_ddr3" $::env(IPS)] != -1} {
-    source ips/xlnx_mig_7_ddr3_ex/questa/compile.do
-    source ips/xlnx_mig_7_ddr3/questa/compile.do
-}
-
 if {[string first "xlnx_mig_ddr4" $::env(IPS)] != -1} {
     source ips/xlnx_mig_ddr4_ex/questa/compile.do
     source ips/xlnx_mig_ddr4/questa/compile.do

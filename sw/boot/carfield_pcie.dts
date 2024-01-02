@@ -1,0 +1,26 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+
+/dts-v1/;
+/plugin/;
+&{/dev@0,0} {
+  axi-bus {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    compatible = "simple-bus";
+    ranges;
+
+    /include/ "carfield_soc.dtsi"
+
+  };
+};
+
+&soc {
+  pcie-axi-bar@180000000 {
+    compatible = "xlnx,pcie-axi-bar";
+    reg = <0x1 0x80000000 0x0 0x80000000>;
+  };
+};

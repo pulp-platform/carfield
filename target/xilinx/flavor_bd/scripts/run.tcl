@@ -46,17 +46,23 @@ generate_target all [get_files *design_1.bd]
 export_ip_user_files -of_objects  [get_files *design_1.bd] -no_script
 create_ip_run [get_files *design_1.bd]
 
-# Start OOC synthesis of changed IPs
+# Bet list of synthesis and OOO synthesis to do
 set synth_runs [get_runs *synth*]
-# Exclude the whole design (synth_1) and the carfield IP (bug)
-set all_ooc_synth [lsearch -regexp -all -inline -not $synth_runs {^synth_1$|carfield}]
+if { $rdi::mode == "gui" } {
+  # Exclude the whole design the carfield IP from GUI (todo: inspect GUI bug when only carfield ooc has changed)
+  set all_ooc_synth [lsearch -regexp -all -inline -not $synth_runs {^synth_1$|carfield}]
+} else {
+  # Exclude the synth_1 from OOC synthesis
+  set all_ooc_synth [lsearch -regexp -all -inline -not $synth_runs {^synth_1$}]
+}
+
 set runs_queued {}
 foreach run $all_ooc_synth {
     if {[get_property PROGRESS [get_run $run]] != "100%"} {
         puts "Launching run $run"
         lappend runs_queued $run
         # Default synthesis strategy
-        # set_property strategy Flow_RuntimeOptimized [get_runs $run]
+        set_property strategy Flow_RuntimeOptimized [get_runs $run]
     } else {
         puts "Skipping 100% complete run: $run"
     }
@@ -72,8 +78,8 @@ if {[llength $runs_queued] != 0} {
     reset_run synth_1
 }
 
-# set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
-# set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
+set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
 
 set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
 # Enable sfcu due to package conflicts
