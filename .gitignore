@@ -1,17 +1,11 @@
 .bender
 cheshire
 spatz
-modelsim.ini
-scripts/carfield_compile.tcl
-tb/hyp_vip
-transcript
-work/
 *.log
 *.wlf
 /.venv/
 /logs/
 /working_dir/
-/uart
 /stdout
 
 # Documentation site

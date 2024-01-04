@@ -159,6 +159,15 @@ chs-sw-build: chs-sw-all
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
 car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
 
+.PHONY: safed-sw-init pulpd-sw-init
+# Safety Island
+safed-sw-init: $(SAFED_ROOT) $(SAFED_SW_DIR)/pulp-runtime $(SAFED_SW_DIR)/pulp-freertos
+
+$(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
+	$(MAKE) -C $(SAFED_ROOT) pulp-runtime BENDER="$(BENDER)"
+$(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
+	$(MAKE) -C $(SAFED_ROOT) pulp-freertos BENDER="$(BENDER)"
+
 # PULP Cluster
 pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
 
@@ -259,6 +268,9 @@ include $(CAR_VSIM_DIR)/vsim.mk
 ##################
 # Global targets #
 ##################
+
+.PHONY: car-all
+car-all: car-init car-sw-build
 
 .PHONY: car-init
 ## Shortcut to initialize carfield with all the targets described above.

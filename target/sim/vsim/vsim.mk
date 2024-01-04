@@ -32,7 +32,7 @@ else
 	RUN_AND_EXIT := run -all; exit
 endif
 
-$(CAR_ROOT)/tb/hyp_vip:
+$(CAR_TGT_DIR)/sim/src/hyp_vip:
 	rm -rf $@
 	mkdir $@
 	rm -rf model_tmp && mkdir model_tmp
@@ -51,12 +51,12 @@ $(CAR_VSIM_DIR)/compile.carfield_soc.tcl:
 	echo 'vopt $(VOPT_FLAGS) $(TBENCH) -o $(TBENCH)_opt' >> $@
 
 .PHONY: car-sim-init
-car-sim-init: chs-sim-init $(CAR_ROOT)/tb/hyp_vip $(CAR_VSIM_DIR)/compile.carfield_soc.tcl
+car-sim-init: chs-sim-init $(CAR_TGT_DIR)/sim/src/hyp_vip $(CAR_VSIM_DIR)/compile.carfield_soc.tcl
 
 ## @section Carfield SoC Simulation
 ## Compile the Carfield RTL using Questasim.
 car-hw-build: car-sim-init
-	$(QUESTA) vsim -c -do "quit -code [source $(CAR_VSIM_DIR)/compile.carfield_soc.tcl]"
+	cd $(CAR_VSIM_DIR); $(QUESTA) vsim -c -do "quit -code [source $(CAR_VSIM_DIR)/compile.carfield_soc.tcl]"
 
 .PHONY: car-hw-sim
 ## Run simulation of the carfield RTL.
@@ -68,13 +68,13 @@ car-hw-build: car-sim-init
 ## @param TBENCH=tb_carfield_soc_opt The optimised toplevel testbench to use. Defaults to 'tb_carfield_soc_opt'.
 ## @param VSIM_FLAGS the flags for the vsim invocation
 car-hw-sim:
-	$(QUESTA) vsim $(VSIM_FLAGS) -do \
+	cd $(CAR_VSIM_DIR); $(QUESTA) vsim $(VSIM_FLAGS) -do \
 		"set HYP_USER_PRELOAD $(HYP_USER_PRELOAD); \
 		 set SECURE_BOOT $(SECURE_BOOT); \
 		 set CHS_BOOTMODE $(CHS_BOOTMODE); \
 		 set CHS_PRELMODE $(CHS_PRELMODE); \
 		 set CHS_BINARY ../../../$(CHS_BINARY); \
-		 set CHS_IMAGE $(CHS_IMAGE); \
+		 set CHS_IMAGE ../../../$(CHS_IMAGE); \
 		 set SECD_BINARY ../../../$(SECD_BINARY); \
 		 set SECD_BOOTMODE $(SECD_BOOTMODE); \
 		 set SECD_IMAGE $(SECD_IMAGE); \
@@ -97,4 +97,4 @@ chs-sim-init:
 .PHONY: car-hw-clean
 ## Remove all simulation build artifacts
 car-hw-clean:
-	rm -rf *.ini trace* *.wlf transcript work
+	cd $(CAR_VSIM_DIR); rm -rf *.ini trace* *.wlf transcript work

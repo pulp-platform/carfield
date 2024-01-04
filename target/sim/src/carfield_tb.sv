@@ -132,7 +132,7 @@ module tb_carfield_soc;
     fix.chs_vip.i2c_eeprom_preload(chs_boot_hex);
     fix.chs_vip.spih_norflash_preload(chs_boot_hex);
 
-    if (chs_preload_elf != "" || chs_boot_hex != "") begin
+    if (!uvm_re_match("elf",chs_preload_elf) || !uvm_re_match("memh",chs_boot_hex)) begin
 
       // Wait for reset
       fix.chs_vip.wait_for_reset();
@@ -232,7 +232,7 @@ module tb_carfield_soc;
     // set boot mode before reset
     fix.safed_vip.set_safed_boot_mode(safed_boot_mode);
 
-    if (safed_preload_elf != "") begin
+    if (!uvm_re_match("elf",safed_preload_elf)) begin
 
       fix.safed_vip.safed_wait_for_reset();
 
@@ -280,7 +280,7 @@ module tb_carfield_soc;
     // set bootmode
     fix.secd_vip.set_secd_boot_mode(secd_boot_mode);
 
-    if (secd_preload_elf != "" || secd_flash_vmem != "") begin
+    if (!uvm_re_match("elf",secd_preload_elf) || !uvm_re_match("vmem",secd_flash_vmem)) begin
       // Wait for reset
       fix.chs_vip.wait_for_reset();
 
@@ -321,7 +321,7 @@ module tb_carfield_soc;
     // Wait for reset
     fix.chs_vip.wait_for_reset();
 
-    if (pulpd_preload_elf != "") begin
+    if (!uvm_re_match("elf",pulpd_preload_elf)) begin
       
       $display("[TB] %t - Enabling PULP cluster clock for stand-alone tests ", $realtime);
       // Clock island after PoR
@@ -393,7 +393,7 @@ module tb_carfield_soc;
     end
 
     // Fast preload of hyperram
-    if (hyp_user_preload != 0 && pulpd_preload_elf == "") begin
+    if (hyp_user_preload != 0 && !uvm_re_match("elf", pulpd_preload_elf)) begin
       $warning( "[TB] - Instantly preload hyperram0 and hyperrram1 models at time 0. This preload \
                 mode should be used for simulation only, because it does not check whether we can \
                 preload the hyperram using physical interfaces, e.g., JTAG or SL. If there is enough \
@@ -446,7 +446,7 @@ module tb_carfield_soc;
     // set secure boot mode
     fix.set_secure_boot(secure_boot);
 
-    if (spatzd_preload_elf != "") begin
+    if (!uvm_re_match("elf",spatzd_preload_elf)) begin
 
       // Wait for reset
       fix.chs_vip.wait_for_reset();

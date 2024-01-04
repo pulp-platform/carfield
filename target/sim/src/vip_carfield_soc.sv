@@ -110,7 +110,7 @@ module vip_carfield_soc
      for (genvar l=0; l<HypNumChips; l++) begin : sdf_annotation
         initial begin
 `ifndef PATH_TO_HYP_SDF
-           automatic string sdf_file_path = "./tb/hyp_vip/s27ks0641_verilog.sdf";
+           automatic string sdf_file_path = "../src/hyp_vip/s27ks0641_verilog.sdf";
 `else
            automatic string sdf_file_path = `PATH_TO_HYP_SDF;
 `endif
