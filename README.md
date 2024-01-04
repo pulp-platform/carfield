@@ -6,26 +6,42 @@ Carfield is a mixed-criticality SoC targeting the automotive domain. It uses
 Carfield is developed as part of the PULP project, a joint effort between ETH Zurich and the
 University of Bologna.
 
+## Motivation
+
+The rapid evolution of AI algorithms, the massive amount of sensed data and the pervasive influence
+of AI-enhanced applications across application-domains such as Automotive, Space and Cyber-Physical
+embedded systems (CPSs), call for a paradigm shift from simple micro-controllers towards powerful
+and heterogeneous edge computers in the design of **next generation of mixed-criticality systems
+(MCSs)**. These must not only deliver outstanding performance and energy efficiency but also ensure
+steadfast safety, resilience, and security.
+
+The Carfield platform aims to tackle these architectural challenges establishing itself as a
+pre-competitive heterogeneous platform for MCSs, underpinned by fully open-source Intellectual
+Properties (IPs). Carfield showcases pioneering hardware solutions, addressing challenges related to
+time-predictable on/off-chip communication, robust fault recovery mechanisms, secure boot processes,
+cryptographic acceleration services, hardware-assisted virtualization, and accelerated computation
+for both floating-point and integer workloads.
+
 ## Quick Start
 
 * To learn how to build and use Carfield, see [Getting
   Started](https://pulp-platform.github.io/carfield/gs/).
 * To learn about available simulation, FPGA, and ASIC targets, see
   [Targets](https://pulp-platform.github.io/carfield/tg).
-* For detailed information on Cheshire's inner workings, consult the [User
+* For detailed information on Carfield's inner workings, consult the [User
   Manual](https://pulp-platform.github.io/carfield/um/).
 
 If you are impatient and have all needed
 [dependencies](https://pulp-platform.github.io/carfield/gs/#dependencies), you can run:
 
 ```
-make car-init
+make car-all
 ```
 
 and then run a [simulation](https://pulp-platform.github.io/carfield/tg/sim) by typing:
 
 ```
-make car-hw-build car-hw-sim CHS_BINARY ./sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+make car-hw-build car-hw-sim CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf
 ```
 
 ## License
