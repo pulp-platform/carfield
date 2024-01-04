@@ -14,18 +14,34 @@ Cheshire on other setups should be straightforward.
 ## Testbench
 
 Carfield comprises several bootable domains, that are described in the
-[Architecture](../um/arch.md#domains) section. Each of these domains can be independently booted by
-keeping the rest of the SoC asleep. Alternatively, some domains can offload baremetal programs to
-other domains at runtime.
+[Architecture](../um/arch.md#domains) section.
+
+Each of these domains can be independently booted by keeping the rest of the SoC asleep through the
+domain JTAG, or Cheshire's JTAG and Serial Link, which have access to the whole platform except for
+the *secure domain*.
+
+Alternatively, some domains can offload baremetal programs to other domains at runtime. This is
+common pratice when offloading programs to the *accelerator domain* from the *host* or *safe
+domains*.
 
 Note that while runtime offloading can be exploited by RTL simulation with reasonably-sized
-programs, we suggest to follow the [FPGA mapping](xilinx.md) steps for OS-based offload based on
-OpenMP with heterogeneous cross-compilation.
+programs, we suggest to follow the [FPGA mapping](xilinx.md) steps and use [OpenMP-based
+offload](../um/sw.md) with heterogeneous cross-compilation.
 
 We provide a single SystemVerilog testbench for `carfield_soc` that handles standalone execution of
 baremetal programs for each domain. The code for domain `X` is preloaded through simulated interface
 drivers. In addition, some domains can read from external memory models from their boot ROM and then jump to
 execution.
+
+As for Cheshire, Carfield testbench employs physical interfaces (JTAG or Serial Link) for memory
+preload by default. This could increase the memory preload time (independently from the target
+memory: dynamic SPM, LLC-SPM, or DRAM), significantly based on the ELF size.
+
+To speed up the process, the external DRAM can be initialized in simulation (namely, at time `0ns`)
+for domain `X` through the make variable `HYP_USER_PRELOAD`. Carfield [SW Stack](../um/sw.md)
+provides automatic generation of the required `*.slm` files, targeting an HyperRAM configured with
+two physical chips. Note, this flow is **not** recommended during ASIC development cycle as it may
+hide bugs in the physical interfaces.
 
 ### Passive boot
 

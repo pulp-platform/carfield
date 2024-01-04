@@ -1,71 +1,112 @@
+# Architecture
+
+![Carfield Block Diagram](../img/arch.svg)
+
+Carfield is organized in *domains*. As a mixed-criticality system (MCS), each domain serves
+different purposes in terms of functional safety and reliability, security, and computation
+capabiities.
+
+Carfield relies on Cheshire as ain host domain, and extends its minimal SoC with additional
+interconnect ports and interrupts. Hence, several features described in this section can be found
+
+The above block diagram depicts a fully-featured Carfield SoC, which currently provides:
+
+- **Domains**:
+	- *Host domain* (Cheshire), a minimal Linux-capable RV64 system based on dual-core CVA6 with
+	  self-invalidation coherency mechanism
+	- *Safe domain*, a TCLS RV32 microcontroller system based on CV32E40P, with fast interrupt handling through the RISC-V CLIC
+	- *Secure domain*, a RV32 microcontroller system with crypto accelerators, tasked to handle secure boot and platform security monitor
+	- *Accelerator domain*, comprises two programmable multi-core accelerators (PMCAs), an 12-cores
+	  integer cluster with HMR capabilities and a vectorial cluster with vector processing capabilities
+
+- **Peripherals**
+	- Generic timers
+	- PWM timers
+	- Watchdog timer
+	- Ethernet
+	- CAN
+
+- **Interconnect** (as in Cheshire):
+	- A last level cache (LLC) configurable as a scratchpad memory (SPM) per-way
+	- Up to 16 external AXI4 manager ports and 16 AXI and Regbus subordinate ports
+	- Per-manager AXI4 traffic regulators for real-time applications
+	- Per-manager AXI4 bus error units (UNBENT) for interconnect error handling
+
+- **Interrupts** (as in Cheshire):
+	- Core-local (CLINT *and* CLIC) and platform (PLIC) interrupt controllers
+	- Dynamic interrupt routing from and to internal and external targets.
+
 ## Memory Map
 
-This section shows Carfield's memory map. The group `Internal to Cheshire` in the table below mirrors
-the memory map described in the dedicatd [documentation for
-Cheshire](https://pulp-platform.github.io/cheshire/um/arch/) and is explicitely listed here for
+This section shows Carfield's memory map. The group `Internal to Cheshire` in the table below
+mirrors the memory map described in the dedicatd [documentation for
+Cheshire](https://pulp-platform.github.io/cheshire/um/arch/) and is explicitely shown here for
 clarity.
 
-| **Start Address**        | **End Address (excl.)** | **Length**         | **Size**    | **Region**       | **Device**          |
-| -------------------- | ------------------- | -------------- | ------- | ------------ | --------------------------------------- |
-| **Internal to Cheshire** |                     |                |         |              |
-| 0x0000_0000_0000     | 0x0000_0004_0000    | 0x4_0000       | 256 KiB | Debug        | Debug CVA6                              |
-| 0x0000_0004_0000     | 0x0000_0100_0000    |                |         | Reserved     |
-| 0x0000_0100_0000     | 0x0000_0100_1000    | 0x1000         | 4 KiB   | Config       | AXI DMA Config                          |
-| 0x0000_0100_1000     | 0x0000_0200_0000    |                |         | Reserved     |
-| 0x0000_0200_0000     | 0x0000_0204_0000    | 0x4_0000       | 256 KiB | Memory       | Boot ROM                                |
-| 0x0000_0204_0000     | 0x0000_0208_0000    | 0x4_0000       | 256 KiB | Irq          | CLINT                                   |
-| 0x0000_0208_0000     | 0x0000_020c_0000    | 0x4_0000       | 256 KiB | Irq          | IRQ Routing                             |
-| 0x0000_020c_0000     | 0x0000_0210_0000    | 0x4_0000       | 256 KiB | Irq          | AXI-REALM unit                          |
-| 0x0000_020c_0000     | 0x0000_0300_0000    |                |         | Reserved     |
-| 0x0000_0300_0000     | 0x0000_0300_1000    | 0x1000         | 4 KiB   | Config       | CSRs                                    |
-| 0x0000_0300_1000     | 0x0000_0300_2000    | 0x1000         | 4 KiB   | Config       | LLC                                     |
-| 0x0000_0300_2000     | 0x0000_0300_3000    | 0x1000         | 4 KiB   | I/O          | UART                                    |
-| 0x0000_0300_3000     | 0x0000_0300_4000    | 0x1000         | 4 KiB   | I/O          | I2C                                     |
-| 0x0000_0300_4000     | 0x0000_0300_5000    | 0x1000         | 4 KiB   | I/O          | SPIM                                    |
-| 0x0000_0300_5000     | 0x0000_0300_6000    | 0x1000         | 4 KiB   | I/O          | GPIO                                    |
-| 0x0000_0300_6000     | 0x0000_0300_7000    | 0x1000         | 4 KiB   | Config       | Serial Link                             |
-| 0x0000_0300_7000     | 0x0000_0300_8000    | 0x1000         | 4 KiB   | Config       | VGA                                     |
-| 0x0000_0300_8000     | 0x0000_0300_A000    | 0x1000         | 8 KiB   | Config       | UNBENT (bus error unit)                 |
-| 0x0000_0300_A000     | 0x0000_0300_B000    | 0x1000         | 4 KiB   | Config       | Tagger (cache partitioning)             |
-| 0x0000_0300_8000     | 0x0000_0400_0000    |                |         | Reserved     |
-| 0x0000_0400_0000     | 0x0000_1000_0000    | 0x40_0000      | 64 MiB  | Irq          | PLIC                                    |
-| 0x0000_0800_0000     | 0x0000_0C00_0000    | 0x40_0000      | 64 MiB  | Irq          | CLICs                                   |
-| 0x0000_1000_0000     | 0x0000_1400_0000    | 0x40_0000      | 64 MiB  | Memory       | LLC Scratchpad                          |
-| 0x0000_1400_0000     | 0x0000_1800_0000    | 0x40_0000      | 64 MiB  | Memory       | LLC Scratchpad                          |
-| 0x0000_1800_0000     | 0x0000_2000_0000    |                |         | Reserved     |
-| **External to Cheshire** |                     |                |         |              |
-| 0x0000_2000_0000     | 0x0000_2000_1000    | 0x1000         | 4 KiB   | I/O          | ETHERNET                                |
-| 0x0000_2000_1000     | 0x0000_2000_2000    | 0x1000         | 4 KiB   | I/O          | CAN BUS                                 |
-| 0x0000_2000_2000     | 0x0000_2000_3000    | 0x1000         | 4 KiB   | I/O          | (empty)                                 |
-| 0x0000_2000_3000     | 0x0000_2000_4000    | 0x1000         | 4 KiB   | I/O          | (empty)                                 |
-| 0x0000_2000_4000     | 0x0000_2000_5000    | 0x1000         | 4 KiB   | I/O          | GP TIMER 1 (System timer)               |
-| 0x0000_2000_5000     | 0x0000_2000_6000    | 0x1000         | 4 KiB   | I/O          | GP TIMER 2 (Advanced timer)             |
-| 0x0000_2000_6000     | 0x0000_2000_7000    | 0x1000         | 4 KiB   | I/O          | GP TIMER 3                              |
-| 0x0000_2000_7000     | 0x0000_2000_8000    | 0x1000         | 4 KiB   | I/O          | WATCHDOG timer                          |
-| 0x0000_2000_8000     | 0x0000_2000_9000    | 0x1000         | 4 KiB   | I/O          | (empty)                                 |
-| 0x0000_2000_9000     | 0x0000_2000_a000    | 0x1000         | 4 KiB   | I/O          | HyperBUS                                |
-| 0x0000_2000_a000     | 0x0000_2000_b000    | 0x1000         | 4 KiB   | I/O          | Pad Config                              |
-| 0x0000_2000_b000     | 0x0000_2000_c000    | 0x1000         | 4 KiB   | I/O          | L2 ECC Config                           |
-| 0x0000_2001_0000     | 0x0000_2001_1000    | 0x1000         | 4 KiB   | I/O          | Carfield Control and Status             |
-| 0x0000_2002_0000     | 0x0000_2002_1000    | 0x1000         | 4 KiB   | I/O          | PLL/CLOCK                               |
-| 0x0000_2800_1000     | 0x0000_4000_0000    |                |         | Reserved     |
-| 0x0000_4000_0000     | 0x0000_4000_1000    | 0x1000         | 4 KiB   | Irq          | Mailboxes                               |
-| 0x0000_4000_1000     | 0x0000_5000_0000    |                |         | Reserved     |
-| 0x0000_5000_0000     | 0x0000_5080_0000    | 0x80_0000      | 8 MiB   | Accelerators | Integer Cluster                         |
-| 0x0000_5080_0000     | 0x0000_5100_0000    |                |         | Reserved     |
-| 0x0000_5100_0000     | 0x0000_5180_0000    | 0x80_0000      | 8 MiB   | Accelerators | FP Cluster                              |
-| 0x0000_5100_0000     | 0x0000_6000_0000    |                |         | Reserved     |
-| 0x0000_6000_0000     | 0x0000_6002_0000    | 0x2_0000       | 128 KiB | Safety       | Safety Island Memory                    |
-| 0x0000_6002_0000     | 0x0000_6020_0000    | 0x1e_0000      |         | Safety       | reserved                                |
-| 0x0000_6020_0000     | 0x0000_6030_0000    | 0x10_0000      |         | Safety       | Safety Island Peripherals               |
-| 0x0000_6030_0000     | 0x0000_6080_0000    | 0x50_0000      |         | Safety       | reserved                                |
-| 0x0000_6080_0000     | 0x0000_7000_0000    |                |         | Reserved     |
-| 0x0000_7000_0000     | 0x0000_7002_0000    | 0x2_0000       | 128 KiB | Memory       | LLC Scratchpad                          |
-| 0x0000_7800_0000     | 0x0000_7810_0000    | 0x10_0000      | 1 MiB   | Memory       | L2 Scratchpad (Port 1, interleaved)     |
-| 0x0000_7810_0000     | 0x0000_7820_0000    | 0x10_0000      | 1 MiB   | Memory       | L2 Scratchpad (Port 1, non-interleaved) |
-| 0x0000_7820_0000     | 0x0000_7830_0000    | 0x10_0000      | 1 MiB   | Memory       | L2 Scratchpad (Port 2, interleaved)     |
-| 0x0000_7830_0000     | 0x0000_7840_0000    | 0x10_0000      | 1 MiB   | Memory       | L2 Scratchpad (Port 2, non-interleaved) |
-| 0x0000_8000_0000     | 0x0020_8000_0000    | 0x20_0000_0000 | 128 GiB | Memory       | LLC/DRAM                                |
+| **Start Address**        | **End Address (excl.)** | **Length**       | **Size** | **Region**   | **Device**                              |
+|--------------------------|-------------------------|------------------|----------|--------------|-----------------------------------------|
+| **Internal to Cheshire** |                         |                  |          |              |                                         |
+|--------------------------|-------------------------|------------------|----------|--------------|-----------------------------------------|
+| `0x0000_0000_0000`       | `0x0000_0004_0000`      | `0x04_0000`      | 256 KiB  | Debug        | Debug CVA6                              |
+| `0x0000_0004_0000`       | `0x0000_0100_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_0100_0000`       | `0x0000_0100_1000`      | `0x00_1000`      | 4 KiB    | Config       | AXI DMA Config                          |
+| `0x0000_0100_1000`       | `0x0000_0200_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_0200_0000`       | `0x0000_0204_0000`      | `0x04_0000`      | 256 KiB  | Memory       | Boot ROM                                |
+| `0x0000_0204_0000`       | `0x0000_0208_0000`      | `0x04_0000`      | 256 KiB  | Irq          | CLINT                                   |
+| `0x0000_0208_0000`       | `0x0000_020c_0000`      | `0x04_0000`      | 256 KiB  | Irq          | IRQ Routing                             |
+| `0x0000_020c_0000`       | `0x0000_0210_0000`      | `0x04_0000`      | 256 KiB  | Irq          | AXI-REALM unit                          |
+| `0x0000_020c_0000`       | `0x0000_0300_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_0300_0000`       | `0x0000_0300_1000`      | `0x00_1000`      | 4 KiB    | Config       | CSRs                                    |
+| `0x0000_0300_1000`       | `0x0000_0300_2000`      | `0x00_1000`      | 4 KiB    | Config       | LLC                                     |
+| `0x0000_0300_2000`       | `0x0000_0300_3000`      | `0x00_1000`      | 4 KiB    | I/O          | UART                                    |
+| `0x0000_0300_3000`       | `0x0000_0300_4000`      | `0x00_1000`      | 4 KiB    | I/O          | I2C                                     |
+| `0x0000_0300_4000`       | `0x0000_0300_5000`      | `0x00_1000`      | 4 KiB    | I/O          | SPIM                                    |
+| `0x0000_0300_5000`       | `0x0000_0300_6000`      | `0x00_1000`      | 4 KiB    | I/O          | GPIO                                    |
+| `0x0000_0300_6000`       | `0x0000_0300_7000`      | `0x00_1000`      | 4 KiB    | Config       | Serial Link                             |
+| `0x0000_0300_7000`       | `0x0000_0300_8000`      | `0x00_1000`      | 4 KiB    | Config       | VGA                                     |
+| `0x0000_0300_8000`       | `0x0000_0300_A000`      | `0x00_1000`      | 8 KiB    | Config       | UNBENT (bus error unit)                 |
+| `0x0000_0300_A000`       | `0x0000_0300_B000`      | `0x00_1000`      | 4 KiB    | Config       | Tagger (cache partitioning)             |
+| `0x0000_0300_8000`       | `0x0000_0400_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_0400_0000`       | `0x0000_1000_0000`      | `0x40_0000`      | 64 MiB   | Irq          | PLIC                                    |
+| `0x0000_0800_0000`       | `0x0000_0C00_0000`      | `0x40_0000`      | 64 MiB   | Irq          | CLICs                                   |
+| `0x0000_1000_0000`       | `0x0000_1400_0000`      | `0x40_0000`      | 64 MiB   | Memory       | LLC Scratchpad                          |
+| `0x0000_1400_0000`       | `0x0000_1800_0000`      | `0x40_0000`      | 64 MiB   | Memory       | LLC Scratchpad                          |
+| `0x0000_1800_0000`       | `0x0000_2000_0000`      |                  |          | *Reserved*   |                                         |
+|--------------------------|-------------------------|------------------|----------|--------------|-----------------------------------------|
+| **External to Cheshire** |                         |                  |          |              |                                         |
+|--------------------------|-------------------------|------------------|----------|--------------|-----------------------------------------|
+| `0x0000_2000_0000`       | `0x0000_2000_1000`      | `0x00_1000`      | 4 KiB    | I/O          | ETHERNET                                |
+| `0x0000_2000_1000`       | `0x0000_2000_2000`      | `0x00_1000`      | 4 KiB    | I/O          | CAN BUS                                 |
+| `0x0000_2000_2000`       | `0x0000_2000_3000`      | `0x00_1000`      | 4 KiB    | I/O          | (empty)                                 |
+| `0x0000_2000_3000`       | `0x0000_2000_4000`      | `0x00_1000`      | 4 KiB    | I/O          | (empty)                                 |
+| `0x0000_2000_4000`       | `0x0000_2000_5000`      | `0x00_1000`      | 4 KiB    | I/O          | GP TIMER 1 (System timer)               |
+| `0x0000_2000_5000`       | `0x0000_2000_6000`      | `0x00_1000`      | 4 KiB    | I/O          | GP TIMER 2 (Advanced timer)             |
+| `0x0000_2000_6000`       | `0x0000_2000_7000`      | `0x00_1000`      | 4 KiB    | I/O          | GP TIMER 3                              |
+| `0x0000_2000_7000`       | `0x0000_2000_8000`      | `0x00_1000`      | 4 KiB    | I/O          | WATCHDOG timer                          |
+| `0x0000_2000_8000`       | `0x0000_2000_9000`      | `0x00_1000`      | 4 KiB    | I/O          | (empty)                                 |
+| `0x0000_2000_9000`       | `0x0000_2000_a000`      | `0x00_1000`      | 4 KiB    | I/O          | HyperBUS                                |
+| `0x0000_2000_a000`       | `0x0000_2000_b000`      | `0x00_1000`      | 4 KiB    | I/O          | Pad Config                              |
+| `0x0000_2000_b000`       | `0x0000_2000_c000`      | `0x00_1000`      | 4 KiB    | I/O          | L2 ECC Config                           |
+| `0x0000_2001_0000`       | `0x0000_2001_1000`      | `0x00_1000`      | 4 KiB    | I/O          | Carfield Control and Status             |
+| `0x0000_2002_0000`       | `0x0000_2002_1000`      | `0x00_1000`      | 4 KiB    | I/O          | PLL/CLOCK                               |
+| `0x0000_2800_1000`       | `0x0000_4000_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_4000_0000`       | `0x0000_4000_1000`      | `0x00_1000`      | 4 KiB    | Irq          | Mailboxes                               |
+| `0x0000_4000_1000`       | `0x0000_5000_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_5000_0000`       | `0x0000_5080_0000`      | `0x80_0000`      | 8 MiB    | Accelerators | Integer Cluster                         |
+| `0x0000_5080_0000`       | `0x0000_5100_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_5100_0000`       | `0x0000_5180_0000`      | `0x80_0000`      | 8 MiB    | Accelerators | FP Cluster                              |
+| `0x0000_5100_0000`       | `0x0000_6000_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_6000_0000`       | `0x0000_6002_0000`      | `0x02_0000`      | 128 KiB  | Safe domain  | Safety Island Memory                    |
+| `0x0000_6002_0000`       | `0x0000_6020_0000`      | `0x1e_0000`      |          | Safe domain  | reserved                                |
+| `0x0000_6020_0000`       | `0x0000_6030_0000`      | `0x10_0000`      |          | Safe domain  | Safety Island Peripherals               |
+| `0x0000_6030_0000`       | `0x0000_6080_0000`      | `0x50_0000`      |          | Safe domain  | reserved                                |
+| `0x0000_6080_0000`       | `0x0000_7000_0000`      |                  |          | *Reserved*   |                                         |
+| `0x0000_7000_0000`       | `0x0000_7002_0000`      | `0x02_0000`      | 128 KiB  | Memory       | LLC Scratchpad                          |
+| `0x0000_7800_0000`       | `0x0000_7810_0000`      | `0x10_0000`      | 1 MiB    | Memory       | L2 Scratchpad (Port 1, interleaved)     |
+| `0x0000_7810_0000`       | `0x0000_7820_0000`      | `0x10_0000`      | 1 MiB    | Memory       | L2 Scratchpad (Port 1, non-interleaved) |
+| `0x0000_7820_0000`       | `0x0000_7830_0000`      | `0x10_0000`      | 1 MiB    | Memory       | L2 Scratchpad (Port 2, interleaved)     |
+| `0x0000_7830_0000`       | `0x0000_7840_0000`      | `0x10_0000`      | 1 MiB    | Memory       | L2 Scratchpad (Port 2, non-interleaved) |
+| `0x0000_8000_0000`       | `0x0020_8000_0000`      | `0x20_0000_0000` | 128 GiB  | Memory       | LLC/DRAM                                |
 
 ## Interrupt map
 
@@ -73,166 +114,406 @@ Carfield's interrupt components are exhaustivly described in
 the dedicated section of the [documentation for
 Cheshire](https://pulp-platform.github.io/cheshire/um/arch/). This section describes Carfield's interrupt map.
 
-|                           | **Interrupt sink**    | **Bitwidth**                          | **Connection**                                               |
-| ------------------------- | ----------------- | --------------------------------- | -------------------------------------------------------- |
-| **Carfield peripherals**      |
-| intr_wkup_timer_expired_o | 1                 | car_wdt_intrs[0]                  |
-| intr_wdog_timer_bark_o    | 1                 | car_wdt_intrs[1]                  |
-| nmi_wdog_timer_bark_o     | 1                 | car_wdt_intrs[2]                  |
-| wkup_req_o                |                   | 1                                 | car_wdt_intrs[3]                                         |
-| aon_timer_rst_req_o       | 1                 | car_wdt_intrs[4]                  |
-| irq                       |                   | 1                                 | car_can_intr                                             |
-| ch_0_o[0]                 |                   | 1                                 | car_adv_timer_ch0                                        |
-| ch_0_o[1]                 |                   | 1                                 | car_adv_timer_ch1                                        |
-| ch_0_o[2]                 |                   | 1                                 | car_adv_timer_ch2                                        |
-| ch_0_o[3]                 |                   | 1                                 | car_adv_timer_ch3                                        |
-| events_o[0]               |                   | 1                                 | car_adv_timer_events[0]                                  |
-| events_o[1]               |                   | 1                                 | car_adv_timer_events[1]                                  |
-| events_o[2]               |                   | 1                                 | car_adv_timer_events[2]                                  |
-| events_o[3]               |                   | 1                                 | car_adv_timer_events[3]                                  |
-| irq_lo_o                  |                   | 1                                 | car_sys_timer_lo                                         |
-| irq_hi_o                  |                   | 1                                 | car_sys_timer_hi                                         |
-| **Cheshire peripherals**      |
-| zero                      |                   | 1                                 | zero                                                     |
-| uart                      |                   | 1                                 | uart                                                     |
-| i2c_fmt_threshold         | 1                 | i2c_fmt_threshold                 |
-| i2c_rx_threshold          | 1                 | i2c_rx_threshold                  |
-| i2c_fmt_overflow          | 1                 | i2c_fmt_overflow                  |
-| i2c_rx_overflow           | 1                 | i2c_rx_overflow                   |
-| i2c_nak                   |                   | 1                                 | i2c_nak                                                  |
-| i2c_scl_interference      | 1                 | i2c_scl_interference              |
-| i2c_sda_interference      | 1                 | i2c_sda_interference              |
-| i2c_stretch_timeout       | 1                 | i2c_stretch_timeout               |
-| i2c_sda_unstable          | 1                 | i2c_sda_unstable                  |
-| i2c_cmd_complete          | 1                 | i2c_cmd_complete                  |
-| i2c_tx_stretch            | 1                 | i2c_tx_stretch                    |
-| i2c_tx_overflow           | 1                 | i2c_tx_overflow                   |
-| i2c_acq_full              |                   | 1                                 | i2c_acq_full                                             |
-| i2c_unexp_stop            | 1                 | i2c_unexp_stop                    |
-| i2c_host_timeout          | 1                 | i2c_host_timeout                  |
-| spih_error                |                   | 1                                 | spih_error                                               |
-| spih_spi_event            | 1                 | spih_spi_event                    |
-| gpio                      |                   | 32                                | gpio                                                     |
-| **Spatz cluster**             |
-|                           | msip_i            | 2                                 | hostd_spatzcl_mb_intr_ored | safed_spatzcl_intr_mb       |
-|                           | msip_i[0]         | 1                                 | hostd_spatzcl_mb_intr_ored[0] | safed_spatzcl_intr_mb[0] |
-|                           | msip_i[1]         | 1                                 | hostd_spatzcl_mb_intr_ored[1] | safed_spatzcl_intr_mb[1] |
-|                           | mtip_i            | 2                                 | chs_mti[1:0]                                             |
-|                           | mtip_i[0]         | 1                                 | chs_mti[0]                                               |
-|                           | mtip_i[1]         | 1                                 | chs_mti[1]                                               |
-|                           | meip_i            | 2                                 | \-                                                       |
-|                           | seip_i            | 2                                 | \-                                                       |
-| **HRM integer cluster**       |
-| eoc_o                     |                   | 1                                 | pulpcl_eoc                                               |
-|                           | mbox_irq_i        | 1                                 | hostd_pulpcl_mb_intr_ored | safed_pulpcl_intr_mb         |
-| **Secure domain**           |
-|                           | irq_ibex_i        | 1                                 | hostd_secd_mb_intr_ored | safed_secd_intr_mb             |
-| **Safe domain**             |
-|                           | irqs_i            | 128                               | safed_intrs                                              |
-| Mailboxes                 | irqs_i[0]         | 1                                 | hostd_safed_mbox_intr[0]                                 |
-| irqs_i[1]                 | 1                 | hostd_safed_mbox_intr[1]          | from host domain CVA6#1                                  |
-| irqs_i[2]                 | 1                 | secd_safed_mbox_intr              | from sec domain                                          |
-| irqs_i[3]                 | 1                 | pulpcl_safed_mbox_intr            | from pulpcl                                              |
-| irqs_i[4]                 | 1                 | spatzcl_safed_mbox_intr           | from spatzcl                                             |
-| Cheshire peripherals      | irqs[5]           | 1                                 | irqs_distributed_249                                     |
-| irqs[6]                   | 1                 | irqs_distributed_250              | uart                                                     |
-| irqs[7]                   | 1                 | irqs_distributed_251              | i2c_fmt_threshold                                        |
-| irqs[8]                   | 1                 | irqs_distributed_252              | i2c_rx_threshold                                         |
-| irqs[9]                   | 1                 | irqs_distributed_253              | i2c_fmt_overflow                                         |
-| irqs[10]                  | 1                 | irqs_distributed_254              | i2c_rx_overflow                                          |
-| irqs[11]                  | 1                 | irqs_distributed_255              | i2c_nak                                                  |
-| irqs[12]                  | 1                 | irqs_distributed_256              | i2c_scl_interference                                     |
-| irqs[13]                  | 1                 | irqs_distributed_257              | i2c_sda_interference                                     |
-| irqs[14]                  | 1                 | irqs_distributed_258              | i2c_stretch_timeout                                      |
-| irqs[15]                  | 1                 | irqs_distributed_259              | i2c_sda_unstable                                         |
-| irqs[16]                  | 1                 | irqs_distributed_260              | i2c_cmd_complete                                         |
-| irqs[17]                  | 1                 | irqs_distributed_261              | i2c_tx_stretch                                           |
-| irqs[18]                  | 1                 | irqs_distributed_262              | i2c_tx_overflow                                          |
-| irqs[19]                  | 1                 | irqs_distributed_263              | i2c_acq_full                                             |
-| irqs[20]                  | 1                 | irqs_distributed_264              | i2c_unexp_stop                                           |
-| irqs[21]                  | 1                 | irqs_distributed_265              | i2c_host_timeout                                         |
-| irqs[22]                  | 1                 | irqs_distributed_266              | spih_error                                               |
-| irqs[23]                  | 1                 | irqs_distributed_267              | spih_spi_event                                           |
-| irqs[55:24]               | 32                | irqs_distributed_299:268          | gpio                                                     |
-| PULP cluster EOC          | irqs_i[56]        | 1                                 | irqs_distributed_300                                     |
-| Carfield peripherals      | irqs_i[57]        | 1                                 | irqs_distributed_309                                     |
-| irqs_i[58]                | 1                 | irqs_distributed_310              | car_wdt_intrs[1]                                         |
-| irqs_i[59]                | 1                 | irqs_distributed_311              | car_wdt_intrs[2]                                         |
-| irqs_i[60]                | 1                 | irqs_distributed_312              | car_wdt_intrs[3]                                         |
-| irqs_i[61]                | 1                 | irqs_distributed_313              | car_wdt_intrs[4]                                         |
-| irqs_i[62]                | 1                 | irqs_distributed_314              | car_can_intr                                             |
-| irqs_i[63]                | 1                 | irqs_distributed_315              | car_adv_timer_ch0                                        |
-| irqs_i[64]                | 1                 | irqs_distributed_316              | car_adv_timer_ch1                                        |
-| irqs_i[65]                | 1                 | irqs_distributed_317              | car_adv_timer_ch2                                        |
-| irqs_i[66]                | 1                 | irqs_distributed_318              | car_adv_timer_ch3                                        |
-| irqs_i[67]                | 1                 | irqs_distributed_319              | car_adv_timer_events[0]                                  |
-| irqs_i[68]                | 1                 | irqs_distributed_320              | car_adv_timer_events[1]                                  |
-| irqs_i[69]                | 1                 | irqs_distributed_321              | car_adv_timer_events[2]                                  |
-| irqs_i[70]                | 1                 | irqs_distributed_322              | car_adv_timer_events[3]                                  |
-| irqs_i[71]                | 1                 | irqs_distributed_323              | car_sys_timer_lo                                         |
-| irqs_i[72]                | 1                 | irqs_distributed_324              | car_sys_timer_hi                                         |
-| Padding to 0s             | irqs_i[127:73]    | 54                                | irqs_distributed_331:325                                 |
-| Cheshire                  |
-|                           | intr_ext_i        | 32                                | chs_ext_intrs                                            |
-|                           | intr_ext_i[0]     | 1                                 | pulpcl_eoc                                               |
-|                           | intr_ext_i[2:1]   | 2                                 | pulpcl_hostd_mbox_intr                                   |
-|                           | intr_ext_i[4:3]   | 2                                 | spatzcl_hostd_mbox_intr                                  |
-|                           | intr_ext_i[6:5]   | 2                                 | safed_hostd_mbox_intr                                    |
-|                           | intr_ext_i[8:7]   | 2                                 | secd_hostd_mbox_intr                                     |
-|                           | intr_ext_i[9]     | 1                                 | car_wdt_intrs[0]                                         |
-|                           | intr_ext_i[10]    | 1                                 | car_wdt_intrs[1]                                         |
-|                           | intr_ext_i[11]    | 1                                 | car_wdt_intrs[2]                                         |
-|                           | intr_ext_i[12]    | 1                                 | car_wdt_intrs[3]                                         |
-|                           | intr_ext_i[13]    | 1                                 | car_wdt_intrs[4]                                         |
-|                           | intr_ext_i[14]    | 1                                 | car_can_intr                                             |
-|                           | intr_ext_i[15]    | 1                                 | car_adv_timer_ch0                                        |
-|                           | intr_ext_i[16]    | 1                                 | car_adv_timer_ch1                                        |
-|                           | intr_ext_i[17]    | 1                                 | car_adv_timer_ch2                                        |
-|                           | intr_ext_i[18]    | 1                                 | car_adv_timer_ch3                                        |
-|                           | intr_ext_i[19]    | 1                                 | car_adv_timer_events[0]                                  |
-|                           | intr_ext_i[20]    | 1                                 | car_adv_timer_events[1]                                  |
-|                           | intr_ext_i[21]    | 1                                 | car_adv_timer_events[2]                                  |
-|                           | intr_ext_i[22]    | 1                                 | car_adv_timer_events[3]                                  |
-|                           | intr_ext_i[23]    | 1                                 | car_sys_timer_lo                                         |
-|                           | intr_ext_i[24]    | 1                                 | car_sys_timer_hi                                         |
-|                           | intr_ext_i[31:25] | 7                                 | 0                                                        |
-| meip_ext_o                |                   | 3 (CarfieldNumInterruptibleHarts) | \-                                                       |
-| meip_ext_o[0]             |                   | \-                                |
-| meip_ext_o[1]             |                   | \-                                |
-| meip_ext_o[2]             |                   | \-                                |
-| seip_ext_o                |                   | 3 (CarfieldNumInterruptibleHarts) | \-                                                       |
-| seip_ext_o[0]             |                   | \-                                |
-| seip_ext_o[1]             |                   | \-                                |
-| seip_ext_o[2]             |                   | \-                                |
-| msip_ext_o                |                   | 3 (CarfieldNumInterruptibleHarts) | \-                                                       |
-| msip_ext_o[0]             |                   | \-                                |
-| msip_ext_o[1]             |                   | \-                                |
-| msip_ext_o[2]             |                   | \-                                |
-| mtip_ext_o                |                   | 3 (CarfieldNumInterruptibleHarts) | \-                                                       |
-| mtip_ext_o[0]             |                   | \-                                |
-| mtip_ext_o[1]             |                   | \-                                |
-| mtip_ext_o[2]             |                   | \-                                |
+| **Interrupt Source**      | **Interrupt sink** | **Bitwidth** | **Connection**                                              | **Type**        | **Comment**               |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| **Carfield peripherals**  |                    |              |                                                             |                 |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| intr_wkup_timer_expired_o |                    | 1            | car_wdt_intrs[0]                                            | level-sensitive |                           |
+| intr_wdog_timer_bark_o    |                    | 1            | car_wdt_intrs[1]                                            | level-sensitive |                           |
+| nmi_wdog_timer_bark_o     |                    | 1            | car_wdt_intrs[2]                                            | level-sensitive |                           |
+| wkup_req_o                |                    | 1            | car_wdt_intrs[3]                                            | level-sensitive |                           |
+| aon_timer_rst_req_o       |                    | 1            | car_wdt_intrs[4]                                            | level-sensitive |                           |
+| irq                       |                    | 1            | car_can_intr                                                | level-sensitive |                           |
+| ch_0_o[0]                 |                    | 1            | car_adv_timer_ch0                                           | edge-sensitive  |                           |
+| ch_0_o[1]                 |                    | 1            | car_adv_timer_ch1                                           | edge-sensitive  |                           |
+| ch_0_o[2]                 |                    | 1            | car_adv_timer_ch2                                           | edge-sensitive  |                           |
+| ch_0_o[3]                 |                    | 1            | car_adv_timer_ch3                                           | edge-sensitive  |                           |
+| events_o[0]               |                    | 1            | car_adv_timer_events[0]                                     | edge-sensitive  |                           |
+| events_o[1]               |                    | 1            | car_adv_timer_events[1]                                     | edge-sensitive  |                           |
+| events_o[2]               |                    | 1            | car_adv_timer_events[2]                                     | edge-sensitive  |                           |
+| events_o[3]               |                    | 1            | car_adv_timer_events[3]                                     | edge-sensitive  |                           |
+| irq_lo_o                  |                    | 1            | car_sys_timer_lo                                            | edge-sensitive  |                           |
+| irq_hi_o                  |                    | 1            | car_sys_timer_hi                                            | edge-sensitive  |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| **Cheshire peripherals**  |                    |              |                                                             |                 |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| zero                      |                    | 1            | zero                                                        | level-sensitive |                           |
+| uart                      |                    | 1            | uart                                                        | level-sensitive |                           |
+| i2c_fmt_threshold         |                    | 1            | i2c_fmt_threshold                                           | level-sensitive |                           |
+| i2c_rx_threshold          |                    | 1            | i2c_rx_threshold                                            | level-sensitive |                           |
+| i2c_fmt_overflow          |                    | 1            | i2c_fmt_overflow                                            | level-sensitive |                           |
+| i2c_rx_overflow           |                    | 1            | i2c_rx_overflow                                             | level-sensitive |                           |
+| i2c_nak                   |                    | 1            | i2c_nak                                                     | level-sensitive |                           |
+| i2c_scl_interference      |                    | 1            | i2c_scl_interference                                        | level-sensitive |                           |
+| i2c_sda_interference      |                    | 1            | i2c_sda_interference                                        | level-sensitive |                           |
+| i2c_stretch_timeout       |                    | 1            | i2c_stretch_timeout                                         | level-sensitive |                           |
+| i2c_sda_unstable          |                    | 1            | i2c_sda_unstable                                            | level-sensitive |                           |
+| i2c_cmd_complete          |                    | 1            | i2c_cmd_complete                                            | level-sensitive |                           |
+| i2c_tx_stretch            |                    | 1            | i2c_tx_stretch                                              | level-sensitive |                           |
+| i2c_tx_overflow           |                    | 1            | i2c_tx_overflow                                             | level-sensitive |                           |
+| i2c_acq_full              |                    | 1            | i2c_acq_full                                                | level-sensitive |                           |
+| i2c_unexp_stop            |                    | 1            | i2c_unexp_stop                                              | level-sensitive |                           |
+| i2c_host_timeout          |                    | 1            | i2c_host_timeout                                            | level-sensitive |                           |
+| spih_error                |                    | 1            | spih_error                                                  | level-sensitive |                           |
+| spih_spi_event            |                    | 1            | spih_spi_event                                              | level-sensitive |                           |
+| gpio                      |                    | 32           | gpio                                                        | level-sensitive |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| **Spatz cluster**         |                    |              |                                                             |                 |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+|                           | msip_i[0]          | 1            | (hostd_spatzcl_mb_intr_ored[0] \| safed_spatzcl_intr_mb[0]) | level-sensitive | Snitch core #0            |
+|                           | msip_i[1]          | 1            | (hostd_spatzcl_mb_intr_ored[1] \| safed_spatzcl_intr_mb[1]) | level-sensitive | Snitch core #1            |
+|                           | mtip_i[0]          | 1            | chs_mti[0]                                                  | level-sensitive | Snitch core #0            |
+|                           | mtip_i[1]          | 1            | chs_mti[1]                                                  | level-sensitive | Snitch core #1            |
+|                           | meip_i             | 2            | \-                                                          |                 | unconnected               |
+|                           | seip_i             | 2            | \-                                                          |                 | unconnected               |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| **HRM integer cluster**   |                    |              |                                                             |                 |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| eoc_o                     |                    | 1            | pulpcl_eoc                                                  | level-sensitive |                           |
+|                           | mbox_irq_i         | 1            | (hostd_pulpcl_mb_intr_ored \| safed_pulpcl_intr_mb)         | level-sensitive | to offload binaries       |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| **Secure domain**         |                    |              |                                                             |                 |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+|                           | irq_ibex_i         | 1            | (hostd_secd_mb_intr_ored \| safed_secd_intr_mb)             | level-sensitive | to wake-up Ibex core      |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| **Safe domain**           |                    |              |                                                             |                 |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+|                           | irqs_i[0]          | 1            | hostd_safed_mbox_intr[0]                                    | level-sensitive | from host domain CVA6#0   |
+|                           | irqs_i[1]          | 1            | hostd_safed_mbox_intr[1]                                    | level-sensitive | from host domain CVA6#1   |
+|                           | irqs_i[2]          | 1            | secd_safed_mbox_intr                                        | level-sensitive | from secure domain        |
+|                           | irqs_i[3]          | 1            | pulpcl_safed_mbox_intr                                      | level-sensitive | from HMR custer           |
+|                           | irqs_i[4]          | 1            | spatzcl_safed_mbox_intr                                     | level-sensitive | from vectorial cluster    |
+|                           | irqs[5]            | 1            | irqs_distributed_249                                        | level-sensitive | tied to 0                 |
+|                           | irqs[6]            | 1            | irqs_distributed_250                                        | level-sensitive | host domain UART          |
+|                           | irqs[7]            | 1            | irqs_distributed_251                                        | level-sensitive | i2c_fmt_threshold         |
+|                           | irqs[8]            | 1            | irqs_distributed_252                                        | level-sensitive | i2c_rx_threshold          |
+|                           | irqs[9]            | 1            | irqs_distributed_253                                        | level-sensitive | i2c_fmt_overview          |
+|                           | irqs[10]           | 1            | irqs_distributed_254                                        | level-sensitive | i2c_rx_overflow           |
+|                           | irqs[11]           | 1            | irqs_distributed_255                                        | level-sensitive | i2c_nak                   |
+|                           | irqs[12]           | 1            | irqs_distributed_256                                        | level-sensitive | i2c_scl_interference      |
+|                           | irqs[13]           | 1            | irqs_distributed_257                                        | level-sensitive | i2c_sda_interference      |
+|                           | irqs[14]           | 1            | irqs_distributed_258                                        | level-sensitive | i2c_stret h_timeout       |
+|                           | irqs[15]           | 1            | irqs_distributed_259                                        | level-sensitive | i2c_sda_unstable          |
+|                           | irqs[16]           | 1            | irqs_distributed_260                                        | level-sensitive | i2c_cmd_complete          |
+|                           | irqs[17]           | 1            | irqs_distributed_261                                        | level-sensitive | i2c_tx_stretch            |
+|                           | irqs[18]           | 1            | irqs_distributed_262                                        | level-sensitive | i2c_tx_overflow           |
+|                           | irqs[19]           | 1            | irqs_distributed_263                                        | level-sensitive | i2c_acq_full              |
+|                           | irqs[20]           | 1            | irqs_distributed_264                                        | level-sensitive | i2c_unexp_stop            |
+|                           | irqs[21]           | 1            | irqs_distributed_265                                        | level-sensitive | i2c_host_timeout          |
+|                           | irqs[22]           | 1            | irqs_distributed_266                                        | level-sensitive | spih_error                |
+|                           | irqs[23]           | 1            | irqs_distributed_267                                        | level-sensitive | spih_spi_event            |
+|                           | irqs[55:24]        | 32           | irqs_distributed_299:268                                    | level-sensitive | gpio                      |
+|                           | irqs_i[56]         | 1            | irqs_distributed_300                                        | level-sensitive | pulpcl_eoc                |
+|                           | irqs_i[57]         | 1            | irqs_distributed_309                                        | level-sensitive | car_wdt_intrs[0]          |
+|                           | irqs_i[58]         | 1            | irqs_distributed_310                                        | level-sensitive | car_wdt_intrs[1]          |
+|                           | irqs_i[59]         | 1            | irqs_distributed_311                                        | level-sensitive | car_wdt_intrs[2]          |
+|                           | irqs_i[60]         | 1            | irqs_distributed_312                                        | level-sensitive | car_wdt_intrs[3]          |
+|                           | irqs_i[61]         | 1            | irqs_distributed_313                                        | level-sensitive | car_wdt_intrs[4]          |
+|                           | irqs_i[62]         | 1            | irqs_distributed_314                                        | level-sensitive | car_can_intr              |
+|                           | irqs_i[63]         | 1            | irqs_distributed_315                                        | edge-sensitive  | car_adv_timer_ch0         |
+|                           | irqs_i[64]         | 1            | irqs_distributed_316                                        | edge-sensitive  | car_adv_timer_ch1         |
+|                           | irqs_i[65]         | 1            | irqs_distributed_317                                        | edge-sensitive  | car_adv_timer_ch2         |
+|                           | irqs_i[66]         | 1            | irqs_distributed_318                                        | edge-sensitive  | car_adv_timer_ch3         |
+|                           | irqs_i[67]         | 1            | irqs_distributed_319                                        | edge-sensitive  | car_adv_timer_events[0]   |
+|                           | irqs_i[68]         | 1            | irqs_distributed_320                                        | edge-sensitive  | car_adv_timer_events[1]   |
+|                           | irqs_i[69]         | 1            | irqs_distributed_321                                        | edge-sensitive  | car_adv_timer_events[2]   |
+|                           | irqs_i[70]         | 1            | irqs_distributed_322                                        | edge-sensitive  | car_adv_timer_events[0]   |
+|                           | irqs_i[71]         | 1            | irqs_distributed_323                                        | edge-sensitive  | car_sys_timer_lo          |
+|                           | irqs_i[72]         | 1            | irqs_distributed_324                                        | edge-sensitive  | car_sys_timer_hi          |
+|                           | irqs_i[127:73]     | 54           | irqs_distributed_331:325                                    | -               | tied to 0                 |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+| **Cheshire**              |                    |              |                                                             |                 |                           |
+|---------------------------|--------------------|--------------|-------------------------------------------------------------|-----------------|---------------------------|
+|                           | intr_ext_i[0]      | 1            | pulpcl_eoc                                                  | level-sensitive | from HMR cluster          |
+|                           | intr_ext_i[2:1]    | 2            | pulpcl_hostd_mbox_intr                                      | level-sensitive | from HMR cluster          |
+|                           | intr_ext_i[4:3]    | 2            | spatzcl_hostd_mbox_intr                                     | level-sensitive | from vectorial cluster    |
+|                           | intr_ext_i[6:5]    | 2            | safed_hostd_mbox_intr                                       | level-sensitive | from safe domain          |
+|                           | intr_ext_i[8:7]    | 2            | secd_hostd_mbox_intr                                        | level-sensitive | from secure domain        |
+|                           | intr_ext_i[9]      | 1            | car_wdt_intrs[0]                                            | level-sensitive | from carfield peripherals |
+|                           | intr_ext_i[10]     | 1            | car_wdt_intrs[1]                                            | level-sensitive | from carfield peripherals |
+|                           | intr_ext_i[11]     | 1            | car_wdt_intrs[2]                                            | level-sensitive | from carfield peripherals |
+|                           | intr_ext_i[12]     | 1            | car_wdt_intrs[3]                                            | level-sensitive | from carfield peripherals |
+|                           | intr_ext_i[13]     | 1            | car_wdt_intrs[4]                                            | level-sensitive | from carfield peripherals |
+|                           | intr_ext_i[14]     | 1            | car_can_intr                                                | level-sensitive | from carfield peripherals |
+|                           | intr_ext_i[15]     | 1            | car_adv_timer_ch0                                           | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[16]     | 1            | car_adv_timer_ch1                                           | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[17]     | 1            | car_adv_timer_ch2                                           | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[18]     | 1            | car_adv_timer_ch3                                           | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[19]     | 1            | car_adv_timer_events[0]                                     | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[20]     | 1            | car_adv_timer_events[1]                                     | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[21]     | 1            | car_adv_timer_events[2]                                     | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[22]     | 1            | car_adv_timer_events[3]                                     | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[23]     | 1            | car_sys_timer_lo                                            | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[24]     | 1            | car_sys_timer_hi                                            | edge-sensitive  | from carfield peripherals |
+|                           | intr_ext_i[31:25]  | 7            | 0                                                           |                 | tied to 0                 |
+| meip_ext_o[0]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| meip_ext_o[1]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| meip_ext_o[2]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| seip_ext_o[0]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| seip_ext_o[1]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| seip_ext_o[2]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| msip_ext_o[0]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| msip_ext_o[1]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| msip_ext_o[2]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+| mtip_ext_o[0]             |                    | \-           |                                                             | level-sensitive | Snitch core #0            |
+| mtip_ext_o[1]             |                    | \-           |                                                             | level-sensitive | Snitch core #1            |
+| mtip_ext_o[2]             |                    | \-           |                                                             | level-sensitive | unconnected               |
+
+## Clock and reset
+
+TODO @angelo write about clock domains, AXI isolation, clock propagation (gate domains etc) and
+reset propagation
 
 ## Domains
 
-### Cheshire
+Carfield's domains live in dedicated repositories. We invite the reader to consult the documentation
+of each domain for more information. Below, we briefly describe each domain and focus on integration
+parameterization.
 
-### Safe domain
+### [Host domain (Cheshire)](https://github.com/pulp-platform/cheshire)
 
-### Secure domain
+The *host domain* (Cheshire) embeds all the necessary components required to run
+embedded OS such as embedded Linux. It can work in two orthogonal *operation modes*.
 
-### HMR integer PMCA
+1. *Untrusted mode*: in this operation mode, the host domain is tasked to run untrusted services,
+i.e. non time- and safety-critical applications. For example, this could be the case of infotainment
+on a modern car. In this mode, as in traditional automotive platforms, safety and resiliency
+features are deferred to a dedicated 32-bit microcontroller-like system, called `safe domain` in
+Carfield.
 
-### Vectorial PMCA
+2. *Hybrid trusted/untrusted mode*: in this operation mode, the host domain is in charge of both
+critical and non-critical applications. Key features to achieve this are:
+  * A virtualization layer, which allows the system to accommodate the execution of multiple OSs,
+including rich, Unix-like OSs and Real-Time OSs (RTOS), coexisting on the same HW.
+  * Spatial and temporal partitioning of resources: AXI matrix crossbar
+	([AXI-REALM]([AXI-REALM](https://arxiv.org/abs/2311.09662)), LLC, TLB, and a `physical tagger`
+	in front of the cores to mark partitions by acting directly on the physical address space
+  * Runtime configurable data/instruction cache and SPM
+  * Fast interrupt handling, with optional interrupt routing through the RISC-V fast interrupt
+controller CLIC,
+  * Configurable dual core setup between *lockstep* or *SMP* mode.
+
+  Hybrid operation mode is currently experimental, and mostly for research purposes. We advise of
+  relying on a combination of host ad safe domain for a more traditional approach.
+
+Cheshire is configured as follows:
+
+* Two 64-bit, RISC-V CVA6 cores, with lightweight self-invalidation cache coherency, fast interrupt
+and virtualization support.
+layer
+* 8 external AXI manager ports added to the matrix crossbar:
+  - Dynamic SPM port 0
+  - Dynamic SPM port 1
+  - Safe domain
+  - HMR cluster
+  - Vectorial cluster
+  - Mailbox unit
+  - Ethernet
+  - Peripherals
+* 4 external AXI subordinate ports added to the matrix crossbar:
+  - Safe domain
+  - Secure domain
+  - HMR cluster
+  - Vectorial cluster
+* External regbus subordinate ports:
+  - Platform control registers (PCRs): control domains enable, clock gate, isolation
+  - PLL control registers: for ASIC top-levels, leave unconnected otherwise
+  - Padmux control registers: for ASIC top-levels, leave unconnected otherwise
+  - Dynamic SPM ECC control registers
+* [AXI-REALM](https://arxiv.org/abs/2311.09662) unit for bandwidth regulation and monitoring
+  integrated in front of each AXI matrix crossbar manager
+* Last-level cache with HW spatial partitioning
+* 32 external input interrupts (`CarfieldNumExtIntrs`), see [Interrupt map](#interrupt-map). Unused
+  are tied to 0 (currently 9/32)
+* 2 external interruptible harts (`CarfieldNumInterruptibleHarts`). The interruptible harts are
+  Snitch core \#0 and \#1 in the vectorial cluster.
+* An interrupt router with 1 external target (`CarfieldNUmRouterTargets`), tasked to distribute N
+  input interrupts to M targets. In Carfield, the external target is the `safe domain`.
+* All default Cheshire peripherals, except for VGA
+
+### [Safe domain](https://github.com/pulp-platform/safety_island)
+
+The *safe domain* is a simple MCU-like domain that comprises three 32-bit real-time CV32E40P
+(CV32RT) RISC-V cores operating in triple-lockstep mode (TCLS).
+
+These cores, enhanced with the RISC-V CLIC controller and optimized for fast interrupt handling and
+context switch, run RTOSs and safety-critical applications, embodying a core tenet of the platform
+reliability.
+
+The *safe domain* is essential when the *host domain* is operated in *untrusted* mode.
+
+The *safe domain* is configured as follows:
+
+* 1 RISC-V debug module prividing indipendent JTAG interface off-Carfield
+* 1 AXI manager and 1 AXI subordinate ports, 32-bit data and 32-bit address wide, to and from the
+  *host domain*, respectively. AXI datawidth conversion with the host domain is handled internally
+  to the safe domain.
+* 1 generic timer, essential for periodic ticks common in RTOSs. The generic timer in the *safe
+  domain* is the same integrated in [Carfield's *peripheral domain*](#peripherals).
+* CLIC RISC-V interrupt controller; as opposed to Cheshire, currently the CLIC is configured to run
+  run in M-mode.
+* Fast interrupt extension that extends CV32 with additional logic to accelerate context switching.
+  From here, the name [CV32RT](https://arxiv.org/abs/2311.08320)
+* 1 32-bit per-core FPU with down to float-16 precision, totaling 3 FPUs
+
+### [Secure domain](https://github.com/pulp-platform/opentitan/tree/carfield-soc)
+
+The secure domain, based on the [OpenTitan
+project](https://opentitan.org/book/doc/introduction.html), serves as the Hardware Root-of-Trust
+(HWRoT) of the platform. It handles *secure boot* and system integrity monitoring fully in HW
+through cryptographic acceleration services.
+
+Compared to vanilla OpenTitan, the *secure domain* integrated in Carfield is modified/configured as follows:
+
+TODO
+
+### Accelerator domain
+
+To augment computational capabilities, Carfield incorporates two general-purpose accelerators
+
+#### [HMR integer PMCA](https://github.com/pulp-platform/pulp_cluster/tree/yt/rapidrecovery)
+
+The [hybrid modular redundancy (HMR) *integer PMCA*](https://arxiv.org/abs/2303.08706)
+is specialized in executing reliable boosted Quantized Neural Network (QNN) operations, exploiting
+the HMR technique for rapid fault recovery and integer arithmetic support in the ISA of the RISC-V
+cores from 32-bit down to 2-bit and mixed-precision formats.
+
+The HMR integer PMCA is configured as follows:
+
+TODO
+
+#### [Vectorial PMCA](https://github.com/pulp-platform/spatz)
+
+The [*vectorial PMCA*, or Spatz PMCA](https://dl.acm.org/doi/abs/10.1145/3508352.3549367) handles
+vectorizable multi-format floating-point workloads (down to FP8).
+
+The Spatz PMCA is configured as follows:
+
+TODO
+
+## [Dynamic scratchpad memory (SPM)](https://github.com/pulp-platform/dyn_spm)
+
+The dynamic SPM features dynamically switching address mapping policy. It manages the following
+features:
+
+* Two AXI subordinate ports
+* Two address mapping modes: *interleaved* and *contiguous*
+* 4 address spaces, 2 for each port. The address space is used to select the AXI port to use, and
+  the mapping mode
+* Every address space points to the same physical SRAM through a low-latency matrix crossbar
+* ECC-equipped memory banks
+
+## Interconnect
+
+The interconnect is composed of a main [AXI4](https://github.com/pulp-platform/axi) matrix (or
+crossbar) with AXI5 atomic operations (ATOPs) support. The crossbar extends Cheshire's with
+additional external AXI manager and subordinate ports.
+
+Cheshire's auxiliary [Regbus](https://github.com/pulp-platform/register_interface) demultiplexer is
+extended with additional peripheral configuration ports for external PLL/FLL and padmux
+configuration, which are specific of ASIC wrappers.
+
+An additional peripheral subsystem based on APB hosts Carfield-specific peripherals.
+
+## DRAM
+
+Currently, Carfield integrates Cypress' [HyperBus off-chip
+link](https://github.com/pulp-platform/hyperbus) to connect to external HyperRAM modules. The
+HyperBus interface has a configurable number of physical HyperRAM chips it is attached to, and can
+support chips with different densities (from 8MiB to 64MiB per chip).
 
 ## Peripherals
 
+Carfield enhances Cheshire's peripheral subsystem with additional capabilities.
 
+An external AXI manager port is attached to the matrix crossbar. The 64-bit data, 48-bit address AXI
+protocol is converted to the slower, 32-bit data and address APB protocol. An APB demultiplexer
+allows attaching several peripherals, described below.
 
-### Generic timers
+### Generic and advanced timer
 
-### PWM timer
+Carfield integrates a generic timer and an advanced timer.
+
+The [*generic timer*](https://github.com/pulp-platform/timer_unit) manages the following features:
+
+- 2 general purpose 32-bit up counter timers
+- Input trigger sources:
+	 - FLL/PLL clock
+	 - FLL/PLL clock + Prescaler
+	 - Real-time clock (RTC) at crystal frequency (32kHz) or higher
+	 - External event
+- 8-bit programmable prescaler to FLL/PLL clock
+- Counting modes:
+	 - One shot mode: timer is stopped after first comparison match
+	 - Continuous mode: timer continues counting after comparison match
+	 - Cycle mode: timer resets to 0 after comparison match and continues counting
+	 - 64 bit cascaded mode
+- Interrupt request generation on comparison match
+
+For more information, read the dedicated
+[documentation](https://github.com/pulp-platform/timer_unit/blob/master/doc/TIMER_UNIT_reference.xlsx).
+
+The [*advanced timer*](https://github.com/pulp-platform/apb_adv_timer) manages the following features:
+* 4 timers with 4 output signal channels each.
+* PWM generation functionality
+* Multiple trigger input sources:
+   - output signal channels of all timers
+   - 32 GPIOs
+   - Real-time clock (RTC) at crystal frequency (32kHz) or higher
+   - FLL/PLL clock
+  In Carfield, we rely on a RTC.
+* Configurable input trigger modes
+* Configurable prescaler for each timer
+* Configurable counting mode for each timer
+* Configurable channel threshold action for each timer
+* 4 configurable output events
+* Configurable clock gating of each timer
+
+For more information, read the dedicated
+[documentation](https://github.com/pulp-platform/apb_adv_timer/blob/master/doc/APB_ADV_TIMER_reference.xlsx).
 
 ### Watchdog timer
 
+We employ the watchdog timer developed by the [OpenTitan
+project](https://opentitan.org/book/doc/introduction.html) project. It manages the following
+features:
+
+* Two 32-bit upcounting timers: one timer functions as a wakeup timer, one as a watchdog timer
+* 2 thresholds: *bark* (generates an interrupt) and *bite* (resets core)
+* A 12 bit pre-scaler for the wakeup timer to enable very long timeouts
+
+For more information, read the dedicated
+[documentation](https://opentitan.org/book/hw/ip/aon_timer/).
+
+### CAN
+
+We employ a CAN device developed by the [Czech Technical
+University](https://github.com/AlSaqr-platform/can_bus/tree/pulp) in Prague. It manages the
+following features:
+
+* CAN 2.0, CAN FD 1.0 and ISO CAN FD
+* Avalon memory bus
+* Timestamping and transmission at given time
+* Optional event and error logging
+* Fault confinement state manipulation
+* Transceiver delay measurement
+* Variety of interrupt sources
+* Filtering of received frame
+* Listen-only mode, Self-test mode, Acknowledge forbidden mode
+* Up to 14 Mbit in “Data” bit-rate (with 100 Mhz Core clock)
+
+For more information, read the dedicated
+[documentation](https://github.com/AlSaqr-platform/can_bus/tree/pulp/doc)
+
 ### Ethernet
+
+We employ Ethernet IPs developed by [Alex
+Forencich](https://github.com/alexforencich/verilog-ethernet) and assemble them with a
+high-performant DMA, the same used in Cheshire.
+
+We use Reduced gigabit media-independent interface (RGMII) that supports speed up to 1000Mbut/s
+(1GHz).
+
+For more information, read the dedicated
+[documentation](http://alexforencich.com/wiki/en/verilog/ethernet/start) of Ethernet components from
+its original repository.
