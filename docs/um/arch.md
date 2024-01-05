@@ -286,8 +286,8 @@ critical and non-critical applications. Key features to achieve this are:
   * A virtualization layer, which allows the system to accommodate the execution of multiple OSs,
 including rich, Unix-like OSs and Real-Time OSs (RTOS), coexisting on the same HW.
   * Spatial and temporal partitioning of resources: AXI matrix crossbar
-	([AXI-REALM]([AXI-REALM](https://arxiv.org/abs/2311.09662)), LLC, TLB, and a `physical tagger`
-	in front of the cores to mark partitions by acting directly on the physical address space
+	([AXI-REALM](https://arxiv.org/abs/2311.09662)), LLC, TLB, and a `physical tagger` in front of
+	the cores to mark partitions by acting directly on the physical address space
   * Runtime configurable data/instruction cache and SPM
   * Fast interrupt handling, with optional interrupt routing through the RISC-V fast interrupt
 controller CLIC,
