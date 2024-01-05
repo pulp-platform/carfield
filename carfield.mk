@@ -135,7 +135,7 @@ car-checkout: car-checkout-deps
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= e446a8e30d3e5556d14ff74953c51f1bbf8c670f
+CAR_NONFREE_COMMIT ?= 6a34906eb1468fd633c3f4d8354ce013e70486df
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
