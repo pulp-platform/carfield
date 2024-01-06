@@ -37,6 +37,21 @@ include $(CAR_ROOT)/bender-synth.mk
 include $(CAR_ROOT)/bender-xilinx.mk
 include $(CAR_ROOT)/bender-safed.mk
 
+######################
+# Nonfree components #
+######################
+
+CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
+CAR_NONFREE_COMMIT ?= 5bb6f001cf835d9d4938ee364df687e1811c8719
+
+## Clone the non-free verification IP for the Carfield TB
+car-nonfree-init:
+	git clone $(CAR_NONFREE_REMOTE) $(CAR_ROOT)/nonfree
+	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
+	cd nonfree/intel16 && icdesign intel16 -update all -nogui
+
+-include nonfree/nonfree.mk
+
 ####################################
 # Islands' variables initialization #
 #####################################
@@ -129,21 +144,6 @@ car-checkout-deps:
 
 .PHONY: car-checkout
 car-checkout: car-checkout-deps
-
-######################
-# Nonfree components #
-######################
-
-CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 6a34906eb1468fd633c3f4d8354ce013e70486df
-
-## Clone the non-free verification IP for the Carfield TB
-car-nonfree-init:
-	git clone $(CAR_NONFREE_REMOTE) $(CAR_ROOT)/nonfree
-	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
-	cd nonfree/intel16 && icdesign intel16 -update all -nogui
-
--include nonfree/nonfree.mk
 
 ############
 # Build SW #
