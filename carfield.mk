@@ -179,12 +179,12 @@ $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
 # For independent boot of an island, we allow to compile the binary standalone.
 .PHONY: safed-sw-build
 safed-sw-build:
-	. $(CAR_ROOT)/scripts/safed-env.sh; \
+	. $(CAR_ROOT)/env/safed-env.sh; \
 	$(MAKE) safed-sw-all
 
 .PHONY: pulpd-sw-build
 pulpd-sw-build:
-	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
+	. $(CAR_ROOT)/env/pulpd-env.sh; \
 	$(MAKE) pulpd-sw-all
 
 # TODO: properly compile spatz tests from carfield. For now, we symlink to existing tests. If you
