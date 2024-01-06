@@ -25,7 +25,6 @@ of, [Cheshire's](https://pulp-platform.github.io/cheshire/um/sw/).
 This means that it shares the same:
 
 * Baremetal programs (BMPs) build flow and structure
-* Boot Flow (*passive* and *autonomous* boot)
 * Boot ROM
 * Zero-Stage Loader
 * OpenSBI Firmware
@@ -41,7 +40,7 @@ drivers and SW routines within Carfield seamlessly.
 Provided the equivalence and reuse between Carfield and Cheshire, in this page we focus on
 Carfield-specific SW components and build flow, with an emphasis on domains different than Cheshire.
 
-# Compiler requirements
+## Compiler requirements
 
 General-purpose processing elements (PEs) integrated in Carfield implement the RISC-V ISA, targeting
 either RV64 (*host domain*) or RV32 (all the others: *safe domain*, *secure domain*, *integer PMCA*,
@@ -55,9 +54,24 @@ Otherwise, to use *custom* instruction supported in HW for a domain, specific co
 required. We are working to improve compiler support by providing pointers to pre-built releases or
 a container-based build flow.
 
-# Single domain programs build flow
+## Boot Flow and Secure Boot
 
-## Baremetal programs (BMPs)
+Carfield supports two *operative boot flows*: 
+
+* **Non-secure**: being an always-on domain, in this *operative boot flow* Cheshire takes over
+  Carfield's boot flow. This means that *passive* and *autonomous* boot are equivalent to those
+  described in Cheshire's [Software Stack](https://pulp-platform.github.io/cheshire/um/sw/). Since
+  the other domains are clock gated, SW to be executed on them requires Cheshire to handle their
+  wake-up sequence.
+
+* **Secure**: The *secure domain* performs the secure boot process on the code that will be executed
+  on the Carfield system, independently of the domain. For more information, read the dedicated
+  [secure boot documentation](https://opentitan.org/book/doc/security/specs/secure_boot) of the
+  OpenTitan project.
+
+## Single domain programs build flow
+
+### Baremetal programs (BMPs)
 
 BMPs for all domains can be built from the root of Carfield through a portable *make fragment*
 `sw.mk` located in the `sw/` folder.
@@ -100,7 +114,7 @@ To create the same program executing from DRAM, `sw/tests/bare-metal/hostd/hello
 can instead be built from the same source. Depending on their assumptions and behavior, not all
 programs may be built to execute from both locations.
 
-## Linux programs
+### Linux programs
 
 When executing *host domain* programs in Linux (on FPGA/ASIC targets) that require access to memory
 mapped components of other domains, SW intervention is needed to map virtual to physical addresses,
@@ -110,7 +124,7 @@ translation.
 In the current SW stack, this mapping is already provided and hence transparent to the user. Test
 programs targeting Linux that require it are located in different folder, `sw/tests/linux/<domain>`.
 
-# Inter-domain offload
+## Inter-domain offload
 
 Offload of programs to Carfield domains involves:
 
@@ -131,7 +145,15 @@ Programs can be offloaded with:
 
 In the following, we briefly describe both.
 
-## Baremetal offload
+---
+
+**Note for the reader**
+
+Since by default all domains are clock gated and isolated after POR except for the *host domain*
+(Cheshire), as described in [Architecture](../um/arch.md), the wake-up process must be handled from
+the C source code.
+
+### Baremetal offload
 
 For BMO, the offloader takes care of bootstrapping the target device ELF in the correct memory
 location, initializing the target and launching its execution through a simple ELF Loader. The ELF
@@ -188,11 +210,11 @@ development cycle and can be an effective litmus test to find and fix HW bugs, o
 For SW development on Carfield and in particular domain-driven offload, it is recommended to use
 OpenMP offload on FPGA/ASIC, described below.
 
-## OpenMP offload (recommended: use on FPGA/ASIC)
+### OpenMP offload (recommended: use on FPGA/ASIC)
 
 TODO Cyril
 
-# External benchmarks
+## External benchmarks
 
 We support several external benchmarks, whose build flow has been slightly adapted to align with
 Carfield's. Currently, they are:

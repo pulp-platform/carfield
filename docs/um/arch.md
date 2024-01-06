@@ -271,17 +271,6 @@ Cheshire](https://pulp-platform.github.io/cheshire/um/arch/). This section descr
 | mtip_ext_o[1]             |                    | \-           |                                                             | level-sensitive | Snitch core #1            |
 | mtip_ext_o[2]             |                    | \-           |                                                             | level-sensitive | unconnected               |
 
-## Clock and reset
-
-Carfield is fed with 3 clocks:
-
-* `host_clk_i`:
-* `alt_clk_i`:
-* `per_clk_i`:
-
-TODO @angelo write about clock domains, AXI isolation, clock propagation (gate domains etc) and
-reset propagation
-
 ## Domains
 
 Carfield's domains live in dedicated repositories. We invite the reader to consult the documentation
@@ -384,6 +373,8 @@ through cryptographic acceleration services.
 Compared to vanilla OpenTitan, the *secure domain* integrated in Carfield is modified/configured as follows:
 
 TODO
+
+TODO Mention `SECURE BOOT` mode
 
 ### Accelerator domain
 
@@ -580,3 +571,36 @@ We use Reduced gigabit media-independent interface (RGMII) that supports speed u
 For more information, read the dedicated
 [documentation](http://alexforencich.com/wiki/en/verilog/ethernet/start) of Ethernet components from
 its original repository.
+
+## Clock, reset and isolation
+
+Currently, Carfield is provided with 3 clocks:
+
+* `host_clk_i`: clock of the *host domain*
+* `alt_clk_i`: clock of *alternate* domains, namely *safe domain*, *secure domain*, *accelerator
+  domain*
+* `per_clk_i`: clock of *peripheral domain*
+
+Out of the 7 *domains* described above, 6 can be clock gated and isolated (*safe domain*, *secure
+domain*). 
+
+Isolation means that, when a domain is isolated, data transfers through the bus targeting the domain
+are terminated and never reach it. An *isolation* module is placed in front of each domain.
+
+The only domain that is always-on and de-isolated is the *host domain* (Cheshire). If required,
+clock gating and/or isolation of it can be handled at higher levels of hierarchy, e.g. in a
+dedicated ASIC wrapper.
+
+Each of the 6 clock gateable domains have the following clock distribution scheme:
+
+* For each domain the user selects one of the 3 different clock sources. Each of these main clocks
+  are either supplied externally, by a dedicated PLL per clock source or by a single PLL that
+  supplies all three clock sources. The configuration of the clock source is handled by the external
+  PLL wrapper configuration registers, e.g. in a ASIC top level.
+* The selected clock source for the domain is fed into a default-bypassed arbitrary integer clock
+  divider with 50% duty cycle. This allows to use different integer clock divisions for every target
+  domain to use different clock frequencies.
+* The internal clock gate of the clock divider is used to provide clock gating for the domain.
+
+Currently, Carfield is configured with all domains clock gated after power-on reset (POR) event.
+

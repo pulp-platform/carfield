@@ -9,7 +9,7 @@ We currently provide working setups for:
 - Questa Advanced Simulator (QuestaSim) `>= 2022.3`
 
 We plan on supporting more simulators in the future. If your situation requires it, simulating
-Cheshire on other setups should be straightforward.
+Carfield on other setups should be straightforward.
 
 ## Testbench
 
@@ -28,6 +28,8 @@ Note that while runtime offloading can be exploited by RTL simulation with reaso
 programs, we suggest to follow the [FPGA mapping](xilinx.md) steps and use [OpenMP-based
 offload](../um/sw.md) with heterogeneous cross-compilation.
 
+---
+
 We provide a single SystemVerilog testbench for `carfield_soc` that handles standalone execution of
 baremetal programs for each domain. The code for domain `X` is preloaded through simulated interface
 drivers. In addition, some domains can read from external memory models from their boot ROM and then jump to
@@ -35,7 +37,11 @@ execution.
 
 As for Cheshire, Carfield testbench employs physical interfaces (JTAG or Serial Link) for memory
 preload by default. This could increase the memory preload time (independently from the target
-memory: dynamic SPM, LLC-SPM, or DRAM), significantly based on the ELF size.
+memory: dynamic SPM, LLC-SPM, or DRAM), significantly based on the ELF size. 
+
+Since by default all domains are clock gated and isolated after POR except for the *host domain*
+(Cheshire), as described in [Architecture](../um/arch.md), the testbench handles the wake-up
+process.
 
 To speed up the process, the external DRAM can be initialized in simulation (namely, at time `0ns`)
 for domain `X` through the make variable `HYP_USER_PRELOAD`. Carfield [SW Stack](../um/sw.md)
@@ -70,13 +76,13 @@ we provide the module `carfield_vip` encapsulating all verification IPs and thei
 
 After building Carfield, the design can be compiled and simulated with QuestaSim. Below, we provide
 an example with `Serial Link` passive preload of a baremetal program `helloworld.car.l2.elf` to be
-executed on the Cheshire domain (`X=CHS`):
+executed on the *host domain* (Cheshire, i.e., `X=CHS`):
 
 ```tcl
 # Compile design
 make car-hw-build
 
-# Preload `helloworld.spm.elf` through serial link, then start and run simulation
+# Preload `helloworld.car.l2.elf` through serial link, then start and run simulation
 make car-hw-sim CHS_BOOTMODE=0 CHS_PRELMODE=1 CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf
 ```
 
