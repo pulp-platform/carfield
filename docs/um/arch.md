@@ -1,5 +1,7 @@
 # Architecture
 
+TODO @anga93: add figure
+
 ![Carfield Block Diagram](../img/arch.svg)
 
 Carfield is organized in *domains*. As a mixed-criticality system (MCS), each domain serves
@@ -19,8 +21,18 @@ The above block diagram depicts a fully-featured Carfield SoC, which currently p
 	- *Accelerator domain*, comprises two programmable multi-core accelerators (PMCAs), an 12-cores
 	  integer cluster with HMR capabilities and a vectorial cluster with vector processing capabilities
 
-- **Peripherals**
-	- Generic timers
+- **Dynamic SPM**:
+    - Dynamically configurable scratchpad memory
+      for *interleaved* or *contiguous* accesses
+
+- **DRAM**:
+    - Cypress's HypeRAM, with open-source AXI4 Hyberbus interface and PHY.
+
+- **Mailbox unit**
+    - Main communication vehicle among domains, based on an interrupt notification mechanism
+
+- **Peripherals**:
+    - Generic timers
 	- PWM timers
 	- Watchdog timer
 	- Ethernet
@@ -261,6 +273,12 @@ Cheshire](https://pulp-platform.github.io/cheshire/um/arch/). This section descr
 
 ## Clock and reset
 
+Carfield is fed with 3 clocks:
+
+* `host_clk_i`:
+* `alt_clk_i`:
+* `per_clk_i`:
+
 TODO @angelo write about clock domains, AXI isolation, clock propagation (gate domains etc) and
 reset propagation
 
@@ -268,7 +286,7 @@ reset propagation
 
 Carfield's domains live in dedicated repositories. We invite the reader to consult the documentation
 of each domain for more information. Below, we briefly describe each domain and focus on integration
-parameterization.
+parameterization. 
 
 ### [Host domain (Cheshire)](https://github.com/pulp-platform/cheshire)
 
@@ -391,18 +409,6 @@ The Spatz PMCA is configured as follows:
 
 TODO
 
-## [Dynamic scratchpad memory (SPM)](https://github.com/pulp-platform/dyn_spm)
-
-The dynamic SPM features dynamically switching address mapping policy. It manages the following
-features:
-
-* Two AXI subordinate ports
-* Two address mapping modes: *interleaved* and *contiguous*
-* 4 address spaces, 2 for each port. The address space is used to select the AXI port to use, and
-  the mapping mode
-* Every address space points to the same physical SRAM through a low-latency matrix crossbar
-* ECC-equipped memory banks
-
 ## Interconnect
 
 The interconnect is composed of a main [AXI4](https://github.com/pulp-platform/axi) matrix (or
@@ -417,10 +423,64 @@ An additional peripheral subsystem based on APB hosts Carfield-specific peripher
 
 ## DRAM
 
-Currently, Carfield integrates Cypress' [HyperBus off-chip
-link](https://github.com/pulp-platform/hyperbus) to connect to external HyperRAM modules. The
-HyperBus interface has a configurable number of physical HyperRAM chips it is attached to, and can
-support chips with different densities (from 8MiB to 64MiB per chip).
+Carfield integrates Cypress' [HyperBus off-chip link](https://github.com/pulp-platform/hyperbus) to
+connect to external HyperRAM modules. It manages the following features:
+
+* An AXI interface; in Carfield, it attaches to Cheshire's LLC
+* A configurable number of physical HyperRAM chips it can be attached to; by default, support for 2
+  physical chips is provided
+* Support for HyperRAM chips with different densities (from 8MiB to 64MiB per chip aligned with
+  specs).
+
+## [Dynamic scratchpad memory (SPM)](https://github.com/pulp-platform/dyn_spm)
+
+The dynamic SPM features dynamically switching address mapping policy. It manages the following
+features:
+
+* Two AXI subordinate ports
+* Two address mapping modes: *interleaved* and *contiguous*
+* 4 address spaces, 2 for each port. The address space is used to select the AXI port to use, and
+  the mapping mode
+* Every address space points to the same physical SRAM through a low-latency matrix crossbar
+* ECC-equipped memory banks
+
+## [Mailbox unit](https://github.com/pulp-platform/mailbox_unit)
+
+The mailbox unit consists in a number of configurable mailboxes. Each mailbox is the preferred
+communication vehicle between *domains*. It can be used to wake-up certain domains, notify an
+*offloader* (e.g., Cheshire) that a *target device* (e.g., the integer PMCA) has reached execution
+completion, dispatch *entry points* to a *target device* to jump-start its execution, and many
+others.
+
+It manages the following features:
+
+* Interrupt based signaling receiver and sender
+* A shared memory space common to all the mailboxes, implemented as a single register file.
+  Currently, Carfield implements 25 mailboxes.
+* Support for 32-bit word aligned read/write access.
+* A convenience AXI-Lite wrapper for the configuration port.
+
+---
+
+Assuming each mailbox is identified with id `i`, the register file map reads:
+
+| Offset           | Register       | Width (bit) | Note               |
+|------------------|----------------|-------------|--------------------|
+| 0x00 + i * 0x100 | INT\_SND\_STAT | 1           | current irq status |
+| 0x04 + i * 0x100 | INT\_SND\_SET  | 1           | set irq            |
+| 0x08 + i * 0x100 | INT\_SND\_CLR  | 1           | clear irq          |
+| 0x0C + i * 0x100 | INT\_SND\_EN   | 1           | enable irq         |
+| 0x40 + i * 0x100 | INT\_RCV\_STAT | 1           | current irq status |
+| 0x44 + i * 0x100 | INT\_RCV\_SET  | 1           | set irq            |
+| 0x48 + i * 0x100 | INT\_RCV\_CLR  | 1           | clear irq          |
+| 0x4C + i * 0x100 | INT\_RCV\_EN   | 1           | enable irq         |
+| 0x80 + i * 0x100 | LETTER0        | 32          | message            |
+| 0x8C + i * 0x100 | LETTER1        | 32          | message            |
+
+The above register map can be found in the dedicated
+[repository](https://github.com/pulp-platform/mailbox_uni) and is reported here for convenience.
+
+TODO @alex96295: Add figure
 
 ## Peripherals
 
@@ -453,8 +513,11 @@ The [*generic timer*](https://github.com/pulp-platform/timer_unit) manages the f
 For more information, read the dedicated
 [documentation](https://github.com/pulp-platform/timer_unit/blob/master/doc/TIMER_UNIT_reference.xlsx).
 
-The [*advanced timer*](https://github.com/pulp-platform/apb_adv_timer) manages the following features:
-* 4 timers with 4 output signal channels each.
+The [*advanced
+timer*](https://github.com/pulp-platform/apb_adv_timer)
+manages the following features:
+
+* 4 timers with 4 output signal channels each
 * PWM generation functionality
 * Multiple trigger input sources:
    - output signal channels of all timers

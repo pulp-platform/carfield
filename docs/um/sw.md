@@ -3,7 +3,20 @@
 Carfield's Software Stack is provided in the `sw/` folder, organized as follows:
 
 ```
-TODO add tree
+sw
+├── boot
+├── include
+├── lib
+├── link
+├── sw.mk
+├── tests
+    ├── bare-metal
+    │   ├── hostd
+    │   ├── pulpd
+    │   ├── safed
+    │   ├── secd
+    │   └── spatzd
+    └── linux
 ```
 
 Employing Cheshire as *host domain*, Carfield's software stack is largely based on, and built on top
@@ -11,7 +24,7 @@ of, [Cheshire's](https://pulp-platform.github.io/cheshire/um/sw/).
 
 This means that it shares the same:
 
-* Baremetal programs (BMPs) build flow
+* Baremetal programs (BMPs) build flow and structure
 * Boot Flow (*passive* and *autonomous* boot)
 * Boot ROM
 * Zero-Stage Loader
@@ -62,67 +75,115 @@ make car-sw-build
 ```
 
 builds program binaries in ELF format for each domain, which can be used with the simulation methods
-supported by the platform, as descrbied in [Simulation](../tg/sim.md).
+supported by the platform, as described in [Simulation](../tg/sim.md) or on FPGA as described in
+[Xilinx FPGAs](../tg/xilinx.md).
+
+---
+
 As in Cheshire, Carfield programs can be created to be executed from several memory locations:
 
-* Dynamic SPM
-* LLC SPM, when the LLC is configured as such (runtime configurable)
-* DRAM, namely the HyperRAM
+* Dynamic SPM (`l2`): the linkerscript is provided in Carfield's `sw/link/` folder, since Dynamic
+  SPM is not integrated in the minimal Cheshire
+* LLC SPM (`spm`): valid when the LLC is configured as such. In Carfield, half of the LLC is
+  configured as SPM from the boot ROM during system bringup, as this is the default behavior in
+  Cheshire.
+* DRAM (`dram`): the HyperRAM
+
+For example, to build a specific BMP (here `sw/tests/bare-metal/hostd/helloworld.c` to be run on
+Cheshire) executing from the Dynamic SPM, run:
+
+```
+make sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+```
+
+To create the same program executing from DRAM, `sw/tests/bare-metal/hostd/helloworld.car.dram.elf`
+can instead be built from the same source. Depending on their assumptions and behavior, not all
+programs may be built to execute from both locations.
 
 ## Linux programs
 
 When executing *host domain* programs in Linux (on FPGA/ASIC targets) that require access to memory
-mapped components of other domains, manual intervention is needed to map virtual to physical
-addresses in SW, since domains different than the host *currently* lack support for HW-based virtual
-memory translation.
+mapped components of other domains, SW intervention is needed to map virtual to physical addresses,
+since domains different than the host *currently* lack support for HW-based virtual memory
+translation.
 
-Support for this is provided in the current SW runtime, hence transparent to the user. Test programs
-targeting Linux are are found under `sw/tests/linux/<domain>`.
+In the current SW stack, this mapping is already provided and hence transparent to the user. Test
+programs targeting Linux that require it are located in different folder, `sw/tests/linux/<domain>`.
 
 # Inter-domain offload
 
 Offload of programs to Carfield domains involves:
 
-* An *offloader*, typically one of the two controllers, namely the *host* or *safe* domains
-* A *target device*, namely the *accelerator domain*. The *safe domain* can play the role of target
-  device when offloaded RTOS payloads from the *host domain*.
+* An *offloader*, typically one of the two controllers, i.e., the *host* or *safe* domains
+* A *target device*, typically the *accelerator domain*. The *safe domain* can also play the role of
+  target device when offloaded RTOS payloads from the *host domain*.
 
 Programs can be offloaded with:
 
-* Simple baremetal runtime, recommended for regression tests use cases that are simple enough to be
-  executed with cycle-accurate RTL simulations. For instance, this can be the case of dynamic timing
-  analysis (DTA) carried out during an ASIC development cycle.
-* The [OpenMP](https://www.openmp.org/) API, recommended when running SW on a FPGA or, eventually,
-  ASIC version of Carfield, because of the ready-to-use OS support (currently, Linux). Usage of the
-  OpenMP API with bare-metal (non OS-directed) SW can be supported, but is mostly suited for
-  heterogeneous embedded systems with highly constrained resources
+* **Simple baremetal offload (BMO)**, recommended for regression tests use cases that are simple
+  enough to be executed with cycle-accurate RTL simulations. For instance, this can be the case of
+  dynamic timing analysis (DTA) carried out during an ASIC development cycle.
+
+* **The [OpenMP](https://www.openmp.org/) API**, recommended when developing SW for Carfield on a
+  FPGA or, eventually, ASIC implementing Carfield, because of the ready-to-use OS support
+  (currently, Linux). Usage of the OpenMP API with non OS-directed (baremetal) SW can be supported,
+  but is mostly suited for heterogeneous embedded systems with highly constrained resources
 
 In the following, we briefly describe both.
 
-## Baremetal offload (BMO)
+## Baremetal offload
 
-The ELF of a *target device* is embedded into the *offloader* ELF as a header file. The latter
-contains the memory preload process of the target device in terms of R/W sequence from the host
-core, or as a DMA memcopy.
+For BMO, the offloader takes care of bootstrapping the target device ELF in the correct memory
+location, initializing the target and launching its execution through a simple ELF Loader. The ELF
+Loader source code is located in the offloader's SW directory, and follows a naming convention:
 
-In addition, the offloader takes care of initializing and launching the *target device* execution in
-SW.
+```
+<target_device>_offloader_<blocking | non_blocking>.c 
+```
 
-The `sw.mk` make fragment automatically converts a target device compiled ELF into a header file via
-an util script, and generates an offloader ELF embedding the header file of the domain. This is
-iteratively done for each test present *in situ* within each target device repository.
+The target device's ELF is included into the offloader's ELF Loader as a *header file*. The target
+device's ELF sections are first pre-processed offline to extract instruction addresses.The resulting
+header file provides the ELF loading process at the selected memory location. The loading process
+can be carried out by the offloader as R/W sequences, or deferred to a DMA-driven memcopy. In
+addition, the offloader takes care of bootstrapping the target device, i.e. initializing it and
+launching its execution.
 
-For instance, assume the *host domain* as offloader and *integer PMCA* as target device:
+Upon target device completion, the offloader:
 
-1. First, a header file is generated out of each test available in the integer PMCA repository
-2. Second, the offloader source code is compiled by subsequently including each header file from
-   each integer PMCA test
+* Is asynchronously notified of the event via a mailboxe interrupt; BMOs of this kind are called
+  *non-blocking*
+* Sychronously polls a specific register to catch the completion; BMOs of this kind are called
+  *blocking*
+
+Currently, *blocking BMO* is implemented.
+
+---
+
+As an example, assume the *host domain* as offloader and the *integer PMCA* as target device.
+
+1. The host domain ELF Loader is included in `sw/tests/bare-metal/hostd`
+1. A header file is generated out of each regression test available in the integer PMCA repository.
+   For this example, the resulting header files are included in `sw/tests/bare-metal/pulpd`
+2. The final ELF executed by the offloader is created by subsequently including each header file
+   from each integer PMCA regression test
+   
+The resulting offloader ELF's name reads:
+
+```
+<target_device>_offloader_<blocking | non_blocking>.<target_device_test_name>.car.<l2 | spm | dram>.elf
+```
+
+According to the memory location where the BMP will be executed.
 
 The final offloader ELF can be preloaded with simulation methods described in the
-[Simulation](../tg/sim.md) section.
+[Simulation](../tg/sim.md) section, and can be built again as explained above.
+
+---
+
+*Note for the reader*
 
 BMO is in general not recommended for developing SW for Carfield, as it was introduced during ASIC
-development cycle and can be an effective litmus test to find and fix HW bugs.
+development cycle and can be an effective litmus test to find and fix HW bugs, or during DTA.
 
 For SW development on Carfield and in particular domain-driven offload, it is recommended to use
 OpenMP offload on FPGA/ASIC, described below.
