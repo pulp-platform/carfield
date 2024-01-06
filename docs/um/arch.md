@@ -22,17 +22,17 @@ The above block diagram depicts a fully-featured Carfield SoC, which currently p
 	  integer cluster with HMR capabilities and a vectorial cluster with vector processing capabilities
 
 - **Dynamic SPM**:
-    - Dynamically configurable scratchpad memory
-      for *interleaved* or *contiguous* accesses
+	- Dynamically configurable scratchpad memory
+	  for *interleaved* or *contiguous* accesses
 
 - **DRAM**:
-    - Cypress's HypeRAM, with open-source AXI4 Hyberbus interface and PHY.
+	- Cypress's HypeRAM, with open-source AXI4 Hyberbus interface and PHY.
 
 - **Mailbox unit**
-    - Main communication vehicle among domains, based on an interrupt notification mechanism
+	- Main communication vehicle among domains, based on an interrupt notification mechanism
 
 - **Peripherals**:
-    - Generic timers
+	- Generic timers
 	- PWM timers
 	- Watchdog timer
 	- Ethernet
@@ -275,7 +275,7 @@ Cheshire](https://pulp-platform.github.io/cheshire/um/arch/). This section descr
 
 Carfield's domains live in dedicated repositories. We invite the reader to consult the documentation
 of each domain for more information. Below, we briefly describe each domain and focus on integration
-parameterization. 
+parameterization.
 
 ### [Host domain (Cheshire)](https://github.com/pulp-platform/cheshire)
 
@@ -582,7 +582,7 @@ Currently, Carfield is provided with 3 clocks:
 * `per_clk_i`: clock of *peripheral domain*
 
 Out of the 7 *domains* described above, 6 can be clock gated and isolated (*safe domain*, *secure
-domain*). 
+domain*).
 
 Isolation means that, when a domain is isolated, data transfers through the bus targeting the domain
 are terminated and never reach it. An *isolation* module is placed in front of each domain.
@@ -603,4 +603,3 @@ Each of the 6 clock gateable domains have the following clock distribution schem
 * The internal clock gate of the clock divider is used to provide clock gating for the domain.
 
 Currently, Carfield is configured with all domains clock gated after power-on reset (POR) event.
-
