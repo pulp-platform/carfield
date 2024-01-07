@@ -42,7 +42,7 @@ include $(CAR_ROOT)/bender-safed.mk
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 28c58bb02149aa6e735b0c1ea7c4b801433e712a
+CAR_NONFREE_COMMIT ?= ef74053f8634036a4b9daacd3272158c315a5117
 
 ## Clone the non-free verification IP for the Carfield TB
 car-nonfree-init:
