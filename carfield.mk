@@ -211,7 +211,7 @@ car-hw-init: spatzd-hw-init chs-hw-init
 ## hw/regs/carfield_regs.csv. You don't have to run this target unless you changed the CSV file. The
 ## checked-in pregenerated register file RTL should be up-to-date. If you regenerate the regfile, do
 ## not forget to check in the generated RTL.
-regenerate_soc_regs: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv $(CAR_SW_DIR)/include/regs/soc_ctrl.h
+regenerate_soc_regs: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv $(CAR_SW_DIR)/include/regs/soc_ctrl.h $(CAR_HW_DIR)/regs/pcr.md
 
 .PHONY: $(CAR_ROOT)/hw/regs/carfield_regs.hjson
 $(CAR_ROOT)/hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv | venv
@@ -224,6 +224,10 @@ $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv:
 .PHONY: $(CAR_SW_DIR)/include/regs/soc_ctrl.h
 $(CAR_SW_DIR)/include/regs/soc_ctrl.h: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
 	$(VENV)/python utils/reggen/regtool.py -D $<  > $@
+
+.PHONY: $(CAR_SW_DIR)/hw/regs/pcr.md
+$(CAR_HW_DIR)/regs/pcr.md: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
+	$(VENV)/python utils/reggen/regtool.py -d $<  > $@
 
 ## @section Carfield CLINT and PLIC interruptible harts configuration
 

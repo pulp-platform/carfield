@@ -14,11 +14,6 @@ theme:
     - navigation.indexes
     - navigation.footer
 
-markdown_extensions:
-  - markdown_grid_tables:
-  - toc:
-      toc_depth: 3
-
 repo_url: https://github.com/pulp-platform/carfield
 repo_name: pulp-platform/carfield
 

@@ -13,30 +13,31 @@ interconnect ports and interrupts. Hence, several features described in this sec
 
 The above block diagram depicts a fully-featured Carfield SoC, which currently provides:
 
-- **Domains**:
+- **Computing Domain**:
 	- *Host domain* (Cheshire), a minimal Linux-capable RV64 system based on dual-core CVA6 with
 	  self-invalidation coherency mechanism
-	- *Safe domain*, a TCLS RV32 microcontroller system based on CV32E40P, with fast interrupt handling through the RISC-V CLIC
-	- *Secure domain*, a RV32 microcontroller system with crypto accelerators, tasked to handle secure boot and platform security monitor
+	- *Safe domain*, a TCLS RV32 microcontroller system based on CV32E40P, with fast interrupt
+	  handling through the RISC-V CLIC
+	- *Secure domain*, a RV32 microcontroller system with crypto accelerators, tasked to handle
+	  secure boot and platform security monitor
 	- *Accelerator domain*, comprises two programmable multi-core accelerators (PMCAs), an 12-cores
-	  integer cluster with HMR capabilities and a vectorial cluster with vector processing capabilities
+	  integer cluster with HMR capabilities and a vectorial cluster with vector processing
+	  capabilities
 
-- **Dynamic SPM**:
-	- Dynamically configurable scratchpad memory
-	  for *interleaved* or *contiguous* accesses
-
-- **DRAM**:
-	- Cypress's HypeRAM, with open-source AXI4 Hyberbus interface and PHY.
+- **Memory Domain**:
+	- *Dynamic SPM*: dynamically configurable scratchpad memory (SPM) for *interleaved* or
+	  *contiguous* accesses
+	- *LLC SPM*: the last-level cache (*host domain*) can be configured as SPM at runtime, as
+	  described in Cheshire's [Architecture](https://pulp-platform.github.io/cheshire/um/arch/)
+	- *External DRAM*: off-chip HyperRAM (Infineon) interfaced with in-house, open-source AXI4
+	  Hyberbus PHY.
 
 - **Mailbox unit**
 	- Main communication vehicle among domains, based on an interrupt notification mechanism
 
-- **Peripherals**:
-	- Generic timers
-	- PWM timers
-	- Watchdog timer
-	- Ethernet
-	- CAN
+- **Platform control registers (PCRs)**
+	- Management and control registers for the entire platform, control clock sources assignments,
+	  clock gating, isolation.
 
 - **Interconnect** (as in Cheshire):
 	- A last level cache (LLC) configurable as a scratchpad memory (SPM) per-way
@@ -47,6 +48,13 @@ The above block diagram depicts a fully-featured Carfield SoC, which currently p
 - **Interrupts** (as in Cheshire):
 	- Core-local (CLINT *and* CLIC) and platform (PLIC) interrupt controllers
 	- Dynamic interrupt routing from and to internal and external targets.
+
+- **Peripherals**:
+	- Generic timers
+	- PWM timers
+	- Watchdog timer
+	- Ethernet
+	- CAN
 
 ## Memory Map
 
@@ -273,14 +281,28 @@ Cheshire](https://pulp-platform.github.io/cheshire/um/arch/). This section descr
 
 ## Domains
 
+We divide Carfield domains in two macro groups, the [Computing Domain](#computing-domains) and the
+[Memory Domain](#memory-domain). They are both fragmented into smaller domains, described in the
+following two sections.
+
+The total number of domains is 7 (**computing**: *host domain*, *safe domain*, *secure domain*,
+*integer PMCA domain*, *vectorial PMCA domain*, *peripheral domain*, **memory**: *dynamic SPM
+domain*).
+
+---
+
+**Note for the reader**
+
 Carfield's domains live in dedicated repositories. We invite the reader to consult the documentation
-of each domain for more information. Below, we briefly describe each domain and focus on integration
-parameterization.
+of each domain for more information. Below, we focus on integration parameterization within
+Carfield.
 
-### [Host domain (Cheshire)](https://github.com/pulp-platform/cheshire)
+### Computing Domain
 
-The *host domain* (Cheshire) embeds all the necessary components required to run
-embedded OS such as embedded Linux. It can work in two orthogonal *operation modes*.
+#### [Host domain (Cheshire)](https://github.com/pulp-platform/cheshire)
+
+The *host domain* (Cheshire) embeds all the necessary components required to run OSs such as
+embedded Linux. It has two orthogonal *operation modes*.
 
 1. *Untrusted mode*: in this operation mode, the host domain is tasked to run untrusted services,
 i.e. non time- and safety-critical applications. For example, this could be the case of infotainment
@@ -323,7 +345,7 @@ layer
   - HMR cluster
   - Vectorial cluster
 * External regbus subordinate ports:
-  - Platform control registers (PCRs): control domains enable, clock gate, isolation
+  - PCRs: control domains enable, clock gate, isolation
   - PLL control registers: for ASIC top-levels, leave unconnected otherwise
   - Padmux control registers: for ASIC top-levels, leave unconnected otherwise
   - Dynamic SPM ECC control registers
@@ -338,7 +360,7 @@ layer
   input interrupts to M targets. In Carfield, the external target is the `safe domain`.
 * All default Cheshire peripherals, except for VGA
 
-### [Safe domain](https://github.com/pulp-platform/safety_island)
+#### [Safe domain](https://github.com/pulp-platform/safety_island)
 
 The *safe domain* is a simple MCU-like domain that comprises three 32-bit real-time CV32E40P
 (CV32RT) RISC-V cores operating in triple-lockstep mode (TCLS).
@@ -363,7 +385,7 @@ The *safe domain* is configured as follows:
   From here, the name [CV32RT](https://arxiv.org/abs/2311.08320)
 * 1 32-bit per-core FPU with down to float-16 precision, totaling 3 FPUs
 
-### [Secure domain](https://github.com/pulp-platform/opentitan/tree/carfield-soc)
+#### [Secure domain](https://github.com/pulp-platform/opentitan/tree/carfield-soc)
 
 The secure domain, based on the [OpenTitan
 project](https://opentitan.org/book/doc/introduction.html), serves as the Hardware Root-of-Trust
@@ -376,11 +398,11 @@ TODO
 
 TODO Mention `SECURE BOOT` mode
 
-### Accelerator domain
+#### Accelerator domain
 
 To augment computational capabilities, Carfield incorporates two general-purpose accelerators
 
-#### [HMR integer PMCA](https://github.com/pulp-platform/pulp_cluster/tree/yt/rapidrecovery)
+##### [HMR integer PMCA](https://github.com/pulp-platform/pulp_cluster/tree/yt/rapidrecovery)
 
 The [hybrid modular redundancy (HMR) *integer PMCA*](https://arxiv.org/abs/2303.08706)
 is specialized in executing reliable boosted Quantized Neural Network (QNN) operations, exploiting
@@ -391,7 +413,7 @@ The HMR integer PMCA is configured as follows:
 
 TODO
 
-#### [Vectorial PMCA](https://github.com/pulp-platform/spatz)
+##### [Vectorial PMCA](https://github.com/pulp-platform/spatz)
 
 The [*vectorial PMCA*, or Spatz PMCA](https://dl.acm.org/doi/abs/10.1145/3508352.3549367) handles
 vectorizable multi-format floating-point workloads (down to FP8).
@@ -399,6 +421,36 @@ vectorizable multi-format floating-point workloads (down to FP8).
 The Spatz PMCA is configured as follows:
 
 TODO
+
+### Memory Domain
+
+#### [Dynamic scratchpad memory (SPM)](https://github.com/pulp-platform/dyn_spm)
+
+The dynamic SPM features dynamically switching address mapping policy. It manages the following
+features:
+
+* Two AXI subordinate ports
+* Two address mapping modes: *interleaved* and *contiguous*
+* 4 address spaces, 2 for each port. The address space is used to select the AXI port to use, and
+  the mapping mode
+* Every address space points to the same physical SRAM through a low-latency matrix crossbar
+* ECC-equipped memory banks
+
+#### External DRAM
+
+Carfield integrates a in-house, open-source implementation of Infineon' [HyperBus off-chip
+link](https://github.com/pulp-platform/hyperbus) to connect to external HyperRAM modules.
+
+Despite describing it as part of the Memory Domain, the HyperBus is logically part of the
+*peripheral domain*.
+
+It manages the following features:
+
+* An AXI interface; in Carfield, it attaches to Cheshire's LLC
+* A configurable number of physical HyperRAM chips it can be attached to; by default, support for 2
+  physical chips is provided
+* Support for HyperRAM chips with different densities (from 8MiB to 64MiB per chip aligned with
+  specs).
 
 ## Interconnect
 
@@ -411,29 +463,6 @@ extended with additional peripheral configuration ports for external PLL/FLL and
 configuration, which are specific of ASIC wrappers.
 
 An additional peripheral subsystem based on APB hosts Carfield-specific peripherals.
-
-## DRAM
-
-Carfield integrates Cypress' [HyperBus off-chip link](https://github.com/pulp-platform/hyperbus) to
-connect to external HyperRAM modules. It manages the following features:
-
-* An AXI interface; in Carfield, it attaches to Cheshire's LLC
-* A configurable number of physical HyperRAM chips it can be attached to; by default, support for 2
-  physical chips is provided
-* Support for HyperRAM chips with different densities (from 8MiB to 64MiB per chip aligned with
-  specs).
-
-## [Dynamic scratchpad memory (SPM)](https://github.com/pulp-platform/dyn_spm)
-
-The dynamic SPM features dynamically switching address mapping policy. It manages the following
-features:
-
-* Two AXI subordinate ports
-* Two address mapping modes: *interleaved* and *contiguous*
-* 4 address spaces, 2 for each port. The address space is used to select the AXI port to use, and
-  the mapping mode
-* Every address space points to the same physical SRAM through a low-latency matrix crossbar
-* ECC-equipped memory banks
 
 ## [Mailbox unit](https://github.com/pulp-platform/mailbox_unit)
 
@@ -473,7 +502,82 @@ The above register map can be found in the dedicated
 
 TODO @alex96295: Add figure
 
-## Peripherals
+## Platform control registers
+
+PCRs provide basic system information, and control clock, reset and other functionalities of
+Carfield's *domains*.
+
+A more detailed overview of each PCR (register subfields and description) can be found
+[here](../../hw/regs/pcr.md). PCR base address is listed in the [Memory Map](#memory-map) as for the
+other devices.
+
+| Name                             | Offset | Length | Description                                                            |
+|:---------------------------------|:-------|-------:|:-----------------------------------------------------------------------|
+| `VERSION0`                       | `0x0`  |      4 | Cheshire sha256 commit                                                 |
+| `VERSION1`                       | `0x4`  |      4 | Safety Island sha256 commit                                            |
+| `VERSION2`                       | `0x8`  |      4 | Security Island sha256 commit                                          |
+| `VERSION3`                       | `0xc`  |      4 | PULP Cluster sha256 commit                                             |
+| `VERSION4`                       | `0x10` |      4 | Spatz CLuster sha256 commit                                            |
+| `JEDEC_IDCODE`                   | `0x14` |      4 | JEDEC ID CODE                                                          |
+| `GENERIC_SCRATCH0`               | `0x18` |      4 | Scratch                                                                |
+| `GENERIC_SCRATCH1`               | `0x1c` |      4 | Scratch                                                                |
+| `HOST_RST`                       | `0x20` |      4 | Host Domain reset -active high, inverted in HW-                        |
+| `PERIPH_RST`                     | `0x24` |      4 | Periph Domain reset -active high, inverted in HW-                      |
+| `SAFETY_ISLAND_RST`              | `0x28` |      4 | Safety Island reset -active high, inverted in HW-                      |
+| `SECURITY_ISLAND_RST`            | `0x2c` |      4 | Security Island reset -active high, inverted in HW-                    |
+| `PULP_CLUSTER_RST`               | `0x30` |      4 | PULP Cluster reset -active high, inverted in HW-                       |
+| `SPATZ_CLUSTER_RST`              | `0x34` |      4 | Spatz Cluster reset -active high, inverted in HW-                      |
+| `L2_RST`                         | `0x38` |      4 | L2 reset -active high, inverted in HW-                                 |
+| `PERIPH_ISOLATE`                 | `0x3c` |      4 | Periph Domain  AXI isolate                                             |
+| `SAFETY_ISLAND_ISOLATE`          | `0x40` |      4 | Safety Island AXI isolate                                              |
+| `SECURITY_ISLAND_ISOLATE`        | `0x44` |      4 | Security Island AXI isolate                                            |
+| `PULP_CLUSTER_ISOLATE`           | `0x48` |      4 | PULP Cluster AXI isolate                                               |
+| `SPATZ_CLUSTER_ISOLATE`          | `0x4c` |      4 | Spatz Cluster AXI isolate                                              |
+| `L2_ISOLATE`                     | `0x50` |      4 | L2 AXI isolate                                                         |
+| `PERIPH_ISOLATE_STATUS`          | `0x54` |      4 | Periph Domain AXI isolate status                                       |
+| `SAFETY_ISLAND_ISOLATE_STATUS`   | `0x58` |      4 | Safety Island AXI isolate status                                       |
+| `SECURITY_ISLAND_ISOLATE_STATUS` | `0x5c` |      4 | Security Island AXI isolate status                                     |
+| `PULP_CLUSTER_ISOLATE_STATUS`    | `0x60` |      4 | PULP Cluster AXI isolate status                                        |
+| `SPATZ_CLUSTER_ISOLATE_STATUS`   | `0x64` |      4 | Spatz Cluster AXI isolate status                                       |
+| `L2_ISOLATE_STATUS`              | `0x68` |      4 | L2 AXI isolate status                                                  |
+| `PERIPH_CLK_EN`                  | `0x6c` |      4 | Periph Domain clk gate enable                                          |
+| `SAFETY_ISLAND_CLK_EN`           | `0x70` |      4 | Safety Island clk gate enable                                          |
+| `SECURITY_ISLAND_CLK_EN`         | `0x74` |      4 | Security Island clk gate enable                                        |
+| `PULP_CLUSTER_CLK_EN`            | `0x78` |      4 | PULP Cluster clk gate enable                                           |
+| `SPATZ_CLUSTER_CLK_EN`           | `0x7c` |      4 | Spatz Cluster clk gate enable                                          |
+| `L2_CLK_EN`                      | `0x80` |      4 | Shared L2 memory clk gate enable                                       |
+| `PERIPH_CLK_SEL`                 | `0x84` |      4 | Periph Domain pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
+| `SAFETY_ISLAND_CLK_SEL`          | `0x88` |      4 | Safety Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
+| `SECURITY_ISLAND_CLK_SEL`        | `0x8c` |      4 | Security Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll) |
+| `PULP_CLUSTER_CLK_SEL`           | `0x90` |      4 | PULP Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)    |
+| `SPATZ_CLUSTER_CLK_SEL`          | `0x94` |      4 | Spatz Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
+| `L2_CLK_SEL`                     | `0x98` |      4 | L2 Memory pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)       |
+| `PERIPH_CLK_DIV_VALUE`           | `0x9c` |      4 | Periph Domain clk divider value                                        |
+| `SAFETY_ISLAND_CLK_DIV_VALUE`    | `0xa0` |      4 | Safety Island clk divider value                                        |
+| `SECURITY_ISLAND_CLK_DIV_VALUE`  | `0xa4` |      4 | Security Island clk divider value                                      |
+| `PULP_CLUSTER_CLK_DIV_VALUE`     | `0xa8` |      4 | PULP Cluster clk divider value                                         |
+| `SPATZ_CLUSTER_CLK_DIV_VALUE`    | `0xac` |      4 | Spatz Cluster clk divider value                                        |
+| `L2_CLK_DIV_VALUE`               | `0xb0` |      4 | L2 Memory clk divider value                                            |
+| `HOST_FETCH_ENABLE`              | `0xb4` |      4 | Host Domain fetch enable                                               |
+| `SAFETY_ISLAND_FETCH_ENABLE`     | `0xb8` |      4 | Safety Island fetch enable                                             |
+| `SECURITY_ISLAND_FETCH_ENABLE`   | `0xbc` |      4 | Security Island fetch enable                                           |
+| `PULP_CLUSTER_FETCH_ENABLE`      | `0xc0` |      4 | PULP Cluster fetch enable                                              |
+| `SPATZ_CLUSTER_DEBUG_REQ`        | `0xc4` |      4 | Spatz Cluster debug req                                                |
+| `HOST_BOOT_ADDR`                 | `0xc8` |      4 | Host boot address                                                      |
+| `SAFETY_ISLAND_BOOT_ADDR`        | `0xcc` |      4 | Safety Island boot address                                             |
+| `SECURITY_ISLAND_BOOT_ADDR`      | `0xd0` |      4 | Security Island boot address                                           |
+| `PULP_CLUSTER_BOOT_ADDR`         | `0xd4` |      4 | PULP Cluster boot address                                              |
+| `SPATZ_CLUSTER_BOOT_ADDR`        | `0xd8` |      4 | Spatz Cluster boot address                                             |
+| `PULP_CLUSTER_BOOT_ENABLE`       | `0xdc` |      4 | PULP Cluster boot enable                                               |
+| `SPATZ_CLUSTER_BUSY`             | `0xe0` |      4 | Spatz Cluster busy                                                     |
+| `PULP_CLUSTER_BUSY`              | `0xe4` |      4 | PULP Cluster busy                                                      |
+| `PULP_CLUSTER_EOC`               | `0xe8` |      4 | PULP Cluster end of computation                                        |
+| `ETH_RGMII_PHY_CLK_DIV_EN`       | `0xec` |      4 | Ethernet RGMII PHY clock divider enable bit                            |
+| `ETH_RGMII_PHY_CLK_DIV_VALUE`    | `0xf0` |      4 | Ethernet RGMII PHY clock divider value                                 |
+| `ETH_MDIO_CLK_DIV_EN`            | `0xf4` |      4 | Ethernet MDIO clock divider enable bit                                 |
+| `ETH_MDIO_CLK_DIV_VALUE`         | `0xf8` |      4 | Ethernet MDIO clock divider value                                      |
+
+## Peripheral Domain
 
 Carfield enhances Cheshire's peripheral subsystem with additional capabilities.
 
@@ -504,9 +608,8 @@ The [*generic timer*](https://github.com/pulp-platform/timer_unit) manages the f
 For more information, read the dedicated
 [documentation](https://github.com/pulp-platform/timer_unit/blob/master/doc/TIMER_UNIT_reference.xlsx).
 
-The [*advanced
-timer*](https://github.com/pulp-platform/apb_adv_timer)
-manages the following features:
+The [*advanced timer*](https://github.com/pulp-platform/apb_adv_timer) manages the following
+features:
 
 * 4 timers with 4 output signal channels each
 * PWM generation functionality
@@ -565,41 +668,84 @@ We employ Ethernet IPs developed by [Alex
 Forencich](https://github.com/alexforencich/verilog-ethernet) and assemble them with a
 high-performant DMA, the same used in Cheshire.
 
-We use Reduced gigabit media-independent interface (RGMII) that supports speed up to 1000Mbut/s
+We use Reduced gigabit media-independent interface (RGMII) that supports speed up to 1000Mbit/s
 (1GHz).
 
 For more information, read the dedicated
 [documentation](http://alexforencich.com/wiki/en/verilog/ethernet/start) of Ethernet components from
 its original repository.
 
-## Clock, reset and isolation
+## Clock and reset
 
-Currently, Carfield is provided with 3 clocks:
+![Reset and Clock Distribution for a domain *X*](../img/clk_rst.png)
 
-* `host_clk_i`: clock of the *host domain*
-* `alt_clk_i`: clock of *alternate* domains, namely *safe domain*, *secure domain*, *accelerator
-  domain*
-* `per_clk_i`: clock of *peripheral domain*
+![Isolation for a domain *X*](../img/isolation.png)
 
-Out of the 7 *domains* described above, 6 can be clock gated and isolated (*safe domain*, *secure
-domain*).
+The two figures above show the clock, reset and isolation distribution for a *domain* `X` in
+Carfield, and their relationship. A more detailed description is provided below.
 
-Isolation means that, when a domain is isolated, data transfers through the bus targeting the domain
-are terminated and never reach it. An *isolation* module is placed in front of each domain.
+### Clock distribution scheme, clock gating and isolation
+
+Carfield is provided with 3 clocks sources. They can be fully asynchronous and not bound to any
+phase relationship, since dual-clock FIFOs are placed between domains to allow clock domain crossing
+(CDC):
+
+* `host_clk_i`: preferably, clock of the *host domain*
+* `alt_clk_i`: preferably, clock of *alternate* domains, namely *safe domain*, *secure domain*,
+  *accelerator domain*
+* `per_clk_i`: preferably, clock of *peripheral domain*
+
+A reference clock
+
+These clocks are supplied externally, by a dedicated PLL per clock source or by a single PLL that
+supplies all three clock sources. The configuration of the clock source can be handled by the
+external PLL wrapper configuration registers, e.g. in a ASIC top level
+
+Regardless of the specific name used for the clock signals in HW, Carfield has a flexible clock
+distribution that allows each of the 3 clock sources to be assigned to a *domain*, as explained
+below.
+
+---
+
+Out of the 7 *domains* described in [Domains](#domains), 6 can be clock gated and *isolated*: *safe
+domain*, *secure domain*, *accelerator domain*, *peripheral domain*, *dynamic SPM*). When
+*isolation* is enabled, data transfers towards a domain are terminated and never reach it. To
+achieve this, an AXI4 compliant *isolation* module is placed in front of each domain.
+
+For each of the 6 clock gateable domains, the following clock distribution scheme applies:
+
+1. The user selects one of the 3 different clock sources
+2. The selected clock source for the domain is fed into a default-bypassed arbitrary integer clock
+   divider with 50% duty cycle. This allows to use different integer clock divisions for every
+   target domain to use different clock frequencies
+3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
+
+HW resources for the clock distribution in steps 1., 2., and 3. are SW-controlled via dedicated
+PCRs. Refer to [Platform Control Registers](#platform-control-registers) in this page for more
+information.
 
 The only domain that is always-on and de-isolated is the *host domain* (Cheshire). If required,
 clock gating and/or isolation of it can be handled at higher levels of hierarchy, e.g. in a
 dedicated ASIC wrapper.
 
-Each of the 6 clock gateable domains have the following clock distribution scheme:
+### Reset distribution scheme
 
-* For each domain the user selects one of the 3 different clock sources. Each of these main clocks
-  are either supplied externally, by a dedicated PLL per clock source or by a single PLL that
-  supplies all three clock sources. The configuration of the clock source is handled by the external
-  PLL wrapper configuration registers, e.g. in a ASIC top level.
-* The selected clock source for the domain is fed into a default-bypassed arbitrary integer clock
-  divider with 50% duty cycle. This allows to use different integer clock divisions for every target
-  domain to use different clock frequencies.
-* The internal clock gate of the clock divider is used to provide clock gating for the domain.
 
-Currently, Carfield is configured with all domains clock gated after power-on reset (POR) event.
+
+
+### Startup behavior after Power-on reset (POR)
+
+Provided the *host domain* is currently always-on and de-isolated, after the POR event the user can
+decide whether *secure boot* must be performed on the executing code. If so, the *secure domain*
+must be active after POR, i.e., clocked and de-isolated. This behavior is regulated by the input pin
+`secure_boot_i` according to the following table:
+
+| `secure_boot_i` | **Secure Boot** | **System status after POR**                                                                                            |
+|:----------------|----------------:|:-----------------------------------------------------------------------------------------------------------------------|
+| `0`             |           `OFF` | *secure domain* gated and isolated as the other 5 domains, *host domain* always-on and idle                            |
+| `1`             |            `ON` | *host domain* always-on and idle, *secure domain* active, takes over *secure boot*; other 5 domains gated and isolated |
+|                 |                 |                                                                                                                        |
+
+Regardless of the value of `secure_boot_i`, since by default some domains are clock gated and
+isolated after POR, SW or external physical interfaces (JTAG/Serial Link) must handle the wake-up
+process. Routines are provided in the [Software Stack](../../sw/include/car_util.h).
