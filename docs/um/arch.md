@@ -677,9 +677,9 @@ its original repository.
 
 ## Clock and reset
 
-![Reset and Clock Distribution for a domain *X*](../img/clk_rst.png)
+![Reset and Clock Distribution for a domain *X*](../img/clk_rst.svg)
 
-![Isolation for a domain *X*](../img/isolation.png)
+![Isolation for a domain *X*](../img/isolation.svg)
 
 The two figures above show the clock, reset and isolation distribution for a *domain* `X` in
 Carfield, and their relationship. A more detailed description is provided below.
@@ -695,7 +695,8 @@ phase relationship, since dual-clock FIFOs are placed between domains to allow c
   *accelerator domain*
 * `per_clk_i`: preferably, clock of *peripheral domain*
 
-A reference clock
+In addition, a real-time clock (RTC, `rt_clk_i`) is provided externally, at crystal frequency
+(32kHz) or higher.
 
 These clocks are supplied externally, by a dedicated PLL per clock source or by a single PLL that
 supplies all three clock sources. The configuration of the clock source can be handled by the
@@ -707,10 +708,15 @@ below.
 
 ---
 
-Out of the 7 *domains* described in [Domains](#domains), 6 can be clock gated and *isolated*: *safe
-domain*, *secure domain*, *accelerator domain*, *peripheral domain*, *dynamic SPM*). When
-*isolation* is enabled, data transfers towards a domain are terminated and never reach it. To
-achieve this, an AXI4 compliant *isolation* module is placed in front of each domain.
+As the top figure shows, out of the 7 *domains* described in [Domains](#domains), 6 can be clock
+gated and *isolated*: *safe domain*, *secure domain*, *accelerator domain*, *peripheral domain*,
+*dynamic SPM*.
+
+When *isolation* for a domain `X` is enabled, data transfers towards a domain are terminated and
+never reach it. To achieve this, an AXI4 compliant *isolation* module is placed in front of each
+domain. The bottom figure shows in detail the architecture of the isolation scheme between the *host
+domain* and a generic `X` domain, highlighting its relationship with the domain's reset and cloc
+signals.
 
 For each of the 6 clock gateable domains, the following clock distribution scheme applies:
 
@@ -720,32 +726,37 @@ For each of the 6 clock gateable domains, the following clock distribution schem
    target domain to use different clock frequencies
 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
 
-HW resources for the clock distribution in steps 1., 2., and 3. are SW-controlled via dedicated
-PCRs. Refer to [Platform Control Registers](#platform-control-registers) in this page for more
-information.
+HW resources for the clock distribution (steps 1., 2., and 3.) and isolation of a domain `X`, are
+SW-controlled via dedicated PCRs. Refer to [Platform Control Registers](#platform-control-registers)
+in this page for more information.
 
 The only domain that is always-on and de-isolated is the *host domain* (Cheshire). If required,
 clock gating and/or isolation of it can be handled at higher levels of hierarchy, e.g. in a
 dedicated ASIC wrapper.
 
-### Reset distribution scheme
-
-
-
-
 ### Startup behavior after Power-on reset (POR)
 
-Provided the *host domain* is currently always-on and de-isolated, after the POR event the user can
-decide whether *secure boot* must be performed on the executing code. If so, the *secure domain*
-must be active after POR, i.e., clocked and de-isolated. This behavior is regulated by the input pin
-`secure_boot_i` according to the following table:
+The user can decide whether *secure boot* must be performed on the executing code before runtime. If
+so, the *secure domain* must be active after POR, i.e., clocked and de-isolated. This behavior is
+regulated by the input pin `secure_boot_i` according to the following table:
 
-| `secure_boot_i` | **Secure Boot** | **System status after POR**                                                                                            |
-|:----------------|----------------:|:-----------------------------------------------------------------------------------------------------------------------|
-| `0`             |           `OFF` | *secure domain* gated and isolated as the other 5 domains, *host domain* always-on and idle                            |
-| `1`             |            `ON` | *host domain* always-on and idle, *secure domain* active, takes over *secure boot*; other 5 domains gated and isolated |
-|                 |                 |                                                                                                                        |
+| `secure_boot_i` | **Secure Boot** | **System status after POR**                                                                                                                       |
+|:----------------|----------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0`             |           `OFF` | *secure domain* gated and isolated as the other 5 domains, *host domain* always-on and idle                                                       |
+| `1`             |            `ON` | *host domain* always-on and idle, *secure domain* active, takes over *secure boot* and can't be warm reset-ed; other 5 domains gated and isolated |
 
 Regardless of the value of `secure_boot_i`, since by default some domains are clock gated and
-isolated after POR, SW or external physical interfaces (JTAG/Serial Link) must handle the wake-up
+isolated after POR, SW or external physical interfaces (JTAG/Serial Link) must handle their wake-up
 process. Routines are provided in the [Software Stack](../../sw/include/car_util.h).
+
+### Reset distribution scheme
+
+Carfield is provided with one POR (active-low), `pwr_on_rst_ni`, responsible for the platform's
+*cold reset*.
+
+The POR is synchronized with the clock of each domain, user-selected as explained above, and
+propagated to the domain.
+
+In addition, a *warm reset* can be initiated from SW through the PCRs for each domain. Exceptions to
+this are the *host domain* (always-on), and the *secure domain* when `secure_boot_i` is asserted.
+
