@@ -49,7 +49,7 @@ The above block diagram depicts a fully-featured Carfield SoC, which currently p
 	- Core-local (CLINT *and* CLIC) and platform (PLIC) interrupt controllers
 	- Dynamic interrupt routing from and to internal and external targets.
 
-- **Peripherals**:
+- **Peripheral Domain**:
 	- Generic timers
 	- PWM timers
 	- Watchdog timer
@@ -378,7 +378,7 @@ The *safe domain* is configured as follows:
   *host domain*, respectively. AXI datawidth conversion with the host domain is handled internally
   to the safe domain.
 * 1 generic timer, essential for periodic ticks common in RTOSs. The generic timer in the *safe
-  domain* is the same integrated in [Carfield's *peripheral domain*](#peripherals).
+  domain* is the same integrated in [Carfield's *peripheral domain*](#peripheral-domain).
 * CLIC RISC-V interrupt controller; as opposed to Cheshire, currently the CLIC is configured to run
   run in M-mode.
 * Fast interrupt extension that extends CV32 with additional logic to accelerate context switching.
