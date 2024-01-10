@@ -42,7 +42,7 @@ include $(CAR_ROOT)/bender-safed.mk
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 02b2ea440cb6623e5008f7d6268e36f242339ead
+CAR_NONFREE_COMMIT ?= 12facc1
 
 ## @section Carfield platform nonfree components
 ## Clone the non-free verification IP for Carfield. Some components such as CI scripts and ASIC
@@ -289,7 +289,7 @@ car-all: car-init-all car-sw-build
 #########
 # Utils #
 #########
-## @section Carfield SoC Utilities
+## @section Carfield platform utilities
 
 # Lint
 SPYGLASS_TARGS += $(common_targs)
