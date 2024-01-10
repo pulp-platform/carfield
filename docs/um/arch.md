@@ -392,11 +392,21 @@ project](https://opentitan.org/book/doc/introduction.html), serves as the Hardwa
 (HWRoT) of the platform. It handles *secure boot* and system integrity monitoring fully in HW
 through cryptographic acceleration services.
 
-Compared to vanilla OpenTitan, the *secure domain* integrated in Carfield is modified/configured as follows:
+Compared to vanilla OpenTitan, the secure domain integrated in Carfield is modified/configured as follows:
 
-TODO
+* 1 AXI4 manager interface to Carfield, with a bridge between AXI4 and TileLink Uncached Lightweight
+  (TL-UL) internally used by OpenTitan. By only exposing a manager port, unwanted access to the
+  secure domain is prevented.
 
-TODO Mention `SECURE BOOT` mode
+* Embedded flash memory replaced with a simple SRAM preloaded before secure boot procedure from an
+  external SPI flash through OpenTitan private SPI peripheral. Once preload is over, the OpenTitan
+  secure boot framework is unchanged compared to the original.
+
+* Finally, a *boot manager* module has been designed and integrated to manage the [two available
+  bootmodes](./sw.md). In secure mode, the systems executes the secure boot as soon as the reset is
+  asserted, loading code from the external SPI and performing the signature check on its content.
+  Otherwise, the *secure domain* is clock gated and must be clocked and woken-up by an external
+  entity (e.g., *host domain*)
 
 #### Accelerator domain
 
