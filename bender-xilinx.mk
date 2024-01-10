@@ -5,7 +5,7 @@
 # Author: Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 # bender targets
-xilinx_targs_common += -t fpga
+xilinx_targs_common += -t fpga -t xilinx
 
 # bender defines
 xilinx_defs_common += -D PULP_FPGA_EMUL

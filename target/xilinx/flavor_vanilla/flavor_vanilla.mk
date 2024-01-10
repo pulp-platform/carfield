@@ -56,3 +56,5 @@ car-xil-clean-vanilla:
 	cd $(CAR_XIL_DIR)/flavor_vanilla && rm -rf scripts/add_sources.tcl* *.log *.jou *.str *.mif carfield.* .Xil/
 
 .PHONY: car-xil-clean-vanilla
+
+include $(CAR_XIL_DIR)/flavor_vanilla/sim/sim.mk
