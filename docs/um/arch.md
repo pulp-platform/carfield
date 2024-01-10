@@ -416,11 +416,24 @@ TODO
 ##### [Vectorial PMCA](https://github.com/pulp-platform/spatz)
 
 The [*vectorial PMCA*, or Spatz PMCA](https://dl.acm.org/doi/abs/10.1145/3508352.3549367) handles
-vectorizable multi-format floating-point workloads (down to FP8).
+vectorizable multi-format floating-point workloads.
 
-The Spatz PMCA is configured as follows:
+It acts as a coprocessor of the [Snitch core](https://github.com/pulp-platform/snitch_cluster), a
+tiny 64-bit scalar core which decodes and forwards vector instructions to the vector unit. Together
+they are referred to as *Complex Cores (CCs)*.
 
-TODO
+The vectorial PMCA is composed by **two CCs**, each with the following configurations:
+
+* 2 KiB of latch-based VRF
+* 4 trans-precision FPUs
+* 1 integer processing unit (IPU)
+
+Each FPU supports *FP8*, *FP16*, *FP32*, and *FP64* computation, while the IPU supports 8, 16, 32,
+and 64-bit integer computation.
+
+The CCs share access to 128KB of L1 scratchpad memory divided into 16 SRAM banks.
+
+We
 
 ### Memory Domain
 
@@ -484,18 +497,18 @@ It manages the following features:
 
 Assuming each mailbox is identified with id `i`, the register file map reads:
 
-| Offset           | Register       | Width (bit) | Note               |
-|------------------|----------------|-------------|--------------------|
-| 0x00 + i * 0x100 | INT\_SND\_STAT | 1           | current irq status |
-| 0x04 + i * 0x100 | INT\_SND\_SET  | 1           | set irq            |
-| 0x08 + i * 0x100 | INT\_SND\_CLR  | 1           | clear irq          |
-| 0x0C + i * 0x100 | INT\_SND\_EN   | 1           | enable irq         |
-| 0x40 + i * 0x100 | INT\_RCV\_STAT | 1           | current irq status |
-| 0x44 + i * 0x100 | INT\_RCV\_SET  | 1           | set irq            |
-| 0x48 + i * 0x100 | INT\_RCV\_CLR  | 1           | clear irq          |
-| 0x4C + i * 0x100 | INT\_RCV\_EN   | 1           | enable irq         |
-| 0x80 + i * 0x100 | LETTER0        | 32          | message            |
-| 0x8C + i * 0x100 | LETTER1        | 32          | message            |
+| **Offset**         | **Register**     | **Width (bit)** | **Note**           |
+|--------------------|------------------|-----------------|--------------------|
+| `0x00 + i * 0x100` | `INT_SND_STAT`   | `1`             | current irq status |
+| `0x04 + i * 0x100` | `INT_SND_SET `   | `1`             | set irq            |
+| `0x08 + i * 0x100` | `INT_SND_CLR `   | `1`             | clear irq          |
+| `0x0C + i * 0x100` | `INT_SND_EN  `   | `1`             | enable irq         |
+| `0x40 + i * 0x100` | `INT_RCV_STAT`   | `1`             | current irq status |
+| `0x44 + i * 0x100` | `INT_RCV_SET `   | `1`             | set irq            |
+| `0x48 + i * 0x100` | `INT_RCV_CLR `   | `1`             | clear irq          |
+| `0x4C + i * 0x100` | `INT_RCV_EN  `   | `1`             | enable irq         |
+| `0x80 + i * 0x100` | `LETTER0       ` | `32`            | message            |
+| `0x8C + i * 0x100` | `LETTER1       ` | `32`            | message            |
 
 The above register map can be found in the dedicated
 [repository](https://github.com/pulp-platform/mailbox_uni) and is reported here for convenience.
@@ -511,71 +524,71 @@ A more detailed overview of each PCR (register subfields and description) can be
 [here](../../hw/regs/pcr.md). PCR base address is listed in the [Memory Map](#memory-map) as for the
 other devices.
 
-| Name                             | Offset | Length | Description                                                            |
-|:---------------------------------|:-------|-------:|:-----------------------------------------------------------------------|
-| `VERSION0`                       | `0x0`  |      4 | Cheshire sha256 commit                                                 |
-| `VERSION1`                       | `0x4`  |      4 | Safety Island sha256 commit                                            |
-| `VERSION2`                       | `0x8`  |      4 | Security Island sha256 commit                                          |
-| `VERSION3`                       | `0xc`  |      4 | PULP Cluster sha256 commit                                             |
-| `VERSION4`                       | `0x10` |      4 | Spatz CLuster sha256 commit                                            |
-| `JEDEC_IDCODE`                   | `0x14` |      4 | JEDEC ID CODE                                                          |
-| `GENERIC_SCRATCH0`               | `0x18` |      4 | Scratch                                                                |
-| `GENERIC_SCRATCH1`               | `0x1c` |      4 | Scratch                                                                |
-| `HOST_RST`                       | `0x20` |      4 | Host Domain reset -active high, inverted in HW-                        |
-| `PERIPH_RST`                     | `0x24` |      4 | Periph Domain reset -active high, inverted in HW-                      |
-| `SAFETY_ISLAND_RST`              | `0x28` |      4 | Safety Island reset -active high, inverted in HW-                      |
-| `SECURITY_ISLAND_RST`            | `0x2c` |      4 | Security Island reset -active high, inverted in HW-                    |
-| `PULP_CLUSTER_RST`               | `0x30` |      4 | PULP Cluster reset -active high, inverted in HW-                       |
-| `SPATZ_CLUSTER_RST`              | `0x34` |      4 | Spatz Cluster reset -active high, inverted in HW-                      |
-| `L2_RST`                         | `0x38` |      4 | L2 reset -active high, inverted in HW-                                 |
-| `PERIPH_ISOLATE`                 | `0x3c` |      4 | Periph Domain  AXI isolate                                             |
-| `SAFETY_ISLAND_ISOLATE`          | `0x40` |      4 | Safety Island AXI isolate                                              |
-| `SECURITY_ISLAND_ISOLATE`        | `0x44` |      4 | Security Island AXI isolate                                            |
-| `PULP_CLUSTER_ISOLATE`           | `0x48` |      4 | PULP Cluster AXI isolate                                               |
-| `SPATZ_CLUSTER_ISOLATE`          | `0x4c` |      4 | Spatz Cluster AXI isolate                                              |
-| `L2_ISOLATE`                     | `0x50` |      4 | L2 AXI isolate                                                         |
-| `PERIPH_ISOLATE_STATUS`          | `0x54` |      4 | Periph Domain AXI isolate status                                       |
-| `SAFETY_ISLAND_ISOLATE_STATUS`   | `0x58` |      4 | Safety Island AXI isolate status                                       |
-| `SECURITY_ISLAND_ISOLATE_STATUS` | `0x5c` |      4 | Security Island AXI isolate status                                     |
-| `PULP_CLUSTER_ISOLATE_STATUS`    | `0x60` |      4 | PULP Cluster AXI isolate status                                        |
-| `SPATZ_CLUSTER_ISOLATE_STATUS`   | `0x64` |      4 | Spatz Cluster AXI isolate status                                       |
-| `L2_ISOLATE_STATUS`              | `0x68` |      4 | L2 AXI isolate status                                                  |
-| `PERIPH_CLK_EN`                  | `0x6c` |      4 | Periph Domain clk gate enable                                          |
-| `SAFETY_ISLAND_CLK_EN`           | `0x70` |      4 | Safety Island clk gate enable                                          |
-| `SECURITY_ISLAND_CLK_EN`         | `0x74` |      4 | Security Island clk gate enable                                        |
-| `PULP_CLUSTER_CLK_EN`            | `0x78` |      4 | PULP Cluster clk gate enable                                           |
-| `SPATZ_CLUSTER_CLK_EN`           | `0x7c` |      4 | Spatz Cluster clk gate enable                                          |
-| `L2_CLK_EN`                      | `0x80` |      4 | Shared L2 memory clk gate enable                                       |
-| `PERIPH_CLK_SEL`                 | `0x84` |      4 | Periph Domain pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
-| `SAFETY_ISLAND_CLK_SEL`          | `0x88` |      4 | Safety Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
-| `SECURITY_ISLAND_CLK_SEL`        | `0x8c` |      4 | Security Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll) |
-| `PULP_CLUSTER_CLK_SEL`           | `0x90` |      4 | PULP Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)    |
-| `SPATZ_CLUSTER_CLK_SEL`          | `0x94` |      4 | Spatz Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
-| `L2_CLK_SEL`                     | `0x98` |      4 | L2 Memory pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)       |
-| `PERIPH_CLK_DIV_VALUE`           | `0x9c` |      4 | Periph Domain clk divider value                                        |
-| `SAFETY_ISLAND_CLK_DIV_VALUE`    | `0xa0` |      4 | Safety Island clk divider value                                        |
-| `SECURITY_ISLAND_CLK_DIV_VALUE`  | `0xa4` |      4 | Security Island clk divider value                                      |
-| `PULP_CLUSTER_CLK_DIV_VALUE`     | `0xa8` |      4 | PULP Cluster clk divider value                                         |
-| `SPATZ_CLUSTER_CLK_DIV_VALUE`    | `0xac` |      4 | Spatz Cluster clk divider value                                        |
-| `L2_CLK_DIV_VALUE`               | `0xb0` |      4 | L2 Memory clk divider value                                            |
-| `HOST_FETCH_ENABLE`              | `0xb4` |      4 | Host Domain fetch enable                                               |
-| `SAFETY_ISLAND_FETCH_ENABLE`     | `0xb8` |      4 | Safety Island fetch enable                                             |
-| `SECURITY_ISLAND_FETCH_ENABLE`   | `0xbc` |      4 | Security Island fetch enable                                           |
-| `PULP_CLUSTER_FETCH_ENABLE`      | `0xc0` |      4 | PULP Cluster fetch enable                                              |
-| `SPATZ_CLUSTER_DEBUG_REQ`        | `0xc4` |      4 | Spatz Cluster debug req                                                |
-| `HOST_BOOT_ADDR`                 | `0xc8` |      4 | Host boot address                                                      |
-| `SAFETY_ISLAND_BOOT_ADDR`        | `0xcc` |      4 | Safety Island boot address                                             |
-| `SECURITY_ISLAND_BOOT_ADDR`      | `0xd0` |      4 | Security Island boot address                                           |
-| `PULP_CLUSTER_BOOT_ADDR`         | `0xd4` |      4 | PULP Cluster boot address                                              |
-| `SPATZ_CLUSTER_BOOT_ADDR`        | `0xd8` |      4 | Spatz Cluster boot address                                             |
-| `PULP_CLUSTER_BOOT_ENABLE`       | `0xdc` |      4 | PULP Cluster boot enable                                               |
-| `SPATZ_CLUSTER_BUSY`             | `0xe0` |      4 | Spatz Cluster busy                                                     |
-| `PULP_CLUSTER_BUSY`              | `0xe4` |      4 | PULP Cluster busy                                                      |
-| `PULP_CLUSTER_EOC`               | `0xe8` |      4 | PULP Cluster end of computation                                        |
-| `ETH_RGMII_PHY_CLK_DIV_EN`       | `0xec` |      4 | Ethernet RGMII PHY clock divider enable bit                            |
-| `ETH_RGMII_PHY_CLK_DIV_VALUE`    | `0xf0` |      4 | Ethernet RGMII PHY clock divider value                                 |
-| `ETH_MDIO_CLK_DIV_EN`            | `0xf4` |      4 | Ethernet MDIO clock divider enable bit                                 |
-| `ETH_MDIO_CLK_DIV_VALUE`         | `0xf8` |      4 | Ethernet MDIO clock divider value                                      |
+| **Name**                         | **Offset** | **Length** | **Description**                                                        |
+|:---------------------------------|:-----------|-----------:|:-----------------------------------------------------------------------|
+| `VERSION0`                       | `0x0`      |        `4` | Cheshire sha256 commit                                                 |
+| `VERSION1`                       | `0x4`      |        `4` | Safety Island sha256 commit                                            |
+| `VERSION2`                       | `0x8`      |        `4` | Security Island sha256 commit                                          |
+| `VERSION3`                       | `0xc`      |        `4` | PULP Cluster sha256 commit                                             |
+| `VERSION4`                       | `0x10`     |        `4` | Spatz CLuster sha256 commit                                            |
+| `JEDEC_IDCODE`                   | `0x14`     |        `4` | JEDEC ID CODE                                                          |
+| `GENERIC_SCRATCH0`               | `0x18`     |        `4` | Scratch                                                                |
+| `GENERIC_SCRATCH1`               | `0x1c`     |        `4` | Scratch                                                                |
+| `HOST_RST`                       | `0x20`     |        `4` | Host Domain reset -active high, inverted in HW-                        |
+| `PERIPH_RST`                     | `0x24`     |        `4` | Periph Domain reset -active high, inverted in HW-                      |
+| `SAFETY_ISLAND_RST`              | `0x28`     |        `4` | Safety Island reset -active high, inverted in HW-                      |
+| `SECURITY_ISLAND_RST`            | `0x2c`     |        `4` | Security Island reset -active high, inverted in HW-                    |
+| `PULP_CLUSTER_RST`               | `0x30`     |        `4` | PULP Cluster reset -active high, inverted in HW-                       |
+| `SPATZ_CLUSTER_RST`              | `0x34`     |        `4` | Spatz Cluster reset -active high, inverted in HW-                      |
+| `L2_RST`                         | `0x38`     |        `4` | L2 reset -active high, inverted in HW-                                 |
+| `PERIPH_ISOLATE`                 | `0x3c`     |        `4` | Periph Domain  AXI isolate                                             |
+| `SAFETY_ISLAND_ISOLATE`          | `0x40`     |        `4` | Safety Island AXI isolate                                              |
+| `SECURITY_ISLAND_ISOLATE`        | `0x44`     |        `4` | Security Island AXI isolate                                            |
+| `PULP_CLUSTER_ISOLATE`           | `0x48`     |        `4` | PULP Cluster AXI isolate                                               |
+| `SPATZ_CLUSTER_ISOLATE`          | `0x4c`     |        `4` | Spatz Cluster AXI isolate                                              |
+| `L2_ISOLATE`                     | `0x50`     |        `4` | L2 AXI isolate                                                         |
+| `PERIPH_ISOLATE_STATUS`          | `0x54`     |        `4` | Periph Domain AXI isolate status                                       |
+| `SAFETY_ISLAND_ISOLATE_STATUS`   | `0x58`     |        `4` | Safety Island AXI isolate status                                       |
+| `SECURITY_ISLAND_ISOLATE_STATUS` | `0x5c`     |        `4` | Security Island AXI isolate status                                     |
+| `PULP_CLUSTER_ISOLATE_STATUS`    | `0x60`     |        `4` | PULP Cluster AXI isolate status                                        |
+| `SPATZ_CLUSTER_ISOLATE_STATUS`   | `0x64`     |        `4` | Spatz Cluster AXI isolate status                                       |
+| `L2_ISOLATE_STATUS`              | `0x68`     |        `4` | L2 AXI isolate status                                                  |
+| `PERIPH_CLK_EN`                  | `0x6c`     |        `4` | Periph Domain clk gate enable                                          |
+| `SAFETY_ISLAND_CLK_EN`           | `0x70`     |        `4` | Safety Island clk gate enable                                          |
+| `SECURITY_ISLAND_CLK_EN`         | `0x74`     |        `4` | Security Island clk gate enable                                        |
+| `PULP_CLUSTER_CLK_EN`            | `0x78`     |        `4` | PULP Cluster clk gate enable                                           |
+| `SPATZ_CLUSTER_CLK_EN`           | `0x7c`     |        `4` | Spatz Cluster clk gate enable                                          |
+| `L2_CLK_EN`                      | `0x80`     |        `4` | Shared L2 memory clk gate enable                                       |
+| `PERIPH_CLK_SEL`                 | `0x84`     |        `4` | Periph Domain pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
+| `SAFETY_ISLAND_CLK_SEL`          | `0x88`     |        `4` | Safety Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
+| `SECURITY_ISLAND_CLK_SEL`        | `0x8c`     |        `4` | Security Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll) |
+| `PULP_CLUSTER_CLK_SEL`           | `0x90`     |        `4` | PULP Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)    |
+| `SPATZ_CLUSTER_CLK_SEL`          | `0x94`     |        `4` | Spatz Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)   |
+| `L2_CLK_SEL`                     | `0x98`     |        `4` | L2 Memory pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)       |
+| `PERIPH_CLK_DIV_VALUE`           | `0x9c`     |        `4` | Periph Domain clk divider value                                        |
+| `SAFETY_ISLAND_CLK_DIV_VALUE`    | `0xa0`     |        `4` | Safety Island clk divider value                                        |
+| `SECURITY_ISLAND_CLK_DIV_VALUE`  | `0xa4`     |        `4` | Security Island clk divider value                                      |
+| `PULP_CLUSTER_CLK_DIV_VALUE`     | `0xa8`     |        `4` | PULP Cluster clk divider value                                         |
+| `SPATZ_CLUSTER_CLK_DIV_VALUE`    | `0xac`     |        `4` | Spatz Cluster clk divider value                                        |
+| `L2_CLK_DIV_VALUE`               | `0xb0`     |        `4` | L2 Memory clk divider value                                            |
+| `HOST_FETCH_ENABLE`              | `0xb4`     |        `4` | Host Domain fetch enable                                               |
+| `SAFETY_ISLAND_FETCH_ENABLE`     | `0xb8`     |        `4` | Safety Island fetch enable                                             |
+| `SECURITY_ISLAND_FETCH_ENABLE`   | `0xbc`     |        `4` | Security Island fetch enable                                           |
+| `PULP_CLUSTER_FETCH_ENABLE`      | `0xc0`     |        `4` | PULP Cluster fetch enable                                              |
+| `SPATZ_CLUSTER_DEBUG_REQ`        | `0xc4`     |        `4` | Spatz Cluster debug req                                                |
+| `HOST_BOOT_ADDR`                 | `0xc8`     |        `4` | Host boot address                                                      |
+| `SAFETY_ISLAND_BOOT_ADDR`        | `0xcc`     |        `4` | Safety Island boot address                                             |
+| `SECURITY_ISLAND_BOOT_ADDR`      | `0xd0`     |        `4` | Security Island boot address                                           |
+| `PULP_CLUSTER_BOOT_ADDR`         | `0xd4`     |        `4` | PULP Cluster boot address                                              |
+| `SPATZ_CLUSTER_BOOT_ADDR`        | `0xd8`     |        `4` | Spatz Cluster boot address                                             |
+| `PULP_CLUSTER_BOOT_ENABLE`       | `0xdc`     |        `4` | PULP Cluster boot enable                                               |
+| `SPATZ_CLUSTER_BUSY`             | `0xe0`     |        `4` | Spatz Cluster busy                                                     |
+| `PULP_CLUSTER_BUSY`              | `0xe4`     |        `4` | PULP Cluster busy                                                      |
+| `PULP_CLUSTER_EOC`               | `0xe8`     |        `4` | PULP Cluster end of computation                                        |
+| `ETH_RGMII_PHY_CLK_DIV_EN`       | `0xec`     |        `4` | Ethernet RGMII PHY clock divider enable bit                            |
+| `ETH_RGMII_PHY_CLK_DIV_VALUE`    | `0xf0`     |        `4` | Ethernet RGMII PHY clock divider value                                 |
+| `ETH_MDIO_CLK_DIV_EN`            | `0xf4`     |        `4` | Ethernet MDIO clock divider enable bit                                 |
+| `ETH_MDIO_CLK_DIV_VALUE`         | `0xf8`     |        `4` | Ethernet MDIO clock divider value                                      |
 
 ## Peripheral Domain
 
@@ -759,4 +772,3 @@ propagated to the domain.
 
 In addition, a *warm reset* can be initiated from SW through the PCRs for each domain. Exceptions to
 this are the *host domain* (always-on), and the *secure domain* when `secure_boot_i` is asserted.
-
