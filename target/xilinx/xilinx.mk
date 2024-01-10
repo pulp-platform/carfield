@@ -4,9 +4,13 @@
 #
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
+## @section Carfield emulation
+
 #
 # Makefile variables (user inputs are in capital letters)
 #
+
+VIVADO   ?= vitis-2020.2 vivado
 
 XILINX_PROJECT ?= carfield
 # XILINX_FLAVOR in {vanilla,bd} see carfield_bd.mk
@@ -68,18 +72,29 @@ $(CAR_XIL_DIR)/out/%.bit: $(xilinx_bit_$(XILINX_FLAVOR))
 		cp $(patsubst %.bit,%.ltx,$< $@); \
 	fi
 
-# Build bitstream
+## Build bitstream for Carfield
+## @param XILINX_PROJECT The name of the Xilinx project
+## @param XILINX_FLAVOR=<vanilla|bd> The flavor of the implementation
+## @param XILINX_BOARD The target Xilinx board
 car-xil-all: $(xilinx_bit)
 
-# Program last bitstream
+## Program last bitstream for Carfield
+## @param VIVADO The Vivado version in use
+## @param XILINX_BOARD The target Xilinx board to be programmed
+## @param VIVADO_FLAGS Some flags for Vivado, such as batch or gui mode
 car-xil-program:
 	@echo "Programming board $(XILINX_BOARD) ($(xilinx_part))"
 	$(vivado_env) $(VIVADO) $(VIVADO_FLAGS) -source $(CAR_XIL_DIR)/scripts/program.tcl
 
-# Flash linux image
+## Flash Linux image on Cheshire
+## @param VIVADO The Vivado version in use
+## @param XILINX_BOARD The target Xilinx board to be programmed
+## @param XILINX_FLAVOR=<vanilla|bd> The flavor of the implementation.
+## @param VIVADO_FLAGS Some flags for Vivado, such as batch or gui mode
 car-xil-flash: $(CAR_SW_DIR)/boot/linux_carfield_$(XILINX_FLAVOR)_$(XILINX_BOARD).gpt.bin
 	$(vivado_env) FILE=$< OFFSET=0 $(VIVADO) $(VIVADO_FLAGS) -source $(CAR_XIL_DIR)/scripts/flash_spi.tcl
 
+## Clean Xilinx artifacts for all implementations
 car-xil-clean: car-xil-clean-vanilla car-xil-clean-bd xilinx-ip-clean-all
 
 .PHONY: car-xil-program car-xil-flash car-xil-clean car-xil-all
