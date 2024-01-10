@@ -55,3 +55,13 @@ car-vsim-sim-run:
 		 set VSIM_FLAGS \"$(VSIM_FLAGS)\"; \
 		 source ./start.carfield_soc.tcl ; \
 		 $(RUN_AND_EXIT)"
+
+########
+# Help #
+########
+
+# Setup Autodocumentation of the Makefile
+HELP_TITLE="Carfield simulation with Questasim"
+HELP_DESCRIPTION="Questasim simulation targets for Carfield"
+include ../../../utils/help.mk
+.DEFAULT_GOAL := help
