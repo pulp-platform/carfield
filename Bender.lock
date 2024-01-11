@@ -114,7 +114,7 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: 6d6b86ebec1780d8f9ce179d3f84f389584110ad
+    revision: 74756f851447e3ad1643299baa17220e1365b400
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -427,8 +427,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
-    version: 0.4.2
+    revision: e4b20be8833180863ebc64675c93b1694239c505
+    version: null
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
