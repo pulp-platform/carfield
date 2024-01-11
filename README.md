@@ -8,19 +8,22 @@ University of Bologna.
 
 ## Motivation
 
-The rapid evolution of AI algorithms, the massive amount of sensed data and the pervasive influence
-of AI-enhanced applications across application-domains such as Automotive, Space and Cyber-Physical
-embedded systems (CPSs), call for a paradigm shift from simple micro-controllers towards powerful
-and heterogeneous edge computers in the design of **next generation of mixed-criticality systems
-(MCSs)**. These must not only deliver outstanding performance and energy efficiency but also ensure
-steadfast safety, resilience, and security.
+The rapid evolution of AI algorithms and the massive amount of sensed data across
+application-domains such as Automotive, Space and Cyber-Physical embedded systems (CPSs), call for a
+*paradigm shift* in the design of **next generation of mixed-criticality systems (MCSs)**, from
+simple micro-controllers towards powerful and heterogeneous edge computers.
+
+These must not only deliver outstanding performance and energy efficiency but also ensure steadfast
+safety, resilience, and security.
 
 The Carfield platform aims to tackle these architectural challenges establishing itself as a
-pre-competitive heterogeneous platform for MCSs, underpinned by fully open-source Intellectual
-Properties (IPs). Carfield showcases pioneering hardware solutions, addressing challenges related to
-time-predictable on/off-chip communication, robust fault recovery mechanisms, secure boot processes,
-cryptographic acceleration services, hardware-assisted virtualization, and accelerated computation
-for both floating-point and integer workloads.
+pre-competitive heterogeneous platform for MCSs, underpinned by **fully open-source Intellectual
+Properties (IPs)**.
+
+Carfield showcases pioneering hardware solutions, addressing challenges related to time-predictable
+on/off-chip communication, robust fault recovery mechanisms, secure boot processes, cryptographic
+acceleration services, hardware-assisted virtualization, and accelerated computation for both
+floating-point and integer workloads.
 
 ## Quick Start
 
@@ -32,16 +35,26 @@ for both floating-point and integer workloads.
   Manual](https://pulp-platform.github.io/carfield/um/).
 
 If you are impatient and have all needed
-[dependencies](https://pulp-platform.github.io/carfield/gs/#dependencies), you can run:
+[dependencies](https://pulp-platform.github.io/carfield/gs/#dependencies), type:
 
 ```
 make car-all
 ```
 
-and then run a [simulation](https://pulp-platform.github.io/carfield/tg/sim) by typing:
+and then run a [simulation](https://pulp-platform.github.io/carfield/tg/sim) with Questasim by
+typing:
 
 ```
-make car-hw-build car-hw-sim CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+make car-vsim-sim-build
+cd target/sim/vsim && car-vsim-sim-run CHS_BINARY=../../../sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+```
+
+---
+
+To display the main *Make* build targets and their usage, from the root repository type:
+
+```
+make help
 ```
 
 ## License

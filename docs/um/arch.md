@@ -398,15 +398,15 @@ Compared to vanilla OpenTitan, the secure domain integrated in Carfield is modif
   (TL-UL) internally used by OpenTitan. By only exposing a manager port, unwanted access to the
   secure domain is prevented.
 
-* Embedded flash memory replaced with a simple SRAM preloaded before secure boot procedure from an
+* Embedded flash memory replaced with an SRAM preloaded before secure boot procedure from an
   external SPI flash through OpenTitan private SPI peripheral. Once preload is over, the OpenTitan
-  secure boot framework is unchanged compared to the original.
+  secure boot framework is unchanged compared to the vanilla version.
 
 * Finally, a *boot manager* module has been designed and integrated to manage the [two available
-  bootmodes](./sw.md). In secure mode, the systems executes the secure boot as soon as the reset is
-  asserted, loading code from the external SPI and performing the signature check on its content.
-  Otherwise, the *secure domain* is clock gated and must be clocked and woken-up by an external
-  entity (e.g., *host domain*)
+  bootmodes](./sw.md). In **Secure** mode, the systems executes the secure boot framework as soon as
+  the reset is asserted, loading code from the external SPI and performing the signature check on
+  its content. Otherwise, in **Non-secure** mode, the *secure domain* is clock gated and must be
+  clocked and woken-up by an external entity (e.g., *host domain*)
 
 #### Accelerator domain
 
@@ -442,8 +442,6 @@ Each FPU supports *FP8*, *FP16*, *FP32*, and *FP64* computation, while the IPU s
 and 64-bit integer computation.
 
 The CCs share access to 128KB of L1 scratchpad memory divided into 16 SRAM banks.
-
-We
 
 ### Memory Domain
 

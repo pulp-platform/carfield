@@ -79,11 +79,11 @@ an example with `Serial Link` passive preload of a baremetal program `helloworld
 executed on the *host domain* (Cheshire, i.e., `X=CHS`):
 
 ```tcl
-# Compile design
-make car-hw-build
+# Compile the design
+make car-vsim-sim-build
 
-# Preload `helloworld.car.l2.elf` through serial link, then start and run simulation
-make car-hw-sim CHS_BOOTMODE=0 CHS_PRELMODE=1 CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+# Preload `helloworld.car.l2.elf` in passive bootmode through serial link, then start the simulation
+cd target/sim/vsim && make car-vsim-sim-run CHS_BOOTMODE=0 CHS_PRELMODE=1 CHS_BINARY=../../../sw/tests/bare-metal/hostd/helloworld.car.l2.elf
 ```
 
 The design needs to be recompiled only when hardware is changed.
