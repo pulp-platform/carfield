@@ -53,11 +53,11 @@ and with non-free license terms, from their publically accessible sources. By ru
 To run all build targets above (†)(‡):
 
 ```
-make car-init
+make car-init-all
 ```
 
-Running `car-init` is *required* at least once to correctly configure IPs we depend on. On
-reconfiguring any generated hardware or changing IP versions, `car-init` should be rerun.
+Running `car-init-all` is *required* at least once to correctly configure IPs we depend on. On
+reconfiguring any generated hardware or changing IP versions, `car-init-all` should be rerun.
 
 The following additional targets are not invoked by the above, but also available:
 
