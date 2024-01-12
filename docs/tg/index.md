@@ -20,4 +20,4 @@ page* in this chapter:
 For ASIC implementation target, where an additional wrapper is needed for clock generation blocks,
 bidirectional pads or additional circuitry, or the less common integration into larger SoCs,
 Carfield may be included either as a Bender dependency or Git submodule. For further information and
-best pratices, see [SoC Integration](integr.md).
+best pratices, see [Integration](integr.md).

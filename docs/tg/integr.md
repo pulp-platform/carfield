@@ -1,4 +1,4 @@
-# SoC Integration
+# Integration
 
 Carfield is a complex platform, therefore the case of it being integrated in larger SoCs is rare. A
 more common scenario is the use of Carfield in a ASIC wrapper that includes bidirectional pads,

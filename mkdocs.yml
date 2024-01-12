@@ -26,6 +26,7 @@ nav:
   - Simulation: tg/sim.md
   - Synthesis: tg/synth.md
   - Xilinx FPGAs: tg/xilinx.md
+  - Integration: tg/integr.md
 - User Manual:
   - um/index.md
   - Architecture: um/arch.md
