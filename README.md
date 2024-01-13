@@ -1,7 +1,6 @@
 # Carfield
 
-Carfield is a mixed-criticality SoC targeting the automotive domain. It uses
-[`Cheshire`](https://github.com/pulp-platform/cheshire) as main host domain.
+Carfield is an open-research heterogeneous platform for safety, resilient and time-predictable systems. Originally conceived as automotive-oriented SoC, the high configurability of the platform makes it tunable to target a broader class of mixed-criticality applications' domains, such as automotive, space or industry.
 
 Carfield is developed as part of the PULP project, a joint effort between ETH Zurich and the
 University of Bologna.

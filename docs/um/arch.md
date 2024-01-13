@@ -1,36 +1,32 @@
 # Architecture
 
-TODO @anga93: add figure
-
 ![Carfield Block Diagram](../img/arch.svg)
 
 Carfield is organized in *domains*. As a mixed-criticality system (MCS), each domain serves
 different purposes in terms of functional safety and reliability, security, and computation
-capabiities.
+capabilities.
 
-Carfield relies on Cheshire as ain host domain, and extends its minimal SoC with additional
-interconnect ports and interrupts. Hence, several features described in this section can be found
+Carfield relies on Cheshire as its host domain, and extends its minimal SoC with additional
+interconnect ports and interrupts. 
 
 The above block diagram depicts a fully-featured Carfield SoC, which currently provides:
 
 - **Computing Domain**:
-	- *Host domain* (Cheshire), a minimal Linux-capable RV64 system based on dual-core CVA6 with
+	- *Host domain* (Cheshire), a Linux-capable RV64 system based on dual-core CVA6 processors with
 	  self-invalidation coherency mechanism
-	- *Safe domain*, a TCLS RV32 microcontroller system based on CV32E40P, with fast interrupt
+	- *Safe domain*, a Triple-Core-Lockstep (TCLS) RV32 microcontroller system based on CV32E40P, with fast interrupt
 	  handling through the RISC-V CLIC
-	- *Secure domain*, a RV32 microcontroller system with crypto accelerators, tasked to handle
-	  secure boot and platform security monitor
+	- *Secure domain*, a Dual-Core-Lockstep (DCLS) RV32 Hardware Root of Trust (HW RoT) systems that ensures the secure boot for the whole platform, serves as secure monitor for the entire system, and provides crypto acceleration services through various crypto-accelerators
 	- *Accelerator domain*, comprises two programmable multi-core accelerators (PMCAs), an 12-cores
-	  integer cluster with HMR capabilities and a vectorial cluster with vector processing
-	  capabilities
+	  integer cluster with Hybrid Modular Redundancy (HMR) capabilities oriented to compute intensive integer workloads such as AI,  and a vectorial cluster with floating point vector processing capabilities to accelerate intensive control tasks
 
 - **Memory Domain**:
 	- *Dynamic SPM*: dynamically configurable scratchpad memory (SPM) for *interleaved* or
-	  *contiguous* accesses
+	  *contiguous* accesses aiming at reducing systematic bus conflicts to improve the time-predictability of the on-chip communication
 	- *LLC SPM*: the last-level cache (*host domain*) can be configured as SPM at runtime, as
 	  described in Cheshire's [Architecture](https://pulp-platform.github.io/cheshire/um/arch/)
 	- *External DRAM*: off-chip HyperRAM (Infineon) interfaced with in-house, open-source AXI4
-	  Hyberbus PHY.
+	  Hyberbus memory controller and digital PHY.
 
 - **Mailbox unit**
 	- Main communication vehicle among domains, based on an interrupt notification mechanism
@@ -305,13 +301,13 @@ The *host domain* (Cheshire) embeds all the necessary components required to run
 embedded Linux. It has two orthogonal *operation modes*.
 
 1. *Untrusted mode*: in this operation mode, the host domain is tasked to run untrusted services,
-i.e. non time- and safety-critical applications. For example, this could be the case of infotainment
+i.e. non time- and non safety-critical applications. For example, this could be the case of infotainment
 on a modern car. In this mode, as in traditional automotive platforms, safety and resiliency
 features are deferred to a dedicated 32-bit microcontroller-like system, called `safe domain` in
 Carfield.
 
 2. *Hybrid trusted/untrusted mode*: in this operation mode, the host domain is in charge of both
-critical and non-critical applications. Key features to achieve this are:
+critical and non-critical applications. Key features supported to achieve this are:
   * A virtualization layer, which allows the system to accommodate the execution of multiple OSs,
 including rich, Unix-like OSs and Real-Time OSs (RTOS), coexisting on the same HW.
   * Spatial and temporal partitioning of resources: AXI matrix crossbar
@@ -363,7 +359,7 @@ layer
 #### [Safe domain](https://github.com/pulp-platform/safety_island)
 
 The *safe domain* is a simple MCU-like domain that comprises three 32-bit real-time CV32E40P
-(CV32RT) RISC-V cores operating in triple-lockstep mode (TCLS).
+(CV32RT) RISC-V cores operating in triple-core-lockstep mode (TCLS).
 
 These cores, enhanced with the RISC-V CLIC controller and optimized for fast interrupt handling and
 context switch, run RTOSs and safety-critical applications, embodying a core tenet of the platform
@@ -435,7 +431,7 @@ they are referred to as *Complex Cores (CCs)*.
 The vectorial PMCA is composed by **two CCs**, each with the following configurations:
 
 * 2 KiB of latch-based VRF
-* 4 trans-precision FPUs
+* 4 transprecision FPUs
 * 1 integer processing unit (IPU)
 
 Each FPU supports *FP8*, *FP16*, *FP32*, and *FP64* computation, while the IPU supports 8, 16, 32,
