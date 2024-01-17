@@ -317,6 +317,8 @@ $(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
 	$(MAKE) -C $(PULPD_ROOT) pulp-runtime
 $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
 	$(MAKE) -C $(PULPD_ROOT) regression-tests
+	cd $(PULPD_ROOT)/regression-tests
+	git checkout 0bd8077565153178d0449ec23bb25811630634dc
 
 # For independent boot of an island, we allow to compile the binary standalone.
 .PHONY: safed-sw-build
