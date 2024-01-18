@@ -17,7 +17,9 @@ if {$::env(XILINX_BOARD) eq "genesys2"} {
 if {$::env(XILINX_BOARD) eq "vcu128"} {
   set hw_device [get_hw_devices xcvu37p_0]
 }
-
+if {$::env(XILINX_BOARD) eq "vcu118"} {
+  set hw_device [get_hw_devices xcvu9p_0]
+}
 set_property PARAM.FREQUENCY 15000000 [get_hw_targets *]
 
 current_hw_device $hw_device

@@ -9,6 +9,7 @@ xilinx_bit_vanilla := $(CAR_XIL_DIR)/flavor_vanilla/out/carfield_top_xilinx.bit
 
 # This flavor requires pre-compiled Xilinx IPs (which may depend on the board)
 xilinx_ips_names_vanilla_vcu128  := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
+xilinx_ips_names_vanilla_vcu118  := xlnx_mig_ddr4 xlnx_clk_wiz xlnx_vio
 xilinx_ips_names_vanilla := $(xilinx_ips_names_vanilla_${XILINX_BOARD})
 # Path to compiled ips
 xilinx_ips_paths_vanilla = $(foreach ip-name,$(xilinx_ips_names_vanilla),$(xilinx_ip_dir)/$(ip-name)/$(ip-name).srcs/sources_1/ip/$(ip-name)/$(ip-name).xci)

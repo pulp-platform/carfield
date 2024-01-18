@@ -11,7 +11,7 @@
 XILINX_PROJECT ?= carfield
 # XILINX_FLAVOR in {vanilla,bd} see carfield_bd.mk
 XILINX_FLAVOR  ?= bd
-# Board in {vcu128}
+# XILINX_BOARD in {vcu128, vcu118}
 XILINX_BOARD   ?= vcu128
 
 ifeq ($(XILINX_BOARD),vcu128)
@@ -20,6 +20,14 @@ ifeq ($(XILINX_BOARD),vcu128)
 	XILINX_PORT       ?= 3232
 	XILINX_FPGA_PATH  ?= xilinx_tcf/Xilinx/091847100638A
 	XILINX_HOST       ?= bordcomputer
+endif
+
+ifeq ($(XILINX_BOARD),vcu118)
+	xilinx_part       := xcvu9p-flga2104-2L-e
+	xilinx_board_long := xilinx.com:vcu118:part0:2.4
+	XILINX_PORT 	  ?= 3121
+	XILINX_FPGA_PATH  ?= xilinx_tcf/Digilent/210308B0A227
+	XILINX_HOST       ?= 10.150.32.237
 endif
 
 XILINX_USE_ARTIFACTS ?= 0

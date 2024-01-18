@@ -14,7 +14,7 @@ set_param general.maxThreads 8
 
 # Contraints files selection
 switch $::env(XILINX_BOARD) {
-  "genesys2" - "kc705" - "vc707" - "vcu128" - "zcu102" {
+  "genesys2" - "kc705" - "vc707" - "vcu128" - "vcu118" - "zcu102" {
     import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
     import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_PROJECT).xdc
   }

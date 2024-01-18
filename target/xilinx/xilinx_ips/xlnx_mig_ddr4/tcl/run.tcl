@@ -54,7 +54,26 @@ if {$::env(XILINX_BOARD) eq "vcu128"} {
                      ] [get_ips $ipName]
 }
 
-
+if {$::env(XILINX_BOARD) eq "vcu118"} {
+  set_property -dict [list CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c1_062} \
+                           CONFIG.System_Clock {No_Buffer} \
+                           CONFIG.Reference_Clock {No_Buffer} \
+                           CONFIG.C0.DDR4_MemoryPart {MT40A256M16GE-083E} \
+                           CONFIG.C0.DDR4_TimePeriod {833} \
+                           CONFIG.C0.DDR4_InputClockPeriod {4000} \
+                           CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
+                           CONFIG.C0.DDR4_DataWidth {64} \
+                           CONFIG.C0.DDR4_CasWriteLatency {12} \
+                           CONFIG.C0.DDR4_AxiDataWidth {512} \
+                           CONFIG.C0.DDR4_AxiAddressWidth {31} \
+                           CONFIG.C0.DDR4_AxiIDWidth {8} \
+                           CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
+                           CONFIG.System_Clock {No_Buffer} \
+                           CONFIG.Reference_Clock {No_Buffer} \
+                           CONFIG.C0.BANK_GROUP_WIDTH {1} \
+                           CONFIG.C0.DDR4_AxiSelection {true} \
+                      ] [get_ips $ipName]
+}
 generate_target {instantiation_template} [get_files ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
 generate_target all [get_files  ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
 create_ip_run [get_files -of_objects [get_fileset sources_1] ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
