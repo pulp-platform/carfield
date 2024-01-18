@@ -26,6 +26,18 @@ if { $command == "compile_simlib" } {
   export_simulation -simulator questa -directory "./ips" -lib_map_path "$::env(XILINX_SIMLIB_PATH)" \
     -absolute_path -force -of_objects [get_ips *]
 
+# Export simulation scripts for each ip
+} elseif { $command == "export_example" } {
+  open_project $::env(VIVADO_PROJECT)
+  open_example_project -dir "./ips" -force [get_ips xlnx_mig_ddr4]
+
+# Export simulation scripts for each ip
+} elseif { $command == "export_example_simulation" } {
+  open_project $::env(VIVADO_PROJECT)
+  export_simulation -lib_map_path "$::env(XILINX_SIMLIB_PATH)" -directory "." -simulator questa \
+    -ip_user_files_dir "./ips/xlnx_mig_ddr4_ex/xlnx_mig_ddr4_ex.ip_user_files" \
+    -ipstatic_source_dir "./ips/xlnx_mig_ddr4_ex/xlnx_mig_ddr4_ex.ip_user_files/ipstatic" -use_ip_compiled_libs -directory "./ips/xlnx_mig_ddr4_ex/" -absolute_path
+
 # Unknown command
 } else {
   puts "[$argv0] Unknown command: $command"

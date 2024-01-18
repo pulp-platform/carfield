@@ -1,0 +1,61 @@
+217,220c217,244
+<   example_top 
+<     u_example_top
+<     (
+<      .sys_rst           (sys_rst),
+---
+> logic         cpu_reset;
+> logic         cpu_resetn;
+> logic         sys_clk_p;
+> logic         sys_clk_n;
+> logic         testmode_i;
+> logic [1:0]   boot_mode_i;
+> logic         jtag_tck_i;
+> logic         jtag_tms_i;
+> logic         jtag_tdi_i;
+> logic         jtag_tdo_o;
+> logic         jtag_trst_ni;
+> logic         jtag_vdd_o;
+> logic         jtag_gnd_o;
+> logic         uart_tx_o;
+> logic         uart_rx_i;
+> 
+> assign cpu_reset = sys_rst;
+> assign cpu_resetn = ~cpu_reset;
+> assign boot_mode_i = '0;
+> assign testmode_i = '0;
+> assign jtag_tck_i = '0;
+> assign jtag_tms_i = '0;
+> assign jtag_tdi_i = '0;
+> assign jtag_trst_ni = '0;
+> assign uart_rx_i = '0;
+> 
+> assign sys_clk_p = c0_sys_clk_p;
+> assign sys_clk_n = c0_sys_clk_n;
+222,241c248,252
+<      .c0_data_compare_error  (c0_data_compare_error),
+<      .c0_init_calib_complete (c0_init_calib_complete),
+<      .c0_sys_clk_p           (c0_sys_clk_p),
+<      .c0_sys_clk_n           (c0_sys_clk_n),
+< 
+<      .c0_ddr4_act_n          (c0_ddr4_act_n),
+<      .c0_ddr4_adr            (c0_ddr4_adr),
+<      .c0_ddr4_ba             (c0_ddr4_ba),
+<      .c0_ddr4_bg             (c0_ddr4_bg),
+<      .c0_ddr4_cke            (c0_ddr4_cke),
+<      .c0_ddr4_odt            (c0_ddr4_odt),
+<      .c0_ddr4_cs_n           (c0_ddr4_cs_n),
+<      .c0_ddr4_ck_t           (c0_ddr4_ck_t_int),
+<      .c0_ddr4_ck_c           (c0_ddr4_ck_c_int),
+<      .c0_ddr4_reset_n        (c0_ddr4_reset_n),
+<      .c0_ddr4_dm_dbi_n       (c0_ddr4_dm_dbi_n),
+<      .c0_ddr4_dq             (c0_ddr4_dq),
+<      .c0_ddr4_dqs_c          (c0_ddr4_dqs_c),
+<      .c0_ddr4_dqs_t          (c0_ddr4_dqs_t)
+<      );
+---
+>   carfield_top_xilinx 
+>     u_carfield_top_xilinx
+>     (
+>      .*
+>     );

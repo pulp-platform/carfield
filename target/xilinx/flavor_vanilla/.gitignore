@@ -1,5 +1,4 @@
 .Xil
-carfield.*
 scripts/add_sources.tcl*
 scripts/add_includes.tcl
 out/

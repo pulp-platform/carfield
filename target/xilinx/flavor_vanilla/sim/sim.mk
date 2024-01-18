@@ -33,7 +33,12 @@ car-xil-vlog-args := -suppress 2583 -suppress 13314
 # Fetch example projects at IIS (containing SRAM behavioral models)
 $(CAR_XIL_SIM_DIR)/ips/%_ex/questa/compile.do:
 	mkdir -p $(CAR_XIL_SIM_DIR)/ips
-	tar -xvf /usr/scratch2/wuerzburg/cykoenig/export/$*_ex.tar -C $(CAR_XIL_SIM_DIR)/ips
+	# First the example project
+	cd $(CAR_XIL_SIM_DIR) && $(vivado_env_sim) $(VIVADO) -nojournal -mode batch -source setup_simulation.tcl -tclargs "export_example"
+	# Then the example simulation
+	cd $(CAR_XIL_SIM_DIR) && $(vivado_env_sim) VIVADO_PROJECT=$(CAR_XIL_DIR)/flavor_vanilla/sim/ips/xlnx_mig_ddr4_ex/xlnx_mig_ddr4_ex.xpr $(VIVADO) -nojournal -mode batch -source setup_simulation.tcl -tclargs "export_example_simulation"
+	# Replace the DUT with carfield top
+	patch $(CAR_XIL_SIM_DIR)/ips/xlnx_mig_ddr4_ex/imports/sim_tb_top.sv $(CAR_XIL_SIM_DIR)/sim_tb_top.diff
 
 # Generate generic Xilinx simulation libraries
 $(CAR_XIL_SIM_SIMLIB_PATH)/modelsim.ini:
@@ -53,7 +58,7 @@ car-xil-sim: $(CAR_XIL_DIR)/flavor_vanilla/carfield.xpr $(CAR_XIL_SIM_SIMLIB_PAT
 	mkdir -p $(CAR_XIL_SIM_DIR)/questa_lib
 	cp $(CAR_XIL_SIM_SIMLIB_PATH)/modelsim.ini $(CAR_XIL_SIM_DIR)
 	chmod +w $(CAR_XIL_SIM_DIR)/modelsim.ini
-	cd $(CAR_XIL_SIM_DIR) && IPS="$(xilinx_ips_names_vanilla)" questa-2022.3 vsim -work work -do "run_simulation.tcl"
+	cd $(CAR_XIL_SIM_DIR) && BOARD="$(XILINX_BOARD)" IPS="$(xilinx_ips_names_vanilla)" questa-2022.3 vsim -work work -do "run_simulation.tcl"
 
 # Clean
 car-xil-sim-clean:
