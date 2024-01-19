@@ -26,7 +26,7 @@ set_property top carfield_xilinx_ip [current_fileset]
 
 # Attention SFCU is only used because of Carfield's structure
 update_compile_order -fileset sources_1
-synth_design -rtl -name rtl_1 -sfcu
+#synth_design -rtl -name rtl_1 -sfcu
 
 ipx::package_project -root_dir . -vendor ethz.ch -library user -taxonomy /UserIP -set_current false
 
