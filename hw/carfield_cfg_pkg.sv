@@ -252,12 +252,12 @@ typedef struct packed {
 function automatic carfield_domain_idx_t gen_domain_idx(islands_cfg_t island_cfg);
   carfield_domain_idx_t ret = '{default: '0};
   int unsigned i = 0;
-  if (island_cfg.l2_port0.enable ) begin ret.l2      = i; i++; end
-  if (island_cfg.spatz.enable    ) begin ret.spatz   = i; i++; end
-  if (island_cfg.pulp.enable     ) begin ret.pulp    = i; i++; end
-  if (island_cfg.secured.enable  ) begin ret.secured = i; i++; end
-  if (island_cfg.safed.enable    ) begin ret.safed   = i; i++; end
   if (island_cfg.periph.enable   ) begin ret.periph  = i; i++; end
+  if (island_cfg.safed.enable    ) begin ret.safed   = i; i++; end
+  if (island_cfg.secured.enable  ) begin ret.secured = i; i++; end
+  if (island_cfg.pulp.enable     ) begin ret.pulp    = i; i++; end
+  if (island_cfg.spatz.enable    ) begin ret.spatz   = i; i++; end
+  if (island_cfg.l2_port0.enable ) begin ret.l2      = i; i++; end
   return ret;
 endfunction
 
