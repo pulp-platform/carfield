@@ -199,7 +199,7 @@ localparam islands_cfg_t CarfieldIslandsCfg = '{
   l2_port1: '{1, 'h78200000, 'h00200000},
   safed:    '{1, 'h60000000, 'h00800000},
   ethernet: '{1, 'h20000000, 'h00001000},
-  periph:   '{1, 'h20010000, 'h00009000},
+  periph:   '{1, 'h20001000, 'h00009000},
   spatz:    '{1, 'h51000000, 'h00800000},
   pulp:     '{1, 'h50000000, 'h00800000},
   secured:  '{1, '1,         '1        }, // We do not address opentitan, base address and size are not used.
