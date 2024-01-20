@@ -401,27 +401,6 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
 };
 // verilog_lint: waive-stop line-length
 
-// Control which island to add
-typedef struct packed {
-  bit     EnPulpCluster;
-  bit     EnSafetyIsland;
-  bit     EnSpatzCluster;
-  bit     EnOpenTitan;
-  bit     EnCan;
-  bit     EnEthernet;
-} islands_fpga_cfg_t;
-
-// Enable all islands by default
-localparam islands_fpga_cfg_t IslandsCfgDefault = '{
-  EnPulpCluster   : 1,
-  EnSafetyIsland  : 1,
-  EnSpatzCluster  : 1,
-  EnOpenTitan     : 1,
-  EnCan           : 1,
-  EnEthernet      : 0,
-  default         : '1
-};
-
 // CDC FIFO parameters (FIFO depth).
 localparam int unsigned LogDepth   = 3;
 

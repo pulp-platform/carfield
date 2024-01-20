@@ -8,6 +8,7 @@
 package carfield_cfg_pkg;
 
 import cheshire_pkg::*;
+import carfield_configuration::*;
 
 typedef struct packed {
   bit enable;
@@ -199,19 +200,16 @@ function automatic int unsigned gen_carfield_domains(islands_cfg_t island_cfg);
   return ret;
 endfunction
 
-// All fields below are in the form: '{enable, base address, address size}.
-// The Secure Domain can only be a master of the crossbar. For this reason
-// we can only enable it, and provide fake address ranges.
 localparam islands_cfg_t CarfieldIslandsCfg = '{
-  l2_port0: '{1, 'h78000000, 'h00200000},
-  l2_port1: '{1, 'h78200000, 'h00200000},
-  safed:    '{1, 'h60000000, 'h00800000},
-  ethernet: '{1, 'h20000000, 'h00001000},
-  periph:   '{1, 'h20001000, 'h00009000},
-  spatz:    '{1, 'h51000000, 'h00800000},
-  pulp:     '{1, 'h50000000, 'h00800000},
-  secured:  '{1, '0,         '0        },
-  mbox:     '{1, 'h40000000, 'h00001000}
+  l2_port0: '{L2Port0Enable, L2Port0Base, L2Port0Size},
+  l2_port1: '{L2Port1Enable, L2Port1Base, L2Port1Size},
+  safed:    '{SafetyIslandEnable, SafetyIslandBase, SafetyIslandSize},
+  ethernet: '{EthernetEnable, EthernetBase, EthernetSize},
+  periph:   '{PeriphEnable, PeriphBase, PeriphSize},
+  spatz:    '{SpatzClusterEnable, SpatzClusterBase, SpatzClusterSize},
+  pulp:     '{PulpClusterEnable, PulpClusterBase, PulpClusterSize},
+  secured:  '{SecurityIslandEnable, SecurityIslandBase, SecurityIslandSize},
+  mbox:     '{MailboxEnable, MailboxBase, MailboxSize}
 };
 
 // TODO: specify this is for AXI
