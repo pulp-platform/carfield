@@ -1199,8 +1199,12 @@ hyperbus_wrap      #(
 
 // Temporary Mailbox parameters (evaluate if we can move everything here).
 // The best approach would be to move all these parameters to the package.
-localparam int unsigned HostdMboxOffset = (spatz_cluster_pkg::NumCores + spatz_cluster_pkg::NumCores * CheshireNumIntHarts);
-localparam int unsigned SpatzMboxOffset = HostdMboxOffset + 3*CheshireNumIntHarts;
+localparam int unsigned HostdMboxOffset = (spatz_cluster_pkg::NumCores +
+                                           (spatz_cluster_pkg::NumCores *
+                                            CheshireNumIntHarts         )
+                                           );
+localparam int unsigned SpatzMboxOffset = HostdMboxOffset +
+                                          3*CheshireNumIntHarts;
 
 // Reconfigurable L2 Memory
 // Host Clock Domain
@@ -1298,7 +1302,6 @@ end
 
 // Collect interrupts for the safety island: private interrupts from mailboxes, shared interrupts
 // from the interrupt router.
-// verilog_lint: waive-start line-length
 assign safed_intrs = {
   {(SafetyIslandCfg.NumInterrupts-(NumIntIntrs+CarfieldNumExtIntrs+NumMailboxesSafed)){1'b0}}, // Pad remaining interrupts
   // Shared interrupts (cheshire and carfield's peripherals interrupts)
@@ -1581,8 +1584,7 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     .async_data_master_b_wptr_i  ( axi_mst_intcluster_b_wptr  ),
     .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
   );
-  end
-  else begin : gen_no_pulp_cluster
+  end else begin : gen_no_pulp_cluster
     cdc_dst_axi_err #(
       .AxiInIdWidth      ( IntClusterAxiIdInWidth       ),
       .LogDepth          ( LogDepth                     ),
@@ -1594,14 +1596,24 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
       .axi_in_r_chan_t   ( axi_intcluster_slv_r_chan_t  ),
       .axi_in_resp_t     ( axi_intcluster_slv_rsp_t     ),
       .axi_in_req_t      ( axi_intcluster_slv_req_t     ),
-      .AsyncAxiInAwWidth ( (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth,IntClusterAxiIdInWidth,
-                                                           Cfg.AxiUserWidth)),
-      .AsyncAxiInWWidth  ( (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,Cfg.AxiUserWidth) ),
-      .AsyncAxiInBWidth  ( (2**LogDepth)*axi_pkg::b_width(IntClusterAxiIdInWidth,Cfg.AxiUserWidth) ),
-      .AsyncAxiInArWidth ( (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth,IntClusterAxiIdInWidth,
-                                                           Cfg.AxiUserWidth)),
-      .AsyncAxiInRWidth  ( (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth,IntClusterAxiIdInWidth,
-                                                          Cfg.AxiUserWidth))
+      .AsyncAxiInAwWidth ( (2**LogDepth)*
+                           axi_pkg::aw_width(Cfg.AddrWidth,
+                                             IntClusterAxiIdInWidth,
+                                             Cfg.AxiUserWidth)),
+      .AsyncAxiInWWidth  ( (2**LogDepth)*
+                           axi_pkg::w_width(Cfg.AxiDataWidth,
+                                            Cfg.AxiUserWidth) ),
+      .AsyncAxiInBWidth  ( (2**LogDepth)*
+                           axi_pkg::b_width(IntClusterAxiIdInWidth,
+                                            Cfg.AxiUserWidth) ),
+      .AsyncAxiInArWidth ( (2**LogDepth)*
+                           axi_pkg::ar_width(Cfg.AddrWidth,
+                                             IntClusterAxiIdInWidth,
+                                             Cfg.AxiUserWidth)),
+      .AsyncAxiInRWidth  ( (2**LogDepth)*
+                           axi_pkg::r_width(Cfg.AxiDataWidth,
+                                            IntClusterAxiIdInWidth,
+                                            Cfg.AxiUserWidth))
     ) i_pulp_cluster_axi_err (
       .clk_i                   ( pulp_clk                   ),
       .rst_ni                  ( pulp_rst_n                 ),
@@ -1761,7 +1773,7 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
   // For the spatz FP cluster SW interrupt in machine mode (msi), OR together interrupts coming from the
   // host domain and the safe domain
   assign spatzcl_mbox_intr = hostd_spatzcl_mbox_intr_ored | safed_spatzcl_mbox_intr;
-
+  // verilog_lint: waive-stop line-length
 end else begin : gen_no_spatz_cluster
   assign spatzcl_mbox_intr = '0;
   assign spatzcl_timer_intr = '0;
@@ -2176,13 +2188,17 @@ if (carfield_pkg::IslandsCfgDefault.EnEthernet) begin : gen_ethernet
     .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
   ) i_eth_rgmii (
     .clk_i        ( eth_mdio_clk ),
-    .clk_200MHz_i ( '0 ),            // Only used with FPGA mapping for genesysII in IDELAYCTRL cell's
-                                     // ref clk (see IP)
+    /* Clock 200MHz */
+    // Only used with FPGA mapping for genesysII
+    // in IDELAYCTRL cell's ref clk (see IP)
+    .clk_200MHz_i ( '0 ),
     .rst_ni       ( periph_rst_n ),
-    .eth_clk_i    ( '0 ), // quadrature (90deg) clk to `phy_tx_clk_i` -> disabled when `USE_CLK90 ==
-                          // FALSE` in ethernet IP. See `eth_mac_1g_rgmii_fifo`. In carfieldv1,
-                          // USE_CLK90 == 0, hence changing the clock phase is left to PHY chips on
-                          // the PCB.
+    /* Ethernet Clock */
+    // Quadrature (90deg) clk to `phy_tx_clk_i` -> disabled when
+    // `USE_CLK90 == FALSE` in ethernet IP. See `eth_mac_1g_rgmii_fifo`.
+    // In carfieldv1, USE_CLK90 == 0, hence changing the clock phase
+    // is left to PHY chips on the PCB.
+    .eth_clk_i    ( '0 ),
 
     .ethernet     ( axi_ethernet ),
 
