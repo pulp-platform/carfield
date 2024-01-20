@@ -120,14 +120,20 @@ function automatic carfield_master_idx_t carfield_gen_master_idx(islands_cfg_t i
   carfield_master_idx_t ret = '{default: '0}; // Initialize struct first
   int unsigned i = 0;
   int unsigned j = 0;
-  if (island_cfg.safed.enable   ) begin ret.safed    = i; i++; end else begin j++; ret.safed = ret.safed - j;     end
-  if (island_cfg.secured.enable ) begin ret.secured  = i; i++; end else begin j++; ret.secured = ret.secured - j; end
-  if (island_cfg.spatz.enable   ) begin ret.spatz    = i; i++; end else begin j++; ret.spatz = ret.spatz - j;     end
-  if (island_cfg.pulp.enable    ) begin ret.pulp     = i; i++; end else begin j++; ret.pulp = ret.pulp - j;       end
+  if (island_cfg.safed.enable) begin ret.safed = i; i++; end
+  else begin j++; ret.safed = ret.safed - j; end
+  if (island_cfg.secured.enable) begin ret.secured = i; i++;
+  end else begin j++; ret.secured = ret.secured - j; end
+  if (island_cfg.spatz.enable) begin ret.spatz = i; i++; end
+  else begin j++; ret.spatz = ret.spatz - j; end
+  if (island_cfg.pulp.enable) begin ret.pulp = i; i++; end
+  else begin j++; ret.pulp = ret.pulp - j; end
   return ret;
 endfunction
 
+// verilog_lint: waive-start line-length
 function automatic axi_struct_t carfield_gen_axi_map(int unsigned NumSlave, islands_cfg_t island_cfg);
+// verilog_lint: waive-stop line-length
   axi_struct_t ret = '0; // Initialize the map first
   int unsigned i = 0;
   if (island_cfg.l2_port0.enable) begin
@@ -194,6 +200,8 @@ function automatic int unsigned gen_carfield_domains(islands_cfg_t island_cfg);
 endfunction
 
 // All fields below are in the form: '{enable, base address, address size}.
+// The Secure Domain can only be a master of the crossbar. For this reason
+// we can only enable it, and provide fake address ranges.
 localparam islands_cfg_t CarfieldIslandsCfg = '{
   l2_port0: '{1, 'h78000000, 'h00200000},
   l2_port1: '{1, 'h78200000, 'h00200000},
@@ -202,17 +210,19 @@ localparam islands_cfg_t CarfieldIslandsCfg = '{
   periph:   '{1, 'h20001000, 'h00009000},
   spatz:    '{1, 'h51000000, 'h00800000},
   pulp:     '{1, 'h50000000, 'h00800000},
-  secured:  '{1, '1,         '1        }, // We do not address opentitan, base address and size are not used.
+  secured:  '{1, '0,         '0        },
   mbox:     '{1, 'h40000000, 'h00001000}
 };
 
 // TODO: specify this is for AXI
-localparam int unsigned          CarfieldNumSlaves  = gen_num_slave(CarfieldIslandsCfg);
-localparam carfield_slave_idx_t  CarfieldSlvIdx     = carfield_gen_slave_idx(CarfieldIslandsCfg);
-localparam int unsigned          CarfieldNumMasters = gen_num_master(CarfieldIslandsCfg);
-localparam carfield_master_idx_t CarfieldMstIdx     = carfield_gen_master_idx(CarfieldIslandsCfg);
+localparam int unsigned CarfieldNumSlaves  = gen_num_slave(CarfieldIslandsCfg);
+localparam carfield_slave_idx_t CarfieldSlvIdx = carfield_gen_slave_idx(CarfieldIslandsCfg);
+localparam int unsigned CarfieldNumMasters = gen_num_master(CarfieldIslandsCfg);
+localparam carfield_master_idx_t CarfieldMstIdx = carfield_gen_master_idx(CarfieldIslandsCfg);
 
+// verilog_lint: waive-start line-length
 localparam axi_struct_t CarfieldAxiMap = carfield_gen_axi_map(CarfieldNumSlaves, CarfieldIslandsCfg);
+// verilog_lint: waive-stop line-length
 
 localparam int unsigned CarfieldNumDomains = gen_carfield_domains(CarfieldIslandsCfg);
 
@@ -226,7 +236,9 @@ function automatic carfield_clk_div_values_t gen_carfield_clk_div_value(int unsi
   return ret;
 endfunction
 
+// verilog_lint: waive-start line-length
 localparam carfield_clk_div_values_t CarfieldClkDivValue = gen_carfield_clk_div_value(CarfieldNumDomains);
+// verilog_lint: waive-stop line-length
 
 typedef struct packed {
   byte_bt l2;
