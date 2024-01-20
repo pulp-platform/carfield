@@ -2045,7 +2045,7 @@ mailbox_unit #(
 carfield_axi_slv_req_t axi_ethernet_req;
 carfield_axi_slv_rsp_t axi_ethernet_rsp;
 
-if (carfield_pkg::IslandsCfgDefault.EnEthernet) begin : gen_ethernet
+if (CarfieldIslandsCfg.ethernet.enable) begin : gen_ethernet
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
     .SyncStages ( SyncStages                 ),
@@ -2224,54 +2224,6 @@ if (carfield_pkg::IslandsCfgDefault.EnEthernet) begin : gen_ethernet
 
 end else begin : gen_no_ethernet
 
-  axi_cdc_dst #(
-    .LogDepth   ( LogDepth                   ),
-    .SyncStages ( SyncStages                 ),
-    .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
-    .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
-    .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
-    .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
-    .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
-    .axi_req_t  ( carfield_axi_slv_req_t     ),
-    .axi_resp_t ( carfield_axi_slv_rsp_t     )
-  ) i_ethernet_cdc_dst (
-    .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [EthernetSlvIdx] ),
-    .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [EthernetSlvIdx] ),
-    .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [EthernetSlvIdx] ),
-    .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [EthernetSlvIdx] ),
-    .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [EthernetSlvIdx] ),
-    .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [EthernetSlvIdx] ),
-    .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [EthernetSlvIdx] ),
-    .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [EthernetSlvIdx] ),
-    .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [EthernetSlvIdx] ),
-    .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [EthernetSlvIdx] ),
-    .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [EthernetSlvIdx] ),
-    .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [EthernetSlvIdx] ),
-    .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
-    .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
-    .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-    .dst_clk_i                  ( periph_clk       ),
-    .dst_rst_ni                 ( periph_rst_n     ),
-    .dst_req_o                  ( axi_ethernet_req ),
-    .dst_resp_i                 ( axi_ethernet_rsp )
-  );
-
-  axi_err_slv #(
-   .AxiIdWidth  ( AxiSlvIdWidth          ),
-   .axi_req_t   ( carfield_axi_slv_req_t ),
-   .axi_resp_t  ( carfield_axi_slv_rsp_t ),
-   .Resp        ( axi_pkg::RESP_DECERR   ),
-   .ATOPs       ( 1'b0                   ),
-   .MaxTrans    ( 4                      )
-  ) i_axi_err_slv_ethernet (
-    .clk_i      ( periph_clk             ),
-    .rst_ni     ( periph_pwr_on_rst_n    ),
-    .test_i     ( test_mode_i            ),
-    // slave port
-    .slv_req_i  ( axi_ethernet_req       ),
-    .slv_resp_o ( axi_ethernet_rsp       )
-  );
-
   assign car_eth_intr = '0;
   assign eth_md_o     = '0;
   assign eth_md_oe    = '0;
@@ -2280,6 +2232,7 @@ end else begin : gen_no_ethernet
   assign eth_txck_o   = '0;
   assign eth_txctl_o  = '0;
   assign eth_txd_o    = '0;
+
 end
 
 // APB peripherals
@@ -2661,7 +2614,7 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   // CAN bus
   logic [63:0] can_timestamp;
   assign can_timestamp = '1;
-  if (carfield_pkg::IslandsCfgDefault.EnCan) begin : gen_can
+  if (carfield_configuration::CanEnable) begin : gen_can
     can_top_apb #(
       .rx_buffer_size   ( 32                    ),
       .txt_buffer_count ( 2                     ),
