@@ -23,7 +23,6 @@ module carfield
   import spatz_cluster_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
-  parameter islands_cfg_t IslandsCfg = carfield_pkg::IslandsCfgDefault,
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2,
 `ifdef GEN_NO_HYPERBUS // bender-xilinx.mk
@@ -1206,7 +1205,7 @@ localparam int unsigned SpatzMboxOffset = HostdMboxOffset + 3*CheshireNumIntHart
 // Reconfigurable L2 Memory
 // Host Clock Domain
 
-if (CarfieldEnIslands.l2) begin
+if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
   assign reset_vector[CarfieldDomainIdx.l2] = car_regs_reg2hw.l2_rst.q;
 
   `ifndef L2_WRAP_NETLIST
@@ -1262,7 +1261,7 @@ if (CarfieldEnIslands.l2) begin
     .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [L2EccIdx-NumSyncRegSlv] ),
     .ecc_error_o         ( l2_ecc_err                           )
   );
-end else begin
+end else begin: gen_no_l2
   assign l2_ecc_err = '0;
 end
 
@@ -1315,7 +1314,7 @@ assign safed_intrs = {
 };
 // verilog_lint: waive-stop line-length
 
-if (CarfieldEnIslands.safed) begin : gen_safety_island
+if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
   assign reset_vector[CarfieldDomainIdx.safed] = car_regs_reg2hw.safety_island_rst.q;
 
   `ifndef SAFED_NETLIST
@@ -1476,7 +1475,7 @@ assign car_regs_hw2reg.pulp_cluster_eoc.de  = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
 
-if (CarfieldEnIslands.pulp) begin : gen_pulp_cluster
+if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
   assign reset_vector[CarfieldDomainIdx.pulp] = car_regs_reg2hw.pulp_cluster_rst.q;
 
   `ifndef INT_CLUSTER_NETLIST
@@ -1632,7 +1631,7 @@ logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr;
 // mti (machine timer interrupt) : hostd (RISC-V clint)
 // verilog_lint: waive-start line-length
 logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr;
-if (CarfieldEnIslands.spatz) begin : gen_spatz_cluster
+if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
 
   assign reset_vector[CarfieldDomainIdx.spatz] = car_regs_reg2hw.spatz_cluster_rst.q;
 
@@ -1743,9 +1742,10 @@ if (CarfieldEnIslands.spatz) begin : gen_spatz_cluster
   );
 
   for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_spatz_harts
-  assign safed_spatzcl_mbox_intr[i] = snd_mbox_intrs[i];
-  for (genvar j = 0; j < CheshireNumIntHarts; j++ ) begin :  gen_spatzcl_mbox_intrs_host_harts
-    assign hostd_spatzcl_mbox_intr[i][j] = snd_mbox_intrs[spatz_cluster_pkg::NumCores + (spatz_cluster_pkg::NumCores * j) + i];
+    assign safed_spatzcl_mbox_intr[i] = snd_mbox_intrs[i];
+    for (genvar j = 0; j < CheshireNumIntHarts; j++ ) begin :  gen_spatzcl_mbox_intrs_host_harts
+      assign hostd_spatzcl_mbox_intr[i][j] = snd_mbox_intrs[spatz_cluster_pkg::NumCores + (spatz_cluster_pkg::NumCores * j) + i];
+    end
   end
 
   for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_spatzcl_mbox_intrs
@@ -1762,7 +1762,7 @@ if (CarfieldEnIslands.spatz) begin : gen_spatz_cluster
   // host domain and the safe domain
   assign spatzcl_mbox_intr = hostd_spatzcl_mbox_intr_ored | safed_spatzcl_mbox_intr;
 
-end end else begin : gen_no_spatz_cluster
+end else begin : gen_no_spatz_cluster
   assign spatzcl_mbox_intr = '0;
   assign spatzcl_timer_intr = '0;
   assign car_regs_hw2reg.spatz_cluster_busy.d = '0;
@@ -1777,7 +1777,7 @@ end
 
 // Security Island
 logic secd_mbox_intr;
-if (CarfieldEnIslands.secured) begin : gen_secure_subsystem
+if (CarfieldIslandsCfg.secured.enable) begin : gen_secure_subsystem
 
   assign reset_vector[CarfieldDomainIdx.secured] = car_regs_reg2hw.security_island_rst.q;
 
@@ -2033,244 +2033,243 @@ mailbox_unit #(
 carfield_axi_slv_req_t axi_ethernet_req;
 carfield_axi_slv_rsp_t axi_ethernet_rsp;
 
-if (IslandsCfg.EnEthernet) begin : gen_ethernet
-axi_cdc_dst #(
-  .LogDepth   ( LogDepth                   ),
-  .SyncStages ( SyncStages                 ),
-  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
-  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
-  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
-  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
-  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
-  .axi_req_t  ( carfield_axi_slv_req_t     ),
-  .axi_resp_t ( carfield_axi_slv_rsp_t     )
-) i_ethernet_cdc_dst (
-  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [EthernetSlvIdx] ),
-  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [EthernetSlvIdx] ),
-  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [EthernetSlvIdx] ),
-  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [EthernetSlvIdx] ),
-  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [EthernetSlvIdx] ),
-  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [EthernetSlvIdx] ),
-  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [EthernetSlvIdx] ),
-  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [EthernetSlvIdx] ),
-  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [EthernetSlvIdx] ),
-  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [EthernetSlvIdx] ),
-  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [EthernetSlvIdx] ),
-  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [EthernetSlvIdx] ),
-  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
-  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
-  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-  .dst_clk_i                  ( periph_clk       ),
-  .dst_rst_ni                 ( periph_rst_n     ),
-  .dst_req_o                  ( axi_ethernet_req ),
-  .dst_resp_i                 ( axi_ethernet_rsp )
-);
+if (carfield_pkg::IslandsCfgDefault.EnEthernet) begin : gen_ethernet
+  axi_cdc_dst #(
+    .LogDepth   ( LogDepth                   ),
+    .SyncStages ( SyncStages                 ),
+    .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+    .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+    .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+    .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+    .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+    .axi_req_t  ( carfield_axi_slv_req_t     ),
+    .axi_resp_t ( carfield_axi_slv_rsp_t     )
+  ) i_ethernet_cdc_dst (
+    .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [EthernetSlvIdx] ),
+    .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [EthernetSlvIdx] ),
+    .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [EthernetSlvIdx] ),
+    .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [EthernetSlvIdx] ),
+    .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [EthernetSlvIdx] ),
+    .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [EthernetSlvIdx] ),
+    .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [EthernetSlvIdx] ),
+    .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [EthernetSlvIdx] ),
+    .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [EthernetSlvIdx] ),
+    .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [EthernetSlvIdx] ),
+    .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [EthernetSlvIdx] ),
+    .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [EthernetSlvIdx] ),
+    .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
+    .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
+    .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
+    .dst_clk_i                  ( periph_clk       ),
+    .dst_rst_ni                 ( periph_rst_n     ),
+    .dst_req_o                  ( axi_ethernet_req ),
+    .dst_resp_i                 ( axi_ethernet_rsp )
+  );
 
-AXI_BUS #(
-  .AXI_ADDR_WIDTH( Cfg.AddrWidth    ),
-  .AXI_DATA_WIDTH( Cfg.AxiDataWidth ),
-  .AXI_ID_WIDTH  ( AxiSlvIdWidth    ),
-  .AXI_USER_WIDTH( Cfg.AxiUserWidth )
-) axi_ethernet ();
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH( Cfg.AddrWidth    ),
+    .AXI_DATA_WIDTH( Cfg.AxiDataWidth ),
+    .AXI_ID_WIDTH  ( AxiSlvIdWidth    ),
+    .AXI_USER_WIDTH( Cfg.AxiUserWidth )
+  ) axi_ethernet ();
 
-`AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_ethernet_req);
-`AXI_ASSIGN_TO_RESP(axi_ethernet_rsp, axi_ethernet);
+  `AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_ethernet_req);
+  `AXI_ASSIGN_TO_RESP(axi_ethernet_rsp, axi_ethernet);
 
-// The Ethernet RGMII interfaces mandates a clock of 125MHz (in 1GBit mode) for both TX and RX
-// clocks. We generate a 125MHz clock starting from the `periph_clk`. The (integer) division value
-// is SW-programmable.
-localparam int unsigned EthRgmiiPhyClkDivWidth = 20;
-// We assume a peripheral clock of 250MHz to get the 125MHz clock for the RGMII interface. Hence,
-// the default division value after PoR is 250/125.
-localparam int unsigned EthRgmiiPhyClkDivDefaultValue = 2;
-logic [EthRgmiiPhyClkDivWidth-1:0] eth_rgmii_phy_clk_div_value;
-logic                     eth_rgmii_phy_clk_div_value_valid;
-logic                     eth_rgmii_phy_clk_div_value_ready;
-logic                     eth_rgmii_phy_clk0;
+  // The Ethernet RGMII interfaces mandates a clock of 125MHz (in 1GBit mode) for both TX and RX
+  // clocks. We generate a 125MHz clock starting from the `periph_clk`. The (integer) division value
+  // is SW-programmable.
+  localparam int unsigned EthRgmiiPhyClkDivWidth = 20;
+  // We assume a peripheral clock of 250MHz to get the 125MHz clock for the RGMII interface. Hence,
+  // the default division value after PoR is 250/125.
+  localparam int unsigned EthRgmiiPhyClkDivDefaultValue = 2;
+  logic [EthRgmiiPhyClkDivWidth-1:0] eth_rgmii_phy_clk_div_value;
+  logic                     eth_rgmii_phy_clk_div_value_valid;
+  logic                     eth_rgmii_phy_clk_div_value_ready;
+  logic                     eth_rgmii_phy_clk0;
 
-// The register file does not support back pressure directly. I.e the hardware side cannot tell
-// the regfile that a reg value cannot be written at the moment. This is a problem since the clk
-// divider input of the clk_int_div module will stall the transaction until it is safe to change
-// the clock division factor. The stream_deposit module converts between these two protocols
-// (write-pulse only protocol <-> ready-valid protocol). See the documentation in the header of
-// the module for more details.
-lossy_valid_to_stream #(
-  .DATA_WIDTH(EthRgmiiPhyClkDivWidth)
-) i_eth_rgmii_phy_clk_div_config_decouple (
-  .clk_i   ( periph_clk   ),
-  .rst_ni  ( periph_rst_n ),
-  .valid_i ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.qe ),
-  .data_i  ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.q ),
-  .valid_o ( eth_rgmii_phy_clk_div_value_valid ),
-  .ready_i ( eth_rgmii_phy_clk_div_value_ready ),
-  .data_o  ( eth_rgmii_phy_clk_div_value       ),
-  .busy_o  ( )
-);
+  // The register file does not support back pressure directly. I.e the hardware side cannot tell
+  // the regfile that a reg value cannot be written at the moment. This is a problem since the clk
+  // divider input of the clk_int_div module will stall the transaction until it is safe to change
+  // the clock division factor. The stream_deposit module converts between these two protocols
+  // (write-pulse only protocol <-> ready-valid protocol). See the documentation in the header of
+  // the module for more details.
+  lossy_valid_to_stream #(
+    .DATA_WIDTH(EthRgmiiPhyClkDivWidth)
+  ) i_eth_rgmii_phy_clk_div_config_decouple (
+    .clk_i   ( periph_clk   ),
+    .rst_ni  ( periph_rst_n ),
+    .valid_i ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.qe ),
+    .data_i  ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.q ),
+    .valid_o ( eth_rgmii_phy_clk_div_value_valid ),
+    .ready_i ( eth_rgmii_phy_clk_div_value_ready ),
+    .data_o  ( eth_rgmii_phy_clk_div_value       ),
+    .busy_o  ( )
+  );
 
-(* no_ungroup *)
-(* no_boundary_optimization *)
-clk_int_div #(
-  .DIV_VALUE_WIDTH       ( EthRgmiiPhyClkDivWidth ),
-  .DEFAULT_DIV_VALUE     ( EthRgmiiPhyClkDivDefaultValue ),
-  .ENABLE_CLOCK_IN_RESET ( 0   )
-) i_eth_rgmii_phy_clk_int_div (
-    .clk_i          ( periph_clk              ),
-    .rst_ni         ( periph_rst_n            ),
-    .en_i           ( car_regs_reg2hw.eth_rgmii_phy_clk_div_en.q ),
-    .test_mode_en_i ( test_mode_i             ),
-    .div_i          ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.q ),
-    .div_valid_i    ( eth_rgmii_phy_clk_div_value_valid ),
-    .div_ready_o    ( eth_rgmii_phy_clk_div_value_ready ),
-    .clk_o          ( eth_rgmii_phy_clk0 ),
-    .cycl_count_o   (                   )
-);
+  (* no_ungroup *)
+  (* no_boundary_optimization *)
+  clk_int_div #(
+    .DIV_VALUE_WIDTH       ( EthRgmiiPhyClkDivWidth ),
+    .DEFAULT_DIV_VALUE     ( EthRgmiiPhyClkDivDefaultValue ),
+    .ENABLE_CLOCK_IN_RESET ( 0   )
+  ) i_eth_rgmii_phy_clk_int_div (
+      .clk_i          ( periph_clk              ),
+      .rst_ni         ( periph_rst_n            ),
+      .en_i           ( car_regs_reg2hw.eth_rgmii_phy_clk_div_en.q ),
+      .test_mode_en_i ( test_mode_i             ),
+      .div_i          ( car_regs_reg2hw.eth_rgmii_phy_clk_div_value.q ),
+      .div_valid_i    ( eth_rgmii_phy_clk_div_value_valid ),
+      .div_ready_o    ( eth_rgmii_phy_clk_div_value_ready ),
+      .clk_o          ( eth_rgmii_phy_clk0 ),
+      .cycl_count_o   (                   )
+  );
 
 
-// The Ethernet MDIO interfaces mandates a clock of 2.5MHz. We generate a 2.5MHz clock starting from
-// the `periph_clk`. The (integer) division value is SW-programmable.
-localparam int unsigned EthMdioClkDivWidth = 20;
-// We assume a default peripheral clock of 250 MHz to get the 2.5MHz required for the MDIO
-// interface. Hence, the default division value after PoR is 250/2.5
-localparam int unsigned EthMdioClkDivDefaultValue = 100;
-logic [EthRgmiiPhyClkDivWidth-1:0] eth_mdio_clk_div_value;
-logic                     eth_mdio_clk_div_value_valid;
-logic                     eth_mdio_clk_div_value_ready;
-logic                     eth_mdio_clk;
+  // The Ethernet MDIO interfaces mandates a clock of 2.5MHz. We generate a 2.5MHz clock starting from
+  // the `periph_clk`. The (integer) division value is SW-programmable.
+  localparam int unsigned EthMdioClkDivWidth = 20;
+  // We assume a default peripheral clock of 250 MHz to get the 2.5MHz required for the MDIO
+  // interface. Hence, the default division value after PoR is 250/2.5
+  localparam int unsigned EthMdioClkDivDefaultValue = 100;
+  logic [EthRgmiiPhyClkDivWidth-1:0] eth_mdio_clk_div_value;
+  logic                     eth_mdio_clk_div_value_valid;
+  logic                     eth_mdio_clk_div_value_ready;
+  logic                     eth_mdio_clk;
 
-lossy_valid_to_stream #(
-  .DATA_WIDTH(EthMdioClkDivWidth)
-) i_eth_mdio_clk_div_config_decouple (
-  .clk_i   ( periph_clk   ),
-  .rst_ni  ( periph_rst_n ),
-  .valid_i ( car_regs_reg2hw.eth_mdio_clk_div_value.qe ),
-  .data_i  ( car_regs_reg2hw.eth_mdio_clk_div_value.q ),
-  .valid_o ( eth_mdio_clk_div_value_valid ),
-  .ready_i ( eth_mdio_clk_div_value_ready ),
-  .data_o  ( eth_mdio_clk_div_value       ),
-  .busy_o  ( )
-);
+  lossy_valid_to_stream #(
+    .DATA_WIDTH(EthMdioClkDivWidth)
+  ) i_eth_mdio_clk_div_config_decouple (
+    .clk_i   ( periph_clk   ),
+    .rst_ni  ( periph_rst_n ),
+    .valid_i ( car_regs_reg2hw.eth_mdio_clk_div_value.qe ),
+    .data_i  ( car_regs_reg2hw.eth_mdio_clk_div_value.q ),
+    .valid_o ( eth_mdio_clk_div_value_valid ),
+    .ready_i ( eth_mdio_clk_div_value_ready ),
+    .data_o  ( eth_mdio_clk_div_value       ),
+    .busy_o  ( )
+  );
 
-(* no_ungroup *)
-(* no_boundary_optimization *)
-clk_int_div #(
-  .DIV_VALUE_WIDTH       ( EthMdioClkDivWidth ),
-  .DEFAULT_DIV_VALUE     ( EthMdioClkDivDefaultValue ),
-  .ENABLE_CLOCK_IN_RESET ( 0   )
-) i_eth_mdio_clk_int_div (
-    .clk_i          ( periph_clk   ),
-    .rst_ni         ( periph_rst_n ),
-    .en_i           ( car_regs_reg2hw.eth_mdio_clk_div_en.q ),
-    .test_mode_en_i ( test_mode_i ),
-    .div_i          ( car_regs_reg2hw.eth_mdio_clk_div_value.q ),
-    .div_valid_i    ( eth_mdio_clk_div_value_valid ),
-    .div_ready_o    ( eth_mdio_clk_div_value_ready ),
-    .clk_o          ( eth_mdio_clk ),
-    .cycl_count_o   (              )
-);
+  (* no_ungroup *)
+  (* no_boundary_optimization *)
+  clk_int_div #(
+    .DIV_VALUE_WIDTH       ( EthMdioClkDivWidth ),
+    .DEFAULT_DIV_VALUE     ( EthMdioClkDivDefaultValue ),
+    .ENABLE_CLOCK_IN_RESET ( 0   )
+  ) i_eth_mdio_clk_int_div (
+      .clk_i          ( periph_clk   ),
+      .rst_ni         ( periph_rst_n ),
+      .en_i           ( car_regs_reg2hw.eth_mdio_clk_div_en.q ),
+      .test_mode_en_i ( test_mode_i ),
+      .div_i          ( car_regs_reg2hw.eth_mdio_clk_div_value.q ),
+      .div_valid_i    ( eth_mdio_clk_div_value_valid ),
+      .div_ready_o    ( eth_mdio_clk_div_value_ready ),
+      .clk_o          ( eth_mdio_clk ),
+      .cycl_count_o   (              )
+  );
 
-// Ethernet IP
-eth_rgmii #(
-  .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
-  .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
-  .AXI_ID_WIDTH   ( AxiSlvIdWidth    ),
-  .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
-) i_eth_rgmii (
-  .clk_i        ( eth_mdio_clk ),
-  .clk_200MHz_i ( '0 ),            // Only used with FPGA mapping for genesysII in IDELAYCTRL cell's
-                                   // ref clk (see IP)
-  .rst_ni       ( periph_rst_n ),
-  .eth_clk_i    ( '0 ), // quadrature (90deg) clk to `phy_tx_clk_i` -> disabled when `USE_CLK90 ==
-                        // FALSE` in ethernet IP. See `eth_mac_1g_rgmii_fifo`. In carfieldv1,
-                        // USE_CLK90 == 0, hence changing the clock phase is left to PHY chips on
-                        // the PCB.
+  // Ethernet IP
+  eth_rgmii #(
+    .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
+    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+    .AXI_ID_WIDTH   ( AxiSlvIdWidth    ),
+    .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
+  ) i_eth_rgmii (
+    .clk_i        ( eth_mdio_clk ),
+    .clk_200MHz_i ( '0 ),            // Only used with FPGA mapping for genesysII in IDELAYCTRL cell's
+                                     // ref clk (see IP)
+    .rst_ni       ( periph_rst_n ),
+    .eth_clk_i    ( '0 ), // quadrature (90deg) clk to `phy_tx_clk_i` -> disabled when `USE_CLK90 ==
+                          // FALSE` in ethernet IP. See `eth_mac_1g_rgmii_fifo`. In carfieldv1,
+                          // USE_CLK90 == 0, hence changing the clock phase is left to PHY chips on
+                          // the PCB.
 
-  .ethernet     ( axi_ethernet ),
+    .ethernet     ( axi_ethernet ),
 
-  .eth_rxck     ( eth_rxck_i  ),
-  .eth_rxctl    ( eth_rxctl_i ),
-  .eth_rxd      ( eth_rxd_i   ),
+    .eth_rxck     ( eth_rxck_i  ),
+    .eth_rxctl    ( eth_rxctl_i ),
+    .eth_rxd      ( eth_rxd_i   ),
 
-  .eth_txck     ( eth_txck_o  ),
-  .eth_txctl    ( eth_txctl_o ),
-  .eth_txd      ( eth_txd_o   ),
+    .eth_txck     ( eth_txck_o  ),
+    .eth_txctl    ( eth_txctl_o ),
+    .eth_txd      ( eth_txd_o   ),
 
-  .eth_rst_n    ( eth_rst_n_o  ),
-  .phy_tx_clk_i ( eth_rgmii_phy_clk0 ),  // in phase (0deg) clk
+    .eth_rst_n    ( eth_rst_n_o  ),
+    .phy_tx_clk_i ( eth_rgmii_phy_clk0 ),  // in phase (0deg) clk
 
-  // MDIO
-  .eth_mdio_i    ( eth_md_i   ),
-  .eth_mdio_o    ( eth_md_o   ),
-  .eth_mdio_oe_o ( eth_md_oe  ),
-  .eth_mdc_o     ( eth_mdc_o  ),
+    // MDIO
+    .eth_mdio_i    ( eth_md_i   ),
+    .eth_mdio_o    ( eth_md_o   ),
+    .eth_mdio_oe_o ( eth_md_oe  ),
+    .eth_mdc_o     ( eth_mdc_o  ),
 
-  .eth_irq       ( car_eth_intr )
-);
+    .eth_irq       ( car_eth_intr )
+  );
 
 end else begin : gen_no_ethernet
 
-axi_cdc_dst #(
-  .LogDepth   ( LogDepth                   ),
-  .SyncStages ( SyncStages                 ),
-  .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
-  .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
-  .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
-  .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
-  .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
-  .axi_req_t  ( carfield_axi_slv_req_t     ),
-  .axi_resp_t ( carfield_axi_slv_rsp_t     )
-) i_ethernet_cdc_dst (
-  .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [EthernetSlvIdx] ),
-  .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [EthernetSlvIdx] ),
-  .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [EthernetSlvIdx] ),
-  .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [EthernetSlvIdx] ),
-  .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [EthernetSlvIdx] ),
-  .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [EthernetSlvIdx] ),
-  .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [EthernetSlvIdx] ),
-  .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [EthernetSlvIdx] ),
-  .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [EthernetSlvIdx] ),
-  .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [EthernetSlvIdx] ),
-  .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [EthernetSlvIdx] ),
-  .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [EthernetSlvIdx] ),
-  .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
-  .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
-  .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
-  .dst_clk_i                  ( periph_clk       ),
-  .dst_rst_ni                 ( periph_rst_n     ),
-  .dst_req_o                  ( axi_ethernet_req ),
-  .dst_resp_i                 ( axi_ethernet_rsp )
-);
+  axi_cdc_dst #(
+    .LogDepth   ( LogDepth                   ),
+    .SyncStages ( SyncStages                 ),
+    .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
+    .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
+    .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
+    .ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
+    .r_chan_t   ( carfield_axi_slv_r_chan_t  ),
+    .axi_req_t  ( carfield_axi_slv_req_t     ),
+    .axi_resp_t ( carfield_axi_slv_rsp_t     )
+  ) i_ethernet_cdc_dst (
+    .async_data_slave_aw_data_i ( axi_slv_ext_aw_data [EthernetSlvIdx] ),
+    .async_data_slave_aw_wptr_i ( axi_slv_ext_aw_wptr [EthernetSlvIdx] ),
+    .async_data_slave_aw_rptr_o ( axi_slv_ext_aw_rptr [EthernetSlvIdx] ),
+    .async_data_slave_w_data_i  ( axi_slv_ext_w_data  [EthernetSlvIdx] ),
+    .async_data_slave_w_wptr_i  ( axi_slv_ext_w_wptr  [EthernetSlvIdx] ),
+    .async_data_slave_w_rptr_o  ( axi_slv_ext_w_rptr  [EthernetSlvIdx] ),
+    .async_data_slave_b_data_o  ( axi_slv_ext_b_data  [EthernetSlvIdx] ),
+    .async_data_slave_b_wptr_o  ( axi_slv_ext_b_wptr  [EthernetSlvIdx] ),
+    .async_data_slave_b_rptr_i  ( axi_slv_ext_b_rptr  [EthernetSlvIdx] ),
+    .async_data_slave_ar_data_i ( axi_slv_ext_ar_data [EthernetSlvIdx] ),
+    .async_data_slave_ar_wptr_i ( axi_slv_ext_ar_wptr [EthernetSlvIdx] ),
+    .async_data_slave_ar_rptr_o ( axi_slv_ext_ar_rptr [EthernetSlvIdx] ),
+    .async_data_slave_r_data_o  ( axi_slv_ext_r_data  [EthernetSlvIdx] ),
+    .async_data_slave_r_wptr_o  ( axi_slv_ext_r_wptr  [EthernetSlvIdx] ),
+    .async_data_slave_r_rptr_i  ( axi_slv_ext_r_rptr  [EthernetSlvIdx] ),
+    .dst_clk_i                  ( periph_clk       ),
+    .dst_rst_ni                 ( periph_rst_n     ),
+    .dst_req_o                  ( axi_ethernet_req ),
+    .dst_resp_i                 ( axi_ethernet_rsp )
+  );
 
-axi_err_slv #(
- .AxiIdWidth  ( AxiSlvIdWidth          ),
- .axi_req_t   ( carfield_axi_slv_req_t ),
- .axi_resp_t  ( carfield_axi_slv_rsp_t ),
- .Resp        ( axi_pkg::RESP_DECERR   ),
- .ATOPs       ( 1'b0                   ),
- .MaxTrans    ( 4                      )
-) i_axi_err_slv_ethernet (
-  .clk_i      ( periph_clk             ),
-  .rst_ni     ( periph_pwr_on_rst_n    ),
-  .test_i     ( test_mode_i            ),
-  // slave port
-  .slv_req_i  ( axi_ethernet_req       ),
-  .slv_resp_o ( axi_ethernet_rsp       )
-);
+  axi_err_slv #(
+   .AxiIdWidth  ( AxiSlvIdWidth          ),
+   .axi_req_t   ( carfield_axi_slv_req_t ),
+   .axi_resp_t  ( carfield_axi_slv_rsp_t ),
+   .Resp        ( axi_pkg::RESP_DECERR   ),
+   .ATOPs       ( 1'b0                   ),
+   .MaxTrans    ( 4                      )
+  ) i_axi_err_slv_ethernet (
+    .clk_i      ( periph_clk             ),
+    .rst_ni     ( periph_pwr_on_rst_n    ),
+    .test_i     ( test_mode_i            ),
+    // slave port
+    .slv_req_i  ( axi_ethernet_req       ),
+    .slv_resp_o ( axi_ethernet_rsp       )
+  );
 
-assign car_eth_intr = '0;
-assign eth_md_o     = '0;
-assign eth_md_oe    = '0;
-assign eth_mdc_o    = '0;
-assign eth_rst_n_o  = '0;
-assign eth_txck_o   = '0;
-assign eth_txctl_o  = '0;
-assign eth_txd_o    = '0;
-
+  assign car_eth_intr = '0;
+  assign eth_md_o     = '0;
+  assign eth_md_oe    = '0;
+  assign eth_mdc_o    = '0;
+  assign eth_rst_n_o  = '0;
+  assign eth_txck_o   = '0;
+  assign eth_txctl_o  = '0;
+  assign eth_txd_o    = '0;
 end
 
 // APB peripherals
 // Periph Clock Domain
 // axi_cdc -> axi_amos -> axi_cut -> axi_to_axilite -> axilite_to_apb -> periph devices
-if (CarfieldEnIslands.periph) begin: gen_periph // Handle with care...
+if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   assign reset_vector[CarfieldDomainIdx.periph] = car_regs_reg2hw.periph_rst.q;
   carfield_axi_slv_req_t axi_d64_a48_peripherals_req;
   carfield_axi_slv_rsp_t axi_d64_a48_peripherals_rsp;
@@ -2646,7 +2645,7 @@ if (CarfieldEnIslands.periph) begin: gen_periph // Handle with care...
   // CAN bus
   logic [63:0] can_timestamp;
   assign can_timestamp = '1;
-  if (IslandsCfg.EnCan) begin : gen_can
+  if (carfield_pkg::IslandsCfgDefault.EnCan) begin : gen_can
     can_top_apb #(
       .rx_buffer_size   ( 32                    ),
       .txt_buffer_count ( 2                     ),
