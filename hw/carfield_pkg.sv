@@ -409,10 +409,10 @@ typedef struct packed {
   bit     EnOpenTitan;
   bit     EnCan;
   bit     EnEthernet;
-} islands_cfg_t;
+} islands_fpga_cfg_t;
 
 // Enable all islands by default
-localparam islands_cfg_t IslandsCfgDefault = '{
+localparam islands_fpga_cfg_t IslandsCfgDefault = '{
   EnPulpCluster   : 1,
   EnSafetyIsland  : 1,
   EnSpatzCluster  : 1,
@@ -502,7 +502,6 @@ typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
 
 // 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz &
 // pulp_cluster, L2 shared memory
-// localparam int unsigned NumDomains = carfield_cfg_pkg::CarfieldNumDomains;
 localparam int unsigned NumDomains = carfield_cfg_pkg::CarfieldNumDomains;
 
 typedef struct packed {
