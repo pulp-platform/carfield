@@ -80,8 +80,8 @@ endfunction
 // Generate the IDs for each AXI slave device
 function automatic carfield_slave_idx_t carfield_gen_slave_idx(islands_cfg_t island_cfg);
   carfield_slave_idx_t ret = '{default: '1}; // Initialize struct first
-  int unsigned i = 0;
-  int unsigned j = 0;
+  byte_bt i = 0;
+  byte_bt j = 0;
   if (island_cfg.l2_port0.enable) begin ret.l2_port0 = i; i++;
     if (island_cfg.l2_port1.enable) begin ret.l2_port1 = i; i++; end
   end else begin
@@ -119,8 +119,8 @@ endfunction
 // Generate the IDs for each AXI master device
 function automatic carfield_master_idx_t carfield_gen_master_idx(islands_cfg_t island_cfg);
   carfield_master_idx_t ret = '{default: '0}; // Initialize struct first
-  int unsigned i = 0;
-  int unsigned j = 0;
+  byte_bt i = 0;
+  byte_bt j = 0;
   if (island_cfg.safed.enable) begin ret.safed = i; i++;  end
   else begin j++; ret.safed = ret.safed - j; end
   if (island_cfg.secured.enable) begin ret.secured = i; i++; end
