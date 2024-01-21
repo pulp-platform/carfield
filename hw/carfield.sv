@@ -613,13 +613,6 @@ logic [NumDomains-1:0] rsts_n;
 //    every target domain to use different clock frequencies.
 // 3. The internal clock gate of the clock divider is used to provide clock gating for the domain.
 
-// localparam int unsigned DomainClkDivValue[NumDomains] = '{PeriphDomainClkDivValue     ,
-//                                                           SafedDomainClkDivValue      ,
-//                                                           SecdDomainClkDivValue       ,
-//                                                           IntClusterDomainClkDivValue ,
-//                                                           FPClusterDomainClkDivValue  ,
-//                                                           L2DomainClkDivValue         };
-
 for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
   clk_mux_glitch_free #(
     .NUM_INPUTS(3)
@@ -688,8 +681,6 @@ for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
   );
 end
 
-
-
 // Reset generation for power-on reset for host domain. For the other domain we
 // get this from carfield_rstgen
 rstgen i_host_rstgen (
@@ -722,48 +713,18 @@ carfield_rstgen #(
 
 // verilog_lint: waive-start line-length
 assign periph_rst_n   = rsts_n[PeriphDomainIdx];
-assign safety_rst_n   = rsts_n[SafedDomainIdx];
-assign security_rst_n = rsts_n[SecdDomainIdx];
-assign pulp_rst_n     = rsts_n[IntClusterDomainIdx];
-assign l2_rst_n       = rsts_n[L2DomainIdx];
 
 assign periph_pwr_on_rst_n   = pwr_on_rsts_n[PeriphDomainIdx];
-assign safety_pwr_on_rst_n   = pwr_on_rsts_n[SafedDomainIdx];
-assign security_pwr_on_rst_n = pwr_on_rsts_n[SecdDomainIdx];
-assign pulp_pwr_on_rst_n     = pwr_on_rsts_n[IntClusterDomainIdx];
-assign l2_pwr_on_rst_n       = pwr_on_rsts_n[L2DomainIdx];
 
 assign periph_clk   = domain_clk_gated[PeriphDomainIdx];
-assign safety_clk   = domain_clk_gated[SafedDomainIdx];
-assign security_clk = domain_clk_gated[SecdDomainIdx];
-assign pulp_clk     = domain_clk_gated[IntClusterDomainIdx];
-assign l2_clk       = domain_clk_gated[L2DomainIdx];
 
-assign domain_clk_sel[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_sel.q;
-assign domain_clk_sel[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_sel.q;
-assign domain_clk_sel[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_sel.q;
-assign domain_clk_sel[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_sel.q;
-assign domain_clk_sel[L2DomainIdx]         = car_regs_reg2hw.l2_clk_sel.q;
+assign domain_clk_sel[PeriphDomainIdx] = car_regs_reg2hw.periph_clk_sel.q;
 
-assign domain_clk_div_value[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_div_value.q;
-assign domain_clk_div_value[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_div_value.q;
-assign domain_clk_div_value[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_div_value.q;
-assign domain_clk_div_value[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_div_value.q;
-assign domain_clk_div_value[L2DomainIdx]         = car_regs_reg2hw.l2_clk_div_value.q;
+assign domain_clk_div_value[PeriphDomainIdx] = car_regs_reg2hw.periph_clk_div_value.q;
 
-assign domain_clk_div_changed[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_div_value.qe;
-assign domain_clk_div_changed[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_div_value.qe;
-assign domain_clk_div_changed[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_div_value.qe;
-assign domain_clk_div_changed[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_div_value.qe;
-assign domain_clk_div_changed[L2DomainIdx]         = car_regs_reg2hw.l2_clk_div_value.qe;
+assign domain_clk_div_changed[PeriphDomainIdx] = car_regs_reg2hw.periph_clk_div_value.qe;
 
-assign domain_clk_en[PeriphDomainIdx]     = car_regs_reg2hw.periph_clk_en.q;
-assign domain_clk_en[SafedDomainIdx]      = car_regs_reg2hw.safety_island_clk_en.q;
-// secure boot mode forces security island to come up concurrently with host domain. Furthermore, it
-// cannot be disabled by design
-assign domain_clk_en[SecdDomainIdx]       = car_regs_reg2hw.security_island_clk_en.q | secure_boot_i;
-assign domain_clk_en[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_en.q;
-assign domain_clk_en[L2DomainIdx]         = car_regs_reg2hw.l2_clk_en.q;
+assign domain_clk_en[PeriphDomainIdx] = car_regs_reg2hw.periph_clk_en.q;
 
 // Assign debug signals
 assign debug_signals_o.domain_clk    = domain_clk_gated;
@@ -802,70 +763,6 @@ carfield_reg_top #(
   .hw2reg (car_regs_hw2reg),
   .devmode_i (1'b1)
 );
-
-// Isolate and Isolate status
-
-// For islands that connect to Cheshire with a master and a slave AXI port (Safety Island, Integer
-// Cluster, FP cluster), we consider the island isolated when the isolation status signals for both
-// ports are asserted.
-
-// For islands that connect to Cheshire with a slave port only (L2 port0, L2 port1, Ethernet,
-// Carfield peripherals, Hyperbus), we consider the island isolated when the unique isolation status
-// signal is asserted.
-
-// For islands that connect to Cheshire with a master port only (Security Island), we consider the
-// island isolated when the unique isolation status signal is asserted.
-
-assign slave_isolate_req[SafetyIslandSlvIdx]   = car_regs_reg2hw.safety_island_isolate.q;
-assign slave_isolate_req[IntClusterSlvIdx]     = car_regs_reg2hw.pulp_cluster_isolate.q;
-// We isolate both L2 AXI ports with a single write to the isolate register in `carfield_reg_top`
-assign slave_isolate_req[L2Port0SlvIdx]        = car_regs_reg2hw.l2_isolate.q;
-assign slave_isolate_req[L2Port1SlvIdx]        = car_regs_reg2hw.l2_isolate.q;
-// Ethernet isolation follows writes to the peripheral isolate registers in `carfield_reg_top`
-assign slave_isolate_req[EthernetSlvIdx]       = car_regs_reg2hw.periph_isolate.q;
-// Hyperbus isolation follows writes to the peripheral isolate registers in `carfield_reg_top`
-assign hyper_isolate_req                       = car_regs_reg2hw.periph_isolate.q;
-assign slave_isolate_req[PeriphsSlvIdx]        = car_regs_reg2hw.periph_isolate.q;
-assign security_island_isolate_req             = car_regs_reg2hw.security_island_isolate.q
-                                                 && !secure_boot_i;
-
-always_comb begin : gen_assign_isolated_responses
-  slave_isolated = '0;
-  for (int i = 0; i < Cfg.AxiExtNumSlv; i++) begin
-    if (i == SafetyIslandSlvIdx)
-      slave_isolated[i] = slave_isolated_rsp[i] & master_isolated_rsp[SafetyIslandMstIdx];
-    else if (i == IntClusterSlvIdx)
-      slave_isolated[i] = slave_isolated_rsp[i] & master_isolated_rsp[IntClusterMstIdx];
-    else if (i == FPClusterSlvIdx)
-      slave_isolated[i] = slave_isolated_rsp[i] & master_isolated_rsp[FPClusterMstIdx];
-    else
-      slave_isolated[i] = slave_isolated_rsp[i];
-  end
-end
-
-// Safety Island, Integer cluster, FP cluster: master and slave AXI ports
-assign car_regs_hw2reg.safety_island_isolate_status.d = slave_isolated[SafetyIslandSlvIdx];
-assign car_regs_hw2reg.safety_island_isolate_status.de = 1'b1;
-
-assign car_regs_hw2reg.pulp_cluster_isolate_status.d = slave_isolated[IntClusterSlvIdx];
-assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
-
-// L2 port0, L2 port1, Carfield peripherals
-// L2 requires both ports to be isolated before asserting the isolated status
-assign car_regs_hw2reg.l2_isolate_status.d = slave_isolated[L2Port0SlvIdx] &
-                                             slave_isolated[L2Port1SlvIdx];
-assign car_regs_hw2reg.l2_isolate_status.de = 1'b1;
-
-// Peripheral isolate status is asserted when peripherals or the hyperbus or ethernet assert their
-// isolated status
-assign car_regs_hw2reg.periph_isolate_status.d = slave_isolated[PeriphsSlvIdx] |
-                                                 hyper_isolated_rsp |
-                                                 slave_isolated[EthernetSlvIdx];
-assign car_regs_hw2reg.periph_isolate_status.de = 1'b1;
-
-// security island only has a master port
-assign car_regs_hw2reg.security_island_isolate_status.d = master_isolated_rsp[SecurityIslandMstIdx];
-assign car_regs_hw2reg.security_island_isolate_status.de = 1'b1;
 
 // hyperbus reg req/rsp
 carfield_a32_d32_reg_req_t reg_hyper_req;
@@ -1123,6 +1020,8 @@ cheshire i_cheshire_wrap                 (
   .vga_blue_o  (                 )
 );
 
+assign hyper_isolate_req = car_regs_reg2hw.periph_isolate.q;
+
 `ifndef GEN_NO_HYPERBUS // bender-xilinx.mk
 // Hyperbus
 hyperbus_wrap      #(
@@ -1203,14 +1102,36 @@ localparam int unsigned HostdMboxOffset = (spatz_cluster_pkg::NumCores +
                                            (spatz_cluster_pkg::NumCores *
                                             CheshireNumIntHarts         )
                                            );
+
 localparam int unsigned SpatzMboxOffset = HostdMboxOffset +
                                           3*CheshireNumIntHarts;
+
+localparam int unsigned PulpclMboxOffset = SpatzMboxOffset +
+                                           CheshireNumIntHarts + 1;
+
+localparam int unsigned SecdMboxOffset = PulpclMboxOffset +
+                                         CheshireNumIntHarts + 1;
+
+localparam int unsigned SafedMboxOffset = SecdMboxOffset +
+                                          CheshireNumIntHarts + 1;
 
 // Reconfigurable L2 Memory
 // Host Clock Domain
 
 if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
+  assign l2_rst_n = rsts_n[L2DomainIdx];
+  assign l2_pwr_on_rst_n = pwr_on_rsts_n[L2DomainIdx];
+  assign l2_clk = domain_clk_gated[L2DomainIdx];
+  assign domain_clk_sel[L2DomainIdx] = car_regs_reg2hw.l2_clk_sel.q;
+  assign domain_clk_div_value[L2DomainIdx] = car_regs_reg2hw.l2_clk_div_value.q;
+  assign domain_clk_div_changed[L2DomainIdx] = car_regs_reg2hw.l2_clk_div_value.qe;
+  assign domain_clk_en[L2DomainIdx] = car_regs_reg2hw.l2_clk_en.q;
   assign reset_vector[CarfieldDomainIdx.l2] = car_regs_reg2hw.l2_rst.q;
+  assign slave_isolate_req[L2Port0SlvIdx] = car_regs_reg2hw.l2_isolate.q;
+  assign slave_isolate_req[L2Port1SlvIdx] = car_regs_reg2hw.l2_isolate.q;
+  assign car_regs_hw2reg.l2_isolate_status.d = slave_isolated[L2Port0SlvIdx] &
+                                               slave_isolated[L2Port1SlvIdx];
+  assign car_regs_hw2reg.l2_isolate_status.de = 1'b1;
 
   `ifndef L2_WRAP_NETLIST
   l2_wrap #(
@@ -1266,6 +1187,11 @@ if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
     .ecc_error_o         ( l2_ecc_err                           )
   );
 end else begin: gen_no_l2
+  assign l2_rst_n = '0;
+  assign l2_pwr_on_rst_n = '0;
+  assign l2_clk = '0;
+  assign car_regs_hw2reg.l2_isolate_status.d = '0;
+  assign car_regs_hw2reg.l2_isolate_status.de = '0;
   assign l2_ecc_err = '0;
 end
 
@@ -1319,6 +1245,29 @@ assign safed_intrs = {
 
 if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
   assign reset_vector[CarfieldDomainIdx.safed] = car_regs_reg2hw.safety_island_rst.q;
+  assign safety_rst_n = rsts_n[SafedDomainIdx];
+  assign safety_pwr_on_rst_n = pwr_on_rsts_n[SafedDomainIdx];
+  assign safety_clk = domain_clk_gated[SafedDomainIdx];
+  assign domain_clk_sel[SafedDomainIdx] = car_regs_reg2hw.safety_island_clk_sel.q;
+  assign domain_clk_div_value[SafedDomainIdx] = car_regs_reg2hw.safety_island_clk_div_value.q;
+  assign domain_clk_div_changed[SafedDomainIdx] = car_regs_reg2hw.safety_island_clk_div_value.qe;
+  assign domain_clk_en[SafedDomainIdx] = car_regs_reg2hw.safety_island_clk_en.q;
+
+  assign slave_isolate_req[SafetyIslandSlvIdx]   = car_regs_reg2hw.safety_island_isolate.q;
+  assign car_regs_hw2reg.safety_island_isolate_status.d = slave_isolated[SafetyIslandSlvIdx];
+  assign car_regs_hw2reg.safety_island_isolate_status.de = 1'b1;
+  assign slave_isolated[SafetyIslandSlvIdx] = slave_isolated_rsp[SafetyIslandSlvIdx] &
+                                              master_isolated_rsp[SafetyIslandMstIdx];
+
+  for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_hostd_mbox_intrs
+    assign hostd_safed_mbox_intr [i] = snd_mbox_intrs[HostdMboxOffset + 2*CheshireNumIntHarts + i];
+  end
+
+  for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_safed_mbox_intr
+    assign safed_hostd_mbox_intr [i] = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 1];
+  end
+  assign safed_secd_mbox_intr = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 0];
+
 
   `ifndef SAFED_NETLIST
     safety_island_synth_wrapper #(
@@ -1432,43 +1381,19 @@ if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
     );
   end
 else begin : gen_no_safety_island
-  assign jtag_safety_island_tdo_o = jtag_safety_island_tdi_i;
-  cdc_dst_axi_err #(
-    .AxiInIdWidth      ( AxiSlvIdWidth              ),
-    .LogDepth          ( LogDepth                   ),
-    .CdcSyncStages     ( SyncStages                 ),
-    .axi_in_aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
-    .axi_in_w_chan_t   ( carfield_axi_slv_w_chan_t  ),
-    .axi_in_b_chan_t   ( carfield_axi_slv_b_chan_t  ),
-    .axi_in_ar_chan_t  ( carfield_axi_slv_ar_chan_t ),
-    .axi_in_r_chan_t   ( carfield_axi_slv_r_chan_t  ),
-    .axi_in_resp_t     ( carfield_axi_slv_rsp_t     ),
-    .axi_in_req_t      ( carfield_axi_slv_req_t     ),
-    .AsyncAxiInAwWidth ( CarfieldAxiSlvAwWidth      ),
-    .AsyncAxiInWWidth  ( CarfieldAxiSlvWWidth       ),
-    .AsyncAxiInBWidth  ( CarfieldAxiSlvBWidth       ),
-    .AsyncAxiInArWidth ( CarfieldAxiSlvArWidth      ),
-    .AsyncAxiInRWidth  ( CarfieldAxiSlvRWidth       )
-  ) i_safety_island_axi_err (
-    .clk_i                   ( safety_clk                               ),
-    .rst_ni                  ( safety_rst_n                             ),
-    .pwr_on_rst_ni           ( safety_pwr_on_rst_n                      ),
-    .async_axi_in_aw_data_i  ( axi_slv_ext_aw_data [SafetyIslandSlvIdx] ),
-    .async_axi_in_aw_wptr_i  ( axi_slv_ext_aw_wptr [SafetyIslandSlvIdx] ),
-    .async_axi_in_aw_rptr_o  ( axi_slv_ext_aw_rptr [SafetyIslandSlvIdx] ),
-    .async_axi_in_ar_data_i  ( axi_slv_ext_ar_data [SafetyIslandSlvIdx] ),
-    .async_axi_in_ar_wptr_i  ( axi_slv_ext_ar_wptr [SafetyIslandSlvIdx] ),
-    .async_axi_in_ar_rptr_o  ( axi_slv_ext_ar_rptr [SafetyIslandSlvIdx] ),
-    .async_axi_in_w_data_i   ( axi_slv_ext_w_data  [SafetyIslandSlvIdx] ),
-    .async_axi_in_w_wptr_i   ( axi_slv_ext_w_wptr  [SafetyIslandSlvIdx] ),
-    .async_axi_in_w_rptr_o   ( axi_slv_ext_w_rptr  [SafetyIslandSlvIdx] ),
-    .async_axi_in_r_data_o   ( axi_slv_ext_r_data  [SafetyIslandSlvIdx] ),
-    .async_axi_in_r_wptr_o   ( axi_slv_ext_r_wptr  [SafetyIslandSlvIdx] ),
-    .async_axi_in_r_rptr_i   ( axi_slv_ext_r_rptr  [SafetyIslandSlvIdx] ),
-    .async_axi_in_b_data_o   ( axi_slv_ext_b_data  [SafetyIslandSlvIdx] ),
-    .async_axi_in_b_wptr_o   ( axi_slv_ext_b_wptr  [SafetyIslandSlvIdx] ),
-    .async_axi_in_b_rptr_i   ( axi_slv_ext_b_rptr  [SafetyIslandSlvIdx] )
-  );
+  assign safety_rst_n = '0;
+  assign safety_pwr_on_rst_n = '0;
+  assign safety_clk = '0;
+
+  assign car_regs_hw2reg.safety_island_isolate_status.d = '0;
+  assign car_regs_hw2reg.safety_island_isolate_status.de = '0;
+
+  assign hostd_safed_mbox_intr = '0;
+  assign safed_hostd_mbox_intr = '0;
+  assign safed_secd_mbox_intr = '0;
+
+  assign safed_dbg_reqs = '0;
+  assign jtag_safety_island_tdo_o = '0;
 end
 
 // PULP integer cluster
@@ -1481,7 +1406,20 @@ assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
 if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
   assign reset_vector[CarfieldDomainIdx.pulp] = car_regs_reg2hw.pulp_cluster_rst.q;
 
-  `ifndef INT_CLUSTER_NETLIST
+  assign domain_clk_sel[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_sel.q;
+  assign domain_clk_div_value[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_div_value.q;
+  assign domain_clk_div_changed[IntClusterDomainIdx] =
+         car_regs_reg2hw.pulp_cluster_clk_div_value.qe;
+  assign domain_clk_en[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_en.q;
+
+  assign slave_isolate_req[IntClusterSlvIdx] = car_regs_reg2hw.pulp_cluster_isolate.q;
+  assign car_regs_hw2reg.pulp_cluster_isolate_status.d = slave_isolated[IntClusterSlvIdx];
+  assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
+
+  assign slave_isolated[IntClusterSlvIdx] = slave_isolated_rsp[IntClusterSlvIdx] &
+                                            master_isolated_rsp[IntClusterMstIdx];
+
+`ifndef INT_CLUSTER_NETLIST
   pulp_cluster #(
     .NB_CORES                       ( IntClusterNumCores        ),
     .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts    ),
@@ -1522,10 +1460,10 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     .LOG_DEPTH                      ( LogDepth                  ),
     .BaseAddr                       ( IntClusterBase            ),
     .CdcSynchStages                 ( SyncStages                )
-  ) i_integer_cluster            (
-  `else
-  int_cluster i_integer_cluster            (
-  `endif
+  ) i_integer_cluster               (
+`else
+  int_cluster i_integer_cluster     (
+`endif
     .clk_i                       ( pulp_clk                                  ),
     .rst_ni                      ( pulp_rst_n                                ),
     .pwr_on_rst_ni               ( pulp_pwr_on_rst_n                         ),
@@ -1584,56 +1522,57 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     .async_data_master_b_wptr_i  ( axi_mst_intcluster_b_wptr  ),
     .async_data_master_b_rptr_o  ( axi_mst_intcluster_b_rptr  )
   );
-  end else begin : gen_no_pulp_cluster
-    cdc_dst_axi_err #(
-      .AxiInIdWidth      ( IntClusterAxiIdInWidth       ),
-      .LogDepth          ( LogDepth                     ),
-      .CdcSyncStages     ( SyncStages                   ),
-      .axi_in_aw_chan_t  ( axi_intcluster_slv_aw_chan_t ),
-      .axi_in_w_chan_t   ( axi_intcluster_slv_w_chan_t  ),
-      .axi_in_b_chan_t   ( axi_intcluster_slv_b_chan_t  ),
-      .axi_in_ar_chan_t  ( axi_intcluster_slv_ar_chan_t ),
-      .axi_in_r_chan_t   ( axi_intcluster_slv_r_chan_t  ),
-      .axi_in_resp_t     ( axi_intcluster_slv_rsp_t     ),
-      .axi_in_req_t      ( axi_intcluster_slv_req_t     ),
-      .AsyncAxiInAwWidth ( (2**LogDepth)*
-                           axi_pkg::aw_width(Cfg.AddrWidth,
-                                             IntClusterAxiIdInWidth,
-                                             Cfg.AxiUserWidth)),
-      .AsyncAxiInWWidth  ( (2**LogDepth)*
-                           axi_pkg::w_width(Cfg.AxiDataWidth,
-                                            Cfg.AxiUserWidth) ),
-      .AsyncAxiInBWidth  ( (2**LogDepth)*
-                           axi_pkg::b_width(IntClusterAxiIdInWidth,
-                                            Cfg.AxiUserWidth) ),
-      .AsyncAxiInArWidth ( (2**LogDepth)*
-                           axi_pkg::ar_width(Cfg.AddrWidth,
-                                             IntClusterAxiIdInWidth,
-                                             Cfg.AxiUserWidth)),
-      .AsyncAxiInRWidth  ( (2**LogDepth)*
-                           axi_pkg::r_width(Cfg.AxiDataWidth,
-                                            IntClusterAxiIdInWidth,
-                                            Cfg.AxiUserWidth))
-    ) i_pulp_cluster_axi_err (
-      .clk_i                   ( pulp_clk                   ),
-      .rst_ni                  ( pulp_rst_n                 ),
-      .pwr_on_rst_ni           ( pulp_pwr_on_rst_n          ),
-      .async_axi_in_aw_data_i  ( axi_slv_intcluster_aw_data ),
-      .async_axi_in_aw_wptr_i  ( axi_slv_intcluster_aw_wptr ),
-      .async_axi_in_aw_rptr_o  ( axi_slv_intcluster_aw_rptr ),
-      .async_axi_in_ar_data_i  ( axi_slv_intcluster_ar_data ),
-      .async_axi_in_ar_wptr_i  ( axi_slv_intcluster_ar_wptr ),
-      .async_axi_in_ar_rptr_o  ( axi_slv_intcluster_ar_rptr ),
-      .async_axi_in_w_data_i   ( axi_slv_intcluster_w_data  ),
-      .async_axi_in_w_wptr_i   ( axi_slv_intcluster_w_wptr  ),
-      .async_axi_in_w_rptr_o   ( axi_slv_intcluster_w_rptr  ),
-      .async_axi_in_r_data_o   ( axi_slv_intcluster_r_data  ),
-      .async_axi_in_r_wptr_o   ( axi_slv_intcluster_r_wptr  ),
-      .async_axi_in_r_rptr_i   ( axi_slv_intcluster_r_rptr  ),
-      .async_axi_in_b_data_o   ( axi_slv_intcluster_b_data  ),
-      .async_axi_in_b_wptr_o   ( axi_slv_intcluster_b_wptr  ),
-      .async_axi_in_b_rptr_i   ( axi_slv_intcluster_b_rptr  )
-    );
+
+  for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_pulpcl_mbox_intrs
+    assign pulpcl_hostd_mbox_intr [i] = snd_mbox_intrs[PulpclMboxOffset + i];
+  end
+  assign pulpcl_safed_mbox_intr = snd_mbox_intrs[PulpclMboxOffset + CheshireNumIntHarts];
+
+  for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_hostd_pulpcl_mbox_intrs
+    assign hostd_pulpcl_mbox_intr [i] = snd_mbox_intrs[HostdMboxOffset + 0*CheshireNumIntHarts + i];
+  end
+
+  // Integer cluster
+  logic hostd_pulpcl_mbox_intr_ored;
+  assign hostd_pulpcl_mbox_intr_ored  = |hostd_pulpcl_mbox_intr ;
+  assign pulpcl_mbox_intr = hostd_pulpcl_mbox_intr_ored | safed_pulpcl_mbox_intr;
+
+  assign safed_pulpcl_mbox_intr = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 1];
+end else begin : gen_no_pulp_cluster
+  assign pulp_rst_n = '0;
+  assign pulp_pwr_on_rst_n = '0;
+  assign pulp_clk = '0;
+  assign pulpcl_safed_mbox_intr = '0;
+  assign pulpcl_hostd_mbox_intr = '0;
+
+  assign hostd_pulpcl_mbox_intr = '0;
+  assign hostd_pulpcl_mbox_intr_ored = '0;
+  assign pulpcl_mbox_intr = '0;
+
+  assign safed_pulpcl_mbox_intr = '0;
+
+  assign pulpcl_eoc = '0;
+  assign car_regs_hw2reg.pulp_cluster_busy.d = '0;
+
+  assign car_regs_hw2reg.pulp_cluster_isolate_status.d = '0;
+  assign car_regs_hw2reg.pulp_cluster_isolate_status.de = '0;
+
+  assign axi_slv_intcluster_aw_rptr = '0;
+  assign axi_slv_intcluster_ar_rptr = '0;
+  assign axi_slv_intcluster_w_rptr  = '0;
+  assign axi_slv_intcluster_r_data  = '0;
+  assign axi_slv_intcluster_r_wptr  = '0;
+  assign axi_slv_intcluster_b_data  = '0;
+  assign axi_slv_intcluster_b_wptr  = '0;
+
+  assign axi_mst_intcluster_aw_data = '0;
+  assign axi_mst_intcluster_aw_wptr = '0;
+  assign axi_mst_intcluster_ar_data = '0;
+  assign axi_mst_intcluster_ar_wptr = '0;
+  assign axi_mst_intcluster_w_data  = '0;
+  assign axi_mst_intcluster_w_wptr  = '0;
+  assign axi_mst_intcluster_r_rptr  = '0;
+  assign axi_mst_intcluster_b_rptr  = '0;
 end
 
 // Floating Point Spatz Cluster
@@ -1660,6 +1599,9 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
   assign slave_isolate_req[FPClusterSlvIdx] = car_regs_reg2hw.spatz_cluster_isolate.q;
   assign car_regs_hw2reg.spatz_cluster_isolate_status.d = slave_isolated[FPClusterSlvIdx];
   assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
+
+  assign slave_isolated[FPClusterSlvIdx] = slave_isolated_rsp[FPClusterSlvIdx] &
+                                           master_isolated_rsp[FPClusterMstIdx];
 
 `ifndef FP_CLUSTER_NETLIST
   spatz_cluster_wrapper #(
@@ -1789,9 +1731,41 @@ end
 
 // Security Island
 logic secd_mbox_intr;
+// Logic `or` on interrupts coming from different harts of the host domain
+logic hostd_secd_mbox_intr_ored;
 if (CarfieldIslandsCfg.secured.enable) begin : gen_secure_subsystem
 
   assign reset_vector[CarfieldDomainIdx.secured] = car_regs_reg2hw.security_island_rst.q;
+
+  for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_hostd_mbox_intrs
+    // hostd sender
+    assign hostd_secd_mbox_intr [i] = snd_mbox_intrs[HostdMboxOffset + 1*CheshireNumIntHarts + i];
+  end
+
+  for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_secd_mbox_intrs
+    assign secd_hostd_mbox_intr   [i] = snd_mbox_intrs[SecdMboxOffset + i];
+  end
+  assign secd_safed_mbox_intr    = snd_mbox_intrs[SecdMboxOffset + CheshireNumIntHarts];
+
+  // Security island
+  assign hostd_secd_mbox_intr_ored    = |hostd_secd_mbox_intr   ;
+
+  // For the security island. OR together interrupts coming from the host domain and the safe domain
+  assign secd_mbox_intr = hostd_secd_mbox_intr_ored | safed_secd_mbox_intr;
+
+  assign security_rst_n = rsts_n[SecdDomainIdx];
+  assign security_pwr_on_rst_n = pwr_on_rsts_n[SecdDomainIdx];
+  assign security_clk = domain_clk_gated[SecdDomainIdx];
+  assign domain_clk_sel[SecdDomainIdx] = car_regs_reg2hw.security_island_clk_sel.q;
+  assign domain_clk_div_value[SecdDomainIdx] = car_regs_reg2hw.security_island_clk_div_value.q;
+  assign domain_clk_div_changed[SecdDomainIdx] = car_regs_reg2hw.security_island_clk_div_value.qe;
+  assign domain_clk_en[SecdDomainIdx] = car_regs_reg2hw.security_island_clk_en.q |
+                                        secure_boot_i;
+  assign security_island_isolate_req  = car_regs_reg2hw.security_island_isolate.q &&
+                                        !secure_boot_i;
+  assign car_regs_hw2reg.security_island_isolate_status.d =
+         master_isolated_rsp[SecurityIslandMstIdx];
+  assign car_regs_hw2reg.security_island_isolate_status.de = 1'b1;
 
   `ifndef SECD_NETLIST
   secure_subsystem_synth_wrap #(
@@ -1875,7 +1849,20 @@ if (CarfieldIslandsCfg.secured.enable) begin : gen_secure_subsystem
     .spi_host_SD_en_o ( spih_ot_sd_en_o  )
   );
 end else begin : gen_no_secure_subsystem
-  assign jtag_ot_tdo_o = jtag_ot_tdi_i;
+  assign hostd_secd_mbox_intr = '0;
+  assign secd_hostd_mbox_intr = '0;
+  assign secd_safed_mbox_intr = '0;
+  assign hostd_secd_mbox_intr_ored = '0;
+  assign secd_mbox_intr = '0;
+
+  assign security_rst_n = '0;
+  assign security_pwr_on_rst_n = '0;
+  assign security_clk = '0;
+  assign security_island_isolate_req = '0;
+  assign car_regs_hw2reg.security_island_isolate_status.d = '0;
+  assign car_regs_hw2reg.security_island_isolate_status.de = '0;
+
+  assign jtag_ot_tdo_o = '0;
 end
 
 // Mailbox unit
@@ -1968,64 +1955,6 @@ axi_to_reg_v2 #(
   .busy_o    ( )
 );
 
-// Interrupts assignment for mailbox unit
-
-// verilog_lint: waive-start line-length
-
-//
-// hostd mailboxes
-//
-for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_hostd_mbox_intrs
-  // hostd sender
-  assign hostd_pulpcl_mbox_intr [i] = snd_mbox_intrs[HostdMboxOffset + 0*CheshireNumIntHarts + i];
-  assign hostd_secd_mbox_intr   [i] = snd_mbox_intrs[HostdMboxOffset + 1*CheshireNumIntHarts + i];
-  assign hostd_safed_mbox_intr  [i] = snd_mbox_intrs[HostdMboxOffset + 2*CheshireNumIntHarts + i];
-end
-
-//
-//  Pulpcl
-//
-localparam int unsigned PulpclMboxOffset = SpatzMboxOffset + CheshireNumIntHarts + 1;
-for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_pulpcl_mbox_intrs
-  assign pulpcl_hostd_mbox_intr [i] = snd_mbox_intrs[PulpclMboxOffset + i];
-end
-assign pulpcl_safed_mbox_intr  = snd_mbox_intrs[PulpclMboxOffset + CheshireNumIntHarts];
-
-//
-// Secd
-//
-localparam int unsigned SecdMboxOffset = PulpclMboxOffset + CheshireNumIntHarts + 1;
-for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_secd_mbox_intrs
-  assign secd_hostd_mbox_intr   [i] = snd_mbox_intrs[SecdMboxOffset + i];
-end
-assign secd_safed_mbox_intr    = snd_mbox_intrs[SecdMboxOffset + CheshireNumIntHarts];
-
-//
-// Safed
-//
-localparam int unsigned SafedMboxOffset = SecdMboxOffset + CheshireNumIntHarts + 1;
-for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_safed_mbox_intr
-  assign safed_hostd_mbox_intr  [i] = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 1];
-end
-assign safed_secd_mbox_intr    = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 0];
-assign safed_pulpcl_mbox_intr  = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 1];
-
-// verilog_lint: waive-stop line-length
-
-// Logic `or` on interrupts coming from different harts of the host domain
-logic hostd_pulpcl_mbox_intr_ored;
-logic hostd_secd_mbox_intr_ored;
-
-// Integer cluster
-assign hostd_pulpcl_mbox_intr_ored  = |hostd_pulpcl_mbox_intr ;
-// Security island
-assign hostd_secd_mbox_intr_ored    = |hostd_secd_mbox_intr   ;
-
-// For the integer cluster. OR together interrupts coming from the host domain and the safe domain
-assign pulpcl_mbox_intr = hostd_pulpcl_mbox_intr_ored | safed_pulpcl_mbox_intr;
-// For the security island. OR together interrupts coming from the host domain and the safe domain
-assign secd_mbox_intr = hostd_secd_mbox_intr_ored | safed_secd_mbox_intr;
-
 mailbox_unit #(
   .reg_req_t( carfield_reg_req_t ),
   .reg_rsp_t( carfield_reg_rsp_t ),
@@ -2046,6 +1975,7 @@ carfield_axi_slv_req_t axi_ethernet_req;
 carfield_axi_slv_rsp_t axi_ethernet_rsp;
 
 if (CarfieldIslandsCfg.ethernet.enable) begin : gen_ethernet
+  assign slave_isolate_req[EthernetSlvIdx] = car_regs_reg2hw.periph_isolate.q;
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
     .SyncStages ( SyncStages                 ),
@@ -2240,6 +2170,13 @@ end
 // axi_cdc -> axi_amos -> axi_cut -> axi_to_axilite -> axilite_to_apb -> periph devices
 if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   assign reset_vector[CarfieldDomainIdx.periph] = car_regs_reg2hw.periph_rst.q;
+
+  assign slave_isolate_req[PeriphsSlvIdx] = car_regs_reg2hw.periph_isolate.q;
+  assign car_regs_hw2reg.periph_isolate_status.d = slave_isolated[PeriphsSlvIdx] |
+                                                   hyper_isolated_rsp |
+                                                   slave_isolated[EthernetSlvIdx];
+  assign car_regs_hw2reg.periph_isolate_status.de = 1'b1;
+
   carfield_axi_slv_req_t axi_d64_a48_peripherals_req;
   carfield_axi_slv_rsp_t axi_d64_a48_peripherals_rsp;
 
@@ -2641,5 +2578,7 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
     );
   end
 end else begin: gen_no_periph
+  assign car_regs_hw2reg.periph_isolate_status.d = '0;
+  assign car_regs_hw2reg.periph_isolate_status.de = '0;
 end
 endmodule

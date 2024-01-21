@@ -41,17 +41,6 @@ localparam int unsigned IntClusterDomainClkDivValue = 1;
 localparam int unsigned FPClusterDomainClkDivValue  = 1;
 localparam int unsigned L2DomainClkDivValue         = 1;
 
-// typedef enum byte_bt {
-//   L2Port0SlvIdx      = 'd0,
-//   L2Port1SlvIdx      = 'd1,
-//   SafetyIslandSlvIdx = 'd2,
-//   EthernetSlvIdx     = 'd3,
-//   PeriphsSlvIdx      = 'd4,
-//   FPClusterSlvIdx    = 'd5,
-//   IntClusterSlvIdx   = 'd6,
-//   MailboxSlvIdx      = 'd7
-// } axi_slv_idx_t;
-
 typedef enum byte_bt {
   L2Port0SlvIdx      = carfield_cfg_pkg::CarfieldSlvIdx.l2_port0,
   L2Port1SlvIdx      = carfield_cfg_pkg::CarfieldSlvIdx.l2_port1,
