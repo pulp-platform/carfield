@@ -1404,6 +1404,9 @@ assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
 assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
 
 if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
+  assign pulp_rst_n = rsts_n[IntClusterDomainIdx];
+  assign pulp_pwr_on_rst_n = pwr_on_rsts_n[IntClusterDomainIdx];
+  assign pulp_clk = domain_clk_gated[IntClusterDomainIdx];
   assign reset_vector[CarfieldDomainIdx.pulp] = car_regs_reg2hw.pulp_cluster_rst.q;
 
   assign domain_clk_sel[IntClusterDomainIdx] = car_regs_reg2hw.pulp_cluster_clk_sel.q;
