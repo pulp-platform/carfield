@@ -121,10 +121,10 @@ function automatic carfield_master_idx_t carfield_gen_master_idx(islands_cfg_t i
   carfield_master_idx_t ret = '{default: '0}; // Initialize struct first
   int unsigned i = 0;
   int unsigned j = 0;
-  if (island_cfg.safed.enable) begin ret.safed = i; i++; end
+  if (island_cfg.safed.enable) begin ret.safed = i; i++;  end
   else begin j++; ret.safed = ret.safed - j; end
-  if (island_cfg.secured.enable) begin ret.secured = i; i++;
-  end else begin j++; ret.secured = ret.secured - j; end
+  if (island_cfg.secured.enable) begin ret.secured = i; i++; end
+  else begin j++; ret.secured = ret.secured - j; end
   if (island_cfg.spatz.enable) begin ret.spatz = i; i++; end
   else begin j++; ret.spatz = ret.spatz - j; end
   if (island_cfg.pulp.enable) begin ret.pulp = i; i++; end
