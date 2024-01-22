@@ -396,7 +396,7 @@ include $(CAR_XIL_DIR)/xilinx.mk
 ##############
 tech-repo := git@iis-git.ee.ethz.ch:Astral/gf12.git
 tech-init:
-	git clone $(tech-repo) -b yt/develop tech
+	git clone $(tech-repo) tech
 	$(MAKE) -C $(TECH_ROOT) init
 
 ##############
