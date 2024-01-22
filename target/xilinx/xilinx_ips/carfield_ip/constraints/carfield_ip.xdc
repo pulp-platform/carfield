@@ -53,7 +53,7 @@ set_property CLOCK_BUFFER_TYPE NONE $all_in_mux
 # Do not optimize anything in them
 set_property DONT_TOUCH TRUE [get_cells i_carfield_xilinx/i_carfield/gen_domain_clock_mux[*].i_clk_mux]
 
-# TODO Check this
+# TODO: This does not catch
 set_false_path -from [get_pins i_carfield_xilinx/i_carfield/gen_domain_clock_mux[*].i_clk_mux/gen_input_stages[*].clock_has_been_disabled_q_reg[*]/C] -to [get_pins i_carfield_xilinx/i_carfield/gen_domain_clock_mux[*].i_clk_mux/gen_input_stages[*].clock_has_been_disabled_q_reg[*]/D]
 set_false_path -from [get_pins i_carfield_xilinx/i_carfield/gen_domain_clock_mux[*].i_clk_mux/gen_input_stages[*].clock_has_been_disabled_q_reg[*]/C] -to [get_pins i_carfield_xilinx/i_carfield/gen_domain_clock_mux[*].i_clk_mux/gen_input_stages[*].glitch_filter_q_reg[*][*]/D]
 
@@ -109,6 +109,10 @@ set_false_path -hold -through [get_nets -filter {NAME=~"*async*"} -of_objects [g
 # Hold and max delay on 4 phases
 set_max_delay -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME == cdc_4phase_src || ORIG_REF_NAME == cdc_4phase_src}]] $SOC_TCK
 set_false_path -hold -through [get_nets -filter {NAME=~"*async*"} -of_objects [get_cells -hier -filter {REF_NAME == cdc_4phase_src || ORIG_REF_NAME == cdc_4phase_src}]]
+
+# Hold and max delay on synchronizers named registers
+# Todo check me
+set_false_path -hold -through [get_pins -hier *synch_regs_q_reg[0]/C]
 
 # Hold and max delay on synchronizers
 set all_sync_cells [get_cells -hier -filter {ORIG_REF_NAME=="sync" || REF_NAME=="sync"}]
@@ -438,6 +442,10 @@ set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {ORIG_REF_NAME=="rstge
 # Relax constraints on synchronous for the islands (since they are clock-gated at sw-reset)
 set_false_path -through [get_pins -hier -filter { NAME =~ "*_rst/q_reg[0]/Q" } ]
 set_false_path -hold -through [get_cells -hier -filter {REF_NAME == rstgen || ORIG_REF_NAME == rstgen} -regexp .*gen_domain.*]
+# Hold and max delay on synchronizers named registers
+# Todo check this latch constraints
+# set_false_path -hold -through [get_pins -hier *synch_regs_q_reg[0]/* -filter {DIRECTION == IN}]
+set_false_path -hold -through [get_pins -of_objects [get_cells -hier -filter { ORIG_REF_NAME == rstgen }] -filter { REF_PIN_NAME == rst_no }]
 # Go large on the isolation
 set_max_delay -datapath -to [get_nets i_carfield_xilinx/i_carfield/*isolat*] $SOC_TCK
 set_false_path -hold -through [get_nets i_carfield_xilinx/i_carfield/*isolat*]
