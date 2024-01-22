@@ -110,6 +110,10 @@ make car-hw-sim CHS_BOOTMODE=<chs_bootmode> CHS_PRELMODE=<chs_prelmode> CHS_IMAG
 
 Per default, Questasim compilation is performance-optimised and simulation logging is disabled. To enable full visibility, logging, and the Questa GUI, set `DEBUG=1` when executing the steps above.
 
+### Technology
+
+It is possible to initialize an available technology design flow by running `make tech-init` after cloning the repo.
+
 ## License
 
 Unless specified otherwise in the respective file headers, all code checked into
