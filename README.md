@@ -43,18 +43,21 @@ make car-all
 and then run a [simulation](https://pulp-platform.github.io/carfield/tg/sim) with Questasim by
 typing:
 
-```
+```tcl
+cd target/sim/vsim
 make car-vsim-sim-build
-cd target/sim/vsim && car-vsim-sim-run CHS_BINARY=../../../sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+make car-vsim-sim-run CHS_BINARY=../../../sw/tests/bare-metal/hostd/helloworld.car.l2.elf
 ```
 
 ---
 
 To display the main *Make* build targets and their usage, from the root repository type:
 
-```
+```tcl
 make help
 ```
+
+The Make files are autodocumented.
 
 ## License
 

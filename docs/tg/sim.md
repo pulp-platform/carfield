@@ -79,17 +79,35 @@ an example with `Serial Link` passive preload of a baremetal program `helloworld
 executed on the *host domain* (Cheshire, i.e., `X=CHS`):
 
 ```tcl
+# Initialize Carfield
+make car-init-all
+
+# Enter Questasim folder
+cd target/sim/vsim
+
 # Compile the design
 make car-vsim-sim-build
 
 # Preload `helloworld.car.l2.elf` in passive bootmode through serial link, then start the simulation
-cd target/sim/vsim && make car-vsim-sim-run CHS_BOOTMODE=0 CHS_PRELMODE=1 CHS_BINARY=../../../sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+make car-vsim-sim-run CHS_BOOTMODE=0 CHS_PRELMODE=1 CHS_BINARY=../../../sw/tests/bare-metal/hostd/helloworld.car.l2.elf
 ```
 
 The design needs to be recompiled only when hardware is changed.
 
+To clean simulation builds, from the `vsim` folder run
+
+```tcl
+make car-vsim-sim-clean
+```
+
+To display general help for each *Make* target, type
+
+```tcl
+make help
+```
+
 ### Debugging
 
 Per default, Questasim compilation is performance-optimised, and GUI and simulation logging are
-disabled. To enable full visibility, logging, and the Questa GUI, set `DEBUG=1` when executing the
-steps above.
+disabled. To enable full visibility, logging, and the Questa GUI, set `DEBUG=1` when launching the
+simulation.
