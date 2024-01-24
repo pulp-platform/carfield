@@ -61,15 +61,6 @@ CAR_VSIM_ALL += $(CAR_VSIM_DIR)/compile.carfield_soc.tcl
 .PHONY: car-vsim-sim-init
 car-vsim-sim-init: $(CAR_VSIM_ALL) 
 
-## Compile Carfield HW using Questasim
-car-vsim-sim-build: car-vsim-sim-init
-	cd $(CAR_VSIM_DIR); $(QUESTA) vsim -c -do "quit -code [source $(CAR_VSIM_DIR)/compile.carfield_soc.tcl]"
-
-.PHONY: car-vsim-sim-clean
-## Remove all Questasim simulation build artifacts
-car-vsim-sim-clean:
-	cd $(CAR_VSIM_DIR); rm -rf *.ini trace* *.wlf $(CAR_VSIM_DIR)/transcript $(CAR_VSIM_DIR)/work
-
 #######
 # VCS #
 #######
@@ -88,13 +79,7 @@ CAR_XCELIUM_ALL += $(CAR_XCELIUM_ALL)
 # TODO
 
 ## @section Global targets
-.PHONY: car-sim-init car-sim-build car-sim-clean
+.PHONY: car-sim-init
 
 ## Generate all required VIPs and compilation scripts for all supported simulators
 car-sim-init: car-vsim-sim-init
-
-## Compile Carfield HW using all supported simulators
-car-sim-build: car-vsim-sim-build
-
-## Remove all simulation build artifacts from all supported simulators
-car-sim-clean: car-vsim-sim-clean

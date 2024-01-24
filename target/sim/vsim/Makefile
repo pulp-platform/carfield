@@ -7,6 +7,8 @@
 QUESTA ?= questa-2023.4
 TBENCH ?= tb_carfield_soc
 
+VSIM_ROOT_DIR = $(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
+
 QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7 +UVM_NO_RELNOTES
 ifdef DEBUG
 	VSIM_FLAGS := $(QUESTA_FLAGS)
@@ -15,6 +17,17 @@ else
 	VSIM_FLAGS := $(QUESTA_FLAGS) -c
 	RUN_AND_EXIT := run -all; exit
 endif
+
+## Compile Carfield HW using Questasim. Run `make car-sim-init` from the root directory to prepare
+## the simulation environment before running this command.
+.PHONY: car-vsim-sim-build
+car-vsim-sim-build: $(VSIM_ROOT_DIR)/compile.carfield_soc.tcl
+	$(QUESTA) vsim -c -do "quit -code [source $<]"
+
+.PHONY: car-vsim-sim-clean
+## Remove all Questasim simulation build artifacts
+car-vsim-sim-clean:
+	rm -rf $(VSIM_ROOT_DIR)/*.ini $(VSIM_ROOT_DIR)/trace* $(VSIM_ROOT_DIR)/*.wlf $(VSIM_ROOT_DIR)/transcript $(VSIM_ROOT_DIR)/work
 
 .PHONY: car-sim-vsim
 ## Run simulation of the carfield RTL.
