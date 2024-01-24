@@ -1,5 +1,0 @@
-.Xil
-scripts/add_sources.tcl*
-scripts/add_includes.tcl
-out/
-probes.ltx

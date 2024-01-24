@@ -1,6 +1,0 @@
-./.Xil
-./carfield_bd_vcu128/
-./carfield_bd_vcu118/
-./scripts/add_sources.tcl*
-./scripts/add_includes.tcl
-./out/
