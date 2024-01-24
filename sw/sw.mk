@@ -163,6 +163,7 @@ $(CAR_SW_DIR)/boot/linux_carfield_%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CA
 	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
 	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
 	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
+	dd if=sw/boot/linux_carfield_bd_vcu128.gpt.bin of=sw/boot/linux.gpt.min.bin bs=512 count=8192 && cp sw/boot/linux.gpt.min.bin sw/boot/linux_carfield_bd_vcu128.gpt.bin
 
 #########################
 # Linux app compilation #
