@@ -3,3 +3,12 @@ Mako==1.1.6
 PyYAML==6.0
 pandas==1.0.1
 pyelftools==0.29
+requests
+hjson
+mako
+pyyaml
+tabulate
+yapf
+mkdocs
+mkdocs-material
+mkdocs-glightbox

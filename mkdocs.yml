@@ -1,0 +1,48 @@
+# Copyright 2020 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+site_name: Carfield
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.expand
+    - navigation.tracking
+    - navigation.sections
+    - navigation.indexes
+    - navigation.footer
+
+plugins:
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      skip_classes:
+        - custom-skip-class-name
+      auto_caption: false
+      caption_position: bottom
+
+repo_url: https://github.com/pulp-platform/carfield
+repo_name: pulp-platform/carfield
+
+nav:
+- Home:
+  - index.md
+  - Getting Started: gs.md
+- Targets:
+  - tg/index.md
+  - Simulation: tg/sim.md
+  - Synthesis and physical implementation: tg/synth.md
+  - Xilinx FPGAs: tg/xilinx.md
+  - Integration: tg/integr.md
+- User Manual:
+  - um/index.md
+  - Architecture: um/arch.md
+  - Software Stack: um/sw.md

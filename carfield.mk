@@ -8,16 +8,96 @@
 # Robert Balas <balasr@iis.ee.ethz.ch>
 # Manuel Eggimann <meggiman@iis.ee.ethz.ch>
 
+# Carfield main make fragment
+
+# Note: this makefrag uses autodocumentation, hence it follows rules for the comment style. See
+# `utils/help.mk` for more information.
+
+###################################
+# Generic variable initialization #
+###################################
+
 CAR_ROOT    ?= $(shell $(BENDER) path carfield)
-CAR_SW_DIR  := $(CAR_ROOT)/sw
-CAR_XIL_DIR := $(CAR_ROOT)/target/xilinx
 CAR_HW_DIR  := $(CAR_ROOT)/hw
+CAR_SW_DIR  := $(CAR_ROOT)/sw
+CAR_TGT_DIR := $(CAR_ROOT)/target/
+CAR_XIL_DIR := $(CAR_TGT_DIR)/xilinx
+CAR_SIM_DIR := $(CAR_TGT_DIR)/sim
+# Questasim
+CAR_VSIM_DIR := $(CAR_TGT_DIR)/sim/vsim
 
-BENDER   ?= bender
-QUESTA   ?= questa-2022.3
-VIVADO   ?= vitis-2020.2 vivado
-
+BENDER      ?= bender
 BENDER_ROOT ?= $(CAR_ROOT)/.bender
+BENDER_PATH ?= $(shell which $(BENDER))
+
+# Include mandatory bender targets and defines for multiple targets (sim, fpga, synth)
+include $(CAR_ROOT)/bender-common.mk
+include $(CAR_ROOT)/bender-sim.mk
+include $(CAR_ROOT)/bender-synth.mk
+include $(CAR_ROOT)/bender-xilinx.mk
+include $(CAR_ROOT)/bender-safed.mk
+
+######################
+# Nonfree components #
+######################
+
+CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
+CAR_NONFREE_COMMIT ?= f18bbb8
+
+## @section Carfield platform nonfree components
+## Clone the non-free verification IP for Carfield. Some components such as CI scripts and ASIC
+## implementations with tech-specific resources are not open-sourced and contained in a `nonfree`
+## folder cloned from a remote location, whose access is restricted. If you do not have access, this
+## step will be skipped and the usage of the repository will **not** be compromised.
+car-nonfree-init:
+	git clone $(CAR_NONFREE_REMOTE) $(CAR_ROOT)/nonfree
+	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
+	cd nonfree/intel16 && icdesign intel16 -update all -nogui
+
+-include nonfree/nonfree.mk
+
+#####################################
+# Islands' variables initialization #
+#####################################
+
+# Cheshire, host domain
+CHS_ROOT ?= $(shell $(BENDER) path cheshire)
+# Include cheshire's makefrag only if the dependency was cloned
+-include $(CHS_ROOT)/cheshire.mk
+CHS_BOOTMODE ?= 0 # default passive bootmode
+CHS_PRELMODE ?= 1 # default serial link preload
+CHS_BINARY   ?=
+CHS_IMAGE    ?=
+
+# Safety Island, reliabililty and fault-tolerance
+SAFED_ROOT     ?= $(shell $(BENDER) path safety_island)
+SAFED_SW_DIR   := $(SAFED_ROOT)/sw
+SAFED_BOOTMODE ?= 0
+SAFED_BINARY   ?=
+
+# Security island, security and secure boot
+SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
+SECD_BINARY   ?=
+SECD_BOOTMODE ?= 0
+SECD_IMAGE    ?=
+# Secure boot
+SECURE_BOOT   ?= 0
+
+# PULP cluster, reliability and general-purpose accelerator
+PULPD_ROOT      ?= $(shell $(BENDER) path pulp_cluster)
+PULPD_BINARY    ?=
+PULPD_TEST_NAME ?=
+PULPD_BOOTMODE  ?=
+
+# Spatz cluster, efficient vector co-processor
+SPATZD_ROOT     ?= $(shell $(BENDER) path spatz)
+SPATZD_MAKEDIR  := $(SPATZD_ROOT)/hw/system/spatz_cluster
+SPATZD_BINARY   ?=
+SPATZD_BOOTMODE ?= 0 # default jtag bootmode
+
+###########################
+# System HW configuration #
+###########################
 
 # Interrupt configuration in cheshire
 # CLINT interruptible harts
@@ -34,211 +114,19 @@ SERIAL_LINK_NUM_BITS := 16
 AXIRT_NUM_MGRS := 10
 AXIRT_NUM_SUBS := 2
 
-# Cheshire
-CHS_ROOT ?= $(shell $(BENDER) path cheshire)
-# Include cheshire's makefrag only if the dependency was cloned
--include $(CHS_ROOT)/cheshire.mk
+##########################################
+# Virtual environment for python scripts #
+##########################################
 
-# Secure boot
-SECURE_BOOT ?= 0
-
-CHS_BOOTMODE ?= 0 # default passive bootmode
-CHS_PRELMODE ?= 1 # default serial link preload
-CHS_BINARY   ?=
-CHS_IMAGE    ?=
-
-# Safety Island
-SAFED_ROOT     ?= $(shell $(BENDER) path safety_island)
-SAFED_SW_DIR   := $(SAFED_ROOT)/sw
-SAFED_BOOTMODE ?= 0
-SAFED_BINARY   ?=
-
-# Security island
-SECD_ROOT     ?= $(shell $(BENDER) path opentitan)
-SECD_BINARY   ?=
-SECD_BOOTMODE ?= 0
-SECD_IMAGE    ?=
-
-# PULP cluster
-PULPD_ROOT      ?= $(shell $(BENDER) path pulp_cluster)
-PULPD_BINARY    ?=
-PULPD_TEST_NAME ?=
-PULPD_BOOTMODE  ?=
-
-# Spatz cluster
-SPATZD_ROOT     ?= $(shell $(BENDER) path spatz)
-SPATZD_MAKEDIR  := $(SPATZD_ROOT)/hw/system/spatz_cluster
-SPATZD_BINARY   ?=
-SPATZD_BOOTMODE ?= 0 # default jtag bootmode
-SPATZD_BENDER_DIR ?= $(shell which $(BENDER))
-
-# Default variable values for RTL simulation
-TBENCH         ?= tb_carfield_soc
-
-# Defines for hyperram model preload at time 0
-HYP_USER_PRELOAD      ?= 0
-ifeq ($(HYP_USER_PRELOAD), 1)
-	HYP0_PRELOAD_MEM_FILE ?= "$(CAR_ROOT)/sw/tests/bare-metal/pulpd/$(PULPD_TEST_NAME).hyperram0.slm"
-	HYP1_PRELOAD_MEM_FILE ?= "$(CAR_ROOT)/sw/tests/bare-metal/pulpd/$(PULPD_TEST_NAME).hyperram1.slm"
-else
-	HYP0_PRELOAD_MEM_FILE ?= ""
-	HYP1_PRELOAD_MEM_FILE ?= ""
-endif
-
-RUNTIME_DEFINES := +define+HYP_USER_PRELOAD="$(HYP_USER_PRELOAD)"
-RUNTIME_DEFINES += +define+HYP0_PRELOAD_MEM_FILE=\"$(HYP0_PRELOAD_MEM_FILE)\"
-RUNTIME_DEFINES += +define+HYP1_PRELOAD_MEM_FILE=\"$(HYP1_PRELOAD_MEM_FILE)\"
-
-# Include bender targets and defines for common usage and synth verification
-# (the following includes are mandatory)
-include $(CAR_ROOT)/bender-common.mk
-include $(CAR_ROOT)/bender-sim.mk
-include $(CAR_ROOT)/bender-synth.mk
-include $(CAR_ROOT)/bender-xilinx.mk
-include $(CAR_ROOT)/bender-safed.mk
-
-# Setup Virtual Environment for python scripts (reggen)
 VENVDIR?=$(WORKDIR)/.venv
 REQUIREMENTS_TXT?=$(wildcard requirements.txt)
 include $(CAR_ROOT)/utils/venv.mk
 
-QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7 +UVM_NO_RELNOTES
-ifdef DEBUG
-	VOPT_FLAGS := $(QUESTA_FLAGS) +acc
-	VSIM_FLAGS := $(QUESTA_FLAGS)
-	RUN_AND_EXIT := log -r /*; run -all
-else
-	VOPT_FLAGS := $(QUESTA_FLAGS) -O5 +acc=p+tb_carfield_soc. +noacc=p+carfield.
-	VSIM_FLAGS := $(QUESTA_FLAGS) -c
-	RUN_AND_EXIT := run -all; exit
-endif
+##########################
+# Dependency maintenance #
+##########################
 
-######################
-# Nonfree components #
-######################
-
-CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= e446a8e30d3e5556d14ff74953c51f1bbf8c670f
-
-## Clone the non-free verification IP for the Carfield TB
-car-nonfree-init:
-	git clone $(CAR_NONFREE_REMOTE) $(CAR_ROOT)/nonfree
-	cd nonfree && git checkout $(CAR_NONFREE_COMMIT)
-	cd nonfree/intel16 && icdesign intel16 -update all -nogui
-
--include nonfree/nonfree.mk
-
-############
-# Build SW #
-############
-
-include $(CAR_SW_DIR)/sw.mk
-
-##############
-# Simulation #
-##############
-.PHONY: $(CAR_ROOT)/hw/regs/carfield_regs.hjson
-$(CAR_ROOT)/hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv | venv
-	$(VENV)/python ./scripts/csv_to_json.py --input $< --output $@
-
-.PHONY: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv
-$(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
-	$(VENV)/python utils/reggen/regtool.py -r $< --outdir $(dir $@)
-
-.PHONY: $(CAR_SW_DIR)/include/regs/soc_ctrl.h
-$(CAR_SW_DIR)/include/regs/soc_ctrl.h: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
-	$(VENV)/python utils/reggen/regtool.py -D $<  > $@
-
-## @section Carfield SoC HW Generation
-.PHONY: regenerate_soc_regs
-## Regenerate the toplevel SoC Control Register file from the CSV description of all registers in
-## hw/regs/carfield_regs.csv. You don't have to run this target unless you changed the CSV file. The
-## checked-in pregenerated register file RTL should be up-to-date. If you regenerate the regfile, do
-## not forget to check in the generated RTL.
-regenerate_soc_regs: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv $(CAR_SW_DIR)/include/regs/soc_ctrl.h
-
-## @section Carfield CLINT and PLIC interruptible harts configuration
-
-## The default configuration in cheshire allows for one interruptible hart. When the number of
-## external interruptible harts is updated in the cheshire cfg (cheshire_pkg.sv), we need to
-## regenerate the PLIC and CLINT accordingly.
-## CLINT: define CLINTCORES used in cheshire.mk before including the makefrag.
-## PLIC: edit the hjson configuration file in cheshire.
-.PHONY: update_plic
-update_plic: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
-	sed -i 's/src: .*/src: $(PLIC_NUM_INTRS),/' $<
-	sed -i 's/target: .*/target: $(PLICCORES),/' $<
-
-# @section Serial Link configuration
-## The default configuration in cheshire allows for 4 data lanes for the serial link. We update the
-## configuration to 8 data lanes.
-.PHONY: update_serial_link
-update_serial_link: $(CHS_ROOT)/hw/serial_link.hjson
-	sed -i 's/\(default: "\)8/\116/' $<
-
-$(CAR_ROOT)/tb/hyp_vip:
-	rm -rf $@
-	mkdir $@
-	rm -rf model_tmp && mkdir model_tmp
-	cd model_tmp; wget https://www.infineon.com/dgdl/Infineon-S27KL0641_S27KS0641_VERILOG-SimulationModels-v05_00-EN.zip?fileId=8ac78c8c7d0d8da4017d0f6349a14f68
-	cd model_tmp; mv 'Infineon-S27KL0641_S27KS0641_VERILOG-SimulationModels-v05_00-EN.zip?fileId=8ac78c8c7d0d8da4017d0f6349a14f68' model.zip
-	cd model_tmp; unzip model.zip
-	cd model_tmp; mv 'S27KL0641 S27KS0641' exe_folder
-	cd model_tmp/exe_folder; unzip S27ks0641.exe
-	cp model_tmp/exe_folder/S27ks0641/model/s27ks0641.v model_tmp/exe_folder/S27ks0641/model/s27ks0641_verilog.sdf $@
-	rm -rf model_tmp
-
-.PHONY: scripts/carfield_compile.tcl
-scripts/carfield_compile.tcl:
-	$(BENDER) script vsim $(common_targs) $(sim_targs) $(common_defs) $(safed_defs) --vlog-arg="$(VLOG_ARGS) $(RUNTIME_DEFINES)" --compilation-mode separate > $@
-	echo 'vlog "$(CHS_ROOT)/target/sim/src/elfloader.cpp" -ccflags "-std=c++11"' >> $@
-	echo 'vopt $(VOPT_FLAGS) $(TBENCH) -o $(TBENCH)_opt' >> $@
-
-.PHONY: car-sim-init
-car-sim-init: chs-sim-init $(CAR_ROOT)/tb/hyp_vip scripts/carfield_compile.tcl
-
-## @section Carfield SoC Simulation
-## Compile the Carfield RTL using Questasim.
-car-hw-build: car-sim-init
-	$(QUESTA) vsim -c -do "quit -code [source scripts/carfield_compile.tcl]"
-
-.PHONY: car-hw-sim
-## Run simulation of the carfield RTL.
-## @param BOOTMODE=0 The bootmode of carfield.
-## @param PRELMODE=1 If 1, use the serial link for memory preloading.
-## @param TESTNAME=hello_wolrd The name of the test to simulate. This automatically sets the BINARY variable. Defaults to hello_world.
-## @param MEMTYPE=spm The kind of memory used for preloading the test.
-## @param BINARY=sw/tests/hello_world/hello_world.spm.elf The path to the elf binary to simulate. Defaults to the path of the test chosen with TESTNAME.
-## @param TBENCH=tb_carfield_soc_opt The optimised toplevel testbench to use. Defaults to 'tb_carfield_soc_opt'.
-## @param VSIM_FLAGS the flags for the vsim invocation
-car-hw-sim:
-	$(QUESTA) vsim $(VSIM_FLAGS) -do \
-		"set HYP_USER_PRELOAD $(HYP_USER_PRELOAD); \
-		 set SECURE_BOOT $(SECURE_BOOT); \
-		 set CHS_BOOTMODE $(CHS_BOOTMODE); \
-		 set CHS_PRELMODE $(CHS_PRELMODE); \
-		 set CHS_BINARY $(CHS_BINARY); \
-		 set CHS_IMAGE $(CHS_IMAGE); \
-		 set SECD_BINARY $(SECD_BINARY); \
-		 set SECD_BOOTMODE $(SECD_BOOTMODE); \
-		 set SECD_IMAGE $(SECD_IMAGE); \
-		 set SAFED_BOOTMODE $(SAFED_BOOTMODE); \
-		 set SAFED_BINARY $(SAFED_BINARY); \
-		 set PULPD_BOOTMODE $(PULPD_BOOTMODE); \
-		 set PULPD_BINARY $(PULPD_BINARY); \
-		 set SPATZD_BINARY $(SPATZD_BINARY); \
-		 set SPATZD_BOOTMODE $(SPATZD_BOOTMODE);\
-		 set TESTBENCH $(TBENCH); \
-		 set VSIM_FLAGS \"$(VSIM_FLAGS)\"; \
-		 source $(CAR_ROOT)/scripts/start_carfield.tcl ; \
-		 $(RUN_AND_EXIT)"
-
-.PHONY: car-hw-clean
-## Remove all simulation build artifacts
-car-hw-clean:
-	rm -rf *.ini trace* *.wlf transcript work
-
-## @section Carfield SoC Dependency Management
+## @section Carfield platform dependency management
 .PHONY: car-update-deps
 ## Update and re-resove all IP dependencies. Bender will try to resolve dependency conflicts with
 ## semantic versioning and the Bender.local file that contains overrides. You should run this target
@@ -260,49 +148,23 @@ car-checkout-deps:
 .PHONY: car-checkout
 car-checkout: car-checkout-deps
 
-## @section Carfield initialization
-.PHONY: car-hw-init
-## Initialize carfield by generating cheshire and spatz registers and wrapper, respectively
-## This step takes care of the generation of the missing hardware, or an update of the configuration
-## of some IPs, such as the PLIC or CLINT.
-car-hw-init: spatzd-hw-init chs-hw-init
+############
+# Build SW #
+############
+include $(CAR_SW_DIR)/sw.mk
 
-.PHONY: spatzd-hw-init
-spatzd-hw-init:
-	$(MAKE) -C $(SPATZD_ROOT) hw/ip/snitch/src/riscv_instr.sv
-	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson bootrom
-	cp  $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h  $(CAR_SW_DIR)/include/regs/
-
-.PHONY: chs-hw-init
-## This target has a prerequisite, i.e. the PLIC configuration must be chosen before generating the
-## hardware.
-chs-hw-init: update_plic update_serial_link
-	# Note: We use `-B` as AXI RT doesn't currently have a `regenerate` PHONY target to always
-	# trigger register regeneration when the value of the variables passed to its makefrag
-	# changes.
-	$(MAKE) -B chs-hw-all
-
-.PHONY: chs-sim-init
-## Downloads verification IPs for SPI and I2C from cheshire and used by Carfield.
-chs-sim-init:
-	$(MAKE) chs-sim-all
-
+## @section Carfield platform SW build
 .PHONY: chs-sw-build
-## Builds the SW libraries in cheshire and generates an archive (`libcheshire.a`) available for
-## carfield as static library at link time.
+## Build the host domain (Cheshire) SW libraries and generates an archive (`libcheshire.a`)
+## available for Carfield as static library at link time.
 chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
 car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
 
-.PHONY: car-init
-## Shortcut to initialize carfield with all the targets described above.
-car-init: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibench
-
-# Initialize and build SW for the Islands
 .PHONY: safed-sw-init pulpd-sw-init
-# Safety Island
+## Clone safe domain's SW stack in the dedicated repository.
 safed-sw-init: $(SAFED_ROOT) $(SAFED_SW_DIR)/pulp-runtime $(SAFED_SW_DIR)/pulp-freertos
 
 $(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
@@ -310,7 +172,7 @@ $(SAFED_SW_DIR)/pulp-runtime: $(SAFED_ROOT)
 $(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
 	$(MAKE) -C $(SAFED_ROOT) pulp-freertos BENDER="$(BENDER)"
 
-# PULP Cluster
+## Clone integer PMCA domain's SW stack in the dedicated repository.
 pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
 
 $(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
@@ -318,20 +180,147 @@ $(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
 $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
 	$(MAKE) -C $(PULPD_ROOT) regression-tests
 
-# For independent boot of an island, we allow to compile the binary standalone.
+## Build safe domain SW
 .PHONY: safed-sw-build
-safed-sw-build:
-	. $(CAR_ROOT)/scripts/safed-env.sh; \
+safed-sw-build: safed-sw-init
+	. $(CAR_ROOT)/env/safed-env.sh; \
 	$(MAKE) safed-sw-all
 
+## Build integer PMCA domain SW
 .PHONY: pulpd-sw-build
-pulpd-sw-build:
-	. $(CAR_ROOT)/scripts/pulpd-env.sh; \
+pulpd-sw-build: pulpd-sw-init
+	. $(CAR_ROOT)/env/pulpd-env.sh; \
 	$(MAKE) pulpd-sw-all
 
-#.PHONY: spatzd-sw-build
-#spatzd-sw-build:
-#	$(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(SPATZD_BENDER_DIR) LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) −B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson HTIF_SERVER=NO sw.vsim
+## Build vectorial PMCA domain SW
+# TODO: properly compile spatz tests from carfield. For now, we symlink to existing tests. If you
+#are a user external to ETH, the symlink will not work. We will integrate the compilation flow ASAP.
+
+#.PHONY: spatzd-sw-build spatzd-sw-build: $(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(BENDER_PATH)
+#LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) −B
+#SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson HTIF_SERVER=NO sw.vsim
+
+###############
+# Generate HW #
+###############
+
+## @section Carfield platform HW generation
+.PHONY: car-hw-init
+## Initialize Carfield HW. This step takes care of the generation of the missing hardware or the
+## update of default HW configurations in some of the domains. See the two prerequisite's comment
+## for more information.
+car-hw-init: spatzd-hw-init chs-hw-init
+
+## @section Carfield platform PCRs generation
+.PHONY: regenerate_soc_regs
+## Regenerate the toplevel PCRs from the CSV description of all registers in
+## hw/regs/carfield_regs.csv. You don't have to run this target unless you changed the CSV file. The
+## checked-in pregenerated register file RTL should be up-to-date. If you regenerate the regfile, do
+## not forget to check in the generated RTL. In addition, dedicated documentation is autogenerated.
+regenerate_soc_regs: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv $(CAR_SW_DIR)/include/regs/soc_ctrl.h $(CAR_HW_DIR)/regs/pcr.md
+
+.PHONY: $(CAR_ROOT)/hw/regs/carfield_regs.hjson
+$(CAR_ROOT)/hw/regs/carfield_regs.hjson: hw/regs/carfield_regs.csv | venv
+	$(VENV)/python ./scripts/csv_to_json.py --input $< --output $@
+
+.PHONY: $(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv hw/regs/carfield_reg_top.sv
+$(CAR_ROOT)/hw/regs/carfield_reg_pkg.sv $(CAR_ROOT)/hw/regs/carfield_reg_top.sv: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
+	$(VENV)/python utils/reggen/regtool.py -r $< --outdir $(dir $@)
+
+.PHONY: $(CAR_SW_DIR)/include/regs/soc_ctrl.h
+$(CAR_SW_DIR)/include/regs/soc_ctrl.h: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
+	$(VENV)/python utils/reggen/regtool.py -D $<  > $@
+
+.PHONY: $(CAR_SW_DIR)/hw/regs/pcr.md
+$(CAR_HW_DIR)/regs/pcr.md: $(CAR_ROOT)/hw/regs/carfield_regs.hjson | venv
+	$(VENV)/python utils/reggen/regtool.py -d $<  > $@
+
+## Update host domain PLIC and CLINT interrupt controllers configuration. The default configuration
+## in cheshire allows for one interruptible hart. When the number of external interruptible harts is
+## updated in the Cheshire cfg (cheshire_pkg.sv), we need to regenerate the PLIC and CLINT
+## accordingly. CLINT: define CLINTCORES used in cheshire.mk before including the makefrag. PLIC:
+## edit the hjson configuration file in cheshire.
+.PHONY: update_plic
+update_plic: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
+	sed -i 's/src: .*/src: $(PLIC_NUM_INTRS),/' $<
+	sed -i 's/target: .*/target: $(PLICCORES),/' $<
+
+## Update host domain Serial Link configuration. The default configuration in cheshire allows for 4
+## data lanes for the serial link. We update the configuration to 8 data lanes.
+.PHONY: update_serial_link
+update_serial_link: $(CHS_ROOT)/hw/serial_link.hjson
+	sed -i 's/\(default: "\)8/\116/' $<
+
+## Generate Spatz HW starting from a configuration file. This includes register file, memory map,
+## interconnect parametrization.
+.PHONY: spatzd-hw-init
+spatzd-hw-init:
+	$(MAKE) -C $(SPATZD_ROOT) hw/ip/snitch/src/riscv_instr.sv
+	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson bootrom
+	cp  $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h  $(CAR_SW_DIR)/include/regs/
+
+## Generate Cheshire HW. This target has a prerequisite, i.e. the PLIC and serial link
+## configurations must be chosen before generating the hardware.
+.PHONY: chs-hw-init
+chs-hw-init: update_plic update_serial_link
+	$(MAKE) -B chs-hw-all
+
+##############
+# Simulation #
+##############
+
+## @section Carfield platform simulation
+include $(CAR_SIM_DIR)/sim.mk
+
+##################
+# Global targets #
+##################
+
+## @section Carfield global targets
+
+.PHONY: car-init-all
+## Shortcut to initialize carfield with all the targets described above.
+car-init-all: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibench
+
+## Initialize Carfield and build SW
+.PHONY: car-all
+car-all: car-init-all car-sw-build
+
+#########
+# Utils #
+#########
+## @section Carfield platform utilities
+
+# Lint
+SPYGLASS_TARGS += $(common_targs)
+SPYGLASS_TARGS += $(synth_targs)
+SPYGLASS_DEFS += $(common_defs)
+SPYGLASS_DEFS += $(synth_defs)
+
+## Lint the Carfield codebase using Spyglass
+.PHONY:lint
+lint:
+	$(MAKE) -C scripts lint bender_defs="$(SPYGLASS_DEFS)" bender_targs="$(SPYGLASS_TARGS)" > make.log
+
+#############
+# Emulation #
+#############
+## @section Carfield emulation
+
+# Xilinx
+include $(CAR_XIL_DIR)/xilinx.mk
+
+#######################
+# External benchmarks #
+#######################
+
+## @section External SW benchmarks
+## Clone Mibench Embedded Suite benchmark
+.PHONY: mibench
+mibench: $(CAR_SW_DIR)/benchmarks/mibench
+
+$(CAR_SW_DIR)/benchmarks/mibench:
+	git clone git@github.com:alex96295/mibench.git -b carfield $@
 
 # Litmus tests
 LITMUS_WORK_DIR  := work-litmus
@@ -356,44 +345,15 @@ $(LITMUS_WORK_DIR)/%.litmus.log: $(LITMUS_WORK_DIR)/%.uart.log
 	cat $< >> $@
 	echo "" >> $@
 
+## Clone Litmus tests for the RISC-V concurrency architecture and run them
 car-run-litmus-tests: $(LITMUS_TEST_LIST) $(addprefix $(LITMUS_WORK_DIR)/, $(addsuffix .litmus.log,$(LITMUS_TESTS)))
 	cat $^ > $(LITMUS_WORK_DIR)/litmus.log
 
+## Check Litmus tests results against golden model
 car-check-litmus-tests: $(LITMUS_WORK_DIR)/litmus.log
 	cd $(LITMUS_DIR) && LITMUS_LOG=$(CURDIR)/$(LITMUS_WORK_DIR)/litmus.log ci/compare_model.sh > $(CURDIR)/$(LITMUS_WORK_DIR)/compare.log
 	grep "Warning positive differences" $(LITMUS_WORK_DIR)/compare.log
 	! grep "Warning negative differences" $(LITMUS_WORK_DIR)/compare.log
-
-############
-# RTL LINT #
-############
-SPYGLASS_TARGS += $(common_targs)
-SPYGLASS_TARGS += $(synth_targs)
-SPYGLASS_DEFS += $(common_defs)
-SPYGLASS_DEFS += $(synth_defs)
-
-## @section Carfield SoC Utilities
-
-.PHONY:lint
-## Run Spyglass Lint on the entire RTL
-lint:
-	$(MAKE) -C scripts lint bender_defs="$(SPYGLASS_DEFS)" bender_targs="$(SPYGLASS_TARGS)" > make.log
-
-#############
-# Emulation #
-#############
-
-include $(CAR_XIL_DIR)/xilinx.mk
-
-##############
-# Benchmarks #
-##############
-
-.PHONY: mibench
-mibench: $(CAR_SW_DIR)/benchmarks/mibench
-
-$(CAR_SW_DIR)/benchmarks/mibench:
-	git clone git@github.com:alex96295/mibench.git -b carfield $@
 
 ########
 # Help #

@@ -28,7 +28,6 @@ dependencies:
   pulp-ethernet:      { git: https://github.com/pulp-platform/pulp-ethernet.git,        rev: bdc8031ab270a49da28df269266ce9ab9a133636 } # branch: carfield
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg.git,            version: =0.8.0                               }
 
-
 workspace:
   package_links:
     cheshire: cheshire
@@ -55,18 +54,18 @@ sources:
 
   - target: test
     files:
-      - tb/hyp_vip/s27ks0641.v
-      - tb/vip_carfield_soc.sv
-      - tb/carfield_fix.sv
-      - tb/carfield_tb.sv
+      - target/sim/src/hyp_vip/s27ks0641.v
+      - target/sim/src/vip_carfield_soc.sv
+      - target/sim/src/carfield_fix.sv
+      - target/sim/src/carfield_tb.sv
 
   - target: spyglass
     files:
-      - scripts/spyglass/src/carfield_wrap.sv
+      - utils/lint/spyglass/src/carfield_wrap.sv
 
   - target: all(synthesis, not(fpga))
     files:
-      - target/synth/carfield_synth_wrap.sv
+      - target/synth/src/carfield_synth_wrap.sv
 
   - target: all(xilinx, fpga, xilinx_vanilla)
     files:

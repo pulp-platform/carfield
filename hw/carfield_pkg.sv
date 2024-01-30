@@ -269,7 +269,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   NumExtIrqHarts    : CarfieldNumInterruptibleHarts,
   NumExtInIntrs     : CarfieldNumExtIntrs,
   NumExtClicIntrs   : CarfieldNumExtIntrs,
-  NumExtOutIntrTgts : 1,
+  NumExtOutIntrTgts : CarfieldNumRouterTargets,
   NumExtOutIntrs    : CarfieldNumExtIntrs+$bits(cheshire_int_intr_t),
   ClicIntCtlBits    : 8,
   ClicUseSMode      : 1,
