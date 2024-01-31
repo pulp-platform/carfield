@@ -40,14 +40,14 @@ typedef struct packed {
 } axi_struct_t;
 
 typedef struct packed {
-  int unsigned l2_port0;
-  int unsigned l2_port1;
-  int unsigned safed;
-  int unsigned ethernet;
-  int unsigned periph;
-  int unsigned spatz;
-  int unsigned pulp;
-  int unsigned mbox;
+  byte_bt l2_port0;
+  byte_bt l2_port1;
+  byte_bt safed;
+  byte_bt ethernet;
+  byte_bt periph;
+  byte_bt spatz;
+  byte_bt pulp;
+  byte_bt mbox;
 } carfield_slave_idx_t;
 
 typedef struct packed {
