@@ -274,7 +274,7 @@ module tb_carfield_soc;
                 @(posedge fix.clk);
             fix.gen_scured_vip.secd_vip.jtag_secd_wait_eoc();
           end default: begin
-            $fatal(1, "Unsupported boot mode %d (reserved)!", safed_boot_mode);
+            $fatal(1, "Unsupported boot mode %d (reserved)!", secd_boot_mode);
           end
         endcase
       end
