@@ -30,7 +30,7 @@ localparam bit     L2Port1Enable = 1;
 localparam doub_bt L2Port1Base = L2Port0Base + L2Port0Size;
 localparam doub_bt L2Port1Size = L2Port0Size;
 // Safety Island
-localparam bit     SafetyIslandEnable = `GEN_SAFETY_ISLAND;
+localparam bit     SafetyIslandEnable = `GEN_SAFETY_ISLAND ? 1'b1 : 1'b0;
 localparam doub_bt SafetyIslandBase = 'h60000000;
 localparam doub_bt SafetyIslandSize = 'h00800000;
 // Ethernet
@@ -42,15 +42,15 @@ localparam bit     PeriphEnable = 1;
 localparam doub_bt PeriphBase = 'h20001000;
 localparam doub_bt PeriphSize = 'h00009000;
 // Spatz cluster
-localparam bit     SpatzClusterEnable = `GEN_SPATZ_CLUSTER;
+localparam bit     SpatzClusterEnable = `GEN_SPATZ_CLUSTER ? 1'b1 : 1'b0;
 localparam doub_bt SpatzClusterBase = 'h51000000;
 localparam doub_bt SpatzClusterSize = 'h00800000;
 // PULP cluster
-localparam bit     PulpClusterEnable = `GEN_PULP_CLUSTER;
+localparam bit     PulpClusterEnable = `GEN_PULP_CLUSTER ? 1'b1 : 1'b0;
 localparam doub_bt PulpClusterBase = 'h50000000;
 localparam doub_bt PulpClusterSize = 'h00800000;
 // Security Island
-localparam bit     SecurityIslandEnable = `GEN_OPEN_TITAN;
+localparam bit     SecurityIslandEnable = `GEN_OPEN_TITAN ? 1'b1 : 1'b0;
 localparam doub_bt SecurityIslandBase = 'h0;
 localparam doub_bt SecurityIslandSize = 'h0;
 // Mailbox
