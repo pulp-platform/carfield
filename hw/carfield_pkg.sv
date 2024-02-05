@@ -24,15 +24,6 @@ typedef enum int {
   SafedIntrHartIdx      = 'd2
 } carfield_ext_intr_harts_e;
 
-typedef enum int {
-  PeriphDomainIdx     = 'd0,
-  SafedDomainIdx      = 'd1,
-  SecdDomainIdx       = 'd2,
-  IntClusterDomainIdx = 'd3,
-  FPClusterDomainIdx  = 'd4,
-  L2DomainIdx         = 'd5
-} carfield_domains_e;
-
 // Clock dividers integer value after PoR
 localparam int unsigned PeriphDomainClkDivValue     = 1;
 localparam int unsigned SafedDomainClkDivValue      = 1;
