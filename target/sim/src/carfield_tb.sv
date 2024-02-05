@@ -115,7 +115,7 @@ module tb_carfield_soc;
 
       // If the safety island is enabled, when Cheshire is offloading to it
       // it should be set in passive preload bootmode
-      fix.safed_force_boot_mode = (CarfieldIslandsCfg.safed.enable) ? safety_island_pkg::Preloaded : '0;
+      fix.boot_mode_safed = (CarfieldIslandsCfg.safed.enable) ? safety_island_pkg::Preloaded : '0;
 
       // Preload in idle mode or wait for completion in autonomous boot
       if (boot_mode == 0) begin
@@ -193,7 +193,7 @@ module tb_carfield_soc;
       fix.set_secure_boot(secure_boot);
 
       // set boot mode before reset
-      fix.gen_safed_vip.safed_vip.set_safed_boot_mode(safed_boot_mode);
+      fix.boot_mode_safed = safed_boot_mode;
 
       if (safed_preload_elf != "") begin
 
