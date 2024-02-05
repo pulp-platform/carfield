@@ -1607,30 +1607,28 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
                                            master_isolated_rsp[FPClusterMstIdx];
 
 `ifndef FP_CLUSTER_NETLIST
-  spatz_cluster_wrapper #(
-    .AxiAddrWidth             ( Cfg.AddrWidth     ),
-    .AxiDataWidth             ( Cfg.AxiDataWidth  ),
-    .AxiUserWidth             ( Cfg.AxiUserWidth  ),
-    .AxiInIdWidth             ( AxiSlvIdWidth     ),
-    .AxiOutIdWidth            ( Cfg.AxiMstIdWidth ),
-    .LogDepth                 ( LogDepth          ),
-    .CdcSyncStages            ( SyncStages        ),
-    .SyncStages               ( SyncStages        ),
-
+  spatz_wrap #(
+    .AxiAddrWidth             ( Cfg.AddrWidth           ),
+    .AxiDataWidth             ( Cfg.AxiDataWidth        ),
+    .AxiUserWidth             ( Cfg.AxiUserWidth        ),
+    .AxiInIdWidth             ( AxiSlvIdWidth           ),
+    .AxiOutIdWidth            ( Cfg.AxiMstIdWidth       ),
+    .IwcAxiIdOutWidth         ( FpClustIwcAxiIdOutWidth ),
+    .LogDepth                 ( LogDepth                ),
+    .CdcSyncStages            ( SyncStages              ),
+    .SyncStages               ( SyncStages              ),
+    .AxiMaxOutTrans           ( FpClustAxiMaxOutTrans   ),
     // AXI type IN
     .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
     .axi_in_req_t             ( carfield_axi_slv_req_t     ),
-
     .axi_in_aw_chan_t         ( carfield_axi_slv_aw_chan_t ),
     .axi_in_w_chan_t          ( carfield_axi_slv_w_chan_t  ),
     .axi_in_b_chan_t          ( carfield_axi_slv_b_chan_t  ),
     .axi_in_ar_chan_t         ( carfield_axi_slv_ar_chan_t ),
     .axi_in_r_chan_t          ( carfield_axi_slv_r_chan_t  ),
-
     // AXI type OUT
     .axi_out_resp_t           ( carfield_axi_mst_rsp_t     ),
     .axi_out_req_t            ( carfield_axi_mst_req_t     ),
-
     .axi_out_aw_chan_t        ( carfield_axi_mst_aw_chan_t ),
     .axi_out_w_chan_t         ( carfield_axi_mst_w_chan_t  ),
     .axi_out_b_chan_t         ( carfield_axi_mst_b_chan_t  ),
@@ -1650,7 +1648,7 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
     .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
     ) i_fp_cluster_wrapper (
 `else
-  spatz_cluster_wrapper i_fp_cluster_wrapper (
+  spatz_wrap i_fp_cluster_wrapper (
 `endif
     .clk_i           ( spatz_clk            ),
     .rst_ni          ( spatz_rst_n          ),
