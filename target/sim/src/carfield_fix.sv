@@ -78,6 +78,7 @@ module carfield_soc_fixture;
   logic uart_hostd_rx;
 
   logic secure_boot;
+  logic secured_enabled;
 
   logic uart_secd_tx;
   logic uart_secd_rx;
@@ -398,6 +399,7 @@ module carfield_soc_fixture;
   /////////////////////////
   lc_ctrl_pkg::lc_tx_t secured_fetch_enable;
   if (CarfieldIslandsCfg.secured.enable) begin: gen_scured_vip
+    assign secured_enabled = 1'b1;
     localparam time ClkPeriodSecdJtag = 20ns;
 
     // Tristate adapter
@@ -447,6 +449,7 @@ module carfield_soc_fixture;
       .SPI_CSB
     );
   end else begin: gen_no_scured_vip
+    assign secured_enabled = 1'b0;
     assign secured_fetch_enable = lc_ctrl_pkg::Off;
   end
 
@@ -455,7 +458,8 @@ module carfield_soc_fixture;
   ///////////////////
 
   task passthrough_or_wait_for_secd_hw_init();
-    if ((secure_boot || !i_dut.car_regs_hw2reg.security_island_isolate_status.d) &&
+    if (secured_enabled &&
+       (secure_boot || !i_dut.car_regs_hw2reg.security_island_isolate_status.d) &&
         secured_fetch_enable != lc_ctrl_pkg::On) begin
       $display("Wait for OT to boot...");
       wait (secured_fetch_enable == lc_ctrl_pkg::On);
