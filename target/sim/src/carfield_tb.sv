@@ -113,9 +113,10 @@ module tb_carfield_soc;
       $display("[TB] INFO: Configuring Hyperbus through serial link.");
       fix.chs_vip.slink_write_32(HyperbusTburstMax, 32'd128);
 
-      // When Cheshire is offloading to safety island, the latter should be set in passive preloaded
-      // bootmode
-      fix.gen_safed_vip.safed_vip.set_safed_boot_mode(safety_island_pkg::Preloaded);
+      // If the safety island is enabled, when Cheshire is offloading to it
+      // it should be set in passive preload bootmode
+      fix.safed_force_boot_mode = (CarfieldIslandsCfg.safed.enable) ? safety_island_pkg::Preloaded : '0;
+
       // Preload in idle mode or wait for completion in autonomous boot
       if (boot_mode == 0) begin
         // Idle boot: preload with the specified mode

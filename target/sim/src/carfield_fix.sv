@@ -54,7 +54,7 @@ module carfield_soc_fixture;
   logic       rtc;
 
   logic [1:0] boot_mode_secd;
-  logic [1:0] boot_mode_safed;
+  logic [1:0] boot_mode_safed, safed_force_boot_mode;
 
   logic jtag_hostd_tck;
   logic jtag_hostd_trst_n;
@@ -382,8 +382,11 @@ module carfield_soc_fixture;
       // Exit
       .exit_status  ( )
     );
+
+    set_safed_boot_mode(safed_force_boot_mode);
+
   end else begin: gen_no_safed_vip
-    assign boot_mode_safed   = '0;
+    assign boot_mode_safed   = safed_force_boot_mode;
     assign jtag_safed_tck    = '0;
     assign jtag_safed_trst_n = '0;
     assign jtag_safed_tms    = '0;
