@@ -445,6 +445,12 @@ localparam int unsigned IntClusterNumEoc = 1;
 localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
 localparam logic [CarfieldCfgDefault.AddrWidth-1:0] IntClusterInternalSize = 'h0040_0000;
 
+/*************************************/
+/* Floating Point Cluster Parameters */
+/*************************************/
+localparam int unsigned FpClustAxiMaxOutTrans   = 4;
+localparam int unsigned FpClustIwcAxiIdOutWidth = 3;
+
 /*******************************/
 /* Narrow Parameters: A32, D32 */
 /*******************************/
