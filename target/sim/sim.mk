@@ -35,6 +35,9 @@ RUNTIME_DEFINES := +define+HYP_USER_PRELOAD="$(HYP_USER_PRELOAD)"
 RUNTIME_DEFINES += +define+HYP0_PRELOAD_MEM_FILE=\"$(HYP0_PRELOAD_MEM_FILE)\"
 RUNTIME_DEFINES += +define+HYP1_PRELOAD_MEM_FILE=\"$(HYP1_PRELOAD_MEM_FILE)\"
 
+# Runtime-selectable Carfield configuration
+CARFIELD_CONFIG ?= carfield_l2dual_safe_secure_pulp_spatz_periph_can
+
 #############
 # Questasim #
 #############
@@ -51,6 +54,9 @@ else
 	VSIM_FLAGS := $(QUESTA_FLAGS) -c
 	RUN_AND_EXIT := run -all; exit
 endif
+
+# Carfield config target.
+common_targs += -t $(CARFIELD_CONFIG)
 
 .PHONY: $(CAR_VSIM_DIR)/compile.carfield_soc.tcl
 $(CAR_VSIM_DIR)/compile.carfield_soc.tcl:
