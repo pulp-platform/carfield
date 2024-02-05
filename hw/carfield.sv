@@ -1129,6 +1129,8 @@ if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
   assign reset_vector[CarfieldDomainIdx.l2] = car_regs_reg2hw.l2_rst.q;
   assign slave_isolate_req[L2Port0SlvIdx] = car_regs_reg2hw.l2_isolate.q;
   assign slave_isolate_req[L2Port1SlvIdx] = car_regs_reg2hw.l2_isolate.q;
+  assign slave_isolated[L2Port0SlvIdx] = slave_isolated_rsp[L2Port0SlvIdx];
+  assign slave_isolated[L2Port1SlvIdx] = slave_isolated_rsp[L2Port1SlvIdx];
   assign car_regs_hw2reg.l2_isolate_status.d = slave_isolated[L2Port0SlvIdx] &
                                                slave_isolated[L2Port1SlvIdx];
   assign car_regs_hw2reg.l2_isolate_status.de = 1'b1;
@@ -1972,10 +1974,13 @@ mailbox_unit #(
 // Carfield peripherals
 // Ethernet
 // Peripheral Clock Domain
+logic ethernet_slave_isolated;
 carfield_axi_slv_req_t axi_ethernet_req;
 carfield_axi_slv_rsp_t axi_ethernet_rsp;
 
 if (CarfieldIslandsCfg.ethernet.enable) begin : gen_ethernet
+  assign ethernet_slave_isolated = slave_isolated[EthernetSlvIdx];
+  assign slave_isolated[EthernetSlvIdx] = slave_isolated_rsp[EthernetSlvIdx];
   assign slave_isolate_req[EthernetSlvIdx] = car_regs_reg2hw.periph_isolate.q;
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
@@ -2155,14 +2160,15 @@ if (CarfieldIslandsCfg.ethernet.enable) begin : gen_ethernet
 
 end else begin : gen_no_ethernet
 
-  assign car_eth_intr = '0;
-  assign eth_md_o     = '0;
-  assign eth_md_oe    = '0;
-  assign eth_mdc_o    = '0;
-  assign eth_rst_n_o  = '0;
-  assign eth_txck_o   = '0;
-  assign eth_txctl_o  = '0;
-  assign eth_txd_o    = '0;
+  assign ethernet_slave_isolated = '0;
+  assign car_eth_intr            = '0;
+  assign eth_md_o                = '0;
+  assign eth_md_oe               = '0;
+  assign eth_mdc_o               = '0;
+  assign eth_rst_n_o             = '0;
+  assign eth_txck_o              = '0;
+  assign eth_txctl_o             = '0;
+  assign eth_txd_o               = '0;
 
 end
 
@@ -2173,9 +2179,10 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   assign reset_vector[CarfieldDomainIdx.periph] = car_regs_reg2hw.periph_rst.q;
 
   assign slave_isolate_req[PeriphsSlvIdx] = car_regs_reg2hw.periph_isolate.q;
+  assign slave_isolated[PeriphsSlvIdx] = slave_isolated_rsp[PeriphsSlvIdx];
   assign car_regs_hw2reg.periph_isolate_status.d = slave_isolated[PeriphsSlvIdx] |
-                                                   hyper_isolated_rsp |
-                                                   slave_isolated[EthernetSlvIdx];
+                                                   hyper_isolated_rsp            |
+                                                   ethernet_slave_isolated;
   assign car_regs_hw2reg.periph_isolate_status.de = 1'b1;
 
   carfield_axi_slv_req_t axi_d64_a48_peripherals_req;
