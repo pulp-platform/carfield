@@ -112,6 +112,9 @@ function automatic int unsigned gen_num_master(islands_cfg_t island_cfg);
   if (island_cfg.spatz.enable  ) begin ret++; end
   if (island_cfg.pulp.enable   ) begin ret++; end
   if (island_cfg.secured.enable) begin ret++; end
+  // This is a brute-force fix needed to avoid infinte for loop creation.
+  // The fault is the PULP cluster.
+  if (ret == 0) begin ret++; end
   return ret;
 endfunction
 
