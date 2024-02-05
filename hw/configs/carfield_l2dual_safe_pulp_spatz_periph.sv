@@ -37,7 +37,7 @@ localparam bit     PulpClusterEnable = 1;
 localparam doub_bt PulpClusterBase = 'h50000000;
 localparam doub_bt PulpClusterSize = 'h00800000;
 // Security Island
-localparam bit     SecurityIslandEnable = 1;
+localparam bit     SecurityIslandEnable = 0;
 localparam doub_bt SecurityIslandBase = 'h0;
 localparam doub_bt SecurityIslandSize = 'h0;
 // Mailbox
@@ -45,6 +45,6 @@ localparam bit     MailboxEnable = 1;
 localparam doub_bt MailboxBase = 'h40000000;
 localparam doub_bt MailboxSize = 'h00001000;
 // Can
-localparam bit CanEnable = 1;
+localparam bit CanEnable = 0;
 
 endpackage
