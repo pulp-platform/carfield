@@ -2552,7 +2552,7 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   // CAN bus
   logic [63:0] can_timestamp;
   assign can_timestamp = '1;
-  if (carfield_configuration::CanEnable) begin : gen_can
+  if (carfield_configuration::CanEnable) begin: gen_can
     can_top_apb #(
       .rx_buffer_size   ( 32                    ),
       .txt_buffer_count ( 2                     ),
@@ -2577,6 +2577,10 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
       .s_apb_pwdata     ( apb_mst_req[CanIdx].pwdata  ),
       .s_apb_pwrite     ( apb_mst_req[CanIdx].pwrite  )
     );
+  end else begin: gen_no_can
+    assign car_can_intr = '0;
+    assign can_tx_o = '0;
+    assign apb_mst_rsp[CanIdx] = '0;
   end
 end else begin: gen_no_periph
   assign car_regs_hw2reg.periph_isolate_status.d = '0;
