@@ -54,7 +54,7 @@ module carfield_soc_fixture;
   logic       rtc;
 
   logic [1:0] boot_mode_secd;
-  logic [1:0] boot_mode_safed, safed_force_boot_mode;
+  logic [1:0] boot_mode_safed;
 
   logic jtag_hostd_tck;
   logic jtag_hostd_trst_n;
@@ -365,7 +365,7 @@ module carfield_soc_fixture;
       // we use the reset generated in cheshire VIP
       .rst_n_vip    (),
       .test_mode    (),
-      .boot_mode    ( boot_mode_safed ),
+      .boot_mode    (),
       // we use the rtc generated in cheshire VIP
       .rtc          (),
       // Not used in carfield
@@ -384,10 +384,7 @@ module carfield_soc_fixture;
       .exit_status  ( )
     );
 
-    set_safed_boot_mode(safed_force_boot_mode);
-
   end else begin: gen_no_safed_vip
-    assign boot_mode_safed   = safed_force_boot_mode;
     assign jtag_safed_tck    = '0;
     assign jtag_safed_trst_n = '0;
     assign jtag_safed_tms    = '0;
