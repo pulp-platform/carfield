@@ -58,10 +58,9 @@ typedef struct packed {
   byte_bt pulp;
 } carfield_master_idx_t;
 
-// TODO: specify this is for AXI
 // Generate the number of AXI slave devices to be connected to the
 // crossbar starting from the islands enable structure.
-function automatic int unsigned gen_num_slave(islands_cfg_t island_cfg);
+function automatic int unsigned gen_num_axi_slave(islands_cfg_t island_cfg);
   int unsigned ret = 0; // Number of slaves starts from 0
   if (island_cfg.l2_port0.enable) begin
     ret++; // If we enable L2, we increase by 1
@@ -77,9 +76,8 @@ function automatic int unsigned gen_num_slave(islands_cfg_t island_cfg);
   return ret;
 endfunction
 
-// TODO: specify this is for AXI
 // Generate the IDs for each AXI slave device
-function automatic carfield_slave_idx_t carfield_gen_slave_idx(islands_cfg_t island_cfg);
+function automatic carfield_slave_idx_t carfield_gen_axi_slave_idx(islands_cfg_t island_cfg);
   carfield_slave_idx_t ret = '{default: '0}; // Initialize struct first
   byte_bt i = 0;
   if (island_cfg.l2_port0.enable) begin ret.l2_port0 = i; i++;
@@ -103,10 +101,9 @@ function automatic carfield_slave_idx_t carfield_gen_slave_idx(islands_cfg_t isl
   return ret;
 endfunction
 
-// TODO: specify this is for AXI
 // Generate the number of AXI master devices that connect to the
 // crossbar starting from the islands enable structure.
-function automatic int unsigned gen_num_master(islands_cfg_t island_cfg);
+function automatic int unsigned gen_num_axi_master(islands_cfg_t island_cfg);
   int unsigned ret = 0; // Number of masters starts from 0
   if (island_cfg.safed.enable  ) begin ret++; end
   if (island_cfg.spatz.enable  ) begin ret++; end
@@ -118,10 +115,9 @@ function automatic int unsigned gen_num_master(islands_cfg_t island_cfg);
   return ret;
 endfunction
 
-// TODO: specify this is for AXI
 // Generate the IDs for each AXI master device
 localparam int unsigned MaxExtAxiMst = 2**MaxExtAxiMstWidth;
-function automatic carfield_master_idx_t carfield_gen_master_idx(islands_cfg_t island_cfg);
+function automatic carfield_master_idx_t carfield_gen_axi_master_idx(islands_cfg_t island_cfg);
   carfield_master_idx_t ret = '{default: '0}; // Initialize struct first
   byte_bt i = 0;
   if (island_cfg.safed.enable) begin ret.safed = i; i++;
@@ -217,14 +213,14 @@ localparam islands_cfg_t CarfieldIslandsCfg = '{
 };
 
 // TODO: specify this is for AXI
-localparam int unsigned CarfieldNumSlaves  = gen_num_slave(CarfieldIslandsCfg);
-localparam carfield_slave_idx_t CarfieldSlvIdx = carfield_gen_slave_idx(CarfieldIslandsCfg);
-localparam int unsigned CarfieldNumMasters = gen_num_master(CarfieldIslandsCfg);
-localparam carfield_master_idx_t CarfieldMstIdx = carfield_gen_master_idx(CarfieldIslandsCfg);
+localparam int unsigned CarfieldAxiNumSlaves  = gen_num_axi_slave(CarfieldIslandsCfg);
+localparam carfield_slave_idx_t CarfieldAxiSlvIdx = carfield_gen_axi_slave_idx(CarfieldIslandsCfg);
+localparam int unsigned CarfieldAxiNumMasters = gen_num_axi_master(CarfieldIslandsCfg);
+localparam carfield_master_idx_t CarfieldMstIdx = carfield_gen_axi_master_idx(CarfieldIslandsCfg);
 
-localparam axi_struct_t CarfieldAxiMap = carfield_gen_axi_map(CarfieldNumSlaves ,
-                                                              CarfieldIslandsCfg,
-                                                              CarfieldSlvIdx    );
+localparam axi_struct_t CarfieldAxiMap = carfield_gen_axi_map(CarfieldAxiNumSlaves,
+                                                              CarfieldIslandsCfg  ,
+                                                              CarfieldAxiSlvIdx   );
 
 localparam int unsigned CarfieldNumDomains = gen_carfield_domains(CarfieldIslandsCfg);
 
