@@ -33,10 +33,11 @@ typedef struct packed {
 // Structure used to create the AXI map to be passed to
 // the Cheshire configuration parameter to create the
 // AXI crossbar.
+localparam int unsigned MaxExtAxiSlv = 2**MaxExtAxiSlvWidth;
 typedef struct packed {
-  byte_bt [2**MaxExtAxiSlvWidth-1:0] AxiIdx;
-  doub_bt [2**MaxExtAxiSlvWidth-1:0] AxiStart;
-  doub_bt [2**MaxExtAxiSlvWidth-1:0] AxiEnd;
+  byte_bt [MaxExtAxiSlv-1:0] AxiIdx;
+  doub_bt [MaxExtAxiSlv-1:0] AxiStart;
+  doub_bt [MaxExtAxiSlv-1:0] AxiEnd;
 } axi_struct_t;
 
 typedef struct packed {
@@ -79,27 +80,26 @@ endfunction
 // TODO: specify this is for AXI
 // Generate the IDs for each AXI slave device
 function automatic carfield_slave_idx_t carfield_gen_slave_idx(islands_cfg_t island_cfg);
-  carfield_slave_idx_t ret = '{default: '1}; // Initialize struct first
+  carfield_slave_idx_t ret = '{default: '0}; // Initialize struct first
   byte_bt i = 0;
-  byte_bt j = 0;
   if (island_cfg.l2_port0.enable) begin ret.l2_port0 = i; i++;
     if (island_cfg.l2_port1.enable) begin ret.l2_port1 = i; i++; end
   end else begin
-    ret.l2_port0 = ret.l2_port0 - j; j++;
-    ret.l2_port1 = ret.l2_port1 - j; j++;
+    ret.l2_port0 = MaxExtAxiSlv + i; i++;
+    ret.l2_port1 = MaxExtAxiSlv + i;
   end
   if (island_cfg.safed.enable) begin ret.safed = i; i++;
-  end else begin j++; ret.safed = ret.safed - j; end
+  end else begin ret.safed = MaxExtAxiSlv + i; end
   if (island_cfg.ethernet.enable) begin ret.ethernet = i; i++;
-  end else begin j++; ret.ethernet = ret.ethernet - j; end
+  end else begin ret.ethernet = MaxExtAxiSlv + i; end
   if (island_cfg.periph.enable) begin ret.periph = i; i++;
-  end else begin j++; ret.periph = ret.periph - j; end
+  end else begin ret.periph = MaxExtAxiSlv + i; end
   if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
-  end else begin j++; ret.spatz = ret.spatz - j; end
+  end else begin ret.spatz = MaxExtAxiSlv + i; end
   if (island_cfg.pulp.enable) begin ret.pulp = i; i++;
-  end else begin j++; ret.pulp = ret.pulp - j; end
+  end else begin ret.pulp = MaxExtAxiSlv + i; end
   if (island_cfg.mbox.enable) begin ret.mbox = i; i++;
-  end else begin j++; ret.mbox = ret.mbox - j; end
+  end else begin ret.mbox = MaxExtAxiSlv + i; end
   return ret;
 endfunction
 
@@ -120,70 +120,71 @@ endfunction
 
 // TODO: specify this is for AXI
 // Generate the IDs for each AXI master device
+localparam int unsigned MaxExtAxiMst = 2**MaxExtAxiMstWidth;
 function automatic carfield_master_idx_t carfield_gen_master_idx(islands_cfg_t island_cfg);
   carfield_master_idx_t ret = '{default: '0}; // Initialize struct first
   byte_bt i = 0;
-  byte_bt j = 0;
-  if (island_cfg.safed.enable) begin ret.safed = i; i++;  end
-  else begin j++; ret.safed = ret.safed - j; end
-  if (island_cfg.secured.enable) begin ret.secured = i; i++; end
-  else begin j++; ret.secured = ret.secured - j; end
-  if (island_cfg.spatz.enable) begin ret.spatz = i; i++; end
-  else begin j++; ret.spatz = ret.spatz - j; end
-  if (island_cfg.pulp.enable) begin ret.pulp = i; i++; end
-  else begin j++; ret.pulp = ret.pulp - j; end
+  if (island_cfg.safed.enable) begin ret.safed = i; i++;
+  end else begin ret.safed = MaxExtAxiMst + i; end
+  if (island_cfg.secured.enable) begin ret.secured = i; i++;
+  end else begin ret.secured = MaxExtAxiMst + i; end
+  if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
+  end else begin ret.spatz = MaxExtAxiMst + i; end
+  if (island_cfg.pulp.enable) begin ret.pulp = i; i++;
+  end else begin ret.pulp = MaxExtAxiMst + i; end
   return ret;
 endfunction
 
-// verilog_lint: waive-start line-length
-function automatic axi_struct_t carfield_gen_axi_map(int unsigned NumSlave, islands_cfg_t island_cfg);
-// verilog_lint: waive-stop line-length
+// Compute memory map
+function automatic axi_struct_t carfield_gen_axi_map(int unsigned NumSlave  ,
+                                                    islands_cfg_t island_cfg,
+                                                    carfield_slave_idx_t idx);
   axi_struct_t ret = '0; // Initialize the map first
   int unsigned i = 0;
   if (island_cfg.l2_port0.enable) begin
-    ret.AxiIdx[i] = i;
+    ret.AxiIdx[i] = idx.l2_port0;
     ret.AxiStart[i] = island_cfg.l2_port0.base;
     ret.AxiEnd[i] = island_cfg.l2_port0.base + island_cfg.l2_port0.size;
     if (i < NumSlave - 1) i++;
     if (island_cfg.l2_port1.enable) begin
-      ret.AxiIdx[i] = i;
+      ret.AxiIdx[i] = idx.l2_port1;
       ret.AxiStart[i] = island_cfg.l2_port1.base;
       ret.AxiEnd[i] = island_cfg.l2_port1.base + island_cfg.l2_port1.size;
       if (i < NumSlave - 1) i++;
     end
   end
   if (island_cfg.safed.enable) begin
-    ret.AxiIdx[i] = i;
+    ret.AxiIdx[i] = idx.safed;
     ret.AxiStart[i] = island_cfg.safed.base;
     ret.AxiEnd[i] = island_cfg.safed.base + island_cfg.safed.size;
     if (i < NumSlave - 1) i++;
   end
   if (island_cfg.ethernet.enable) begin
-    ret.AxiIdx[i] = i;
+    ret.AxiIdx[i] = idx.ethernet;
     ret.AxiStart[i] = island_cfg.ethernet.base;
     ret.AxiEnd[i] = island_cfg.ethernet.base + island_cfg.ethernet.size;
     if (i < NumSlave - 1) i++;
   end
   if (island_cfg.periph.enable) begin
-    ret.AxiIdx[i] = i;
+    ret.AxiIdx[i] = idx.periph;
     ret.AxiStart[i] = island_cfg.periph.base;
     ret.AxiEnd[i] = island_cfg.periph.base + island_cfg.periph.size;
     if (i < NumSlave - 1) i++;
   end
   if (island_cfg.spatz.enable) begin
-    ret.AxiIdx[i] = i;
+    ret.AxiIdx[i] = idx.spatz;
     ret.AxiStart[i] = island_cfg.spatz.base;
     ret.AxiEnd[i] = island_cfg.spatz.base + island_cfg.spatz.size;
     if (i < NumSlave - 1) i++;
   end
   if (island_cfg.pulp.enable) begin
-    ret.AxiIdx[i] = i;
+    ret.AxiIdx[i] = idx.pulp;
     ret.AxiStart[i] = island_cfg.pulp.base;
     ret.AxiEnd[i] = island_cfg.pulp.base + island_cfg.pulp.size;
     if (i < NumSlave - 1) i++;
   end
   if (island_cfg.mbox.enable) begin
-    ret.AxiIdx[i] = i;
+    ret.AxiIdx[i] = idx.mbox;
     ret.AxiStart[i] = island_cfg.mbox.base;
     ret.AxiEnd[i] = island_cfg.mbox.base + island_cfg.mbox.size;
     if (i < NumSlave - 1) i++;
@@ -221,9 +222,9 @@ localparam carfield_slave_idx_t CarfieldSlvIdx = carfield_gen_slave_idx(Carfield
 localparam int unsigned CarfieldNumMasters = gen_num_master(CarfieldIslandsCfg);
 localparam carfield_master_idx_t CarfieldMstIdx = carfield_gen_master_idx(CarfieldIslandsCfg);
 
-// verilog_lint: waive-start line-length
-localparam axi_struct_t CarfieldAxiMap = carfield_gen_axi_map(CarfieldNumSlaves, CarfieldIslandsCfg);
-// verilog_lint: waive-stop line-length
+localparam axi_struct_t CarfieldAxiMap = carfield_gen_axi_map(CarfieldNumSlaves ,
+                                                              CarfieldIslandsCfg,
+                                                              CarfieldSlvIdx    );
 
 localparam int unsigned CarfieldNumDomains = gen_carfield_domains(CarfieldIslandsCfg);
 
