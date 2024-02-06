@@ -1251,11 +1251,13 @@ if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
   assign safety_pwr_on_rst_n = pwr_on_rsts_n[CarfieldDomainIdx.safed];
   assign safety_clk = domain_clk_gated[CarfieldDomainIdx.safed];
   assign domain_clk_sel[CarfieldDomainIdx.safed] = car_regs_reg2hw.safety_island_clk_sel.q;
-  assign domain_clk_div_value[CarfieldDomainIdx.safed] = car_regs_reg2hw.safety_island_clk_div_value.q;
-  assign domain_clk_div_changed[CarfieldDomainIdx.safed] = car_regs_reg2hw.safety_island_clk_div_value.qe;
+  assign domain_clk_div_value[CarfieldDomainIdx.safed] =
+         car_regs_reg2hw.safety_island_clk_div_value.q;
+  assign domain_clk_div_changed[CarfieldDomainIdx.safed] =
+         car_regs_reg2hw.safety_island_clk_div_value.qe;
   assign domain_clk_en[CarfieldDomainIdx.safed] = car_regs_reg2hw.safety_island_clk_en.q;
 
-  assign slave_isolate_req[SafetyIslandSlvIdx]   = car_regs_reg2hw.safety_island_isolate.q;
+  assign slave_isolate_req[SafetyIslandSlvIdx] = car_regs_reg2hw.safety_island_isolate.q;
   assign car_regs_hw2reg.safety_island_isolate_status.d = slave_isolated[SafetyIslandSlvIdx];
   assign car_regs_hw2reg.safety_island_isolate_status.de = 1'b1;
   assign slave_isolated[SafetyIslandSlvIdx] = slave_isolated_rsp[SafetyIslandSlvIdx] &
@@ -1411,11 +1413,14 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
   assign pulp_clk = domain_clk_gated[CarfieldDomainIdx.pulp];
   assign reset_vector[CarfieldDomainIdx.pulp] = car_regs_reg2hw.pulp_cluster_rst.q;
 
-  assign domain_clk_sel[CarfieldDomainIdx.pulp] = car_regs_reg2hw.pulp_cluster_clk_sel.q;
-  assign domain_clk_div_value[CarfieldDomainIdx.pulp] = car_regs_reg2hw.pulp_cluster_clk_div_value.q;
+  assign domain_clk_sel[CarfieldDomainIdx.pulp] =
+         car_regs_reg2hw.pulp_cluster_clk_sel.q;
+  assign domain_clk_div_value[CarfieldDomainIdx.pulp] =
+         car_regs_reg2hw.pulp_cluster_clk_div_value.q;
   assign domain_clk_div_changed[CarfieldDomainIdx.pulp] =
          car_regs_reg2hw.pulp_cluster_clk_div_value.qe;
-  assign domain_clk_en[CarfieldDomainIdx.pulp] = car_regs_reg2hw.pulp_cluster_clk_en.q;
+  assign domain_clk_en[CarfieldDomainIdx.pulp] =
+         car_regs_reg2hw.pulp_cluster_clk_en.q;
 
   assign slave_isolate_req[IntClusterSlvIdx] = car_regs_reg2hw.pulp_cluster_isolate.q;
   assign car_regs_hw2reg.pulp_cluster_isolate_status.d = slave_isolated[IntClusterSlvIdx];
@@ -1759,9 +1764,12 @@ if (CarfieldIslandsCfg.secured.enable) begin : gen_secure_subsystem
   assign security_rst_n = rsts_n[CarfieldDomainIdx.secured];
   assign security_pwr_on_rst_n = pwr_on_rsts_n[CarfieldDomainIdx.secured];
   assign security_clk = domain_clk_gated[CarfieldDomainIdx.secured];
-  assign domain_clk_sel[CarfieldDomainIdx.secured] = car_regs_reg2hw.security_island_clk_sel.q;
-  assign domain_clk_div_value[CarfieldDomainIdx.secured] = car_regs_reg2hw.security_island_clk_div_value.q;
-  assign domain_clk_div_changed[CarfieldDomainIdx.secured] = car_regs_reg2hw.security_island_clk_div_value.qe;
+  assign domain_clk_sel[CarfieldDomainIdx.secured] =
+         car_regs_reg2hw.security_island_clk_sel.q;
+  assign domain_clk_div_value[CarfieldDomainIdx.secured] =
+         car_regs_reg2hw.security_island_clk_div_value.q;
+  assign domain_clk_div_changed[CarfieldDomainIdx.secured] =
+         car_regs_reg2hw.security_island_clk_div_value.qe;
   assign domain_clk_en[CarfieldDomainIdx.secured] = car_regs_reg2hw.security_island_clk_en.q |
                                         secure_boot_i;
   assign security_island_isolate_req  = car_regs_reg2hw.security_island_isolate.q &&
