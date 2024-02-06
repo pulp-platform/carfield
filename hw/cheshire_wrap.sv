@@ -500,7 +500,6 @@ for (genvar i = 0; i < Cfg.AxiExtNumSlv - 2; i++) begin: gen_ext_slv_src_cdc
   );
 end
 
-
 // Cheshire's AXI slave cdc and isolate generation, except for the Integer Cluster (slave 7)
 for (genvar i = 0; i < Cfg.AxiExtNumMst - 1; i++) begin: gen_ext_mst_dst_cdc
   axi_cdc_dst #(
