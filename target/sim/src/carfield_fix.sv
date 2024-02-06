@@ -343,7 +343,7 @@ module carfield_soc_fixture;
       .axi_slv_ext_rsp_t ( axi_mst_rsp_t ),
       .GlobalAddrWidth   ( 32            ),
       .BaseAddr          ( 32'h6000_0000 ),
-      .AddrRange         ( SafetyIslandSize      ),
+      .AddrRange         ( CarfieldIslandsCfg.safed.size ),
       .MemOffset         ( SafetyIslandMemOffset ),
       .PeriphOffset      ( SafetyIslandPerOffset ),
       .ClkPeriodSys      ( ClkPeriodSys          ),

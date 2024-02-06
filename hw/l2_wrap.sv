@@ -8,6 +8,7 @@
 `include "axi/typedef.svh"
 module l2_wrap
   import carfield_pkg::*;
+  import carfield_cfg_pkg::*;
   import axi_pkg::*;
   import dyn_mem_pkg::*;
 #(
@@ -154,18 +155,18 @@ typedef struct packed {
 } map_rule_t;
 
 localparam map_rule_t [NumRules-1:0] MappingRules = '{
-  '{idx       : dyn_mem_pkg::INTERLEAVE  ,
-    start_addr: L2Port0Base             ,
-    end_addr  : L2Port0Base + L2MemSize},
-  '{idx       : dyn_mem_pkg::NONE_INTER           ,
-    start_addr: L2Port0NonInterlBase             ,
-    end_addr  : L2Port0NonInterlBase + L2MemSize},
-  '{idx       : dyn_mem_pkg::INTERLEAVE ,
-    start_addr: L2Port1Base            ,
-    end_addr  : L2Port1Base + L2MemSize},
-  '{idx       : dyn_mem_pkg::NONE_INTER          ,
-    start_addr: L2Port1NonInterlBase            ,
-    end_addr  : L2Port1NonInterlBase + L2MemSize}
+  '{idx       : dyn_mem_pkg::INTERLEAVE,
+    start_addr: CarfieldIslandsCfg.l2_port0.base,
+    end_addr  : CarfieldIslandsCfg.l2_port0.base + L2MemSize},
+  '{idx       : dyn_mem_pkg::NONE_INTER,
+    start_addr: CarfieldIslandsCfg.l2_port0.base,
+    end_addr  : CarfieldIslandsCfg.l2_port0.base + L2MemSize},
+  '{idx       : dyn_mem_pkg::INTERLEAVE,
+    start_addr: CarfieldIslandsCfg.l2_port1.base,
+    end_addr  : CarfieldIslandsCfg.l2_port1.base + L2MemSize},
+  '{idx       : dyn_mem_pkg::NONE_INTER,
+    start_addr: CarfieldIslandsCfg.l2_port1.base,
+    end_addr  : CarfieldIslandsCfg.l2_port1.base + L2MemSize}
 };
 
 dyn_mem_top #(
