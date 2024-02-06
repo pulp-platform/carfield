@@ -1609,7 +1609,7 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
                                            master_isolated_rsp[FPClusterMstIdx];
 
 `ifndef FP_CLUSTER_NETLIST
-  spatz_wrap #(
+  spatz_cluster_wrapper #(
     .AxiAddrWidth             ( Cfg.AddrWidth           ),
     .AxiDataWidth             ( Cfg.AxiDataWidth        ),
     .AxiUserWidth             ( Cfg.AxiUserWidth        ),
@@ -1650,7 +1650,7 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
     .AsyncAxiOutRWidth        ( CarfieldAxiMstRWidth  )
     ) i_fp_cluster_wrapper (
 `else
-  spatz_wrap i_fp_cluster_wrapper (
+  spatz_cluster_wrapper i_fp_cluster_wrapper (
 `endif
     .clk_i           ( spatz_clk            ),
     .rst_ni          ( spatz_rst_n          ),
