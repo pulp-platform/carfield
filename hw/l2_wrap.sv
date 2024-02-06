@@ -156,17 +156,17 @@ typedef struct packed {
 
 localparam map_rule_t [NumRules-1:0] MappingRules = '{
   '{idx       : dyn_mem_pkg::INTERLEAVE,
-    start_addr: CarfieldIslandsCfg.l2_port0.base,
-    end_addr  : CarfieldIslandsCfg.l2_port0.base + L2MemSize},
+    start_addr: L2Port0InterlBase,
+    end_addr  : L2Port0InterlBase + L2MemSize},
   '{idx       : dyn_mem_pkg::NONE_INTER,
-    start_addr: CarfieldIslandsCfg.l2_port0.base,
-    end_addr  : CarfieldIslandsCfg.l2_port0.base + L2MemSize},
+    start_addr: L2Port0NonInterlBase,
+    end_addr  : L2Port0NonInterlBase + L2MemSize},
   '{idx       : dyn_mem_pkg::INTERLEAVE,
-    start_addr: CarfieldIslandsCfg.l2_port1.base,
-    end_addr  : CarfieldIslandsCfg.l2_port1.base + L2MemSize},
+    start_addr: L2Port1InterlBase,
+    end_addr  : L2Port1InterlBase + L2MemSize},
   '{idx       : dyn_mem_pkg::NONE_INTER,
-    start_addr: CarfieldIslandsCfg.l2_port1.base,
-    end_addr  : CarfieldIslandsCfg.l2_port1.base + L2MemSize}
+    start_addr: L2Port1NonInterlBase,
+    end_addr  : L2Port1NonInterlBase + L2MemSize}
 };
 
 dyn_mem_top #(

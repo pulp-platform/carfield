@@ -354,6 +354,10 @@ localparam int unsigned NumL2Ports = (CarfieldIslandsCfg.l2_port1.enable) ? 2 : 
 localparam int unsigned L2MemSize = CarfieldIslandsCfg.l2_port0.size/2;
 localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
                                         // (interleaved, non-interleaved)
+localparam doub_bt L2Port0InterlBase = CarfieldIslandsCfg.l2_port0.base;
+localparam doub_bt L2Port1InterlBase = CarfieldIslandsCfg.l2_port1.base;
+localparam doub_bt L2Port0NonInterlBase = CarfieldIslandsCfg.l2_port0.base + L2MemSize;
+localparam doub_bt L2Port1NonInterlBase = CarfieldIslandsCfg.l2_port1.base + L2MemSize;
 
 /****************************/
 /* Safety Island Parameters */
