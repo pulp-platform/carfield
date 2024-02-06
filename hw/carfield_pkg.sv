@@ -50,39 +50,7 @@ typedef enum byte_bt {
   IntClusterMstIdx     = carfield_cfg_pkg::CarfieldMstIdx.pulp
 } axi_mst_idx_t;
 
-typedef enum doub_bt {
-  L2Port0Base      = 'h0000_0000_7800_0000,
-  L2Port1Base      = 'h0000_0000_7820_0000,
-  SafetyIslandBase = 'h0000_0000_6000_0000,
-  EthernetBase     = 'h0000_0000_2000_0000,
-  PeriphsBase      = 'h0000_0000_2000_1000,
-  FPClusterBase    = 'h0000_0000_5100_0000,
-  IntClusterBase   = 'h0000_0000_5000_0000,
-  MailboxBase      = 'h0000_0000_4000_0000
-} axi_start_t;
-
-// AXI Slave Sizes
-localparam doub_bt L2Size           = 'h0000_0000_0020_0000;
-localparam doub_bt SafetyIslandSize = 'h0000_0000_0080_0000;
-localparam doub_bt EthernetSize     = 'h0000_0000_0000_1000;
-localparam doub_bt PeriphsSize      = 'h0000_0000_0000_9000;
-localparam doub_bt IntClusterSize   = 'h0000_0000_0080_0000;
-localparam doub_bt FPClusterSize    = 'h0000_0000_0080_0000;
-localparam doub_bt MailboxSize      = 'h0000_0000_0000_1000;
-
-typedef enum doub_bt {
-  L2Port0End      = L2Port0Base + L2Size,
-  L2Port1End      = L2Port1Base + L2Size,
-  SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize,
-  EthernetEnd     = EthernetBase + EthernetSize,
-  PeriphsEnd      = PeriphsBase + PeriphsSize,
-  FPClusterEnd    = FPClusterBase + FPClusterSize,
-  IntClusterEnd   = IntClusterBase + IntClusterSize,
-  MailboxEnd      = MailboxBase + MailboxSize
-} axi_end_t;
-
 // APB peripherals
-
 localparam int unsigned CarfieldNumAdvTimerIntrs  = 4;
 localparam int unsigned CarfieldNumAdvTimerEvents = 4;
 localparam int unsigned CarfieldNumSysTimerIntrs  = 2;
@@ -162,11 +130,6 @@ typedef enum doub_bt {
   PadframeEnd = PadframeBase + PadframeSize,
   L2EccEnd    = L2EccBase + L2EccSize
 } reg_end_t;
-
-// Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals + Floating Point Cluster
-localparam bit [3:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1;
-// Ext Masters: Integer Cluster + Security Island + Safety Island + Floating Point Cluster
-localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1 + 3'd1;
 
 // Synchronization stages (for FIFOs read/write pointers and single-bit signals syncronization after
 // CDCs)
@@ -387,12 +350,10 @@ localparam int unsigned LogDepth   = 3;
 /*****************/
 /* L2 Parameters */
 /*****************/
-localparam int unsigned NumL2Ports = 2;
-localparam int unsigned L2MemSize = 2**20;
+localparam int unsigned NumL2Ports = (CarfieldIslandsCfg.l2_port1.enable) ? 2 : 1;
+localparam int unsigned L2MemSize = CarfieldIslandsCfg.l2_port0.size/2;
 localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
                                         // (interleaved, non-interleaved)
-localparam doub_bt L2Port0NonInterlBase = L2Port0Base + L2MemSize;
-localparam doub_bt L2Port1NonInterlBase = L2Port1Base + L2MemSize;
 
 /****************************/
 /* Safety Island Parameters */
@@ -415,11 +376,12 @@ localparam int unsigned IntClusterSetAssociative = 4;
 localparam int unsigned IntClusterNumCacheBanks = 2;
 localparam int unsigned IntClusterNumCacheLines = 1;
 localparam int unsigned IntClusterCacheSize = 4*1024;
-localparam int unsigned IntClusterDbgStart = SafetyIslandBase+
+localparam int unsigned IntClusterDbgStart = CarfieldIslandsCfg.safed.base+
                                              SafetyIslandPerOffset+
                                              safety_island_pkg::DebugAddrOffset;
 localparam int unsigned IntClusterBootAddrDefaultOffs = 'h8080;
-localparam int unsigned IntClusterBootAddr = L2Port0Base + IntClusterBootAddrDefaultOffs;
+localparam int unsigned IntClusterBootAddr = CarfieldIslandsCfg.l2_port0.base +
+                                             IntClusterBootAddrDefaultOffs;
 localparam int unsigned IntClusterInstrRdataWidth = 32;
 localparam int unsigned IntClusterFpu = 0;
 localparam int unsigned IntClusterFpuDivSqrt = 0;
