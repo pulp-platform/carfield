@@ -33,14 +33,14 @@ localparam int unsigned FPClusterDomainClkDivValue  = 1;
 localparam int unsigned L2DomainClkDivValue         = 1;
 
 typedef enum byte_bt {
-  L2Port0SlvIdx      = carfield_cfg_pkg::CarfieldSlvIdx.l2_port0,
-  L2Port1SlvIdx      = carfield_cfg_pkg::CarfieldSlvIdx.l2_port1,
-  SafetyIslandSlvIdx = carfield_cfg_pkg::CarfieldSlvIdx.safed,
-  EthernetSlvIdx     = carfield_cfg_pkg::CarfieldSlvIdx.ethernet,
-  PeriphsSlvIdx      = carfield_cfg_pkg::CarfieldSlvIdx.periph,
-  FPClusterSlvIdx    = carfield_cfg_pkg::CarfieldSlvIdx.spatz,
-  IntClusterSlvIdx   = carfield_cfg_pkg::CarfieldSlvIdx.pulp,
-  MailboxSlvIdx      = carfield_cfg_pkg::CarfieldSlvIdx.mbox
+  L2Port0SlvIdx      = carfield_cfg_pkg::CarfieldAxiSlvIdx.l2_port0,
+  L2Port1SlvIdx      = carfield_cfg_pkg::CarfieldAxiSlvIdx.l2_port1,
+  SafetyIslandSlvIdx = carfield_cfg_pkg::CarfieldAxiSlvIdx.safed,
+  EthernetSlvIdx     = carfield_cfg_pkg::CarfieldAxiSlvIdx.ethernet,
+  PeriphsSlvIdx      = carfield_cfg_pkg::CarfieldAxiSlvIdx.periph,
+  FPClusterSlvIdx    = carfield_cfg_pkg::CarfieldAxiSlvIdx.spatz,
+  IntClusterSlvIdx   = carfield_cfg_pkg::CarfieldAxiSlvIdx.pulp,
+  MailboxSlvIdx      = carfield_cfg_pkg::CarfieldAxiSlvIdx.mbox
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
@@ -286,9 +286,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   RegAmoNumCuts     : 1,
   RegAmoPostCut     : 1,
   // External AXI ports (at most 8 ports and rules)
-  AxiExtNumMst      : carfield_cfg_pkg::CarfieldNumMasters,
-  AxiExtNumSlv      : carfield_cfg_pkg::CarfieldNumSlaves,
-  AxiExtNumRules    : carfield_cfg_pkg::CarfieldNumSlaves,
+  AxiExtNumMst      : carfield_cfg_pkg::CarfieldAxiNumMasters,
+  AxiExtNumSlv      : carfield_cfg_pkg::CarfieldAxiNumSlaves,
+  AxiExtNumRules    : carfield_cfg_pkg::CarfieldAxiNumSlaves,
   // External AXI region map
   AxiExtRegionIdx   : carfield_cfg_pkg::CarfieldAxiMap.AxiIdx,
   AxiExtRegionStart : carfield_cfg_pkg::CarfieldAxiMap.AxiStart,
