@@ -6,7 +6,7 @@
 
 `include "axi/typedef.svh"
 
-module spatz_wrap
+module spatz_cluster_wrapper
  import spatz_cluster_pkg::*;
  import fpnew_pkg::fpu_implementation_t;
  import snitch_pma_pkg::snitch_pma_t;
@@ -474,4 +474,4 @@ module spatz_wrap
     .axi_out_resp_i          ( axi_from_cluster_iwc_resp )
   );
 
-endmodule: spatz_wrap
+endmodule: spatz_cluster_wrapper

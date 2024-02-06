@@ -83,7 +83,7 @@ sources:
   - hw/cheshire_wrap.sv
   - hw/hyperbus_wrap.sv
   - hw/l2_wrap.sv
-  - hw/spatz_wrap.sv
+  - hw/spatz_cluster_wrapper.sv
   - hw/carfield_rstgen.sv
   # Level 2
   - hw/carfield.sv
