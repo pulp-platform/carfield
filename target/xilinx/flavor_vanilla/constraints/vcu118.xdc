@@ -44,119 +44,28 @@ set_max_delay -through [get_nets -of_objects [get_cells i_dram_wrapper/gen_cdc.i
 
 #################################################################################
 
-set_property PACKAGE_PIN AW25 [get_ports uart_rx_i]
-set_property IOSTANDARD LVCMOS18 [get_ports uart_rx_i]
-set_property PACKAGE_PIN BB21 [get_ports uart_tx_o]
-set_property IOSTANDARD LVCMOS18 [get_ports uart_tx_o]
-#set_property PACKAGE_PIN AY25 [get_ports uart_rts_no]
-#set_property IOSTANDARD LVCMOS18 [get_ports uart_rts_no]
-#set_property PACKAGE_PIN BB22 [get_ports uart_cts_ni]
-#set_property IOSTANDARD LVCMOS18 [get_ports uart_cts_ni]
-#set_property IOB {TRUE} [ get_cells -of_objects [ all_fanin -flat -startpoints_only [get_ports {uart_rx_i}]]]
-#set_property IOB {TRUE} [ get_cells -of_objects [ all_fanin -flat -startpoints_only [get_ports {uart_tx_o}]]]
+set_property PACKAGE_PIN AW25     [get_ports "uart_rx_i"] ;# Bank  67 VCCO - VCC1V8   - IO_L2N_T0L_N3_67
+set_property IOSTANDARD  LVCMOS18 [get_ports "uart_rx_i"] ;# Bank  67 VCCO - VCC1V8   - IO_L2N_T0L_N3_67
+set_property PACKAGE_PIN BB21     [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
+set_property IOSTANDARD  LVCMOS18 [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
 
-set_property PACKAGE_PIN L19	 [get_ports cpu_reset]
-set_property IOSTANDARD LVCMOS12 [get_ports cpu_reset]
+set_property PACKAGE_PIN L19 [get_ports reset]
+set_property IOSTANDARD LVCMOS12 [get_ports reset]
 
+set_property PACKAGE_PIN N30     [get_ports jtag_tdo_o] ;# B25 - H17 (FMCP_HSPC_LA11_N) - J1.08 - TDO
+# Todo change invalid lvcmos
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdo_o]
 
+set_property PACKAGE_PIN P30     [get_ports jtag_tck_i] ;# B26 - H16 (FMCP_HSPC_LA11_P) - J1.06 - TCK
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tck_i] ;
 
-#AY14-N28 PMOD0_0
-set_property PACKAGE_PIN AY14 [get_ports jtag_tdo_o]
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tdo_o]
-#AY15-M30 PMOD0_1
-set_property PACKAGE_PIN AY15 [get_ports jtag_trst_ni]
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_trst_ni]
-#AW15-N30 PMOD0_2
-set_property PACKAGE_PIN AW15 [get_ports jtag_tck_i]
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tck_i]
-#AV16-P29 PMOD0_4
-set_property PACKAGE_PIN AV16 [get_ports jtag_tdi_i]
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tdi_i]
-#AU16     PMOD0_5
-set_property PACKAGE_PIN AU16 [get_ports jtag_tms_i]
-set_property IOSTANDARD LVCMOS18 [get_ports jtag_tms_i]
-#AT15     PMOD0_6
+set_property PACKAGE_PIN N28     [get_ports jtag_tms_i] ;# H22 - G16 (FMCP_HSPC_LA12_N) - J1.12 - TNS
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tms_i] ;
 
-#AV15-P30 PMOD0_3
+set_property PACKAGE_PIN M30     [get_ports jtag_tdi_i] ;# J22 - G15 (FMCP_HSPC_LA12_P) - J1.10 - TDI
+set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdi_i]
 
-
-
-set_property BOARD_PART_PIN default_250mhz_clk1_n [get_ports sys_clk_n]
-set_property IOSTANDARD LVDS [get_ports sys_clk_n]
-set_property BOARD_PART_PIN default_250mhz_clk1_p [get_ports sys_clk_p]
-set_property IOSTANDARD LVDS [get_ports sys_clk_p]
-set_property PACKAGE_PIN E12 [get_ports sys_clk_p]
-set_property PACKAGE_PIN D12 [get_ports sys_clk_n]
-
-#set_property PACKAGE_PIN AT15 [get_ports {sd_cd_i}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_cd_i}]
-#set_property PACKAGE_PIN AY15 [get_ports {sd_cmd_o}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_cmd_o}]
-#set_property PACKAGE_PIN AW15 [get_ports {sd_d_io[0]}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_d_io[0]}]
-#set_property PULLUP true [get_ports {sd_d_io[0]}]
-#set_property PACKAGE_PIN AV16 [get_ports {sd_d_io[1]}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_d_io[1]}]
-#set_property PULLUP true [get_ports {sd_d_io[1]}]
-#set_property PACKAGE_PIN AU16 [get_ports {sd_d_io[2]}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_d_io[2]}]
-#set_property PULLUP true [get_ports {sd_d_io[2]}]
-#set_property PACKAGE_PIN AY14 [get_ports {sd_d_io[3]}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_d_io[3]}]
-#set_property PULLUP true [get_ports {sd_d_io[3]}]
-#set_property PACKAGE_PIN AV15 [get_ports {sd_sclk_o}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_sclk_o}]
-#set_property PACKAGE_PIN AT16 [get_ports {sd_reset_o}]
-#set_property IOSTANDARD LVCMOS18 [get_ports {sd_reset_o}]
-
-#set_property IOB {TRUE} [ get_cells -of_objects [ all_fanin -flat -startpoints_only [get_ports {sd_d_io[0]}]]]
-#set_property IOB {TRUE} [ get_cells -of_objects [ all_fanin -flat -startpoints_only [get_ports {sd_d_io[1]}]]]
-#set_property IOB {TRUE} [ get_cells -of_objects [ all_fanin -flat -startpoints_only [get_ports {sd_d_io[2]}]]]
-#set_property IOB {TRUE} [ get_cells -of_objects [ all_fanin -flat -startpoints_only [get_ports {sd_d_io[3]}]]]
-#set_property MARK_DEBUG true [get_nets i_carfield/jtag_tck_i]
-
-set_property MARK_DEBUG true [get_nets i_carfield/jtag_tdi_i]
-set_property MARK_DEBUG true [get_nets i_carfield/jtag_tdo_o]
-set_property MARK_DEBUG true [get_nets i_carfield/jtag_tms_i] 
-set_property MARK_DEBUG true [get_nets i_carfield/jtag_trst_ni] 
-set_property MARK_DEBUG true [get_nets i_carfield/rst_ni]
-set_property MARK_DEBUG true [get_nets i_carfield/test_mode_i]
-set_property MARK_DEBUG true [get_nets i_carfield/boot_mode_i]
-set_property MARK_DEBUG true [get_nets i_carfield/rtc_i]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_tx_o]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_rx_i]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_rts_no]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_dtr_no]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_cts_ni]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_dsr_ni]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_dcd_ni]
-set_property MARK_DEBUG true [get_nets i_carfield/uart_rin_ni]
-
-  // External AXI LLC (DRAM) port
-set_property MARK_DEBUG true [get_nets i_carfield/axi_llc_mst_req_o]
-set_property MARK_DEBUG true [get_nets i_carfield/axi_llc_mst_rsp_i]
-  // External AXI crossbar ports
-set_property MARK_DEBUG true [get_nets i_carfield/axi_ext_mst_req_i]
-set_property MARK_DEBUG true [get_nets i_carfield/axi_ext_mst_rsp_o]
-set_property MARK_DEBUG true [get_nets i_carfield/axi_ext_slv_req_o]
-set_property MARK_DEBUG true [get_nets i_carfield/axi_ext_slv_rsp_i]
-  // External reg demux slaves
-set_property MARK_DEBUG true [get_nets i_carfield/reg_ext_slv_req_o]
-set_property MARK_DEBUG true [get_nets i_carfield/reg_ext_slv_rsp_i]
-  // Interrupts from and to external targets
-set_property MARK_DEBUG true [get_nets i_carfield/intr_ext_i]
-set_property MARK_DEBUG true [get_nets i_carfield/intr_ext_o]
-  // Interrupt requests to external harts
-set_property MARK_DEBUG true [get_nets i_carfield/xeip_ext_o]
-set_property MARK_DEBUG true [get_nets i_carfield/mtip_ext_o]
-set_property MARK_DEBUG true [get_nets i_carfield/msip_ext_o]
-  // Debug interface to external harts
-set_property MARK_DEBUG true [get_nets i_carfield/dbg_active_o]
-set_property MARK_DEBUG true [get_nets i_carfield/dbg_ext_req_o]
-set_property MARK_DEBUG true [get_nets i_carfield/dbg_ext_unavail_i]
-
-set_property MARK_DEBUG true [get_nets STARTUPE3_inst/qspi_dqi]
-set_property MARK_DEBUG true [get_nets STARTUPE3_inst/qspi_dqo]
-set_property MARK_DEBUG true [get_nets STARTUPE3_inst/qspi_dqo_ts]
-set_property MARK_DEBUG true [get_nets STARTUPE3_inst/qspi_cs_b[1]]
-set_property MARK_DEBUG true [get_nets STARTUPE3_inst/qspi_cs_b_ts[1]]
+set_property PACKAGE_PIN F31      [get_ports "sys_clk_n"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13N_T2L_N1_GC_QBC_47
+set_property IOSTANDARD  DIFF_SSTL12 [get_ports "sys_clk_n"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13N_T2L_N1_GC_QBC_47
+set_property PACKAGE_PIN G31      [get_ports "sys_clk_p"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13P_T2L_N0_GC_QBC_47
+set_property IOSTANDARD  DIFF_SSTL12 [get_ports "sys_clk_p"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13P_T2L_N0_GC_QBC_47

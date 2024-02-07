@@ -593,7 +593,7 @@ module carfield_xilinx
   assign qspi_cs_b_ts = ~spi_cs_en;
   assign qspi_dqo_ts  = ~spi_sd_en;
 
-  // On VCU128/ZCU102, SPI ports are not directly available
+  // On VCU128/VCU118, SPI ports are not directly available
   STARTUPE3 #(
      .PROG_USR("FALSE"),
      .SIM_CCLK_FREQ(0.0)

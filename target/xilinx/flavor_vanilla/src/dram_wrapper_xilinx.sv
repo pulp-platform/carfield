@@ -70,16 +70,6 @@ module dram_wrapper_xilinx #(
   };
 `endif
 
-`ifdef TARGET_ZCU102
-  localparam dram_cfg_t cfg = '{
-    EnCDC         : 1, // ??? MHz axi (attention CDC logdepth)
-    IdWidth       : 4,
-    AddrWidth     : 29,
-    DataWidth     : 128,
-    StrobeWidth   : 16
-  };
-`endif
-
 `ifdef TARGET_GENESYS2
   localparam dram_cfg_t cfg = '{
     EnCDC         : 1, // 200 MHz axi (attention CDC logdepth)
