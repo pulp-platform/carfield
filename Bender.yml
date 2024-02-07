@@ -5,10 +5,10 @@
 package:
   name: carfield
   authors:
-    - "Yvan Tortorella <yvan.tortorella@unibo.it>"
     - "Luca Valente <luca.valente@unibo.it>"
     - "Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch>"
     - "Robert Balas <balasr@iis.ee.ethz.ch>"
+    - "Yvan Tortorella <yvan.tortorella@unibo.it>"
 
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
