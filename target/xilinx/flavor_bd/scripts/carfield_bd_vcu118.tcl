@@ -1,8 +1,3 @@
-# Copyright 2024 ETH Zurich and University of Bologna.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 ################################################################
 # This is a generated script based on design: design_1
@@ -298,6 +293,13 @@ proc create_root_design { parentCell } {
    CONFIG.USE_BOARD_FLOW {true} \
  ] $psr_10
 
+  # Create instance: psr_300, and set properties
+  set psr_300 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 psr_300 ]
+  set_property -dict [ list \
+   CONFIG.C_AUX_RESET_HIGH {1} \
+   CONFIG.RESET_BOARD_INTERFACE {reset} \
+ ] $psr_300
+
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0 ]
   set_property -dict [ list \
@@ -340,16 +342,19 @@ proc create_root_design { parentCell } {
   connect_bd_net -net clk_wiz_0_clk_20 [get_bd_pins carfield_xilinx_ip_0/clk_20] [get_bd_pins clk_wiz_0/clk_20]
   connect_bd_net -net clk_wiz_0_clk_50 [get_bd_pins carfield_xilinx_ip_0/clk_50] [get_bd_pins clk_wiz_0/clk_50] [get_bd_pins vio_0/clk]
   connect_bd_net -net clk_wiz_0_clk_100 [get_bd_pins carfield_xilinx_ip_0/clk_100] [get_bd_pins clk_wiz_0/clk_100]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins xbar_dram/aclk1]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins psr_300/slowest_sync_clk] [get_bd_pins xbar_dram/aclk1]
   connect_bd_net -net high_dout [get_bd_pins carfield_xilinx_ip_0/jtag_trst_ni] [get_bd_pins high/dout]
   connect_bd_net -net low_dout [get_bd_pins carfield_xilinx_ip_0/testmode_i] [get_bd_pins low/dout]
   connect_bd_net -net psr_10_interconnect_aresetn [get_bd_pins psr_10/interconnect_aresetn] [get_bd_pins xbar_dram/aresetn]
-  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins carfield_xilinx_ip_0/cpu_reset] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins psr_10/ext_reset_in]
+  connect_bd_net -net psr_10_mb_reset [get_bd_pins carfield_xilinx_ip_0/cpu_reset] [get_bd_pins psr_10/mb_reset]
+  connect_bd_net -net psr_333_peripheral_aresetn [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins psr_300/peripheral_aresetn]
+  connect_bd_net -net psr_333_peripheral_reset [get_bd_pins ddr4_0/sys_rst] [get_bd_pins psr_300/peripheral_reset]
+  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins psr_10/ext_reset_in] [get_bd_pins psr_300/ext_reset_in]
   connect_bd_net -net uart_rx_i_1 [get_bd_ports uart_rx_i] [get_bd_pins carfield_xilinx_ip_0/uart_rx_i]
   connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins util_ds_buf_0/IBUF_OUT]
   connect_bd_net -net vio_0_probe_out0 [get_bd_pins carfield_xilinx_ip_0/boot_mode_i] [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net vio_0_probe_out1 [get_bd_pins carfield_xilinx_ip_0/boot_mode_safety_i] [get_bd_pins vio_0/probe_out1]
-  connect_bd_net -net vio_0_probe_out2 [get_bd_pins psr_10/aux_reset_in] [get_bd_pins vio_0/probe_out2]
+  connect_bd_net -net vio_0_probe_out2 [get_bd_pins psr_10/aux_reset_in] [get_bd_pins psr_300/aux_reset_in] [get_bd_pins vio_0/probe_out2]
 
   # Create address segments
   assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/dram_axi] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
