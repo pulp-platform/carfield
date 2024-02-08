@@ -3,7 +3,6 @@
 # Global Settings #
 ###################
 
-# The output of the reset synchronizer
 set_false_path -from [get_ports cpu_reset*]
 
 #####################

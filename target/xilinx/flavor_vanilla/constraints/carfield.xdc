@@ -450,7 +450,15 @@ set_max_delay -datapath \
 
 set_max_delay -from $SOC_RST_SRC $SOC_TCK
 set_false_path -hold -from $SOC_RST_SRC
-# No max delay on sw reset since clock can be gated anyways
-set_false_path -through [get_pins -of_objects [get_cells i_carfield/i_carfield_rstgen] -filter {DIRECTION==OUT}]
+
 set_property KEEP_HIERARCHY SOFT [get_cells -hier -filter {ORIG_REF_NAME=="rstgen" || REF_NAME=="rstgen"}]
-set_false_path -hold -through [get_pins -filter {DIRECTION==OUT} -of_objects [get_cells -hier -filter {REF_NAME == rstgen || ORIG_REF_NAME == rstgen}]]
+# Relax constraints on synchronous for the islands (since they are clock-gated at sw-reset)
+set_false_path -through [get_pins -hier -filter { NAME =~ "*_rst/q_reg[0]/Q" } ]
+set_false_path -hold -through [get_cells -hier -filter {REF_NAME == rstgen || ORIG_REF_NAME == rstgen} -regexp .*gen_domain.*]
+# Hold and max delay on synchronizers named registers
+# Todo check this latch constraints
+# set_false_path -hold -through [get_pins -hier *synch_regs_q_reg[0]/* -filter {DIRECTION == IN}]
+set_false_path -hold -through [get_pins -of_objects [get_cells -hier -filter { ORIG_REF_NAME == rstgen }] -filter { REF_PIN_NAME == rst_no }]
+# Go large on the isolation
+set_max_delay -datapath -to [get_nets i_carfield/*isolat*] $SOC_TCK
+set_false_path -hold -through [get_nets i_carfield/*isolat*]

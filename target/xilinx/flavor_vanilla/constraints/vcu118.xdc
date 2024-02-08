@@ -17,7 +17,7 @@ set_clock_groups -name sys_clk_async -asynchronous -group {sys_clk}
 #############
 
 # Dram axi clock : 833ps * 4
-set MIG_TCK 4
+set MIG_TCK 3.332
 set MIG_RST [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk_sync_rst]
 create_clock -period $MIG_TCK -name dram_axi_clk [get_pins i_dram_wrapper/i_dram/c0_ddr4_ui_clk]
 set_clock_groups -name dram_async -asynchronous -group {dram_axi_clk}
@@ -65,7 +65,8 @@ set_property IOSTANDARD LVCMOS12 [get_ports jtag_tms_i] ;
 set_property PACKAGE_PIN M30     [get_ports jtag_tdi_i] ;# J22 - G15 (FMCP_HSPC_LA12_P) - J1.10 - TDI
 set_property IOSTANDARD LVCMOS12 [get_ports jtag_tdi_i]
 
-set_property PACKAGE_PIN F31      [get_ports "sys_clk_n"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13N_T2L_N1_GC_QBC_47
+# Default 250MHz clk1
+set_property PACKAGE_PIN D12      [get_ports "sys_clk_n"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13N_T2L_N1_GC_QBC_47
 set_property IOSTANDARD  DIFF_SSTL12 [get_ports "sys_clk_n"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13N_T2L_N1_GC_QBC_47
-set_property PACKAGE_PIN G31      [get_ports "sys_clk_p"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13P_T2L_N0_GC_QBC_47
+set_property PACKAGE_PIN E12      [get_ports "sys_clk_p"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13P_T2L_N0_GC_QBC_47
 set_property IOSTANDARD  DIFF_SSTL12 [get_ports "sys_clk_p"] ;# Bank  47 VCCO - VCC1V2_FPGA - IO_L13P_T2L_N0_GC_QBC_47
