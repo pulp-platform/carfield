@@ -75,7 +75,6 @@ sources:
   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
   # levels 1 and 0, etc. Files within a level are ordered alphabetically.
   # Level 0
-  - hw/configs/carfield_default_cfg.sv
   - hw/carfield_cfg_pkg.sv
   - hw/carfield_pkg.sv
   - hw/regs/carfield_reg_pkg.sv
@@ -105,10 +104,6 @@ sources:
       - tech/sourcecode/tc_clk.sv
       - tech/sourcecode/tc_sram.sv
       - target/synth/carfield_synth_wrap.sv
-
-  - target: all(xilinx, fpga, xilinx_vanilla, xilinx_bd)
-    files:
-      - hw/configs/carfield_fpga_cfg.sv
 
   - target: tech_sim
     files:
