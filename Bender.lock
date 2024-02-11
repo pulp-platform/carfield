@@ -193,7 +193,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: 6503a4c88ff2e274724cbebce8d25fb883d8b8a8
+    revision: 6c985d0c48b9ef586e81472ecc8054276cf26a0e
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -201,6 +201,7 @@ packages:
     - axi
     - common_cells
     - fpnew
+    - redundancy_cells
     - tech_cells_generic
   dyn_mem:
     revision: 480590062742230dc9bd4050358a15b4747bdf34
@@ -238,7 +239,7 @@ packages:
     dependencies:
     - common_cells
   hci:
-    revision: b2e6f391aa6c10c03f45b693d80a0aaddecf169b
+    revision: 4823e503851eb7e8cc765a58621d767a01d6a77b
     version: null
     source:
       Git: https://github.com/pulp-platform/hci.git
@@ -266,8 +267,8 @@ packages:
     dependencies:
     - tech_cells_generic
   hwpe-stream:
-    revision: ddc154424187dff42a8fcec946c768ceb13f13de
-    version: 1.6.4
+    revision: 389bd7fb1975d2df1546910c5f220c668122e646
+    version: 1.6.5
     source:
       Git: https://github.com/pulp-platform/hwpe-stream.git
     dependencies:
@@ -417,7 +418,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 3fbd080e479f194f68e51dbe262e62c4362868bd
+    revision: 651441e4a6459f84f3dde4242cf34961925a2142
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -481,8 +482,8 @@ packages:
     dependencies:
     - tech_cells_generic
   serial_link:
-    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
-    version: 1.1.0
+    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
+    version: 1.1.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
