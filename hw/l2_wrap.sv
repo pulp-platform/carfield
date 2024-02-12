@@ -8,7 +8,6 @@
 `include "axi/typedef.svh"
 module l2_wrap
   import carfield_pkg::*;
-  import carfield_cfg_pkg::*;
   import axi_pkg::*;
   import dyn_mem_pkg::*;
 #(

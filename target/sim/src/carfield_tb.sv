@@ -15,7 +15,6 @@
 module tb_carfield_soc;
 
   import uvm_pkg::*;
-  import carfield_cfg_pkg::*;
   import carfield_pkg::*;
   import cheshire_pkg::*;
 
