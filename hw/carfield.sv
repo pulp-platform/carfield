@@ -756,8 +756,8 @@ carfield_reg_top #(
 ) i_carfield_reg_top (
   .clk_i (host_clk_i),
   .rst_ni (host_pwr_on_rst_n),
-  .reg_req_i(ext_reg_req_cut[CarRegsIdx]),
-  .reg_rsp_o(ext_reg_rsp_cut[CarRegsIdx]),
+  .reg_req_i(ext_reg_req_cut[int'(CarfieldRegBusSlvIdx.regs)]),
+  .reg_rsp_o(ext_reg_rsp_cut[int'(CarfieldRegBusSlvIdx.regs)]),
   .reg2hw (car_regs_reg2hw),
   .hw2reg (car_regs_hw2reg),
   .devmode_i (1'b1)
@@ -1179,12 +1179,14 @@ if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
     .slvport_w_data_i    ( axi_slv_ext_w_data  [NumL2Ports-1:0] ),
     .slvport_w_wptr_i    ( axi_slv_ext_w_wptr  [NumL2Ports-1:0] ),
     .slvport_w_rptr_o    ( axi_slv_ext_w_rptr  [NumL2Ports-1:0] ),
-    .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [L2EccIdx-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [L2EccIdx-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[L2EccIdx-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [L2EccIdx-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [L2EccIdx-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [L2EccIdx-NumSyncRegSlv] ),
+    // verilog_lint: waive-start line-length
+    .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
+    .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
+    .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
+    .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
+    .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
+    .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
+    // verilog_lint: waive-stop line-length
     .ecc_error_o         ( l2_ecc_err                           )
   );
 end else begin: gen_no_l2
@@ -2362,28 +2364,6 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
     .mst_req_o ( axi_lite_d32_a32_peripherals_req ),
     .mst_resp_i( axi_lite_d32_a32_peripherals_rsp )
   );
-
-  // Address map rules for peripherals
-
-  // Address map of peripheral system
-  typedef struct packed {
-      logic [31:0] idx;
-      car_nar_addrw_t start_addr;
-      car_nar_addrw_t end_addr;
-  } carfield_addr_map_rule_t;
-
-  localparam carfield_addr_map_rule_t [NumApbMst-1:0] PeriphApbAddrMapRule = '{
-   '{ idx: SystemTimerIdx,   start_addr: SystemTimerBase,
-                             end_addr: SystemTimerEnd   }, // 0: System Timer
-   '{ idx: AdvancedTimerIdx, start_addr: AdvancedTimerBase,
-                             end_addr: AdvancedTimerEnd }, // 1: Advanced Timer
-   '{ idx: SystemWdtIdx,     start_addr: SystemWdtBase,
-                             end_addr: SystemWdtEnd     }, // 2: WDT
-   '{ idx: CanIdx,           start_addr: CanBase,
-                             end_addr: CanEnd           }, // 3: Can
-   '{ idx: HyperBusIdx,      start_addr: HyperBusBase,
-                             end_addr: HyperBusEnd      }  // 4: Hyperbus
-  };
 
   // APB req/rsp
   `APB_TYPEDEF_REQ_T(carfield_apb_req_t, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
