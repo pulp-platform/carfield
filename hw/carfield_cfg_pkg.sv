@@ -80,24 +80,25 @@ endfunction
 function automatic carfield_slave_idx_t carfield_gen_axi_slave_idx(islands_cfg_t island_cfg);
   carfield_slave_idx_t ret = '{default: '0}; // Initialize struct first
   byte_bt i = 0;
+  byte_bt j = 0;
   if (island_cfg.l2_port0.enable) begin ret.l2_port0 = i; i++;
     if (island_cfg.l2_port1.enable) begin ret.l2_port1 = i; i++; end
   end else begin
-    ret.l2_port0 = MaxExtAxiSlv + i; i++;
-    ret.l2_port1 = MaxExtAxiSlv + i;
+    ret.l2_port0 = MaxExtAxiSlv + j; j++;
+    ret.l2_port1 = MaxExtAxiSlv + j; j++;
   end
   if (island_cfg.safed.enable) begin ret.safed = i; i++;
-  end else begin ret.safed = MaxExtAxiSlv + i; end
+  end else begin ret.safed = MaxExtAxiSlv + j; j++; end
   if (island_cfg.ethernet.enable) begin ret.ethernet = i; i++;
-  end else begin ret.ethernet = MaxExtAxiSlv + i; end
+  end else begin ret.ethernet = MaxExtAxiSlv + j; j++; end
   if (island_cfg.periph.enable) begin ret.periph = i; i++;
-  end else begin ret.periph = MaxExtAxiSlv + i; end
+  end else begin ret.periph = MaxExtAxiSlv + j; j++; end
   if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
-  end else begin ret.spatz = MaxExtAxiSlv + i; end
+  end else begin ret.spatz = MaxExtAxiSlv + j; j++; end
   if (island_cfg.pulp.enable) begin ret.pulp = i; i++;
-  end else begin ret.pulp = MaxExtAxiSlv + i; end
+  end else begin ret.pulp = MaxExtAxiSlv + j; j++; end
   if (island_cfg.mbox.enable) begin ret.mbox = i; i++;
-  end else begin ret.mbox = MaxExtAxiSlv + i; end
+  end else begin ret.mbox = MaxExtAxiSlv + j; j++; end
   return ret;
 endfunction
 
@@ -120,14 +121,15 @@ localparam int unsigned MaxExtAxiMst = 2**MaxExtAxiMstWidth;
 function automatic carfield_master_idx_t carfield_gen_axi_master_idx(islands_cfg_t island_cfg);
   carfield_master_idx_t ret = '{default: '0}; // Initialize struct first
   byte_bt i = 0;
+  byte_bt j = 0;
   if (island_cfg.safed.enable) begin ret.safed = i; i++;
-  end else begin ret.safed = MaxExtAxiMst + i; end
+  end else begin ret.safed = MaxExtAxiMst + j; j++; end
   if (island_cfg.secured.enable) begin ret.secured = i; i++;
-  end else begin ret.secured = MaxExtAxiMst + i; end
+  end else begin ret.secured = MaxExtAxiMst + j; j++; end
   if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
-  end else begin ret.spatz = MaxExtAxiMst + i; end
+  end else begin ret.spatz = MaxExtAxiMst + j; j++; end
   if (island_cfg.pulp.enable) begin ret.pulp = i; i++;
-  end else begin ret.pulp = MaxExtAxiMst + i; end
+  end else begin ret.pulp = MaxExtAxiMst + j; j++; end
   return ret;
 endfunction
 
