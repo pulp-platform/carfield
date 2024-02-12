@@ -68,21 +68,20 @@ localparam doub_bt HyperBusSize = 'h00001000;
 /************************
  * RegBus Configuration *
  ***********************/
-// Register file
-localparam bit     RegsEnable = 1;
-localparam doub_bt RegsBase = 'h20010000;
-localparam doub_bt RegsSize = 'h00001000;
+// Platform control registers
+localparam doub_bt PcrsBase = 'h20010000;
+localparam doub_bt PcrsSize = 'h00001000;
 // PLL
-localparam bit     PllEnable = 1;
-localparam doub_bt PllBase = 'h20020000;
-localparam doub_bt PllSize = 'h00001000;
+localparam bit     PllCfgEnable = 1;
+localparam doub_bt PllCfgBase = 'h20020000;
+localparam doub_bt PllCfgSize = 'h00001000;
 // Padframe
-localparam bit     PadframeEnable = 1;
-localparam doub_bt PadframeBase = 'h200A0000;
-localparam doub_bt PadframeSize = 'h00001000;
+localparam bit     PadframeCfgEnable = 1;
+localparam doub_bt PadframeCfgBase = 'h200A0000;
+localparam doub_bt PadframeCfgSize = 'h00001000;
 // L2 ECC
-localparam bit     L2EccEnable = 1;
-localparam doub_bt L2EccBase = 'h200B0000;
-localparam doub_bt L2EccSize = 'h00001000;
+localparam bit     L2EccCfgEnable = 1;
+localparam doub_bt L2EccCfgBase = 'h200B0000;
+localparam doub_bt L2EccCfgSize = 'h00001000;
 
 endpackage
