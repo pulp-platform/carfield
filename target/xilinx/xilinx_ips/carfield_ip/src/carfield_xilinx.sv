@@ -9,19 +9,6 @@
 `include "axi/typedef.svh"
 `include "cheshire/typedef.svh"
 
-`ifndef GEN_PULP_CLUSTER
-`define GEN_PULP_CLUSTER 0
-`endif
-`ifndef GEN_SAFETY_ISLAND
-`define GEN_SAFETY_ISLAND 0
-`endif
-`ifndef GEN_SPATZ_CLUSTER
-`define GEN_SPATZ_CLUSTER 0
-`endif
-`ifndef GEN_OPEN_TITAN
-`define GEN_OPEN_TITAN 0
-`endif
-
 module carfield_xilinx
   import carfield_pkg::*;
   import cheshire_pkg::*;
@@ -293,16 +280,6 @@ module carfield_xilinx
 
   localparam cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault;
   `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
-
-  localparam islands_cfg_t IslandsCfg = '{
-    EnPulpCluster   : `GEN_PULP_CLUSTER,
-    EnSafetyIsland  : `GEN_SAFETY_ISLAND,
-    EnSpatzCluster  : `GEN_SPATZ_CLUSTER,
-    EnOpenTitan     : `GEN_OPEN_TITAN,
-    EnCan           : 0,
-    EnEthernet      : 0,
-    default         : '1
-  };
 
   ///////////////////
   // LLC interface //
@@ -713,8 +690,7 @@ module carfield_xilinx
   logic jtag_host_to_safety, jtag_safety_to_ot;
 
   carfield #(
-      .Cfg       (carfield_pkg::CarfieldCfgDefault),
-      .IslandsCfg(IslandsCfg),
+      .Cfg (carfield_pkg::CarfieldCfgDefault),
       .reg_req_t(carfield_reg_req_t),
       .reg_rsp_t(carfield_reg_rsp_t),
 `ifdef GEN_NO_HYPERBUS // bender-xilinx.mk
