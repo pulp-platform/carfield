@@ -14,7 +14,6 @@
 
 /// Top-level implementation of Carfield
 module carfield
-  import carfield_cfg_pkg::*;
   import carfield_pkg::*;
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
@@ -665,7 +664,7 @@ for (genvar i = 0; i < NumDomains; i++) begin : gen_domain_clock_mux
 
   clk_int_div #(
     .DIV_VALUE_WIDTH(DomainClkDivValueWidth),
-    .DEFAULT_DIV_VALUE(carfield_cfg_pkg::CarfieldClkDivValue.clock_div_value[i]),
+    .DEFAULT_DIV_VALUE(CarfieldClkDivValue.clock_div_value[i]),
     .ENABLE_CLOCK_IN_RESET(1)
   ) i_clk_div (
     .clk_i          ( domain_clk[i]                  ),

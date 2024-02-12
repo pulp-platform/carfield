@@ -14,7 +14,6 @@ module carfield_soc_fixture;
   `include "cheshire/typedef.svh"
   `include "axi/assign.svh"
 
-  import carfield_cfg_pkg::*;
   import cheshire_pkg::*;
   import carfield_pkg::*;
   import safety_island_pkg::*;

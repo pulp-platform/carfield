@@ -13,7 +13,6 @@
 module cheshire_wrap
   import axi_pkg::*;
   import carfield_pkg::*;
-  import carfield_cfg_pkg::*;
   import cheshire_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = '0,
@@ -593,7 +592,7 @@ axi_cdc_src #(
   .async_data_master_r_rptr_o  ( llc_mst_r_rptr_o  )
 );
 
-if (carfield_cfg_pkg::CarfieldIslandsCfg.pulp) begin : gen_pulp_cluster
+if (CarfieldIslandsCfg.pulp) begin : gen_pulp_cluster
   // Integer Cluster slave bus
   axi_intcluster_slv_req_t axi_intcluster_ser_slv_req, axi_intcluster_ser_isolated_slv_req;
   axi_intcluster_slv_rsp_t axi_intcluster_ser_slv_rsp, axi_intcluster_ser_isolated_slv_rsp;
