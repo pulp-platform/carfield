@@ -49,8 +49,8 @@ set_property IOSTANDARD  LVCMOS18 [get_ports "uart_rx_i"] ;# Bank  67 VCCO - VCC
 set_property PACKAGE_PIN BB21     [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
 set_property IOSTANDARD  LVCMOS18 [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC1V8   - IO_L2P_T0L_N2_67
 
-set_property PACKAGE_PIN L19 [get_ports reset]
-set_property IOSTANDARD LVCMOS12 [get_ports reset]
+set_property PACKAGE_PIN L19 [get_ports cpu_reset]
+set_property IOSTANDARD LVCMOS12 [get_ports cpu_reset]
 
 set_property PACKAGE_PIN N30     [get_ports jtag_tdo_o] ;# B25 - H17 (FMCP_HSPC_LA11_N) - J1.08 - TDO
 # Todo change invalid lvcmos
