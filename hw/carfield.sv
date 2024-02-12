@@ -756,8 +756,8 @@ carfield_reg_top #(
 ) i_carfield_reg_top (
   .clk_i (host_clk_i),
   .rst_ni (host_pwr_on_rst_n),
-  .reg_req_i(ext_reg_req_cut[int'(CarfieldRegBusSlvIdx.regs)]),
-  .reg_rsp_o(ext_reg_rsp_cut[int'(CarfieldRegBusSlvIdx.regs)]),
+  .reg_req_i(ext_reg_req_cut[int'(CarfieldRegBusSlvIdx.pcrs)]),
+  .reg_rsp_o(ext_reg_rsp_cut[int'(CarfieldRegBusSlvIdx.pcrs)]),
   .reg2hw (car_regs_reg2hw),
   .hw2reg (car_regs_hw2reg),
   .devmode_i (1'b1)

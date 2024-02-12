@@ -209,14 +209,14 @@ endfunction
  * RegBus functions *
  *******************/
 typedef struct packed {
-  islands_properties_t regs;
+  islands_properties_t pcrs;
   islands_properties_t pll;
   islands_properties_t padframe;
   islands_properties_t l2ecc;
 } regbus_cfg_t;
 
 typedef struct packed {
-  byte_bt regs;
+  byte_bt pcrs;
   byte_bt pll;
   byte_bt padframe;
   byte_bt l2ecc;
@@ -226,7 +226,7 @@ typedef struct packed {
 // crossbar starting from the islands enable structure.
 function automatic int unsigned gen_num_regbus_sync_slave(regbus_cfg_t regbus_cfg);
   int unsigned ret = 0; // Number of slaves starts from 0
-  if (regbus_cfg.regs.enable) begin ret++; end
+  if (regbus_cfg.pcrs.enable) begin ret++; end
   return ret;
 endfunction
 
@@ -239,10 +239,10 @@ function automatic int unsigned gen_num_regbus_async_slave(regbus_cfg_t regbus_c
 endfunction
 
 localparam regbus_cfg_t CarfieldRegBusCfg = '{
-  regs:     '{RegsEnable, RegsBase, RegsSize},
-  pll:      '{PllEnable, PllBase, PllSize},
-  padframe: '{PadframeEnable, PadframeBase, PadframeSize},
-  l2ecc:    '{L2EccEnable, L2EccBase, L2EccSize}
+  pcrs:     '{1, PcrsBase, PcrsSize},
+  pll:      '{PllCfgEnable, PllCfgBase, PllCfgSize},
+  padframe: '{PadframeCfgEnable, PadframeCfgBase, PadframeCfgSize},
+  l2ecc:    '{L2EccCfgEnable, L2EccCfgBase, L2EccCfgSize}
 };
 
 localparam int unsigned NumSyncRegSlv = gen_num_regbus_sync_slave(CarfieldRegBusCfg);
@@ -256,8 +256,8 @@ function automatic carfield_regbus_slave_idx_t carfield_gen_regbus_slave_idx(reg
   carfield_regbus_slave_idx_t ret = '{default: '0}; // Initialize struct first
   byte_bt i = 0;
   byte_bt j = 0;
-  if (regbus_cfg.regs.enable) begin ret.regs = i; i++;
-  end else begin ret.regs = NumTotalRegSlv + j; j++; end
+  if (regbus_cfg.pcrs.enable) begin ret.pcrs = i; i++;
+  end else begin ret.pcrs = NumTotalRegSlv + j; j++; end
   if (regbus_cfg.pll.enable) begin ret.pll = i; i++;
   end else begin ret.pll = NumTotalRegSlv + j; j++; end
   if (regbus_cfg.padframe.enable) begin ret.padframe = i; i++;
@@ -279,10 +279,10 @@ function automatic regbus_struct_t carfield_gen_regbus_map(int unsigned NumSlave
                                                            carfield_regbus_slave_idx_t idx);
   regbus_struct_t ret = '0; // Initialize the map first
   int unsigned i = 0;
-  if (regbus_cfg.regs.enable) begin
-    ret.RegBusIdx[i] = idx.regs;
-    ret.RegBusStart[i] = regbus_cfg.regs.base;
-    ret.RegBusEnd[i] = regbus_cfg.regs.base + regbus_cfg.regs.size;
+  if (regbus_cfg.pcrs.enable) begin
+    ret.RegBusIdx[i] = idx.pcrs;
+    ret.RegBusStart[i] = regbus_cfg.pcrs.base;
+    ret.RegBusEnd[i] = regbus_cfg.pcrs.base + regbus_cfg.pcrs.size;
     if (i < NumSlave - 1) i++;
   end
   if (regbus_cfg.pll.enable) begin
