@@ -10,15 +10,15 @@
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 for f in `find $SCRIPT_DIR/../src/overrides -not -type d -printf "%f\n"`; do
-  echo "Removing $f"
-  grep -v -P "(?<!overrides/)${f}" $1 > /tmp/overrides-tmp
-  diff /tmp/overrides-tmp $@ | grep ">\|<"
-  cp /tmp/overrides-tmp $1
+  echo "Removing $f $1.tmp"
+  grep -v -P "(?<!overrides/)${f}" $1 > $1.tmp
+  diff $1.tmp $@ | grep ">\|<"
+  cp $1.tmp $1
 done
 
 for f in `find $SCRIPT_DIR/../src/overrides -not -type d -printf "%f\n"`; do
-  echo "Removing $f"
-  grep -v -P "(?<!overrides/)${f}" $1 > /tmp/overrides-tmp
-  diff /tmp/overrides-tmp $@ | grep ">\|<"
-  cp /tmp/overrides-tmp $1
+  echo "Removing $f $1.tmp"
+  grep -v -P "(?<!overrides/)${f}" $1 > $1.tmp
+  diff $1.tmp $@ | grep ">\|<"
+  cp $1.tmp $1
 done
