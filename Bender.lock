@@ -163,7 +163,7 @@ packages:
     dependencies:
     - common_cells
   cluster_peripherals:
-    revision: c015839816938a790c8da5fd5829cfc536f1ca9c
+    revision: c9defcfb4f4e8733383b28a451c430783c2febbd
     version: null
     source:
       Git: https://github.com/pulp-platform/cluster_peripherals.git
@@ -377,7 +377,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: de93f2001ee0a6fca1dc11f6dd95119d8e6aadfb
+    revision: fb2853d4db51a157ab27879fb65643a2505fd443
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -405,7 +405,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   redmule:
-    revision: 0fe14edd77e9a35d3d220bd78bd6b41a0e5935ea
+    revision: 1b30b0b9a31afa702eb2d166d672ceda2f5d463a
     version: null
     source:
       Git: https://github.com/pulp-platform/redmule.git
@@ -438,7 +438,7 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: a1dcae35edae6092ddbf92c424690cb903b678d5
+    revision: c760db14dbd6cc3ec3b8ae8274df2eac7225bcac
     version: null
     source:
       Git: git@github.com:AlSaqr-platform/riscv_nn.git
