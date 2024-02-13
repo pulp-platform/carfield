@@ -373,39 +373,69 @@ localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
 /******************************/
 /* Integer Cluster Parameters */
 /******************************/
-localparam int unsigned IntClusterNumHwpePorts = 9;
-localparam int unsigned IntClusterNumDmas = 4;
-localparam int unsigned IntClusterNumMstPer = 1;
-localparam int unsigned IntClusterNumSlvPer = 10;
-localparam int unsigned IntClusterTcdmSize = 256*1024;
-localparam int unsigned IntClusterTcdmBanks = 16;
-localparam int unsigned IntClusterHwpePresent = 1;
-localparam int unsigned IntClusterUseHci = 1;
-localparam int unsigned IntClusterSetAssociative = 4;
 localparam int unsigned IntClusterNumCacheBanks = 2;
-localparam int unsigned IntClusterNumCacheLines = 1;
-localparam int unsigned IntClusterCacheSize = 4*1024;
-localparam int unsigned IntClusterDbgStart = CarfieldIslandsCfg.safed.base+
-                                             SafetyIslandPerOffset+
-                                             safety_island_pkg::DebugAddrOffset;
-localparam int unsigned IntClusterBootAddrDefaultOffs = 'h8080;
-localparam int unsigned IntClusterBootAddr = CarfieldIslandsCfg.l2_port0.base +
-                                             IntClusterBootAddrDefaultOffs;
-localparam int unsigned IntClusterInstrRdataWidth = 32;
-localparam int unsigned IntClusterFpu = 0;
-localparam int unsigned IntClusterFpuDivSqrt = 0;
-localparam int unsigned IntClusterSharedFpu = 0;
-localparam int unsigned IntClusterSharedFpuDivSqrt = 0;
 localparam int unsigned IntClusterNumAxiMst = 3;
 localparam int unsigned IntClusterNumAxiSlv = 4;
-// IntClusterAxiIdInWidth is fixed from PULP Cluster
+// // IntClusterAxiIdInWidth is fixed from PULP Cluster
 localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 3;
 localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
                                                   $clog2(IntClusterNumAxiSlv);
+localparam bit[CarfieldCfgDefault.AddrWidth-1:0] ClustPeriphOffs = 'h00200000;
+localparam bit[CarfieldCfgDefault.AddrWidth-1:0] ClustExtOffs    = 'h00400000;
 localparam int unsigned IntClusterMaxUniqId = 1;
 localparam int unsigned IntClusterNumEoc = 1;
 localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
-localparam logic [CarfieldCfgDefault.AddrWidth-1:0] IntClusterInternalSize = 'h0040_0000;
+localparam pulp_cluster_package::pulp_cluster_cfg_t PulpClusterCfg = '{
+  CoreType: pulp_cluster_package::RISCY,
+  NumCores: 12,
+  DmaNumPlugs: 4,
+  DmaNumOutstandingBursts: 8,
+  DmaBurstLength: 256,
+  NumMstPeriphs: 1,
+  NumSlvPeriphs: 10,
+  ClusterAlias: 1,
+  ClusterAliasBase: 'h0,
+  NumSyncStages: 3,
+  UseHci: 1,
+  TcdmSize: 256*1024,
+  TcdmNumBank: 16,
+  HwpePresent: 1,
+  HwpeNumPorts: 9,
+  iCacheNumBanks: IntClusterNumCacheBanks,
+  iCacheNumLines: 1,
+  iCacheNumWays: 4,
+  iCacheSharedSize: 4*1024,
+  iCachePrivateSize: 512,
+  iCachePrivateDataWidth: 32,
+  EnableReducedTag: 1,
+  L2Size: L2MemSize,
+  DmBaseAddr: CarfieldIslandsCfg.safed.base+
+              SafetyIslandPerOffset+
+              safety_island_pkg::DebugAddrOffset,
+  BootRomBaseAddr: CarfieldIslandsCfg.l2_port0.base + 'h8080,
+  BootAddr: CarfieldIslandsCfg.l2_port0.base + 'h8080,
+  EnablePrivateFpu: 0,
+  EnablePrivateFpDivSqrt: 0,
+  EnableSharedFpu: 0,
+  EnableSharedFpDivSqrt: 0,
+  NumSharedFpu: 0,
+  NumAxiIn: IntClusterNumAxiSlv,
+  NumAxiOut: IntClusterNumAxiMst,
+  AxiIdInWidth: IntClusterAxiIdInWidth,
+  AxiIdOutWidth:IntClusterAxiIdOutWidth,
+  AxiAddrWidth: CarfieldCfgDefault.AddrWidth,
+  AxiDataInWidth:  CarfieldCfgDefault.AxiDataWidth,
+  AxiDataOutWidth: CarfieldCfgDefault.AxiDataWidth,
+  AxiUserWidth: CarfieldCfgDefault.AxiUserWidth,
+  AxiCdcLogDepth: 3,
+  AxiCdcSyncStages: SyncStages,
+  SyncStages: SyncStages,
+  ClusterBaseAddr: CarfieldAxiMap.AxiStart[CarfieldAxiSlvIdx.pulp],
+  ClusterPeriphOffs: ClustPeriphOffs,
+  ClusterExternalOffs: ClustExtOffs,
+  EnableRemapAddress: 0,
+  default: '0
+};
 
 /*************************************/
 /* Floating Point Cluster Parameters */
