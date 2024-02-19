@@ -124,9 +124,10 @@ module carfield_top_xilinx
   `endif
   logic sys_rst;
 
-  wire clk_100, clk_50, clk_20, clk_10;
+  wire clk_100, clk_50, clk_20;
+  (* dont_touch = "yes" *) wire clk_10;
   wire soc_clk, host_clk, alt_clk, periph_clk;
-  (* dont_touch = "yes" *)  wire rst_n;
+  (* dont_touch = "yes" *) wire rst_n;
 
   ///////////////////
   // GPIOs         // 

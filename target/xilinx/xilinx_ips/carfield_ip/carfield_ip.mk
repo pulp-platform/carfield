@@ -12,10 +12,6 @@ IP_DEP_carfield_ip := $(CAR_XIL_DIR)/xilinx_ips/carfield_ip/tcl/add_sources.tcl
 $(CAR_XIL_DIR)/xilinx_ips/carfield_ip/tcl/add_sources.tcl: Bender.yml
 # Add source files for ip
 	$(BENDER) script vivado $(xilinx_targs) $(common_defs) $(xilinx_defs_bd) > $@
-	cp $@ $@.bak
+	mv $@ $@.bak
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
-	grep -v -P "lowrisc_ip/ip/prim/rtl" $@ > $@-tmp
-	mv $@-tmp $@
-# Override system verilog files
-	target/xilinx/scripts/overrides.sh $@
-	echo "" >> $@
+	grep -v -P "lowrisc_ip/ip/prim/rtl" $@.bak > $@
