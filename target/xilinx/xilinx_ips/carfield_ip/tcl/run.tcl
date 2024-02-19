@@ -18,8 +18,12 @@ source tcl/add_sources.tcl
 
 # Add constraints
 add_files -fileset constrs_1 constraints/ooc_carfield_ip.xdc
-set_property USED_IN {synthesis out_of_context} [get_files constraints/ooc_carfield_ip.xdc]
-add_files -fileset constrs_1 constraints/carfield_ip.xdc 
+set_property USED_IN {synthesis out_of_context} [get_files ooc_carfield_ip.xdc]
+import_files -fileset constrs_1 -norecurse constraints/carfield_xilinx_ip.xdc
+# General constraints
+import_files -fileset constrs_1 -norecurse ../../constraints/carfield.xdc
+set_property SCOPED_TO_REF carfield [get_files carfield.xdc]
+set_property processing_order LATE [get_files carfield.xdc]
 
 # Package IP
 set_property top carfield_xilinx_ip [current_fileset]

@@ -35,7 +35,7 @@ VIVADO_MODE  ?= batch
 VIVADO_FLAGS ?= -nojournal -mode $(VIVADO_MODE)
 
 xilinx_ip_dir := $(CAR_XIL_DIR)/xilinx_ips
-xilinx_bit := $(CAR_XIL_DIR)/out/$(XILINX_PROJECT)_$(XILINX_FLAVOR)_$(XILINX_BOARD).bit
+xilinx_bit := $(CAR_XIL_DIR)/out/$(XILINX_PROJECT)_$(XILINX_FLAVOR)_$(XILINX_BOARD)_$(CARFIELD_CONFIG).bit
 
 #
 # Include other makefiles flavors
@@ -76,6 +76,7 @@ $(CAR_XIL_DIR)/out/%.bit: $(xilinx_bit_$(XILINX_FLAVOR))
 ## @param XILINX_PROJECT The name of the Xilinx project
 ## @param XILINX_FLAVOR=<vanilla|bd> The flavor of the implementation
 ## @param XILINX_BOARD The target Xilinx board
+## @param CARFIELD_CONFIG The SoC configuration to be used
 car-xil-all: $(xilinx_bit)
 
 ## Program last bitstream for Carfield

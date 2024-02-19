@@ -18,8 +18,9 @@ set_param general.maxThreads 8
 set_property ip_repo_paths ../xilinx_ips/carfield_ip [current_project]
 update_ip_catalog
 
-# Define sources
+# Add params to runs
 import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
+import_files -fileset constrs_1 -norecurse ../constraints/carfield_islands.tcl
 source scripts/add_includes.tcl
 
 # Build block design
@@ -45,6 +46,9 @@ add_files -norecurse $project/$project.gen/sources_1/bd/design_1/hdl/design_1_wr
 generate_target all [get_files *design_1.bd]
 export_ip_user_files -of_objects  [get_files *design_1.bd] -no_script
 create_ip_run [get_files *design_1.bd]
+
+# Make sure carfield.xdc (imported from IP) executes after carfield_islands.tcl (that generates the clocks)
+set_property processing_order LATE [get_files carfield.xdc]
 
 # Start OOC synthesis of changed IPs
 set synth_runs [get_runs *synth*]
@@ -122,6 +126,7 @@ if ($DEBUG) {
   }
   # Need to save save constraints before implementing the core
   set_property target_constrs_file [get_files $::env(XILINX_BOARD).xdc] [current_fileset -constrset]
+
   save_constraints -force
   implement_debug_core
   write_debug_probes -force probes.ltx

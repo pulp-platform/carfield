@@ -37,19 +37,16 @@ vivado_env_vanilla := \
 # Generate bender scripts (! attention ! modified on the fly)
 $(CAR_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado $(common_targs) $(xilinx_targs_vanilla) $(common_defs) $(xilinx_defs_vanilla) > $@
-	cp $@ $@.bak
+	mv $@ $@.bak
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
-	grep -v -P "lowrisc_ip/ip/prim/rtl" $@ > $@-tmp
-	mv $@-tmp $@
-# Override system verilog files
-	$(CAR_XIL_DIR)/scripts/overrides.sh $@
-	echo "" >> $@
+	grep -v -P "lowrisc_ip/ip/prim/rtl" $@.bak > $@
 
 # Compile bitstream
 $(CAR_XIL_DIR)/flavor_vanilla/out/%.bit: $(xilinx_ips_paths_vanilla) $(CAR_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl
 	@mkdir -p $(CAR_XIL_DIR)/flavor_vanilla/out
 	cd $(CAR_XIL_DIR)/flavor_vanilla && $(vivado_env) $(VIVADO) $(VIVADO_FLAGS) -source scripts/run.tcl
 	find $(CAR_XIL_DIR)/flavor_vanilla -name "*.ltx" -o -name "*.bit" -o -name "*routed.rpt" | xargs -I {} cp {} $(CAR_XIL_DIR)/flavor_vanilla/out
+.PRECIOUS: $(CAR_XIL_DIR)/flavor_vanilla/out/%.bit
 
 car-xil-clean-vanilla:
 	cd $(CAR_XIL_DIR)/flavor_vanilla && rm -rf scripts/add_sources.tcl* *.log *.jou *.str *.mif carfield.* .Xil/

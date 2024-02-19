@@ -1,5 +1,9 @@
 .Xil
-carfield.*
+carfield.cache
+carfield.ip_user_files
+carfield.hw
+carfield.sim
+carfield.srcs
 scripts/add_sources.tcl*
 scripts/add_includes.tcl
 out/

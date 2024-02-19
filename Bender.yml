@@ -105,14 +105,12 @@ sources:
   - target: all(xilinx, fpga, xilinx_vanilla)
     files:
       - target/xilinx/src/cdc_dst_axi_err.sv
-      - target/xilinx/src/overrides/tc_clk_xilinx.sv
       - target/xilinx/flavor_vanilla/src/carfield_top_xilinx.sv
       - target/xilinx/flavor_vanilla/src/dram_wrapper_xilinx.sv
 
   - target: all(xilinx, fpga, xilinx_bd)
     files:
       - target/xilinx/src/cdc_dst_axi_err.sv
-      - target/xilinx/src/overrides/tc_clk_xilinx.sv
       - target/xilinx/xilinx_ips/carfield_ip/src/carfield_xilinx.sv
       - target/xilinx/xilinx_ips/carfield_ip/src/carfield_xilinx_ip.v
 
