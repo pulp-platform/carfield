@@ -12,7 +12,7 @@ overrides:
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.13                                }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"           , version: =0.8.0                                 }
   idma:                 { git: "https://github.com/pulp-platform/idma.git"                , version: 0.5.1                                  }
-  hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: a971e364bf8090cf77fafad995b480c1ac7ea4e0   }
+  hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: 8e77bdc828c717299ac8572a1f9bf10144382105   } # branch: astral
   scm:                  { git: "https://github.com/pulp-platform/scm.git"                 , rev: 74426dee36f28ae1c02f7635cf844a0156145320   }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
   clic:                 { git: "https://github.com/pulp-platform/clic.git"                , rev: 0ff9f07e0a492bff046dfe24399b1e1e82d557b7   } # branch: balasr/dev-2

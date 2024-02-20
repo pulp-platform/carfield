@@ -56,14 +56,6 @@ packages:
     - common_verification
     - register_interface
     - tech_cells_generic
-  axi_node:
-    revision: e2d038004c5b8cec9dd3bb9d23ad0bee72f9d908
-    version: 1.1.4
-    source:
-      Git: git@github.com:pulp-platform/axi_node.git
-    dependencies:
-    - axi
-    - common_cells
   axi_obi:
     revision: null
     version: null
@@ -95,7 +87,7 @@ packages:
     revision: a4f72bc21ac4d7da631e8309d9f8d0c34b735c23
     version: 1.1.4
     source:
-      Git: https://github.com/pulp-platform/axi_slice.git
+      Git: git@github.com:pulp-platform/axi_slice.git
     dependencies:
     - common_cells
   axi_vga:
@@ -248,13 +240,12 @@ packages:
     - hwpe-stream
     - l2_tcdm_hybrid_interco
   hier-icache:
-    revision: a971e364bf8090cf77fafad995b480c1ac7ea4e0
+    revision: 8e77bdc828c717299ac8572a1f9bf10144382105
     version: null
     source:
       Git: https://github.com/pulp-platform/hier-icache.git
     dependencies:
-    - axi_node
-    - axi_slice
+    - axi
     - common_cells
     - icache-intc
     - scm
@@ -377,7 +368,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: fb2853d4db51a157ab27879fb65643a2505fd443
+    revision: b9c145d188af0cb7f9a6494d9b286dda5b2e19d7
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -385,7 +376,6 @@ packages:
     - axi
     - axi2mem
     - axi2per
-    - axi_slice
     - cluster_interconnect
     - cluster_peripherals
     - common_cells
