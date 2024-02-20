@@ -442,7 +442,8 @@ cheshire_soc #(
 
 // Cheshire's AXI master cdc generation, except for the Integer Cluster (slave 6) and the Mailbox
 // (slave 7)
-for (genvar i = 0; i < Cfg.AxiExtNumSlv - 2; i++) begin: gen_ext_slv_src_cdc
+localparam int unsigned NumExcludedSlaves = CarfieldIslandsCfg.pulp.enable ? 2 : 1;
+for (genvar i = 0; i < Cfg.AxiExtNumSlv - NumExcludedSlaves; i++) begin: gen_ext_slv_src_cdc
   axi_isolate              #(
     .NumPending             ( Cfg.AxiMaxSlvTrans           ),
     .TerminateTransaction   ( 1                            ),
@@ -500,7 +501,8 @@ for (genvar i = 0; i < Cfg.AxiExtNumSlv - 2; i++) begin: gen_ext_slv_src_cdc
 end
 
 // Cheshire's AXI slave cdc and isolate generation, except for the Integer Cluster (slave 7)
-for (genvar i = 0; i < Cfg.AxiExtNumMst - 1; i++) begin: gen_ext_mst_dst_cdc
+localparam int unsigned NumExcludedMasters = CarfieldIslandsCfg.pulp.enable ? 1 : 0;
+for (genvar i = 0; i < Cfg.AxiExtNumMst - NumExcludedMasters; i++) begin: gen_ext_mst_dst_cdc
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
     .SyncStages ( CdcSyncStages              ),
