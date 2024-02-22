@@ -33,7 +33,13 @@ module carfield
   parameter int unsigned LlcWWidth,
 `endif
   parameter type reg_req_t           = logic,
-  parameter type reg_rsp_t           = logic
+  parameter type reg_rsp_t           = logic,
+  localparam int unsigned NumExcludedSlaves = CarfieldIslandsCfg.pulp.enable ? 2 : 1,
+  localparam int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - NumExcludedSlaves,
+  localparam int unsigned NumExcludedIsolate = CarfieldIslandsCfg.pulp.enable ? 1 : 0,
+  localparam int unsigned NumIsolate = Cfg.AxiExtNumSlv - NumExcludedIsolate,
+  localparam int unsigned NumExcludedMasters = CarfieldIslandsCfg.pulp.enable ? 1 : 0,
+  localparam int unsigned NumMasterCDCs = Cfg.AxiExtNumMst - NumExcludedMasters
 ) (
   // host clock
   input   logic                                       host_clk_i,
@@ -471,42 +477,42 @@ logic [    LogDepth:0] llc_w_rptr;
 logic hyper_isolate_req, hyper_isolated_rsp;
 logic security_island_isolate_req;
 
-logic [iomsb(Cfg.AxiExtNumSlv-1):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
+logic [iomsb(NumIsolate):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
 logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
 // All AXI Slaves (except the Integer Cluster and the Mailbox)
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumSlv-2):0][               LogDepth:0] axi_slv_ext_r_rptr ;
+logic [iomsb(NumSlaveCDCs):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_aw_wptr;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_aw_rptr;
+logic [iomsb(NumSlaveCDCs):0][ CarfieldAxiSlvWWidth-1:0] axi_slv_ext_w_data ;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_w_wptr ;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_w_rptr ;
+logic [iomsb(NumSlaveCDCs):0][ CarfieldAxiSlvBWidth-1:0] axi_slv_ext_b_data ;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_b_wptr ;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_b_rptr ;
+logic [iomsb(NumSlaveCDCs):0][CarfieldAxiSlvArWidth-1:0] axi_slv_ext_ar_data;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_ar_wptr;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_ar_rptr;
+logic [iomsb(NumSlaveCDCs):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_r_wptr ;
+logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_r_rptr ;
 
 // All AXI Masters (except the Integer Cluster)
-logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst-1):0][               LogDepth:0] axi_mst_ext_r_rptr ;
+logic [iomsb(NumMasterCDCs):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_aw_wptr;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_aw_rptr;
+logic [iomsb(NumMasterCDCs):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_w_wptr ;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_w_rptr ;
+logic [iomsb(NumMasterCDCs):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_b_wptr ;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_b_rptr ;
+logic [iomsb(NumMasterCDCs):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_ar_wptr;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_ar_rptr;
+logic [iomsb(NumMasterCDCs):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_r_wptr ;
+logic [iomsb(NumMasterCDCs):0][               LogDepth:0] axi_mst_ext_r_rptr ;
 
 // Integer Cluster Slave Bus
 logic [IntClusterAxiSlvAwWidth-1:0] axi_slv_intcluster_aw_data;
