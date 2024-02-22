@@ -1,9 +1,10 @@
 hjson
+jsonref
+jsonschema
 Mako==1.1.6
 PyYAML==6.0
 pyelftools==0.29
 requests
-hjson
 mako
 pyyaml
 tabulate
