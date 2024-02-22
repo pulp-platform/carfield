@@ -82,6 +82,10 @@ module cheshire_wrap
                                         axi_pkg::w_width(Cfg.AxiDataWidth,
                                                          Cfg.AxiUserWidth),
   // External Slaves Parameters
+  localparam int unsigned NumExcludedSlaves = CarfieldIslandsCfg.pulp.enable ? 2 : 1,
+  localparam int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - NumExcludedSlaves,
+  localparam int unsigned NumExcludedIsolate = CarfieldIslandsCfg.pulp.enable ? 1 : 0,
+  localparam int unsigned NumIsolate = Cfg.AxiExtNumSlv - NumExcludedIsolate,
   localparam int unsigned ExtSlvIdWidth = Cfg.AxiMstIdWidth   +
                                           $clog2(AxiIn.num_in ),
   localparam int unsigned ExtSlvArWidth = (2**LogDepth)*
@@ -103,6 +107,8 @@ module cheshire_wrap
                                            axi_pkg::w_width(Cfg.AxiDataWidth,
                                                             Cfg.AxiUserWidth),
   // External Master Parameters
+  localparam int unsigned NumExcludedMasters = CarfieldIslandsCfg.pulp.enable ? 1 : 0,
+  localparam int unsigned NumMasterCDCs = Cfg.AxiExtNumMst - NumExcludedMasters,
   localparam int unsigned ExtMstArWidth = (2**LogDepth)*
                                            axi_pkg::ar_width(Cfg.AddrWidth    ,
                                                              Cfg.AxiMstIdWidth,
@@ -184,40 +190,40 @@ module cheshire_wrap
   output logic [    LogDepth:0] llc_mst_w_wptr_o ,
   input  logic [    LogDepth:0] llc_mst_w_rptr_i ,
   // External AXI isolate slave Ports (except the Mailbox)
-  input  logic [iomsb(Cfg.AxiExtNumSlv-1):0]                    axi_ext_slv_isolate_i,
-  output logic [iomsb(Cfg.AxiExtNumSlv-1):0]                    axi_ext_slv_isolated_o,
+  input  logic [iomsb(NumIsolate):0]                    axi_ext_slv_isolate_i,
+  output logic [iomsb(NumIsolate):0]                    axi_ext_slv_isolated_o,
   // External async AXI slave Ports (except the Integer Cluster and the Mailbox)
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][ExtSlvArWidth-1:0] axi_ext_slv_ar_data_o,
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_ar_wptr_o,
-  input  logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_ar_rptr_i,
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][ExtSlvAwWidth-1:0] axi_ext_slv_aw_data_o,
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_aw_wptr_o,
-  input  logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_aw_rptr_i,
-  input  logic [iomsb(Cfg.AxiExtNumSlv-2):0][ ExtSlvBWidth-1:0] axi_ext_slv_b_data_i ,
-  input  logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_b_wptr_i ,
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_b_rptr_o ,
-  input  logic [iomsb(Cfg.AxiExtNumSlv-2):0][ ExtSlvRWidth-1:0] axi_ext_slv_r_data_i ,
-  input  logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_r_wptr_i ,
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_r_rptr_o ,
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][ ExtSlvWWidth-1:0] axi_ext_slv_w_data_o ,
-  output logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_w_wptr_o ,
-  input  logic [iomsb(Cfg.AxiExtNumSlv-2):0][       LogDepth:0] axi_ext_slv_w_rptr_i ,
+  output logic [iomsb(NumSlaveCDCs):0][ExtSlvArWidth-1:0] axi_ext_slv_ar_data_o,
+  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_wptr_o,
+  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_rptr_i,
+  output logic [iomsb(NumSlaveCDCs):0][ExtSlvAwWidth-1:0] axi_ext_slv_aw_data_o,
+  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_aw_wptr_o,
+  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_aw_rptr_i,
+  input  logic [iomsb(NumSlaveCDCs):0][ ExtSlvBWidth-1:0] axi_ext_slv_b_data_i ,
+  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_b_wptr_i ,
+  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_b_rptr_o ,
+  input  logic [iomsb(NumSlaveCDCs):0][ ExtSlvRWidth-1:0] axi_ext_slv_r_data_i ,
+  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_r_wptr_i ,
+  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_r_rptr_o ,
+  output logic [iomsb(NumSlaveCDCs):0][ ExtSlvWWidth-1:0] axi_ext_slv_w_data_o ,
+  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_wptr_o ,
+  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_rptr_i ,
   // External async AXI master Ports (except the Integer Cluster)
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][ExtMstArWidth-1:0] axi_ext_mst_ar_data_i,
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_ar_wptr_i,
-  output logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_ar_rptr_o,
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][ExtMstAwWidth-1:0] axi_ext_mst_aw_data_i,
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_aw_wptr_i,
-  output logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_aw_rptr_o,
-  output logic [iomsb(Cfg.AxiExtNumMst-1):0][ ExtMstBWidth-1:0] axi_ext_mst_b_data_o ,
-  output logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_b_wptr_o ,
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_b_rptr_i ,
-  output logic [iomsb(Cfg.AxiExtNumMst-1):0][ ExtMstRWidth-1:0] axi_ext_mst_r_data_o ,
-  output logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_r_wptr_o ,
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_r_rptr_i ,
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][ ExtMstWWidth-1:0] axi_ext_mst_w_data_i ,
-  input  logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_w_wptr_i ,
-  output logic [iomsb(Cfg.AxiExtNumMst-1):0][       LogDepth:0] axi_ext_mst_w_rptr_o ,
+  input  logic [iomsb(NumMasterCDCs):0][ExtMstArWidth-1:0] axi_ext_mst_ar_data_i,
+  input  logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_ar_wptr_i,
+  output logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_ar_rptr_o,
+  input  logic [iomsb(NumMasterCDCs):0][ExtMstAwWidth-1:0] axi_ext_mst_aw_data_i,
+  input  logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_aw_wptr_i,
+  output logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_aw_rptr_o,
+  output logic [iomsb(NumMasterCDCs):0][ ExtMstBWidth-1:0] axi_ext_mst_b_data_o ,
+  output logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_b_wptr_o ,
+  input  logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_b_rptr_i ,
+  output logic [iomsb(NumMasterCDCs):0][ ExtMstRWidth-1:0] axi_ext_mst_r_data_o ,
+  output logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_r_wptr_o ,
+  input  logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_r_rptr_i ,
+  input  logic [iomsb(NumMasterCDCs):0][ ExtMstWWidth-1:0] axi_ext_mst_w_data_i ,
+  input  logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_w_wptr_i ,
+  output logic [iomsb(NumMasterCDCs):0][       LogDepth:0] axi_ext_mst_w_rptr_o ,
   // Integer Cluster async Slave Port
   output logic [IntClusterAxiSlvAwWidth-1:0] axi_slv_intcluster_aw_data_o,
   output logic [                 LogDepth:0] axi_slv_intcluster_aw_wptr_o,
@@ -328,8 +334,8 @@ module cheshire_wrap
 cheshire_axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req;
 cheshire_axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp;
 
-cheshire_axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv-2):0] axi_ext_slv_isolated_req;
-cheshire_axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv-2):0] axi_ext_slv_isolated_rsp;
+cheshire_axi_ext_slv_req_t [iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_req;
+cheshire_axi_ext_slv_rsp_t [iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_rsp;
 
 // All AXI master buses
 cheshire_axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req;
@@ -442,8 +448,7 @@ cheshire_soc #(
 
 // Cheshire's AXI master cdc generation, except for the Integer Cluster (slave 6) and the Mailbox
 // (slave 7)
-localparam int unsigned NumExcludedSlaves = CarfieldIslandsCfg.pulp.enable ? 2 : 1;
-for (genvar i = 0; i < Cfg.AxiExtNumSlv - NumExcludedSlaves; i++) begin: gen_ext_slv_src_cdc
+for (genvar i = 0; i < NumSlaveCDCs; i++) begin: gen_ext_slv_src_cdc
   axi_isolate              #(
     .NumPending             ( Cfg.AxiMaxSlvTrans           ),
     .TerminateTransaction   ( 1                            ),
@@ -501,8 +506,7 @@ for (genvar i = 0; i < Cfg.AxiExtNumSlv - NumExcludedSlaves; i++) begin: gen_ext
 end
 
 // Cheshire's AXI slave cdc and isolate generation, except for the Integer Cluster (slave 7)
-localparam int unsigned NumExcludedMasters = CarfieldIslandsCfg.pulp.enable ? 1 : 0;
-for (genvar i = 0; i < Cfg.AxiExtNumMst - NumExcludedMasters; i++) begin: gen_ext_mst_dst_cdc
+for (genvar i = 0; i < NumMasterCDCs; i++) begin: gen_ext_mst_dst_cdc
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
     .SyncStages ( CdcSyncStages              ),
