@@ -65,10 +65,10 @@ packages:
     - axi
     - common_cells
   axi_obi:
-    revision: null
+    revision: 4ca45fa0129d7731ce7d40667882acec45a0f487
     version: null
     source:
-      Path: .bender/git/checkouts/safety_island-f408198401cf8b88/future/axi_obi
+      Git: git@iis-git.ee.ethz.ch:carfield/axi_obi.git
     dependencies:
     - axi
     - common_cells
@@ -169,8 +169,8 @@ packages:
     dependencies:
     - hci
   common_cells:
-    revision: 2bd027cb87eaa9bf7d17196ec5f69864b35b630f
-    version: 1.32.0
+    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
+    version: 1.33.0
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -265,8 +265,8 @@ packages:
     dependencies:
     - tech_cells_generic
   hwpe-stream:
-    revision: ddc154424187dff42a8fcec946c768ceb13f13de
-    version: 1.6.4
+    revision: bcb4435f802add732f557dc7fa1c6b5dd8854458
+    version: 1.7.1
     source:
       Git: https://github.com/pulp-platform/hwpe-stream.git
     dependencies:
@@ -336,8 +336,8 @@ packages:
     dependencies:
     - common_cells
   obi:
-    revision: d04f1706ba5b7731bbc0a3a085e725e29fcc5b8e
-    version: 0.1.1
+    revision: 1aa411df145c4ebdd61f8fed4d003c33f7b20636
+    version: 0.1.2
     source:
       Git: https://github.com/pulp-platform/obi.git
     dependencies:
@@ -426,8 +426,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-    revision: d7693be4aef1fc7e7eb2b00b41c42e87d959866c
-    version: 0.4.2
+    revision: e25b36670ff7aab3402f40efcc2b11ee0f31cf19
+    version: 0.4.3
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
@@ -452,7 +452,7 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: aaef55c798ab53560faaf451a86668fa1e6d0f3b
+    revision: 78b255db3b5fdf9f03db77179b8f5b0de95f3d6c
     version: null
     source:
       Git: https://github.com/pulp-platform/safety_island.git
@@ -480,8 +480,8 @@ packages:
     dependencies:
     - tech_cells_generic
   serial_link:
-    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
-    version: 1.1.0
+    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
+    version: 1.1.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
@@ -489,7 +489,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: 2191fce502191995c2c670f6edb84b9b8370de86
+    revision: 550ec1d7f4bb49fd86749aabd0e6d3f71b254595
     version: null
     source:
       Git: https://github.com/pulp-platform/spatz.git

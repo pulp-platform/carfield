@@ -47,23 +47,23 @@ handle_domain_clock_mux [get_cells -hier u_l2_clk_sel] 0 l2_domain_clk
 proc handle_slv_cdc { slv_cdc_path } {
   upvar SOC_TCK SOC_TCK
   # Start from a known slv cdc_dst and get fanout to find the mst cdc_src
-  set mst_cdc_path [lindex [regexp -inline {.*gen_ext_slv_src_cdc\[[0-9]*\]} [lindex [filter [all_fanout -flat [get_pins $slv_cdc_path/*rptr*]] -filter {NAME =~ *gen_ext_slv_src_cdc*}] 0]] 0]
+  set mst_cdc_path [lindex [regexp -inline {.*i_cheshire_ext_slv_cdc_src|.*i_intcluster_slv_cdc} [lindex [filter [all_fanout -flat [get_pins $slv_cdc_path/*rptr*]] -filter {NAME =~ *gen_ext_slv_src_cdc* || NAME =~ *gen_pulp_cluster*}] 0]] 0]
   if { $mst_cdc_path != "" } {
     set_max_delay -datapath \
-     -from [get_pins $mst_cdc_path.i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+     -from [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
      -to [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
      "$SOC_TCK"
     set_max_delay -datapath \
      -from [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
-     -to [get_pins $mst_cdc_path.i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+     -to [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
      "$SOC_TCK"
     set_max_delay -datapath \
-     -from [get_pins $mst_cdc_path.i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*reg*/C] \
+     -from [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
      -to [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
      "$SOC_TCK"
     set_max_delay -datapath \
      -from [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
-     -to [get_pins $mst_cdc_path.i_cheshire_ext_slv_cdc_src/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+     -to [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
      "$SOC_TCK"
   }
 
@@ -80,23 +80,24 @@ handle_slv_cdc [get_cells -hier gen_l2.i_reconfigurable_l2]/gen_cdc_fifos[0].i_d
 proc handle_mst_cdc { mst_cdc_path } {
   upvar SOC_TCK SOC_TCK
   # Get the dst_cdc in cheshire
-  set slv_cdc_path [lindex [regexp -inline {.*gen_ext_mst_dst_cdc\[[0-9]*\]} [lindex [filter [all_fanout -flat [get_pins $mst_cdc_path/*wptr*]] -filter {NAME =~ *gen_ext_mst_dst_cdc*}] 0]] 0]
+  set slv_cdc_path [lindex [regexp -inline {.*i_cheshire_ext_mst_cdc_dst|.*i_intcluster_mst_cdc} [lindex [filter [all_fanout -flat [get_pins $mst_cdc_path/*wptr*]] -filter {NAME =~ *gen_ext_mst_dst_cdc* || NAME =~ *gen_pulp_cluster*}] 0]] 0]
+
   if { $slv_cdc_path != "" } {
     # From Safety Island master
     set_max_delay -datapath \
      -from [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
-     -to [get_pins $slv_cdc_path.i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
+     -to [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
      "$SOC_TCK"
     set_max_delay -datapath \
-     -from [get_pins $slv_cdc_path.i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+     -from [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
      -to [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/i_spill_register/spill_register_flushable_i/*reg*/D] \
      "$SOC_TCK"
     set_max_delay -datapath \
      -from [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
-     -to [get_pins $slv_cdc_path.i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
+     -to [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
      "$SOC_TCK"
     set_max_delay -datapath \
-     -from [get_pins $slv_cdc_path.i_cheshire_ext_mst_cdc_dst/i_cdc_fifo_gray_*/*reg*/C] \
+     -from [get_pins $slv_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
      -to [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/*i_sync/*reg*/D] \
      "$SOC_TCK"
   }
