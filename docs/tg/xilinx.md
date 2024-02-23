@@ -60,9 +60,9 @@ See below some typical building time for reference:
 
 | Config                                 | Board  | Duration   |
 |----------------------------------------|--------|------------|
-| carfield_l2dual_pulp_periph            | vcu128 | __ISSUE__  |
-| carfield_l2dual_safe_periph            | vcu128 | 6h01min    |
-| carfield_l2dual_spatz_periph           | vcu128 | 3h31min    |
+| carfield_l2dual_pulp_periph            | vcu128 | ~5h        |
+| carfield_l2dual_safe_periph            | vcu128 | ~5h        |
+| carfield_l2dual_spatz_periph           | vcu128 | ~5h        |
 | carfield_l2dual_secure_periph          | vcu128 | __ISSUE__  |
 
 You can find which sources are used by looking at `Bender.yml` (target `all(xilinx, fpga,
@@ -104,14 +104,15 @@ See the argument list below:
 | GEN_EXT_JTAG    | vcu128    | `0` Connect the JTAG debugger to the board's JTAG (see [vcu128](#xilinx-vcu128)) <br>`1` Connect the JTAG debugger to an external JTAG chain |
 | CARFIELD_CONFIG | all       | Select the Carfield configuration to implement. See below for supported configs.                                                      |
 | VIVADO_MODE     | all       | `batch` Compile in Vivado shell<br>`gui` Compile in Vivado gui                                                                        |
+| XILINX_BOOT_ETH | all       | `0` Boot via SPI flash only (see [booting Linux](#booting_linux)) <br>`1` Boot via SPI flash and Ethernet                             |
 
 See below some typical building time for reference:
 
 | Config                                 | Board  | Duration   |
 |----------------------------------------|--------|------------|
-| carfield_l2dual_pulp_periph            | vcu128 | __ISSUE__  |
-| carfield_l2dual_safe_periph            | vcu128 | 3h49min    |
-| carfield_l2dual_spatz_periph           | vcu128 | 5h40min    |
+| carfield_l2dual_pulp_periph            | vcu128 | ~5h        |
+| carfield_l2dual_safe_periph            | vcu128 | ~5h        |
+| carfield_l2dual_spatz_periph           | vcu128 | ~5h        |
 | carfield_l2dual_secure_periph          | vcu128 | __ISSUE__  |
 
 You can find which sources are used by looking at `Bender.yml` (target `all(xilinx, fpga,
@@ -124,6 +125,10 @@ Note that the `make` command above will first package a Carfield ip before compi
 
 ## Board specificities
 
+### All
+> #### Ethernet
+> As the MAC address of each FPGA is unique (but reconfigurable), if you wish to use the Ethernet
+> IP (`bd` flavor) you will need to add the MAC address of your board in `sw/boot/mac_address.dtsi`.
 ### Xilinx VCU128
 > #### Bootmodes and VIOs
 >
@@ -198,10 +203,6 @@ Tbd
 
 Tbd
 
-### JTAG Preloading
-
-Tbd
-
 ## Booting Linux
 
 To boot Linux, we must load the *OpenSBI* firmware, which takes over M mode and launches the U-boot
@@ -211,8 +212,8 @@ Clone the `carfield` branch of CVA6 SDK at the root of this repository and build
 (OpenSBI + U-boot) and Linux images (*this will take about 30 minutes*):
 
 ```bash
-git clone https://github.com/pulp-platform/cva6-sdk.git --branch carfield
-make -C cva6-sdk images
+git submodule update --init --recursive sw/deps/cva6-sdk
+make -C sw/deps/cva6-sdk images
 ```
 
 In principle, we can boot Linux through JTAG by loading all images into memory, launching OpenSBI,
@@ -227,16 +228,14 @@ To create a full Linux disk image from the ZSL, device tree, firmware, and Linux
 
 ```bash
 # Place the cva6-sdk where they are expected:
-ln -s cva6-sdk/install64 sw/boot/install64
-# Optional: Pre-uild explicitely the image
+ln -s sw/deps/cva6-sdk/install64 sw/boot/install64
+# Optional: Pre-build explicitely the image
 make CAR_ROOT=. sw/boot/linux_carfield_bd_vcu128.gpt.bin
 ```
 
-You can now recompile the board, it should start booting automatically!
-
-### Xilinx VCU128
+### Via SPI flash
 >
-> This board does not offer a SD card reader. We need to load the image in the
+> Boards like VCU128 does not offer a SD card reader. We need to load the image in the
 integrated flash:
 >
 > ```
@@ -248,6 +247,21 @@ integrated flash:
 >
 > This script will erase your bitstream, once the flash has been written (c.a.
 10min) you will need to re-program the bitstream on the board.
+> You can attach the UART port of the FPGA to minicom and see the boot process! 
+### Via Ethernet
+>
+> As flashing and reading the kernel from SPI can take a few minutes, a faster way is to
+> [ask U-Boot to fetch the image from the network](https://www.emcraft.com/som/using-dhcp).
+> This feature can be enabled in the Carfield `bd` flavor. You will need to add the MAC
+> address of your FPGA in `sw/boot/mac_address.dtsi` and the path to your Linux image (on a FTP server)
+> in `sw/boot/remote_boot.dtsi`.
+> You will still need to flash u-boot but it will be now faster:
+> ```
+> make chs-xil-flash VIVADO_MODE=batch XILINX_BOARD=vcu128 XILINX_FLAVOR=bd XILINX_BOOT_ETH=1
+> ```
+### Via Ethernet
+
+Tbd
 
 ## Add your own board
 

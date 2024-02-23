@@ -406,10 +406,10 @@ proc create_root_design { parentCell } {
   # Create instance: xdma_0, and set properties
   set xdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xdma:4.1 xdma_0 ]
   set_property -dict [ list \
-   CONFIG.PCIE_BOARD_INTERFACE {pci_express_x2} \
-   CONFIG.PF0_DEVICE_ID_mqdma {9012} \
-   CONFIG.PF2_DEVICE_ID_mqdma {9012} \
-   CONFIG.PF3_DEVICE_ID_mqdma {9012} \
+   CONFIG.PCIE_BOARD_INTERFACE {pci_express_x4} \
+   CONFIG.PF0_DEVICE_ID_mqdma {9014} \
+   CONFIG.PF2_DEVICE_ID_mqdma {9014} \
+   CONFIG.PF3_DEVICE_ID_mqdma {9014} \
    CONFIG.SYS_RST_N_BOARD_INTERFACE {pcie_perstn} \
    CONFIG.axi_addr_width {64} \
    CONFIG.axisten_freq {125} \
@@ -419,18 +419,19 @@ proc create_root_design { parentCell } {
    CONFIG.functional_mode {AXI_Bridge} \
    CONFIG.mode_selection {Advanced} \
    CONFIG.pf0_bar0_64bit {true} \
+   CONFIG.pf0_bar0_prefetchable {true} \
    CONFIG.pf0_bar0_scale {Gigabytes} \
    CONFIG.pf0_bar0_size {4} \
-   CONFIG.pf0_base_class_menu {Processing_accelerators} \
-   CONFIG.pf0_class_code {120000} \
-   CONFIG.pf0_class_code_base {12} \
-   CONFIG.pf0_class_code_interface {00} \
-   CONFIG.pf0_device_id {9012} \
+   CONFIG.pf0_base_class_menu {Simple_communication_controllers} \
+   CONFIG.pf0_class_code {070001} \
+   CONFIG.pf0_class_code_base {07} \
+   CONFIG.pf0_class_code_interface {01} \
+   CONFIG.pf0_device_id {9014} \
    CONFIG.pf0_msix_cap_pba_bir {BAR_1:0} \
    CONFIG.pf0_msix_cap_table_bir {BAR_1:0} \
-   CONFIG.pf0_sub_class_interface_menu {Unknown} \
+   CONFIG.pf0_sub_class_interface_menu {16450_compatible_serial_controller} \
    CONFIG.pl_link_cap_max_link_speed {2.5_GT/s} \
-   CONFIG.pl_link_cap_max_link_width {X2} \
+   CONFIG.pl_link_cap_max_link_width {X4} \
    CONFIG.plltype {CPLL} \
    CONFIG.xdma_axilite_slave {true} \
  ] $xdma_0
@@ -511,11 +512,11 @@ proc create_root_design { parentCell } {
   assign_bd_address -offset 0x41E00000 -range 0x00010000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs axi_dma_0/S_AXI_LITE/Reg] -force
   assign_bd_address -offset 0x40C00000 -range 0x00040000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs axi_ethernet_0/s_axi/Reg0] -force
   assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/dram_axi] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x80000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs xdma_0/S_AXI_B/BAR0] -force
   assign_bd_address -offset 0x00000000 -range 0x0001000000000000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_B] [get_bd_addr_segs carfield_xilinx_ip_0/periph_axi_s/reg0] -force
 
   # Exclude Address Segments
-  exclude_bd_addr_seg -offset 0x80000000 -range 0x00100000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP_CTRL/C0_REG]
-  exclude_bd_addr_seg -offset 0x76000000 -range 0x00100000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs xdma_0/S_AXI_B/BAR0]
+  exclude_bd_addr_seg -offset 0x78000000 -range 0x00100000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP_CTRL/C0_REG]
   exclude_bd_addr_seg -offset 0x00000000 -range 0x20000000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs xdma_0/S_AXI_LITE/CTL0]
 
 
