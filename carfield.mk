@@ -30,6 +30,8 @@ BENDER      ?= bender
 BENDER_ROOT ?= $(CAR_ROOT)/.bender
 BENDER_PATH ?= $(shell which $(BENDER))
 
+PYTHON      ?= python3
+
 # Include mandatory bender targets and defines for multiple targets (sim, fpga, synth)
 include $(CAR_ROOT)/bender-common.mk
 include $(CAR_ROOT)/bender-sim.mk

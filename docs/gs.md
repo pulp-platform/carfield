@@ -20,7 +20,7 @@ The project is structured as follows:
 To *build* Carfield, you will need:
 
 - GNU Make `>= 3.82`
-- Python `>= 3.9`
+- Python `>= 3.6`
 - Bender `>= 0.27.1`
 - RISCV GCC `>= 11.2.0`
 - Python packages in `requirements.txt`
