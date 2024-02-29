@@ -14,8 +14,8 @@ set UART_IO_SPEED 200.0
 
 # The output of the top level reset synchronizer
 set SOC_RST_SRC [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets rst_n]]
-set_max_delay -from $SOC_RST_SRC $SOC_TCK
-set_false_path -hold -from $SOC_RST_SRC
+set_max_delay -through $SOC_RST_SRC $SOC_TCK
+set_false_path -hold -through $SOC_RST_SRC
 
 ##########
 # Clocks #
@@ -24,7 +24,6 @@ set_false_path -hold -from $SOC_RST_SRC
 # Rtc clock is asynchronous
 create_generated_clock -source [get_pins -filter {DIRECTION == OUT} -leaf -of_objects [get_nets clk_10]] -divide_by 10 -name rtc_clk [get_pins rtc_clk_q_reg/Q]
 set_clock_groups -asynchronous -group {rtc_clk}
-set_max_delay -from [get_pin rtc_clk_q_reg/Q] $SOC_TCK
 
 # System Clock
 # [see in $XILINX_BOARD.xdc]
