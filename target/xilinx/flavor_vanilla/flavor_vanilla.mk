@@ -36,10 +36,13 @@ vivado_env_vanilla := \
 
 # Generate bender scripts (! attention ! modified on the fly)
 $(CAR_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl: Bender.yml
-	$(BENDER) script vivado $(common_targs) $(xilinx_targs_vanilla) $(common_defs) $(xilinx_defs_vanilla) > $@
-	mv $@ $@.bak
+	$(BENDER) script vivado $(common_targs) $(xilinx_targs_vanilla) $(common_defs) $(xilinx_defs_vanilla) > $@.bak
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
 	grep -v -P "lowrisc_ip/ip/prim/rtl" $@.bak > $@
+    # Override system verilog files
+	$(CAR_XIL_DIR)/scripts/overrides.sh $@
+	echo "" >> $@
+
 
 # Compile bitstream
 $(CAR_XIL_DIR)/flavor_vanilla/out/%.bit: $(xilinx_ips_paths_vanilla) $(CAR_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl

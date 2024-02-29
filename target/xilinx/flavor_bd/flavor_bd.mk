@@ -34,10 +34,12 @@ xilinx_defs_bd := $(common_defs) $(xilinx_defs_common)
 
 # Add includes files for block design
 $(CAR_XIL_DIR)/flavor_bd/scripts/add_includes.tcl:
-	${BENDER} script vivado --only-defines --only-includes $(xilinx_targs_bd) $(xilinx_defs_bd) > $@
+	${BENDER} script vivado --only-defines --only-includes $(xilinx_targs_bd) $(xilinx_defs_bd) > $@.bak
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
-	grep -v -P "lowrisc_ip/ip/prim/rtl" $@ > $@-tmp
-	mv $@-tmp $@
+	grep -v -P "lowrisc_ip/ip/prim/rtl" $@.bak > $@
+    # Override system verilog files
+	$(CAR_XIL_DIR)/scripts/overrides.sh $@
+	echo "" >> $@
 
 # Build block design bitstream
 $(CAR_XIL_DIR)/flavor_bd/out/%.bit: $(xilinx_ips_paths_bd) $(CAR_XIL_DIR)/flavor_bd/scripts/add_includes.tcl
