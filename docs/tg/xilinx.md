@@ -41,30 +41,29 @@ Generate the bitstream in `target/xilinx/out/` by running:
 
 ```bash
 make car-xil-all XILINX_FLAVOR=vanilla [VIVADO=version]
-[VIVADO_MODE={batch,gui}] [XILINX_BOARD={vcu128}] [NO_HYPERBUS={0,1}]
-[GEN_EXT_JTAG={0,1}] [GEN_PULP_CLUSTER={0,1}] [GEN_SAFETY_ISLAND={0,1}]
-[GEN_SPATZ_CLUSTER={0,1}] [GEN_OPEN_TITAN={0,1}]
+[VIVADO_MODE={batch,gui}] [XILINX_BOARD={vcu128}] [GEN_NO_HYPERBUS={0,1}]
+[GEN_EXT_JTAG={0,1}] [CARFIELD_CONFIG=carfield_l2dual_{safe,spatz}_periph]
 ```
 
 See the argument list below:
 
-| Argument       | Relevance | Description                                                                                                                           |
-|----------------|-----------|---------------------------------------------------------------------------------------------------------------------------------------|
-| VIVADO         | all       | Vivado command to use                                                                                                                 |
-| XILINX_BOARD   | all       | `vcu128`                                                                                                                              |
-| NO_HYPERBUS    | all       | `0` Use the hyperram controller inside `carfield.sv`<br>`1` Use the Xilinx DDR controller                                             |
-| GEN_EXT_JTAG   | vcu128    | `0` Connect the JTAG debugger to the board's JTAG (see [vcu128](#xilinx-vcu128)) <br>`1` Connect the JTAG debugger to an external JTAG chain |
-| GEN_*[IP]*     | all       | `0` Replace the IP with an AXI error slave<br>`1` Instanciate the IP                                                                  |
-| VIVADO_MODE    | all       | `batch` Compile in Vivado shell<br>`gui` Compile in Vivado gui                                                                        |
+| Argument        | Relevance | Description                                                                                                                           |
+|-----------------|-----------|---------------------------------------------------------------------------------------------------------------------------------------|
+| VIVADO          | all       | Vivado command to use                                                                                                                 |
+| XILINX_BOARD    | all       | `vcu128`                                                                                                                              |
+| GEN_NO_HYPERBUS | all       | `0` Use the hyperram controller inside `carfield.sv`<br>`1` Use the Xilinx DDR controller                                             |
+| GEN_EXT_JTAG    | vcu128    | `0` Connect the JTAG debugger to the board's JTAG (see [vcu128](#xilinx-vcu128)) <br>`1` Connect the JTAG debugger to an external JTAG chain |
+| CARFIELD_CONFIG | all       | Select the Carfield configuration to implement. See below for supported configs.                                                      |
+| VIVADO_MODE     | all       | `batch` Compile in Vivado shell<br>`gui` Compile in Vivado gui                                                                        |
 
 See below some typical building time for reference:
 
-| IPs               | Board  | Duration   |
-|-------------------|--------|------------|
-| PULP              | vcu128 | xxhxxmin   |
-| SAFETY            | vcu128 | xxhxxmin   |
-| SPATZ             | vcu128 | xxhxxmin   |
-| PULP + SAFETY     | vcu128 | xxhxxmin   |
+| Config                                 | Board  | Duration   |
+|----------------------------------------|--------|------------|
+| carfield_l2dual_pulp_periph            | vcu128 | __ISSUE__  |
+| carfield_l2dual_safe_periph            | vcu128 | 6h01min    |
+| carfield_l2dual_spatz_periph           | vcu128 | 3h31min    |
+| carfield_l2dual_secure_periph          | vcu128 | __ISSUE__  |
 
 You can find which sources are used by looking at `Bender.yml` (target `all(xilinx, fpga,
 xilinx_vanilla)`). This file is used by bender to generate
@@ -91,30 +90,29 @@ Generate the bitstream in `target/xilinx/out/` by running:
 
 ```bash
 make car-xil-all XILINX_FLAVOR=bd [VIVADO=version] [VIVADO_MODE={batch,gui}]
-[XILINX_BOARD={vcu128}] [NO_HYPERBUS={0,1}] [GEN_EXT_JTAG={0,1}]
-[GEN_PULP_CLUSTER={0,1}] [GEN_SAFETY_ISLAND={0,1}] [GEN_SPATZ_CLUSTER={0,1}]
-[GEN_OPEN_TITAN={0,1}]
+[XILINX_BOARD={vcu128}] [GEN_NO_HYPERBUS={0,1}] [GEN_EXT_JTAG={0,1}]
+[CARFIELD_CONFIG=carfield_l2dual_{safe,spatz}_periph]
 ```
 
 See the argument list below:
 
-| Argument       | Relevance | Description                                                                                                                           |
-|----------------|-----------|---------------------------------------------------------------------------------------------------------------------------------------|
-| VIVADO         | all       | Vivado command to use                                                                                                                 |
-| XILINX_BOARD   | all       | `vcu128`                                                                                                                              |
-| NO_HYPERBUS    | all       | `0` Use the hyperram controller inside `carfield.sv`<br>`1` Use the Xilinx DDR controller                                             |
-| GEN_EXT_JTAG   | vcu128    | `0` Connect the JTAG debugger to the board's JTAG (see [vcu128](#xilinx-vcu128)) <br>`1` Connect the JTAG debugger to an external JTAG chain |
-| GEN_*[IP]*     | all       | `0` Replace the IP with an AXI error slave<br>`1` Instanciate the IP                                                                  |
-| VIVADO_MODE    | all       | `batch` Compile in Vivado shell<br>`gui` Compile in Vivado gui                                                                        |
+| Argument        | Relevance | Description                                                                                                                           |
+|---------------- |-----------|---------------------------------------------------------------------------------------------------------------------------------------|
+| VIVADO          | all       | Vivado command to use                                                                                                                 |
+| XILINX_BOARD    | all       | `vcu128`                                                                                                                              |
+| GEN_NO_HYPERBUS | all       | `0` Use the hyperram controller inside `carfield.sv`<br>`1` Use the Xilinx DDR controller                                             |
+| GEN_EXT_JTAG    | vcu128    | `0` Connect the JTAG debugger to the board's JTAG (see [vcu128](#xilinx-vcu128)) <br>`1` Connect the JTAG debugger to an external JTAG chain |
+| CARFIELD_CONFIG | all       | Select the Carfield configuration to implement. See below for supported configs.                                                      |
+| VIVADO_MODE     | all       | `batch` Compile in Vivado shell<br>`gui` Compile in Vivado gui                                                                        |
 
 See below some typical building time for reference:
 
-| IPs               | Board  | Duration   |
-|-------------------|--------|------------|
-| PULP              | vcu128 | xxhxxmin   |
-| SAFETY            | vcu128 | xxhxxmin   |
-| SPATZ             | vcu128 | xxhxxmin   |
-| PULP + SAFETY     | vcu128 | xxhxxmin   |
+| Config                                 | Board  | Duration   |
+|----------------------------------------|--------|------------|
+| carfield_l2dual_pulp_periph            | vcu128 | __ISSUE__  |
+| carfield_l2dual_safe_periph            | vcu128 | 3h49min    |
+| carfield_l2dual_spatz_periph           | vcu128 | 5h40min    |
+| carfield_l2dual_secure_periph          | vcu128 | __ISSUE__  |
 
 You can find which sources are used by looking at `Bender.yml` (target `all(xilinx, fpga,
 xilinx_bd)`). This file is used by bender to generate

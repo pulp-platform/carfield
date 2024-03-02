@@ -14,9 +14,15 @@ set_param general.maxThreads 8
 
 # Contraints files selection
 switch $::env(XILINX_BOARD) {
-  "genesys2" - "kc705" - "vc707" - "vcu128" - "zcu102" {
+  "vcu128" {
     import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
-    import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_PROJECT).xdc
+    import_files -fileset constrs_1 -norecurse constraints/carfield_top_xilinx.xdc
+    # General constraints
+    import_files -fileset constrs_1 -norecurse ../constraints/carfield_islands.tcl
+    # Make sure carfield.xdc executes after carfield_islands.tcl (that generates the clocks)
+    import_files -fileset constrs_1 -norecurse ../constraints/carfield.xdc
+    set_property SCOPED_TO_REF carfield [get_files carfield.xdc]
+    set_property processing_order LATE [get_files carfield.xdc]
   }
   default {
       exit 1
@@ -45,8 +51,6 @@ if {[info exists ::env(XILINX_ELABORATION_ONLY)] && $::env(XILINX_ELABORATION_ON
   # set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
   
   set_property XPM_LIBRARIES XPM_MEMORY [current_project]
-  
-  synth_design -rtl -name rtl_1 -sfcu
   
   set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
   # Enable sfcu due to package conflicts

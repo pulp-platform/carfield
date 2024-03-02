@@ -22,6 +22,8 @@ endif
 
 $(CAR_XIL_DIR)/xilinx_ips/$(1)/$(1).xpr:
 	cd $$(ROOT_$(1)) && $(vivado_env) $(VIVADO) -mode batch -source tcl/run.tcl
+
+.PRECIOUS: $(CAR_XIL_DIR)/xilinx_ips/$(1)/$(1).xpr $(CAR_XIL_DIR)/xilinx_ips/$(1)/%.xci
 endef
 
 # Call xlnx_ips_vars_and_deps

@@ -13,6 +13,379 @@ package carfield_pkg;
 
 import cheshire_pkg::*;
 
+import carfield_configuration::*;
+
+/***********************************
+* Carfield Configuration functions *
+***********************************/
+
+// Below there are the functions used to flexibly reconfigure
+// Carfield's depending on a `carfield_configuration` file were
+// it is possible to enable/disable given islands and adapt the
+// SoC's memory map accordingly. The following functions are all
+// used within the `carfield_pkg` only.
+
+typedef struct packed {
+  bit enable;
+  doub_bt base;
+  doub_bt size;
+} islands_properties_t;
+
+typedef struct packed {
+  islands_properties_t l2_port0;
+  islands_properties_t l2_port1;
+  islands_properties_t safed;
+  islands_properties_t ethernet;
+  islands_properties_t periph;
+  islands_properties_t spatz;
+  islands_properties_t pulp;
+  islands_properties_t secured;
+  islands_properties_t mbox;
+} islands_cfg_t;
+
+// Types are obtained from Cheshire package
+// Parameter MaxExtAxiSlvWidth is obtained from Cheshire
+// Structure used to create the AXI map to be passed to
+// the Cheshire configuration parameter to create the
+// AXI crossbar.
+localparam int unsigned MaxExtAxiSlv = 2**MaxExtAxiSlvWidth;
+typedef struct packed {
+  byte_bt [MaxExtAxiSlv-1:0] AxiIdx;
+  doub_bt [MaxExtAxiSlv-1:0] AxiStart;
+  doub_bt [MaxExtAxiSlv-1:0] AxiEnd;
+} axi_struct_t;
+
+typedef struct packed {
+  byte_bt l2_port0;
+  byte_bt l2_port1;
+  byte_bt safed;
+  byte_bt ethernet;
+  byte_bt periph;
+  byte_bt spatz;
+  byte_bt pulp;
+  byte_bt mbox;
+} carfield_slave_idx_t;
+
+typedef struct packed {
+  byte_bt safed;
+  byte_bt spatz;
+  byte_bt secured;
+  byte_bt pulp;
+} carfield_master_idx_t;
+
+// Generate the number of AXI slave devices to be connected to the
+// crossbar starting from the islands enable structure.
+function automatic int unsigned gen_num_axi_slave(islands_cfg_t island_cfg);
+  int unsigned ret = 0; // Number of slaves starts from 0
+  if (island_cfg.l2_port0.enable) begin
+    ret++; // If we enable L2, we increase by 1
+    if (island_cfg.l2_port1.enable)
+      ret++; // If the L2 is dualport, increase again
+  end
+  if (island_cfg.safed.enable   ) begin ret++; end
+  if (island_cfg.periph.enable  ) begin ret++; end
+  if (island_cfg.ethernet.enable) begin ret++; end
+  if (island_cfg.spatz.enable   ) begin ret++; end
+  if (island_cfg.pulp.enable    ) begin ret++; end
+  if (island_cfg.mbox.enable    ) begin ret++; end
+  return ret;
+endfunction
+
+// Generate the IDs for each AXI slave device
+function automatic carfield_slave_idx_t carfield_gen_axi_slave_idx(islands_cfg_t island_cfg);
+  carfield_slave_idx_t ret = '{default: '0}; // Initialize struct first
+  byte_bt i = 0;
+  byte_bt j = 0;
+  if (island_cfg.l2_port0.enable) begin ret.l2_port0 = i; i++;
+    if (island_cfg.l2_port1.enable) begin ret.l2_port1 = i; i++; end
+  end else begin
+    ret.l2_port0 = MaxExtAxiSlv + j; j++;
+    ret.l2_port1 = MaxExtAxiSlv + j; j++;
+  end
+  if (island_cfg.safed.enable) begin ret.safed = i; i++;
+  end else begin ret.safed = MaxExtAxiSlv + j; j++; end
+  if (island_cfg.ethernet.enable) begin ret.ethernet = i; i++;
+  end else begin ret.ethernet = MaxExtAxiSlv + j; j++; end
+  if (island_cfg.periph.enable) begin ret.periph = i; i++;
+  end else begin ret.periph = MaxExtAxiSlv + j; j++; end
+  if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
+  end else begin ret.spatz = MaxExtAxiSlv + j; j++; end
+  if (island_cfg.pulp.enable) begin ret.pulp = i; i++;
+  end else begin ret.pulp = MaxExtAxiSlv + j; j++; end
+  if (island_cfg.mbox.enable) begin ret.mbox = i; i++;
+  end else begin ret.mbox = MaxExtAxiSlv + j; j++; end
+  return ret;
+endfunction
+
+// Generate the number of AXI master devices that connect to the
+// crossbar starting from the islands enable structure.
+function automatic int unsigned gen_num_axi_master(islands_cfg_t island_cfg);
+  int unsigned ret = 0; // Number of masters starts from 0
+  if (island_cfg.safed.enable  ) begin ret++; end
+  if (island_cfg.spatz.enable  ) begin ret++; end
+  if (island_cfg.pulp.enable   ) begin ret++; end
+  if (island_cfg.secured.enable) begin ret++; end
+  return ret;
+endfunction
+
+// Generate the IDs for each AXI master device
+localparam int unsigned MaxExtAxiMst = 2**MaxExtAxiMstWidth;
+function automatic carfield_master_idx_t carfield_gen_axi_master_idx(islands_cfg_t island_cfg);
+  carfield_master_idx_t ret = '{default: '0}; // Initialize struct first
+  byte_bt i = 0;
+  byte_bt j = 0;
+  if (island_cfg.safed.enable) begin ret.safed = i; i++;
+  end else begin ret.safed = MaxExtAxiMst + j; j++; end
+  if (island_cfg.secured.enable) begin ret.secured = i; i++;
+  end else begin ret.secured = MaxExtAxiMst + j; j++; end
+  if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
+  end else begin ret.spatz = MaxExtAxiMst + j; j++; end
+  if (island_cfg.pulp.enable) begin ret.pulp = i; i++;
+  end else begin ret.pulp = MaxExtAxiMst + j; j++; end
+  return ret;
+endfunction
+
+// Compute memory map
+function automatic axi_struct_t carfield_gen_axi_map(int unsigned NumSlave  ,
+                                                    islands_cfg_t island_cfg,
+                                                    carfield_slave_idx_t idx);
+  axi_struct_t ret = '0; // Initialize the map first
+  int unsigned i = 0;
+  if (island_cfg.l2_port0.enable) begin
+    ret.AxiIdx[i] = idx.l2_port0;
+    ret.AxiStart[i] = island_cfg.l2_port0.base;
+    ret.AxiEnd[i] = island_cfg.l2_port0.base + island_cfg.l2_port0.size;
+    if (i < NumSlave - 1) i++;
+    if (island_cfg.l2_port1.enable) begin
+      ret.AxiIdx[i] = idx.l2_port1;
+      ret.AxiStart[i] = island_cfg.l2_port1.base;
+      ret.AxiEnd[i] = island_cfg.l2_port1.base + island_cfg.l2_port1.size;
+      if (i < NumSlave - 1) i++;
+    end
+  end
+  if (island_cfg.safed.enable) begin
+    ret.AxiIdx[i] = idx.safed;
+    ret.AxiStart[i] = island_cfg.safed.base;
+    ret.AxiEnd[i] = island_cfg.safed.base + island_cfg.safed.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (island_cfg.ethernet.enable) begin
+    ret.AxiIdx[i] = idx.ethernet;
+    ret.AxiStart[i] = island_cfg.ethernet.base;
+    ret.AxiEnd[i] = island_cfg.ethernet.base + island_cfg.ethernet.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (island_cfg.periph.enable) begin
+    ret.AxiIdx[i] = idx.periph;
+    ret.AxiStart[i] = island_cfg.periph.base;
+    ret.AxiEnd[i] = island_cfg.periph.base + island_cfg.periph.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (island_cfg.spatz.enable) begin
+    ret.AxiIdx[i] = idx.spatz;
+    ret.AxiStart[i] = island_cfg.spatz.base;
+    ret.AxiEnd[i] = island_cfg.spatz.base + island_cfg.spatz.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (island_cfg.pulp.enable) begin
+    ret.AxiIdx[i] = idx.pulp;
+    ret.AxiStart[i] = island_cfg.pulp.base;
+    ret.AxiEnd[i] = island_cfg.pulp.base + island_cfg.pulp.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (island_cfg.mbox.enable) begin
+    ret.AxiIdx[i] = idx.mbox;
+    ret.AxiStart[i] = island_cfg.mbox.base;
+    ret.AxiEnd[i] = island_cfg.mbox.base + island_cfg.mbox.size;
+    if (i < NumSlave - 1) i++;
+  end
+  return ret;
+endfunction
+
+/********************
+ * RegBus functions *
+ *******************/
+typedef struct packed {
+  islands_properties_t pcrs;
+  islands_properties_t pll;
+  islands_properties_t padframe;
+  islands_properties_t l2ecc;
+} regbus_cfg_t;
+
+typedef struct packed {
+  byte_bt pcrs;
+  byte_bt pll;
+  byte_bt padframe;
+  byte_bt l2ecc;
+} carfield_regbus_slave_idx_t;
+
+// Generate the number of AXI slave devices to be connected to the
+// crossbar starting from the islands enable structure.
+function automatic int unsigned gen_num_regbus_sync_slave(regbus_cfg_t regbus_cfg);
+  int unsigned ret = 0; // Number of slaves starts from 0
+  if (regbus_cfg.pcrs.enable) begin ret++; end
+  return ret;
+endfunction
+
+function automatic int unsigned gen_num_regbus_async_slave(regbus_cfg_t regbus_cfg);
+  int unsigned ret = 0; // Number of slaves starts from 0
+  if (regbus_cfg.pll.enable     ) begin ret++; end
+  if (regbus_cfg.padframe.enable) begin ret++; end
+  if (regbus_cfg.l2ecc.enable   ) begin ret++; end
+  return ret;
+endfunction
+
+localparam regbus_cfg_t CarfieldRegBusCfg = '{
+  pcrs:     '{1, PcrsBase, PcrsSize},
+  pll:      '{PllCfgEnable, PllCfgBase, PllCfgSize},
+  padframe: '{PadframeCfgEnable, PadframeCfgBase, PadframeCfgSize},
+  l2ecc:    '{L2EccCfgEnable, L2EccCfgBase, L2EccCfgSize}
+};
+
+localparam int unsigned NumSyncRegSlv = gen_num_regbus_sync_slave(CarfieldRegBusCfg);
+localparam int unsigned NumAsyncRegSlv = gen_num_regbus_async_slave(CarfieldRegBusCfg);
+localparam int unsigned NumTotalRegSlv = NumSyncRegSlv + NumAsyncRegSlv;
+
+// Generate the IDs for each AXI slave device
+// verilog_lint: waive-start line-length
+function automatic carfield_regbus_slave_idx_t carfield_gen_regbus_slave_idx(regbus_cfg_t regbus_cfg);
+// verilog_lint: waive-stop line-length
+  carfield_regbus_slave_idx_t ret = '{default: '0}; // Initialize struct first
+  byte_bt i = 0;
+  byte_bt j = 0;
+  if (regbus_cfg.pcrs.enable) begin ret.pcrs = i; i++;
+  end else begin ret.pcrs = NumTotalRegSlv + j; j++; end
+  if (regbus_cfg.pll.enable) begin ret.pll = i; i++;
+  end else begin ret.pll = NumTotalRegSlv + j; j++; end
+  if (regbus_cfg.padframe.enable) begin ret.padframe = i; i++;
+  end else begin ret.padframe = NumTotalRegSlv + j; j++; end
+  if (regbus_cfg.l2ecc.enable) begin ret.l2ecc = i; i++;
+  end else begin ret.l2ecc = NumTotalRegSlv + j; j++; end
+  return ret;
+endfunction
+
+typedef struct packed {
+  byte_bt [NumTotalRegSlv-1:0] RegBusIdx;
+  doub_bt [NumTotalRegSlv-1:0] RegBusStart;
+  doub_bt [NumTotalRegSlv-1:0] RegBusEnd;
+} regbus_struct_t;
+
+// Compute RegBus memory map
+function automatic regbus_struct_t carfield_gen_regbus_map(int unsigned NumSlave          ,
+                                                           regbus_cfg_t regbus_cfg        ,
+                                                           carfield_regbus_slave_idx_t idx);
+  regbus_struct_t ret = '0; // Initialize the map first
+  int unsigned i = 0;
+  if (regbus_cfg.pcrs.enable) begin
+    ret.RegBusIdx[i] = idx.pcrs;
+    ret.RegBusStart[i] = regbus_cfg.pcrs.base;
+    ret.RegBusEnd[i] = regbus_cfg.pcrs.base + regbus_cfg.pcrs.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (regbus_cfg.pll.enable) begin
+    ret.RegBusIdx[i] = idx.pll;
+    ret.RegBusStart[i] = regbus_cfg.pll.base;
+    ret.RegBusEnd[i] = regbus_cfg.pll.base + regbus_cfg.pll.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (regbus_cfg.padframe.enable) begin
+    ret.RegBusIdx[i] = idx.padframe;
+    ret.RegBusStart[i] = regbus_cfg.padframe.base;
+    ret.RegBusEnd[i] = regbus_cfg.padframe.base + regbus_cfg.padframe.size;
+    if (i < NumSlave - 1) i++;
+  end
+  if (regbus_cfg.l2ecc.enable) begin
+    ret.RegBusIdx[i] = idx.l2ecc;
+    ret.RegBusStart[i] = regbus_cfg.l2ecc.base;
+    ret.RegBusEnd[i] = regbus_cfg.l2ecc.base + regbus_cfg.l2ecc.size;
+    if (i < NumSlave - 1) i++;
+  end
+  return ret;
+endfunction
+
+// Generate number of existent domains
+function automatic int unsigned gen_carfield_domains(islands_cfg_t island_cfg);
+  int unsigned ret = 0; // Number of availale domains starts from 0
+  if (island_cfg.l2_port0.enable) begin ret++; end
+  if (island_cfg.safed.enable   ) begin ret++; end
+  if (island_cfg.periph.enable  ) begin ret++; end
+  if (island_cfg.spatz.enable   ) begin ret++; end
+  if (island_cfg.pulp.enable    ) begin ret++; end
+  if (island_cfg.secured.enable ) begin ret++; end
+  return ret;
+endfunction
+
+localparam islands_cfg_t CarfieldIslandsCfg = '{
+  l2_port0: '{L2Port0Enable, L2Port0Base, L2Port0Size},
+  l2_port1: '{L2Port1Enable, L2Port1Base, L2Port1Size},
+  safed:    '{SafetyIslandEnable, SafetyIslandBase, SafetyIslandSize},
+  ethernet: '{EthernetEnable, EthernetBase, EthernetSize},
+  periph:   '{PeriphEnable, PeriphBase, PeriphSize},
+  spatz:    '{SpatzClusterEnable, SpatzClusterBase, SpatzClusterSize},
+  pulp:     '{PulpClusterEnable, PulpClusterBase, PulpClusterSize},
+  secured:  '{SecurityIslandEnable, SecurityIslandBase, SecurityIslandSize},
+  mbox:     '{MailboxEnable, MailboxBase, MailboxSize}
+};
+
+localparam int unsigned CarfieldAxiNumSlaves  = gen_num_axi_slave(CarfieldIslandsCfg);
+localparam carfield_slave_idx_t CarfieldAxiSlvIdx = carfield_gen_axi_slave_idx(CarfieldIslandsCfg);
+localparam int unsigned CarfieldAxiNumMasters = gen_num_axi_master(CarfieldIslandsCfg);
+localparam carfield_master_idx_t CarfieldMstIdx = carfield_gen_axi_master_idx(CarfieldIslandsCfg);
+
+localparam axi_struct_t CarfieldAxiMap = carfield_gen_axi_map(CarfieldAxiNumSlaves,
+                                                              CarfieldIslandsCfg  ,
+                                                              CarfieldAxiSlvIdx   );
+// verilog_lint: waive-start line-length
+localparam carfield_regbus_slave_idx_t CarfieldRegBusSlvIdx = carfield_gen_regbus_slave_idx(CarfieldRegBusCfg);
+// verilog_lint: waive-stop line-length
+
+localparam regbus_struct_t CarfieldRegBusMap = carfield_gen_regbus_map(NumTotalRegSlv      ,
+                                                                       CarfieldRegBusCfg   ,
+                                                                       CarfieldRegBusSlvIdx);
+
+localparam int unsigned CarfieldNumDomains = gen_carfield_domains(CarfieldIslandsCfg);
+
+typedef struct {
+  int unsigned clock_div_value[CarfieldNumDomains];
+} carfield_clk_div_values_t;
+
+function automatic carfield_clk_div_values_t gen_carfield_clk_div_value(int unsigned num_domains);
+  carfield_clk_div_values_t ret = '{default: '0};
+  for (int i = 0; i < num_domains; i++) ret.clock_div_value[i] = 1;
+  return ret;
+endfunction
+
+// verilog_lint: waive-start line-length
+localparam carfield_clk_div_values_t CarfieldClkDivValue = gen_carfield_clk_div_value(CarfieldNumDomains);
+// verilog_lint: waive-stop line-length
+
+typedef struct packed {
+  byte_bt l2;
+  byte_bt spatz;
+  byte_bt pulp;
+  byte_bt secured;
+  byte_bt safed;
+  byte_bt periph;
+} carfield_domain_idx_t;
+
+function automatic carfield_domain_idx_t gen_domain_idx(islands_cfg_t island_cfg);
+  carfield_domain_idx_t ret = '{default: '0};
+  int unsigned i = 0;
+  if (island_cfg.periph.enable   ) begin ret.periph  = i; i++; end
+  if (island_cfg.safed.enable    ) begin ret.safed   = i; i++; end
+  if (island_cfg.secured.enable  ) begin ret.secured = i; i++; end
+  if (island_cfg.pulp.enable     ) begin ret.pulp    = i; i++; end
+  if (island_cfg.spatz.enable    ) begin ret.spatz   = i; i++; end
+  if (island_cfg.l2_port0.enable ) begin ret.l2      = i; i++; end
+  return ret;
+endfunction
+
+localparam carfield_domain_idx_t CarfieldDomainIdx = gen_domain_idx(CarfieldIslandsCfg);
+
+/*******************************
+* Carfield package starts here *
+*******************************/
+
 localparam int unsigned CarfieldNumExtIntrs           = 32; // Number of external interrupts
 localparam int unsigned CarfieldNumInterruptibleHarts = 2;  // Spatz (2 Snitch cores)
 localparam int unsigned CarfieldNumRouterTargets      = 1;  // Safety Island
@@ -23,15 +396,6 @@ typedef enum int {
   SafedIntrHartIdx      = 'd2
 } carfield_ext_intr_harts_e;
 
-typedef enum int {
-  PeriphDomainIdx     = 'd0,
-  SafedDomainIdx      = 'd1,
-  SecdDomainIdx       = 'd2,
-  IntClusterDomainIdx = 'd3,
-  FPClusterDomainIdx  = 'd4,
-  L2DomainIdx         = 'd5
-} carfield_domains_e;
-
 // Clock dividers integer value after PoR
 localparam int unsigned PeriphDomainClkDivValue     = 1;
 localparam int unsigned SafedDomainClkDivValue      = 1;
@@ -41,56 +405,24 @@ localparam int unsigned FPClusterDomainClkDivValue  = 1;
 localparam int unsigned L2DomainClkDivValue         = 1;
 
 typedef enum byte_bt {
-  L2Port0SlvIdx      = 'd0,
-  L2Port1SlvIdx      = 'd1,
-  SafetyIslandSlvIdx = 'd2,
-  EthernetSlvIdx     = 'd3,
-  PeriphsSlvIdx      = 'd4,
-  FPClusterSlvIdx    = 'd5,
-  IntClusterSlvIdx   = 'd6,
-  MailboxSlvIdx      = 'd7
+  L2Port0SlvIdx      = CarfieldAxiSlvIdx.l2_port0,
+  L2Port1SlvIdx      = CarfieldAxiSlvIdx.l2_port1,
+  SafetyIslandSlvIdx = CarfieldAxiSlvIdx.safed,
+  EthernetSlvIdx     = CarfieldAxiSlvIdx.ethernet,
+  PeriphsSlvIdx      = CarfieldAxiSlvIdx.periph,
+  FPClusterSlvIdx    = CarfieldAxiSlvIdx.spatz,
+  IntClusterSlvIdx   = CarfieldAxiSlvIdx.pulp,
+  MailboxSlvIdx      = CarfieldAxiSlvIdx.mbox
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
-  SafetyIslandMstIdx   = 'd0,
-  SecurityIslandMstIdx = 'd1,
-  FPClusterMstIdx      = 'd2,
-  IntClusterMstIdx     = 'd3
+  SafetyIslandMstIdx   = CarfieldMstIdx.safed,
+  SecurityIslandMstIdx = CarfieldMstIdx.secured,
+  FPClusterMstIdx      = CarfieldMstIdx.spatz,
+  IntClusterMstIdx     = CarfieldMstIdx.pulp
 } axi_mst_idx_t;
 
-typedef enum doub_bt {
-  L2Port0Base      = 'h0000_0000_7800_0000,
-  L2Port1Base      = 'h0000_0000_7820_0000,
-  SafetyIslandBase = 'h0000_0000_6000_0000,
-  EthernetBase     = 'h0000_0000_2000_0000,
-  PeriphsBase      = 'h0000_0000_2000_1000,
-  FPClusterBase    = 'h0000_0000_5100_0000,
-  IntClusterBase   = 'h0000_0000_5000_0000,
-  MailboxBase      = 'h0000_0000_4000_0000
-} axi_start_t;
-
-// AXI Slave Sizes
-localparam doub_bt L2Size           = 'h0000_0000_0020_0000;
-localparam doub_bt SafetyIslandSize = 'h0000_0000_0080_0000;
-localparam doub_bt EthernetSize     = 'h0000_0000_0000_1000;
-localparam doub_bt PeriphsSize      = 'h0000_0000_0000_9000;
-localparam doub_bt IntClusterSize   = 'h0000_0000_0080_0000;
-localparam doub_bt FPClusterSize    = 'h0000_0000_0080_0000;
-localparam doub_bt MailboxSize      = 'h0000_0000_0000_1000;
-
-typedef enum doub_bt {
-  L2Port0End      = L2Port0Base + L2Size,
-  L2Port1End      = L2Port1Base + L2Size,
-  SafetyIslandEnd = SafetyIslandBase + SafetyIslandSize,
-  EthernetEnd     = EthernetBase + EthernetSize,
-  PeriphsEnd      = PeriphsBase + PeriphsSize,
-  FPClusterEnd    = FPClusterBase + FPClusterSize,
-  IntClusterEnd   = IntClusterBase + IntClusterSize,
-  MailboxEnd      = MailboxBase + MailboxSize
-} axi_end_t;
-
 // APB peripherals
-
 localparam int unsigned CarfieldNumAdvTimerIntrs  = 4;
 localparam int unsigned CarfieldNumAdvTimerEvents = 4;
 localparam int unsigned CarfieldNumSysTimerIntrs  = 2;
@@ -101,80 +433,6 @@ localparam int unsigned CarfieldNumCanIntrs = 1;
 localparam int unsigned CarfieldNumEthIntrs = 1;
 localparam int unsigned CarfieldNumPeriphsIntrs = CarfieldNumTimerIntrs +
                         CarfieldNumWdtIntrs + CarfieldNumCanIntrs + CarfieldNumEthIntrs;
-
-localparam int unsigned NumApbMst = 5;
-
-typedef enum int {
-  SystemTimerIdx   = 'd0,
-  AdvancedTimerIdx = 'd1,
-  SystemWdtIdx     = 'd2,
-  CanIdx           = 'd3,
-  HyperBusIdx      = 'd4
-} carfield_peripherals_e;
-
-// APB start
-typedef enum word_bt {
-  SystemTimerBase   = 'h2000_4000,
-  AdvancedTimerBase = 'h2000_5000,
-  SystemWdtBase     = 'h2000_7000,
-  CanBase           = 'h2000_1000,
-  HyperBusBase      = 'h2000_9000
-} apb_start_t;
-
-// APB Sizes
-localparam word_bt SystemTimerSize   = 'h0000_1000;
-localparam word_bt AdvancedTimerSize = 'h0000_1000;
-localparam word_bt SystemWdtSize     = 'h0000_1000;
-localparam word_bt CanSize           = 'h0000_1000;
-localparam word_bt HyperBusSize      = 'h0000_1000;
-
-typedef enum word_bt {
-  SystemTimerEnd   = SystemTimerBase + SystemTimerSize,
-  AdvancedTimerEnd = AdvancedTimerBase + AdvancedTimerSize,
-  SystemWdtEnd     = SystemWdtBase + SystemWdtSize,
-  CanEnd           = CanBase + CanSize,
-  HyperBusEnd      = HyperBusBase + HyperBusSize
-} apb_end_t;
-
-// Cheshire regbus out
-// For carfield, PllIdx is the first index of the async reg interfaces. Please add async reg
-// interfaces indices to the left of PllIdx, and sync reg interface indices to its right.
-typedef enum int {
-  CarRegsIdx  = 'd0, // sync
-  PllIdx      = 'd1, // async
-  PadframeIdx = 'd2, // async
-  L2EccIdx    = 'd3  // async
-} cheshire_reg_out_e;
-localparam int unsigned NumSyncRegSlv = 1;
-                                      // CarRegs
-localparam int unsigned NumAsyncRegSlv =  1  + 1        + 1;
-                                       // PLL  Padframe   L2ECC
-localparam int unsigned NumTotalRegSlv = NumSyncRegSlv + NumAsyncRegSlv;
-localparam int unsigned NumTotalRegRules = NumTotalRegSlv;
-
-typedef enum doub_bt {
-  CarRegsBase  = 'h0000_0000_2001_0000,
-  PllBase      = 'h0000_0000_2002_0000,
-  PadframeBase = 'h0000_0000_200a_0000,
-  L2EccBase    = 'h0000_0000_200b_0000
-} reg_start_t;
-
-localparam doub_bt CarRegsSize  = 'h0000_0000_0000_1000;
-localparam doub_bt PllSize      = 'h0000_0000_0000_1000;
-localparam doub_bt PadframeSize = 'h0000_0000_0000_1000;
-localparam doub_bt L2EccSize    = 'h0000_0000_0000_1000;
-
-typedef enum doub_bt {
-  CarRegsEnd  = CarRegsBase + CarRegsSize,
-  PllEnd      = PllBase + PllSize,
-  PadframeEnd = PadframeBase + PadframeSize,
-  L2EccEnd    = L2EccBase + L2EccSize
-} reg_end_t;
-
-// Ext Slaves: L2Ports + Safety Island + Integer Cluster + Security Island Mailbox + Ethernet + Peripherals + Floating Point Cluster
-localparam bit [3:0] AxiNumExtSlv = 3'd2 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1 + 3'd1;
-// Ext Masters: Integer Cluster + Security Island + Safety Island + Floating Point Cluster
-localparam bit [2:0] AxiNumExtMst = 3'd1 + 3'd1 + 3'd1 + 3'd1;
 
 // Synchronization stages (for FIFOs read/write pointers and single-bit signals syncronization after
 // CDCs)
@@ -294,42 +552,21 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   RegAmoNumCuts     : 1,
   RegAmoPostCut     : 1,
   // External AXI ports (at most 8 ports and rules)
-  AxiExtNumMst      : AxiNumExtMst,
-  AxiExtNumSlv      : AxiNumExtSlv,
-  AxiExtNumRules    : AxiNumExtSlv,
+  AxiExtNumMst      : CarfieldAxiNumMasters,
+  AxiExtNumSlv      : CarfieldAxiNumSlaves,
+  AxiExtNumRules    : CarfieldAxiNumSlaves,
   // External AXI region map
-  AxiExtRegionIdx   : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxSlvIdx     ,
-                                                IntClusterSlvIdx  ,
-                                                FPClusterSlvIdx   ,
-                                                PeriphsSlvIdx     ,
-                                                EthernetSlvIdx    ,
-                                                SafetyIslandSlvIdx,
-                                                L2Port1SlvIdx     ,
-                                                L2Port0SlvIdx     },
-  AxiExtRegionStart : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxBase     ,
-                                                IntClusterBase  ,
-                                                FPClusterBase   ,
-                                                PeriphsBase     ,
-                                                EthernetBase    ,
-                                                SafetyIslandBase,
-                                                L2Port1Base     ,
-                                                L2Port0Base     },
-  AxiExtRegionEnd   : '{0, 0, 0, 0, 0, 0, 0, 0, MailboxEnd     ,
-                                                IntClusterEnd  ,
-                                                FPClusterEnd   ,
-                                                PeriphsEnd     ,
-                                                EthernetEnd    ,
-                                                SafetyIslandEnd,
-                                                L2Port1End     ,
-                                                L2Port0End     },
+  AxiExtRegionIdx   : CarfieldAxiMap.AxiIdx,
+  AxiExtRegionStart : CarfieldAxiMap.AxiStart,
+  AxiExtRegionEnd   : CarfieldAxiMap.AxiEnd,
   // External reg slaves (at most 8 ports and rules)
   RegExtNumSlv      : NumTotalRegSlv,
-  RegExtNumRules    : NumTotalRegRules,
+  RegExtNumRules    : NumTotalRegSlv,
   // For carfield, PllIdx is the first index of the async reg interfaces. Please add async reg
   // interfaces indices to the left of PllIdx, and sync reg interface indices to its right.
-  RegExtRegionIdx   : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, L2EccIdx,  PadframeIdx,  PllIdx,  CarRegsIdx  },
-  RegExtRegionStart : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, L2EccBase, PadframeBase, PllBase, CarRegsBase },
-  RegExtRegionEnd   : '{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, L2EccEnd,  PadframeEnd,  PllEnd,  CarRegsEnd  },
+  RegExtRegionIdx   : CarfieldRegBusMap.RegBusIdx,
+  RegExtRegionStart : CarfieldRegBusMap.RegBusStart,
+  RegExtRegionEnd   : CarfieldRegBusMap.RegBusEnd,
   // RTC
   RtcFreq           : 1000000,
   // Features
@@ -410,39 +647,20 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
 };
 // verilog_lint: waive-stop line-length
 
-// Control which island to add
-typedef struct packed {
-  bit     EnPulpCluster;
-  bit     EnSafetyIsland;
-  bit     EnSpatzCluster;
-  bit     EnOpenTitan;
-  bit     EnCan;
-  bit     EnEthernet;
-} islands_cfg_t;
-
-// Enable all islands by default
-localparam islands_cfg_t IslandsCfgDefault = '{
-  EnPulpCluster   : 1,
-  EnSafetyIsland  : 1,
-  EnSpatzCluster  : 1,
-  EnOpenTitan     : 1,
-  EnCan           : 1,
-  EnEthernet      : 0,
-  default         : '1
-};
-
 // CDC FIFO parameters (FIFO depth).
 localparam int unsigned LogDepth   = 3;
 
 /*****************/
 /* L2 Parameters */
 /*****************/
-localparam int unsigned NumL2Ports = 2;
-localparam int unsigned L2MemSize = 2**20;
+localparam int unsigned NumL2Ports = (CarfieldIslandsCfg.l2_port1.enable) ? 2 : 1;
+localparam int unsigned L2MemSize = CarfieldIslandsCfg.l2_port0.size/2;
 localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
                                         // (interleaved, non-interleaved)
-localparam doub_bt L2Port0NonInterlBase = L2Port0Base + L2MemSize;
-localparam doub_bt L2Port1NonInterlBase = L2Port1Base + L2MemSize;
+localparam doub_bt L2Port0InterlBase = CarfieldIslandsCfg.l2_port0.base;
+localparam doub_bt L2Port1InterlBase = CarfieldIslandsCfg.l2_port1.base;
+localparam doub_bt L2Port0NonInterlBase = CarfieldIslandsCfg.l2_port0.base + L2MemSize;
+localparam doub_bt L2Port1NonInterlBase = CarfieldIslandsCfg.l2_port1.base + L2MemSize;
 
 /****************************/
 /* Safety Island Parameters */
@@ -465,11 +683,12 @@ localparam int unsigned IntClusterSetAssociative = 4;
 localparam int unsigned IntClusterNumCacheBanks = 2;
 localparam int unsigned IntClusterNumCacheLines = 1;
 localparam int unsigned IntClusterCacheSize = 4*1024;
-localparam int unsigned IntClusterDbgStart = SafetyIslandBase+
+localparam int unsigned IntClusterDbgStart = CarfieldIslandsCfg.safed.base+
                                              SafetyIslandPerOffset+
                                              safety_island_pkg::DebugAddrOffset;
 localparam int unsigned IntClusterBootAddrDefaultOffs = 'h8080;
-localparam int unsigned IntClusterBootAddr = L2Port0Base + IntClusterBootAddrDefaultOffs;
+localparam int unsigned IntClusterBootAddr = CarfieldIslandsCfg.l2_port0.base +
+                                             IntClusterBootAddrDefaultOffs;
 localparam int unsigned IntClusterInstrRdataWidth = 32;
 localparam int unsigned IntClusterFpu = 0;
 localparam int unsigned IntClusterFpuDivSqrt = 0;
@@ -486,6 +705,12 @@ localparam int unsigned IntClusterNumEoc = 1;
 localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
 localparam logic [CarfieldCfgDefault.AddrWidth-1:0] IntClusterInternalSize = 'h0040_0000;
 
+/*************************************/
+/* Floating Point Cluster Parameters */
+/*************************************/
+localparam int unsigned FpClustAxiMaxOutTrans   = 4;
+localparam int unsigned FpClustIwcAxiIdOutWidth = 3;
+
 /*******************************/
 /* Narrow Parameters: A32, D32 */
 /*******************************/
@@ -500,6 +725,42 @@ typedef logic [        AxiNarrowStrobe-1:0] car_nar_strb_t;
 typedef logic [ IntClusterAxiIdInWidth-1:0] intclust_idin_t;
 typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
 
+// APB Mapping
+localparam int unsigned NumApbMst = 5;
+
+typedef enum int {
+  SystemTimerIdx   = 'd0,
+  AdvancedTimerIdx = 'd1,
+  SystemWdtIdx     = 'd2,
+  CanIdx           = 'd3,
+  HyperBusIdx      = 'd4
+} carfield_peripherals_e;
+
+// Address map of peripheral system
+typedef struct packed {
+  logic [31:0] idx;
+  car_nar_addrw_t start_addr;
+  car_nar_addrw_t end_addr;
+} carfield_addr_map_rule_t;
+
+localparam carfield_addr_map_rule_t [NumApbMst-1:0] PeriphApbAddrMapRule = '{
+   // 0: System Timer
+  '{ idx: SystemTimerIdx,   start_addr: SystemTimerBase,
+                            end_addr: SystemTimerBase + SystemTimerSize  },
+  // 1: Advanced Timer
+  '{ idx: AdvancedTimerIdx, start_addr: SystemAdvancedTimerBase,
+                            end_addr: SystemAdvancedTimerBase + SystemAdvancedTimerSize },
+  // 2: WDT
+  '{ idx: SystemWdtIdx,     start_addr: SystemWatchdogBase,
+                            end_addr: SystemWatchdogBase + SystemWatchdogSize },
+  // 3: Can
+  '{ idx: CanIdx,           start_addr: CanBase,
+                            end_addr: CanBase + CanSize },
+  // 4: Hyperbus
+  '{ idx: HyperBusIdx,      start_addr: HyperBusBase,
+                            end_addr: HyperBusBase + HyperBusSize }
+};
+
 // Narrow reg types
 `REG_BUS_TYPEDEF_ALL(carfield_a32_d32_reg, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
 
@@ -511,8 +772,7 @@ typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
 
 // 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz &
 // pulp_cluster, L2 shared memory
-localparam int unsigned NumDomains = 6;
-
+localparam int unsigned NumDomains = CarfieldNumDomains;
 
 typedef struct packed {
   logic [NumDomains-1:0] domain_clk;

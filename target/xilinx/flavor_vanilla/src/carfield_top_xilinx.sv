@@ -124,9 +124,10 @@ module carfield_top_xilinx
   `endif
   logic sys_rst;
 
-  wire clk_100, clk_50, clk_20, clk_10;
+  wire clk_100, clk_50, clk_20;
+  (* dont_touch = "yes" *) wire clk_10;
   wire soc_clk, host_clk, alt_clk, periph_clk;
-  (* dont_touch = "yes" *)  wire rst_n;
+  (* dont_touch = "yes" *) wire rst_n;
 
   ///////////////////
   // GPIOs         // 
@@ -399,31 +400,8 @@ module carfield_top_xilinx
   // Carfield Cfg //
   //////////////////
 
-`ifndef GEN_PULP_CLUSTER
-`define GEN_PULP_CLUSTER 0
-`endif
-`ifndef GEN_SAFETY_ISLAND
-`define GEN_SAFETY_ISLAND 0
-`endif
-`ifndef GEN_SPATZ_CLUSTER
-`define GEN_SPATZ_CLUSTER 0
-`endif
-`ifndef GEN_OPEN_TITAN
-`define GEN_OPEN_TITAN 0
-`endif
-
   localparam cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault;
   `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
-
-  localparam islands_cfg_t IslandsCfg = '{
-    EnPulpCluster   : `GEN_PULP_CLUSTER,
-    EnSafetyIsland  : `GEN_SAFETY_ISLAND,
-    EnSpatzCluster  : `GEN_SPATZ_CLUSTER,
-    EnOpenTitan     : `GEN_OPEN_TITAN,
-    EnCan           : 0,
-    EnEthernet      : 0,
-    default         : '1
-  };
 
   ///////////////////
   // LLC interface //
@@ -498,7 +476,6 @@ module carfield_top_xilinx
 
   carfield #(
       .Cfg       (carfield_pkg::CarfieldCfgDefault),
-      .IslandsCfg(IslandsCfg),
       .reg_req_t(carfield_reg_req_t),
       .reg_rsp_t(carfield_reg_rsp_t),
 `ifdef GEN_NO_HYPERBUS

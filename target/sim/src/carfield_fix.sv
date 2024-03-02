@@ -326,121 +326,136 @@ module carfield_soc_fixture;
   // Safety island VIP //
   ///////////////////////
 
-  localparam time ClkPeriodSafedJtag = 20ns;
-
-  localparam axi_in_t AxiIn = gen_axi_in(DutCfg);
-  localparam int unsigned AxiSlvIdWidth = DutCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
-
   // VIP
-  vip_safety_island_soc #(
-    .DutCfg            ( SafetyIslandCfg ),
-    .axi_mst_ext_req_t ( axi_mst_req_t ),
-    .axi_mst_ext_rsp_t ( axi_mst_rsp_t ),
-    .axi_slv_ext_req_t ( axi_mst_req_t ),
-    .axi_slv_ext_rsp_t ( axi_mst_rsp_t ),
-    .GlobalAddrWidth   ( 32            ),
-    .BaseAddr          ( 32'h6000_0000 ),
-    .AddrRange         ( SafetyIslandSize      ),
-    .MemOffset         ( SafetyIslandMemOffset ),
-    .PeriphOffset      ( SafetyIslandPerOffset ),
-    .ClkPeriodSys      ( ClkPeriodSys          ),
-    .ClkPeriodJtag     ( ClkPeriodSafedJtag    ),
-    .ClkPeriodRtc      ( ClkPeriodRtc          ),
-    .RstCycles         ( RstCycles             ),
-    .AxiDataWidth      ( DutCfg.AxiDataWidth   ),
-    .AxiAddrWidth      ( DutCfg.AddrWidth      ),
-    .AxiInputIdWidth   ( AxiSlvIdWidth         ),
-    .AxiOutputIdWidth  ( DutCfg.AxiMstIdWidth  ),
-    .AxiUserWidth      ( DutCfg.AxiUserWidth   ),
-    .AxiDebug          ( 0     ),
-    .ApplFrac          ( TAppl ),
-    .TestFrac          ( TTest )
-  ) safed_vip (
-    // we use the clock generated in cheshire VIP
-    .clk_vip      (),
-    .ext_clk_vip  (),
-    // we use the reset generated in cheshire VIP
-    .rst_n_vip    (),
-    .test_mode    (),
-    .boot_mode    ( boot_mode_safed ),
-    // we use the rtc generated in cheshire VIP
-    .rtc          (),
-    // Not used in carfield
-    .axi_mst_req  ( '0 ),
-    .axi_mst_rsp  (    ),
-    // Virtual driver to be multiplexed and then serialized through the serial link
-    .axi_slv_req  ( ext_to_vip_req[SafedNumAxiExtMstPorts-1:0] ),
-    .axi_slv_rsp  ( ext_to_vip_rsp[SafedNumAxiExtMstPorts-1:0] ),
-    // JTAG interface
-    .jtag_tck     ( jtag_safed_tck    ),
-    .jtag_trst_n  ( jtag_safed_trst_n ),
-    .jtag_tms     ( jtag_safed_tms    ),
-    .jtag_tdi     ( jtag_safed_tdi    ),
-    .jtag_tdo     ( jtag_safed_tdo    ),
-    // Exit
-    .exit_status  ( )
-  );
+  if (CarfieldIslandsCfg.safed.enable) begin : gen_safed_vip
+    localparam time ClkPeriodSafedJtag = 20ns;
+
+    localparam axi_in_t AxiIn = gen_axi_in(DutCfg);
+    localparam int unsigned AxiSlvIdWidth = DutCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+
+    vip_safety_island_soc #(
+      .DutCfg            ( SafetyIslandCfg ),
+      .axi_mst_ext_req_t ( axi_mst_req_t ),
+      .axi_mst_ext_rsp_t ( axi_mst_rsp_t ),
+      .axi_slv_ext_req_t ( axi_mst_req_t ),
+      .axi_slv_ext_rsp_t ( axi_mst_rsp_t ),
+      .GlobalAddrWidth   ( 32            ),
+      .BaseAddr          ( 32'h6000_0000 ),
+      .AddrRange         ( CarfieldIslandsCfg.safed.size ),
+      .MemOffset         ( SafetyIslandMemOffset ),
+      .PeriphOffset      ( SafetyIslandPerOffset ),
+      .ClkPeriodSys      ( ClkPeriodSys          ),
+      .ClkPeriodJtag     ( ClkPeriodSafedJtag    ),
+      .ClkPeriodRtc      ( ClkPeriodRtc          ),
+      .RstCycles         ( RstCycles             ),
+      .AxiDataWidth      ( DutCfg.AxiDataWidth   ),
+      .AxiAddrWidth      ( DutCfg.AddrWidth      ),
+      .AxiInputIdWidth   ( AxiSlvIdWidth         ),
+      .AxiOutputIdWidth  ( DutCfg.AxiMstIdWidth  ),
+      .AxiUserWidth      ( DutCfg.AxiUserWidth   ),
+      .AxiDebug          ( 0     ),
+      .ApplFrac          ( TAppl ),
+      .TestFrac          ( TTest )
+    ) safed_vip (
+      // we use the clock generated in cheshire VIP
+      .clk_vip      (),
+      .ext_clk_vip  (),
+      // we use the reset generated in cheshire VIP
+      .rst_n_vip    (),
+      .test_mode    (),
+      .boot_mode    (),
+      // we use the rtc generated in cheshire VIP
+      .rtc          (),
+      // Not used in carfield
+      .axi_mst_req  ( '0 ),
+      .axi_mst_rsp  (    ),
+      // Virtual driver to be multiplexed and then serialized through the serial link
+      .axi_slv_req  ( ext_to_vip_req[SafedNumAxiExtMstPorts-1:0] ),
+      .axi_slv_rsp  ( ext_to_vip_rsp[SafedNumAxiExtMstPorts-1:0] ),
+      // JTAG interface
+      .jtag_tck     ( jtag_safed_tck    ),
+      .jtag_trst_n  ( jtag_safed_trst_n ),
+      .jtag_tms     ( jtag_safed_tms    ),
+      .jtag_tdi     ( jtag_safed_tdi    ),
+      .jtag_tdo     ( jtag_safed_tdo    ),
+      // Exit
+      .exit_status  ( )
+    );
+
+  end else begin: gen_no_safed_vip
+    assign jtag_safed_tck    = '0;
+    assign jtag_safed_trst_n = '0;
+    assign jtag_safed_tms    = '0;
+    assign jtag_safed_tdi    = '0;
+  end
 
   /////////////////////////
   // Security island VIP //
   /////////////////////////
+  lc_ctrl_pkg::lc_tx_t secured_fetch_enable;
+  if (CarfieldIslandsCfg.secured.enable) begin: gen_scured_vip
+    localparam time ClkPeriodSecdJtag = 20ns;
 
-  localparam time ClkPeriodSecdJtag = 20ns;
+    // Tristate adapter
+    wire            SPI_D0, SPI_D1, SPI_SCK, SPI_CSB;
 
-  // Tristate adapter
-  wire            SPI_D0, SPI_D1, SPI_SCK, SPI_CSB;
+    assign secured_fetch_enable = i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable;
 
-  // I/O to INOUT behavioral conversion for security island's peripherals that require it
-  vip_security_island_tristate secd_vip_tristate (
-    // SPI interface
-    .spi_secd_sd_i     ( spi_secd_sd_o    ),
-    .spi_secd_sd_o     ( spi_secd_sd_i    ),
-    .spi_secd_sd_oe_i  ( spi_secd_sd_en   ),
-    .spi_secd_csb_oe_i ( spi_secd_csb_en  ),
-    .spi_secd_csb_i    ( spi_secd_csb_o   ),
-    .spi_secd_sck_oe_i ( spi_secd_sck_en  ),
-    .spi_secd_sck_i    ( spi_secd_sck_o   ),
-    .SPI_D0,
-    .SPI_D1,
-    .SPI_SCK,
-    .SPI_CSB
-  );
+    // I/O to INOUT behavioral conversion for security island's peripherals that require it
+    vip_security_island_tristate secd_vip_tristate (
+      // SPI interface
+      .spi_secd_sd_i     ( spi_secd_sd_o    ),
+      .spi_secd_sd_o     ( spi_secd_sd_i    ),
+      .spi_secd_sd_oe_i  ( spi_secd_sd_en   ),
+      .spi_secd_csb_oe_i ( spi_secd_csb_en  ),
+      .spi_secd_csb_i    ( spi_secd_csb_o   ),
+      .spi_secd_sck_oe_i ( spi_secd_sck_en  ),
+      .spi_secd_sck_i    ( spi_secd_sck_o   ),
+      .SPI_D0,
+      .SPI_D1,
+      .SPI_SCK,
+      .SPI_CSB
+    );
 
-  // VIP
-  vip_security_island_soc #(
-    .ClkPeriodSys  ( ClkPeriodSys ),
-    .ClkPeriodJtag ( ClkPeriodSecdJtag ),
-    .RstCycles     ( RstCycles ),
-    .TAppl         ( TAppl ),
-    .TTest         ( TTest )
-  ) secd_vip (
-    .clk_vip           (                  ),
-    .rst_n_vip         (                  ),
-    .bootmode          ( boot_mode_secd   ),
-    // UART interface
-    .uart_tx           ( uart_secd_tx     ),
-    .uart_rx           ( uart_secd_rx     ),
-    // JTAG interface
-    .jtag_tck          ( jtag_secd_tck    ),
-    .jtag_trst_n       ( jtag_secd_trst_n ),
-    .jtag_tms          ( jtag_secd_tms    ),
-    .jtag_tdi          ( jtag_secd_tdi    ),
-    .jtag_tdo          ( jtag_secd_tdo    ),
-    .SPI_D0,
-    .SPI_D1,
-    .SPI_SCK,
-    .SPI_CSB
-  );
+    // VIP
+    vip_security_island_soc #(
+      .ClkPeriodSys  ( ClkPeriodSys ),
+      .ClkPeriodJtag ( ClkPeriodSecdJtag ),
+      .RstCycles     ( RstCycles ),
+      .TAppl         ( TAppl ),
+      .TTest         ( TTest )
+    ) secd_vip (
+      .clk_vip           (                  ),
+      .rst_n_vip         (                  ),
+      .bootmode          ( boot_mode_secd   ),
+      // UART interface
+      .uart_tx           ( uart_secd_tx     ),
+      .uart_rx           ( uart_secd_rx     ),
+      // JTAG interface
+      .jtag_tck          ( jtag_secd_tck    ),
+      .jtag_trst_n       ( jtag_secd_trst_n ),
+      .jtag_tms          ( jtag_secd_tms    ),
+      .jtag_tdi          ( jtag_secd_tdi    ),
+      .jtag_tdo          ( jtag_secd_tdo    ),
+      .SPI_D0,
+      .SPI_D1,
+      .SPI_SCK,
+      .SPI_CSB
+    );
+  end else begin: gen_no_scured_vip
+    assign secured_fetch_enable = lc_ctrl_pkg::Off;
+  end
 
   ///////////////////
   // Generic tasks //
   ///////////////////
 
   task passthrough_or_wait_for_secd_hw_init();
-    if ((secure_boot || !i_dut.car_regs_hw2reg.security_island_isolate_status.d) &&
-        i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable != lc_ctrl_pkg::On) begin
+    if (CarfieldIslandsCfg.secured.enable &&
+       (secure_boot || !i_dut.car_regs_hw2reg.security_island_isolate_status.d) &&
+        secured_fetch_enable != lc_ctrl_pkg::On) begin
       $display("Wait for OT to boot...");
-      wait (i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      wait (secured_fetch_enable == lc_ctrl_pkg::On);
     end
   endtask
 
