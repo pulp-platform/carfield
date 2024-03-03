@@ -1431,45 +1431,7 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
 
 `ifndef INT_CLUSTER_NETLIST
   pulp_cluster #(
-    .NB_CORES                       ( IntClusterNumCores           ),
-    .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts       ),
-    .NB_DMAS                        ( IntClusterNumDmas            ),
-    .NB_MPERIPHS                    ( IntClusterNumMstPer          ),
-    .NB_SPERIPHS                    ( IntClusterNumSlvPer          ),
-    .SynchStages                    ( SyncStages                   ),
-    .TCDM_SIZE                      ( IntClusterTcdmSize           ),
-    .NB_TCDM_BANKS                  ( IntClusterTcdmBanks          ),
-    .HWPE_PRESENT                   ( IntClusterHwpePresent        ),
-    .USE_HETEROGENEOUS_INTERCONNECT ( IntClusterUseHci             ),
-    .SET_ASSOCIATIVE                ( IntClusterSetAssociative     ),
-    .NB_CACHE_BANKS                 ( IntClusterNumCacheBanks      ),
-    .CACHE_LINE                     ( IntClusterNumCacheLines      ),
-    .CACHE_SIZE                     ( IntClusterCacheSize          ),
-    .L0_BUFFER_FEATURE              ( "DISABLED"                   ),
-    .MULTICAST_FEATURE              ( "DISABLED"                   ),
-    .SHARED_ICACHE                  ( "ENABLED"                    ),
-    .DIRECT_MAPPED_FEATURE          ( "DISABLED"                   ),
-    .L2_SIZE                        ( L2MemSize                    ),
-    .USE_REDUCED_TAG                ( "TRUE"                       ),
-    .DEBUG_START_ADDR               ( IntClusterDbgStart           ),
-    .ROM_BOOT_ADDR                  ( IntClusterBootAddr           ),
-    .BOOT_ADDR                      ( IntClusterBootAddr           ),
-    .INSTR_RDATA_WIDTH              ( IntClusterInstrRdataWidth    ),
-    .CLUST_FPU                      ( IntClusterFpu                ),
-    .CLUST_FP_DIVSQRT               ( IntClusterFpuDivSqrt         ),
-    .CLUST_SHARED_FP                ( IntClusterFpu                ),
-    .CLUST_SHARED_FP_DIVSQRT        ( IntClusterFpuDivSqrt         ),
-    .NumAxiMst                      ( IntClusterNumAxiMst          ),
-    .NumAxiSlv                      ( IntClusterNumAxiSlv          ),
-    .AXI_ADDR_WIDTH                 ( Cfg.AddrWidth                ),
-    .AXI_DATA_C2S_WIDTH             ( Cfg.AxiDataWidth             ),
-    .AXI_DATA_S2C_WIDTH             ( Cfg.AxiDataWidth             ),
-    .AXI_USER_WIDTH                 ( Cfg.AxiUserWidth             ),
-    .AXI_ID_IN_WIDTH                ( IntClusterAxiIdInWidth       ),
-    .AXI_ID_OUT_WIDTH               ( IntClusterAxiIdOutWidth      ),
-    .LOG_DEPTH                      ( LogDepth                     ),
-    .BaseAddr                       ( CarfieldIslandsCfg.pulp.base ),
-    .CdcSynchStages                 ( SyncStages                   )
+   .Cfg( PulpClusterCfg )
   ) i_integer_cluster               (
 `else
   int_cluster i_integer_cluster     (
