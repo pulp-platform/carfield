@@ -7,11 +7,12 @@ overrides:
   axi_riscv_atomics:    { git: https://github.com/pulp-platform/axi_riscv_atomics.git     , version: 0.8.2 }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , rev: "e4b20be8833180863ebc64675c93b1694239c505" } # branch: astral
-  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "3fbd080e479f194f68e51dbe262e62c4362868bd" } # branch: astral
+  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "c37bdb47339bf70e8323de8df14ea8bbeafb6583" } # branch: astral-rebase
+  hci:                  { git: "https://github.com/pulp-platform/hci.git"                 , rev: v1.1 }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.13                                }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"           , version: =0.8.0                                 }
   idma:                 { git: "https://github.com/pulp-platform/idma.git"                , version: 0.5.1                                  }
-  hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: a971e364bf8090cf77fafad995b480c1ac7ea4e0   }
+  hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: 2886cb2a46cea3e2bd2d979b505d88fadfbe150c   } # branch: astral
   scm:                  { git: "https://github.com/pulp-platform/scm.git"                 , rev: 74426dee36f28ae1c02f7635cf844a0156145320   }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
   clic:                 { git: "https://github.com/pulp-platform/clic.git"                , rev: 0ff9f07e0a492bff046dfe24399b1e1e82d557b7   } # branch: balasr/dev-2

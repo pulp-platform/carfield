@@ -31,7 +31,7 @@ packages:
     - common_verification
     - tech_cells_generic
   axi2mem:
-    revision: 6973e0434d26ba578cdb4aa69c26c1facd1a3f15
+    revision: b0e963433b2f6a61262b1448031e74eaec57c203
     version: null
     source:
       Git: https://github.com/pulp-platform/axi2mem.git
@@ -39,8 +39,8 @@ packages:
     - axi_slice
     - common_cells
   axi2per:
-    revision: a99ef2fac9f3b087671109a27c766f25e8e0f115
-    version: 1.0.1
+    revision: 4932bd2b88a1c7b5f0bf95411fc512905ed32439
+    version: null
     source:
       Git: https://github.com/pulp-platform/axi2per.git
     dependencies:
@@ -56,14 +56,6 @@ packages:
     - common_verification
     - register_interface
     - tech_cells_generic
-  axi_node:
-    revision: e2d038004c5b8cec9dd3bb9d23ad0bee72f9d908
-    version: 1.1.4
-    source:
-      Git: git@github.com:pulp-platform/axi_node.git
-    dependencies:
-    - axi
-    - common_cells
   axi_obi:
     revision: null
     version: null
@@ -111,10 +103,10 @@ packages:
     revision: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379
     version: null
     source:
-      Git: git@github.com:AlSaqr-platform/can_bus.git
+      Git: https://github.com/AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: 74756f851447e3ad1643299baa17220e1365b400
+    revision: f3a1d447e9948d4f5a68f6d61ad1d5389f1f2f4d
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -163,7 +155,7 @@ packages:
     dependencies:
     - common_cells
   cluster_peripherals:
-    revision: c015839816938a790c8da5fd5829cfc536f1ca9c
+    revision: c9defcfb4f4e8733383b28a451c430783c2febbd
     version: null
     source:
       Git: https://github.com/pulp-platform/cluster_peripherals.git
@@ -193,7 +185,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: 6503a4c88ff2e274724cbebce8d25fb883d8b8a8
+    revision: 72f3219fc57e158e41adede05cd2e65a42db97bc
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -201,6 +193,7 @@ packages:
     - axi
     - common_cells
     - fpnew
+    - redundancy_cells
     - tech_cells_generic
   dyn_mem:
     revision: 480590062742230dc9bd4050358a15b4747bdf34
@@ -238,7 +231,7 @@ packages:
     dependencies:
     - common_cells
   hci:
-    revision: b2e6f391aa6c10c03f45b693d80a0aaddecf169b
+    revision: 4823e503851eb7e8cc765a58621d767a01d6a77b
     version: null
     source:
       Git: https://github.com/pulp-platform/hci.git
@@ -247,12 +240,12 @@ packages:
     - hwpe-stream
     - l2_tcdm_hybrid_interco
   hier-icache:
-    revision: a971e364bf8090cf77fafad995b480c1ac7ea4e0
+    revision: 2886cb2a46cea3e2bd2d979b505d88fadfbe150c
     version: null
     source:
       Git: https://github.com/pulp-platform/hier-icache.git
     dependencies:
-    - axi_node
+    - axi
     - axi_slice
     - common_cells
     - icache-intc
@@ -266,8 +259,8 @@ packages:
     dependencies:
     - tech_cells_generic
   hwpe-stream:
-    revision: ddc154424187dff42a8fcec946c768ceb13f13de
-    version: 1.6.4
+    revision: bcb4435f802add732f557dc7fa1c6b5dd8854458
+    version: 1.7.1
     source:
       Git: https://github.com/pulp-platform/hwpe-stream.git
     dependencies:
@@ -293,7 +286,7 @@ packages:
     revision: 663c3b6d3c2bf63ff25cda46f33c799c647b3985
     version: 1.0.1
     source:
-      Git: git@github.com:pulp-platform/icache-intc.git
+      Git: https://github.com/pulp-platform/icache-intc.git
     dependencies: []
   idma:
     revision: ca1b28816a3706be0bf9ce01378246d5346384f0
@@ -324,7 +317,7 @@ packages:
     revision: aa169bd4a4e1d736ce67a8ad08b5ddd922f06e60
     version: 1.1.0
     source:
-      Git: git@github.com:pulp-platform/mailbox_unit.git
+      Git: https://github.com/pulp-platform/mailbox_unit.git
     dependencies:
     - axi
     - common_cells
@@ -361,8 +354,8 @@ packages:
     - register_interface
     - tech_cells_generic
   per2axi:
-    revision: 892fcad60b6374fe558cbde76f4a529d473ba5ca
-    version: 1.0.4
+    revision: 95bf23119b47fc171d9ed3734c431f71cffd9350
+    version: null
     source:
       Git: https://github.com/pulp-platform/per2axi.git
     dependencies:
@@ -376,7 +369,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: de93f2001ee0a6fca1dc11f6dd95119d8e6aadfb
+    revision: 3d3a8691a1fd87966835e89a64d4d370b379f402
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -384,7 +377,6 @@ packages:
     - axi
     - axi2mem
     - axi2per
-    - axi_slice
     - cluster_interconnect
     - cluster_peripherals
     - common_cells
@@ -404,7 +396,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   redmule:
-    revision: 0fe14edd77e9a35d3d220bd78bd6b41a0e5935ea
+    revision: 1b30b0b9a31afa702eb2d166d672ceda2f5d463a
     version: null
     source:
       Git: https://github.com/pulp-platform/redmule.git
@@ -417,7 +409,7 @@ packages:
     - hwpe-stream
     - tech_cells_generic
   redundancy_cells:
-    revision: 3fbd080e479f194f68e51dbe262e62c4362868bd
+    revision: c37bdb47339bf70e8323de8df14ea8bbeafb6583
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git
@@ -437,10 +429,10 @@ packages:
     - common_cells
     - common_verification
   riscv:
-    revision: a1dcae35edae6092ddbf92c424690cb903b678d5
+    revision: c760db14dbd6cc3ec3b8ae8274df2eac7225bcac
     version: null
     source:
-      Git: git@github.com:AlSaqr-platform/riscv_nn.git
+      Git: https://github.com/AlSaqr-platform/riscv_nn.git
     dependencies:
     - fpnew
     - tech_cells_generic
@@ -481,8 +473,8 @@ packages:
     dependencies:
     - tech_cells_generic
   serial_link:
-    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
-    version: 1.1.0
+    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
+    version: 1.1.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
@@ -490,7 +482,7 @@ packages:
     - common_cells
     - register_interface
   spatz:
-    revision: 2191fce502191995c2c670f6edb84b9b8370de86
+    revision: 98de97f24fe42675c9b4a8cc08354a03af57400a
     version: null
     source:
       Git: https://github.com/pulp-platform/spatz.git
