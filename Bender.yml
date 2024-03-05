@@ -13,7 +13,7 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: f3a1d447e9948d4f5a68f6d61ad1d5389f1f2f4d } # branch: astral
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: fc09f729a3ead5efcdd7b7ff579776820e0f5443 } # branch: astral
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: f039e601c8b6590181734e6d26ff8b77aa380412 } # branch: chi/add_fsm_with_Tcsh
   dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
   safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: aaef55c798ab53560faaf451a86668fa1e6d0f3b } # branch: carfield
