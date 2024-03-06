@@ -44,10 +44,11 @@ typedef enum byte_bt {
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
-  SafetyIslandMstIdx   = carfield_cfg_pkg::CarfieldMstIdx.safed,
-  SecurityIslandMstIdx = carfield_cfg_pkg::CarfieldMstIdx.secured,
-  FPClusterMstIdx      = carfield_cfg_pkg::CarfieldMstIdx.spatz,
-  IntClusterMstIdx     = carfield_cfg_pkg::CarfieldMstIdx.pulp
+  SafetyIslandMstIdx       = carfield_cfg_pkg::CarfieldMstIdx.safed,
+  SecurityIslandTlulMstIdx = carfield_cfg_pkg::CarfieldMstIdx.secured,
+  SecurityIslandiDMAMstIdx = carfield_cfg_pkg::CarfieldMstIdx.secured_idma,
+  FPClusterMstIdx          = carfield_cfg_pkg::CarfieldMstIdx.spatz,
+  IntClusterMstIdx         = carfield_cfg_pkg::CarfieldMstIdx.pulp
 } axi_mst_idx_t;
 
 // APB peripherals

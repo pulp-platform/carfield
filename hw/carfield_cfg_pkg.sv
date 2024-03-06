@@ -25,6 +25,7 @@ typedef struct packed {
   islands_properties_t spatz;
   islands_properties_t pulp;
   islands_properties_t secured;
+  islands_properties_t secured_idma;
   islands_properties_t mbox;
 } islands_cfg_t;
 
@@ -55,6 +56,7 @@ typedef struct packed {
   byte_bt safed;
   byte_bt spatz;
   byte_bt secured;
+  byte_bt secured_idma;
   byte_bt pulp;
 } carfield_master_idx_t;
 
@@ -122,6 +124,8 @@ function automatic carfield_master_idx_t carfield_gen_axi_master_idx(islands_cfg
   byte_bt i = 0;
   if (island_cfg.safed.enable) begin ret.safed = i; i++;
   end else begin ret.safed = MaxExtAxiMst + i; end
+  if (island_cfg.secured_idma.enable) begin ret.secured_idma = i; i++;
+  end else begin ret.secured_idma = MaxExtAxiMst + i; end
   if (island_cfg.secured.enable) begin ret.secured = i; i++;
   end else begin ret.secured = MaxExtAxiMst + i; end
   if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
@@ -201,15 +205,16 @@ function automatic int unsigned gen_carfield_domains(islands_cfg_t island_cfg);
 endfunction
 
 localparam islands_cfg_t CarfieldIslandsCfg = '{
-  l2_port0: '{L2Port0Enable, L2Port0Base, L2Port0Size},
-  l2_port1: '{L2Port1Enable, L2Port1Base, L2Port1Size},
-  safed:    '{SafetyIslandEnable, SafetyIslandBase, SafetyIslandSize},
-  ethernet: '{EthernetEnable, EthernetBase, EthernetSize},
-  periph:   '{PeriphEnable, PeriphBase, PeriphSize},
-  spatz:    '{SpatzClusterEnable, SpatzClusterBase, SpatzClusterSize},
-  pulp:     '{PulpClusterEnable, PulpClusterBase, PulpClusterSize},
-  secured:  '{SecurityIslandEnable, SecurityIslandBase, SecurityIslandSize},
-  mbox:     '{MailboxEnable, MailboxBase, MailboxSize}
+  l2_port0:      '{L2Port0Enable, L2Port0Base, L2Port0Size},
+  l2_port1:      '{L2Port1Enable, L2Port1Base, L2Port1Size},
+  safed:         '{SafetyIslandEnable, SafetyIslandBase, SafetyIslandSize},
+  ethernet:      '{EthernetEnable, EthernetBase, EthernetSize},
+  periph:        '{PeriphEnable, PeriphBase, PeriphSize},
+  spatz:         '{SpatzClusterEnable, SpatzClusterBase, SpatzClusterSize},
+  pulp:          '{PulpClusterEnable, PulpClusterBase, PulpClusterSize},
+  secured:       '{SecurityIslandEnable, SecurityIslandBase, SecurityIslandSize},
+  mbox:          '{MailboxEnable, MailboxBase, MailboxSize},
+  secured_idma:  '{SecurityIslandEnable, SecurityIslandBase, SecurityIslandSize}
 };
 
 // TODO: specify this is for AXI
