@@ -549,9 +549,9 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiUserErrLsb     : 4,
   RegMaxReadTxns    : 8,
   RegMaxWriteTxns   : 8,
-  AxiToRegCut       : 1,
   RegAmoNumCuts     : 1,
   RegAmoPostCut     : 1,
+  RegAdaptMemCut    : 1,
   // External AXI ports (at most 8 ports and rules)
   AxiExtNumMst      : CarfieldAxiNumMasters,
   AxiExtNumSlv      : CarfieldAxiNumSlaves,

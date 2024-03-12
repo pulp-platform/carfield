@@ -6,7 +6,6 @@ overrides:
   axi:                  { git: https://github.com/pulp-platform/axi.git                   , version: 0.39.1 }
   axi_riscv_atomics:    { git: https://github.com/pulp-platform/axi_riscv_atomics.git     , version: 0.8.2 }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
-  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , rev: "e4b20be8833180863ebc64675c93b1694239c505" } # branch: astral
   redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "c37bdb47339bf70e8323de8df14ea8bbeafb6583" } # branch: astral-rebase
   hci:                  { git: "https://github.com/pulp-platform/hci.git"                 , rev: v1.1 }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.13                                }

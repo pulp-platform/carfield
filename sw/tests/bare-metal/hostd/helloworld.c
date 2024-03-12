@@ -13,6 +13,7 @@
 #include "params.h"
 #include "util.h"
 #include "car_util.h"
+#include "printf.h"
 
 int main(void) {
 
@@ -22,11 +23,6 @@ int main(void) {
     // Init the HW
     car_init_start();
 
-    char str[] = "Hello World!\r\n";
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
-    uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
-    uart_init(&__base_uart, reset_freq, 115200);
-    uart_write_str(&__base_uart, str, sizeof(str));
-    uart_write_flush(&__base_uart);
+    printf("Hi\n");
     return 0;
 }

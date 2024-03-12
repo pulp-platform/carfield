@@ -16,7 +16,7 @@
 void __attribute__((naked)) hmr_store_state() {
   // Disable caches
   __asm__ __volatile__ (
-    "csrrwi x0, 0x701, 0x0 \n\t"
+    "csrrwi x0, 0x7C1, 0x0 \n\t"
     : : : "memory");
 
   __asm__ __volatile__ (
@@ -106,7 +106,7 @@ void __attribute__((naked)) hmr_store_state() {
 
   // Re-enable caches
   __asm__ __volatile__ (
-    "csrrwi x0, 0x701, 0x1 \n\t"
+    "csrrwi x0, 0x7C1, 0x1 \n\t"
     : : : "memory");
 
   // Sleep until reset

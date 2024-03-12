@@ -20,6 +20,7 @@ module tb_carfield_soc;
 
   // carfield top
   carfield_soc_fixture fix();
+  bit jtag_check_write = 1'b0;
 
   // cheshire
   string      chs_preload_elf;
@@ -336,14 +337,14 @@ module tb_carfield_soc;
             // Write bootaddress to each core
             $display("[JTAG PULPD] Write PULP cluster boot address for each core");
             for (int c = 0; c < PulpdNumCores; c++) begin
-              fix.chs_vip.jtag_write_reg32(PulpdBootAddr + c*32'h4, PulpdBootAddrL2);
+              fix.chs_vip.jtag_write_reg32(PulpdBootAddr + c*32'h4, PulpdBootAddrL2, jtag_check_write);
             end
             // Write boot enable
             $display("[JTAG PULPD] Write PULP cluster boot enable");
-            fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdBootEnAddr, 32'h1);
+            fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdBootEnAddr, 32'h1, jtag_check_write);
             // Write fetch enable
             $display("[JTAG PULPD] Write PULP cluster fetch enable");
-            fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdFetchEnAddr, 32'h1);
+            fix.chs_vip.jtag_write_reg32(CarSocCtrlPulpdFetchEnAddr, 32'h1, jtag_check_write);
 
             // Poll memory address for PULP EOC
             fix.chs_vip.jtag_poll_bit0(CarSocCtrlPulpdEocAddr, pulpd_exit_code, 20);
@@ -480,22 +481,22 @@ module tb_carfield_soc;
 
             // write start address into the csr
             $display("[JTAG SPATZD] write the CSR %x of spatz with the entry point %x", spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry);
-            fix.chs_vip.jtag_write_reg(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry );
+            fix.chs_vip.jtag_write_reg32(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry, jtag_check_write);
 
             // Set interrupt on mailbox mailbox id MBOX_SPATZD_CORE0_ID and MBOX_SPATZD_CORE1_ID
             spatzd_reg_value = 64'h1;
             $display("[JTAG SPATZD] Set mailbox interrupt ID  %x at %x ",MBOX_SPATZ_CORE0_ID, CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100));
-            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) , spatzd_reg_value);
+            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) , spatzd_reg_value, jtag_check_write);
 
             $display("[JTAG SPATZD] Set mailbox interrupt ID  %x at %x ",MBOX_SPATZ_CORE1_ID, CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100));
-            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) , spatzd_reg_value);
+            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_SET_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) , spatzd_reg_value, jtag_check_write);
 
             // Enable interrupt on mailbox id MBOX_SPATZ_CORE0_ID and MBOX_SPATZ_CORE1_ID
             $display("[JTAG SPATZD] Enable mailbox interrupt ID  %x at %x ",MBOX_SPATZ_CORE0_ID, CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) ,spatzd_reg_value);
-            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) , spatzd_reg_value);
+            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE0_ID*32'h100) , spatzd_reg_value, jtag_check_write);
 
             $display("[JTAG SPATZD] Enable mailbox interrupt ID  %x at %x ",MBOX_SPATZ_CORE1_ID, CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) ,spatzd_reg_value);
-            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) , spatzd_reg_value);
+            fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) , spatzd_reg_value, jtag_check_write);
 
             // Poll memory address for Spatz EOC
             fix.chs_vip.jtag_poll_bit0(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_EOC_EXIT_OFFSET, spatzd_exit_code, 20);

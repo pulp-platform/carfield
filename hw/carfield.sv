@@ -756,14 +756,20 @@ for (genvar i=0; i<NumSyncRegSlv; i++ ) begin : gen_chs_ext_reg_cut
   );
 end
 
+// Passing the `ext_reg_req_cut[CarfieldRegBusSlvIdx.pcrs]` value to the
+// reg_req_i/rsp_o buses results in Questa's `Fatal: Unexpected signal: 11.`
+// at compile time. Direct casting 'int(CarfieldRegBusSlvIdx.pcrs) also does
+// not work resulting in the ext_reg_rsp_cut bus being all X. The localparam
+// seems to solve the issue.
+localparam int unsigned PcrsIdx = CarfieldRegBusSlvIdx.pcrs;
 carfield_reg_top #(
   .reg_req_t(carfield_reg_req_t),
   .reg_rsp_t(carfield_reg_rsp_t)
 ) i_carfield_reg_top (
   .clk_i (host_clk_i),
   .rst_ni (host_pwr_on_rst_n),
-  .reg_req_i(ext_reg_req_cut[int'(CarfieldRegBusSlvIdx.pcrs)]),
-  .reg_rsp_o(ext_reg_rsp_cut[int'(CarfieldRegBusSlvIdx.pcrs)]),
+  .reg_req_i(ext_reg_req_cut[PcrsIdx]),
+  .reg_rsp_o(ext_reg_rsp_cut[PcrsIdx]),
   .reg2hw (car_regs_reg2hw),
   .hw2reg (car_regs_hw2reg),
   .devmode_i (1'b1)
@@ -1124,6 +1130,11 @@ localparam int unsigned SafedMboxOffset = SecdMboxOffset +
 // Host Clock Domain
 
 if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
+  // Similar to the issue with the regs above. Using a localparam resolves the
+  // `Warning (downgraded): (vsim-3053) Illegal output or inout port connection for port`
+  // associated with the `l2_ecc_reg_async_mst_ack_o`, `l2_ecc_reg_async_mst_req_o`, and
+  // `l2_ecc_reg_async_mst_data_o` ports.
+  localparam int unsigned EccAsyncIdx = CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv;
   assign l2_rst_n = rsts_n[CarfieldDomainIdx.l2];
   assign l2_pwr_on_rst_n = pwr_on_rsts_n[CarfieldDomainIdx.l2];
   assign l2_clk = domain_clk_gated[CarfieldDomainIdx.l2];
@@ -1185,14 +1196,12 @@ if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
     .slvport_w_data_i    ( axi_slv_ext_w_data  [NumL2Ports-1:0] ),
     .slvport_w_wptr_i    ( axi_slv_ext_w_wptr  [NumL2Ports-1:0] ),
     .slvport_w_rptr_o    ( axi_slv_ext_w_rptr  [NumL2Ports-1:0] ),
-    // verilog_lint: waive-start line-length
-    .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
-    .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [CarfieldRegBusSlvIdx.l2ecc-NumSyncRegSlv] ),
-    // verilog_lint: waive-stop line-length
+    .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [EccAsyncIdx] ),
+    .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [EccAsyncIdx] ),
+    .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[EccAsyncIdx] ),
+    .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [EccAsyncIdx] ),
+    .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [EccAsyncIdx] ),
+    .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [EccAsyncIdx] ),
     .ecc_error_o         ( l2_ecc_err                           )
   );
 end else begin: gen_no_l2
@@ -1410,9 +1419,7 @@ end
 // PULP integer cluster
 
 logic pulpcl_mbox_intr;
-assign car_regs_hw2reg.pulp_cluster_eoc.de  = 1'b1;
-assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
-assign car_regs_hw2reg.pulp_cluster_eoc.d = pulpcl_eoc;
+assign pulpcl_eoc = car_regs_hw2reg.pulp_cluster_eoc.d;
 
 if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
   assign pulp_rst_n = rsts_n[CarfieldDomainIdx.pulp];
@@ -1430,6 +1437,8 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
          car_regs_reg2hw.pulp_cluster_clk_en.q;
 
   assign slave_isolate_req[IntClusterSlvIdx] = car_regs_reg2hw.pulp_cluster_isolate.q;
+  assign car_regs_hw2reg.pulp_cluster_eoc.de  = 1'b1;
+  assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b1;
   assign car_regs_hw2reg.pulp_cluster_isolate_status.d = slave_isolated[IntClusterSlvIdx];
   assign car_regs_hw2reg.pulp_cluster_isolate_status.de = 1'b1;
 
@@ -1453,7 +1462,7 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     .cluster_id_i                ( IntClusterIndex                           ),
     .en_sa_boot_i                ( car_regs_reg2hw.pulp_cluster_boot_enable  ),
     .fetch_en_i                  ( car_regs_reg2hw.pulp_cluster_fetch_enable ),
-    .eoc_o                       ( pulpcl_eoc                                ),
+    .eoc_o                       ( car_regs_hw2reg.pulp_cluster_eoc.d        ),
     .busy_o                      ( car_regs_hw2reg.pulp_cluster_busy.d       ),
     .axi_isolate_i               ( slave_isolate_req [IntClusterSlvIdx]      ),
     .axi_isolated_o              ( master_isolated_rsp [IntClusterMstIdx]    ),
@@ -1530,8 +1539,10 @@ end else begin : gen_no_pulp_cluster
 
   assign safed_pulpcl_mbox_intr = '0;
 
-  assign pulpcl_eoc = '0;
+  assign car_regs_hw2reg.pulp_cluster_eoc.d = '0;
+  assign car_regs_hw2reg.pulp_cluster_eoc.de  = 1'b0;
   assign car_regs_hw2reg.pulp_cluster_busy.d = '0;
+  assign car_regs_hw2reg.pulp_cluster_busy.de = 1'b0;
 
   assign car_regs_hw2reg.pulp_cluster_isolate_status.d = '0;
   assign car_regs_hw2reg.pulp_cluster_isolate_status.de = '0;
@@ -1578,6 +1589,7 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
   assign slave_isolate_req[FPClusterSlvIdx] = car_regs_reg2hw.spatz_cluster_isolate.q;
   assign car_regs_hw2reg.spatz_cluster_isolate_status.d = slave_isolated[FPClusterSlvIdx];
   assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b1;
+  assign car_regs_hw2reg.spatz_cluster_busy.de = 1'b1;
 
   assign slave_isolated[FPClusterSlvIdx] = slave_isolated_rsp[FPClusterSlvIdx] &
                                            master_isolated_rsp[FPClusterMstIdx];
@@ -1696,7 +1708,10 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
 end else begin : gen_no_spatz_cluster
   assign spatzcl_mbox_intr = '0;
   assign spatzcl_timer_intr = '0;
+  assign car_regs_hw2reg.spatz_cluster_isolate_status.d = 1'b0;
+  assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b0;
   assign car_regs_hw2reg.spatz_cluster_busy.d = '0;
+  assign car_regs_hw2reg.spatz_cluster_busy.de = 1'b0;
   assign safed_spatzcl_mbox_intr = '0;
   assign hostd_spatzcl_mbox_intr = '0;
   assign spatzcl_hostd_mbox_intr = '0;

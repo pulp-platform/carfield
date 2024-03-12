@@ -16,6 +16,6 @@ jobs:
         uses: pulp-platform/pulp-actions/gitlab-ci@v1
         with:
           domain: iis-git.ee.ethz.ch
-          repo: github-mirror/carfield
+          repo: github-mirror/astral
           token: ${{ secrets.GITLAB_TOKEN }}
           poll-count: 2160
