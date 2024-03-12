@@ -113,7 +113,7 @@ packages:
       Git: https://github.com/AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: d6274a52dab68d12765b64d670d528774eb36c2c
+    revision: 6d389373df6b54c09888f89411b7e231d2430722
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -169,8 +169,13 @@ packages:
     dependencies:
     - hci
   common_cells:
+<<<<<<< HEAD
     revision: f4d6406070d8e7767e4e9a433f11b039859f03a1
     version: null
+=======
+    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
+    version: 1.33.0
+>>>>>>> 4c563a2 (Fix configurable top level bugs and integrate CI flow. (#2))
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -441,8 +446,13 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
+<<<<<<< HEAD
     revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
     version: 0.4.4
+=======
+    revision: e25b36670ff7aab3402f40efcc2b11ee0f31cf19
+    version: 0.4.3
+>>>>>>> 4c563a2 (Fix configurable top level bugs and integrate CI flow. (#2))
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:

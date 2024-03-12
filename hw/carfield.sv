@@ -668,7 +668,7 @@ for (genvar i=0; i<NumSyncRegSlv; i++ ) begin : gen_chs_ext_reg_cut
   );
 end
 
-// Passsing the `ext_reg_req_cut[CarfieldRegBusSlvIdx.pcrs]` value to the
+// Passing the `ext_reg_req_cut[CarfieldRegBusSlvIdx.pcrs]` value to the
 // reg_req_i/rsp_o buses results in Questa's `Fatal: Unexpected signal: 11.`
 // at compile time. Direct casting 'int(CarfieldRegBusSlvIdx.pcrs) also does
 // not work resulting in the ext_reg_rsp_cut bus being all X. The localparam
@@ -1062,14 +1062,12 @@ if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
     .slvport_w_data_i    ( axi_slv_ext_w_data  [NumL2Ports-1:0] ),
     .slvport_w_wptr_i    ( axi_slv_ext_w_wptr  [NumL2Ports-1:0] ),
     .slvport_w_rptr_o    ( axi_slv_ext_w_rptr  [NumL2Ports-1:0] ),
-    // verilog_lint: waive-start line-length
     .l2_ecc_reg_async_mst_req_i  ( ext_reg_async_slv_req_out [EccAsyncIdx] ),
     .l2_ecc_reg_async_mst_ack_o  ( ext_reg_async_slv_ack_in  [EccAsyncIdx] ),
     .l2_ecc_reg_async_mst_data_i ( ext_reg_async_slv_data_out[EccAsyncIdx] ),
     .l2_ecc_reg_async_mst_req_o  ( ext_reg_async_slv_req_in  [EccAsyncIdx] ),
     .l2_ecc_reg_async_mst_ack_i  ( ext_reg_async_slv_ack_out [EccAsyncIdx] ),
     .l2_ecc_reg_async_mst_data_o ( ext_reg_async_slv_data_in [EccAsyncIdx] ),
-    // verilog_lint: waive-stop line-length
     .ecc_error_o         ( l2_ecc_err                           )
   );
 end else begin: gen_no_l2
