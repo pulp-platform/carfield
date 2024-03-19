@@ -13,7 +13,6 @@
   chosen {
     stdout-path = "/soc/serial@3002000:38400";
   };
-
   memory@80000000 {
     // Give 1GiB to Linux management
     device_type = "memory";

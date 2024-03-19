@@ -47,6 +47,18 @@ set_max_delay -through [get_nets *isolat*] $SOC_TCK
 # Host pwr_on_reset is resynch by the domains
 set_max_delay -datapath -from [get_pins i_host_rstgen/i_rstgen_bypass/synch_regs_q_reg[3]/C] -through [get_pins -of_object [get_cells -hier -filter {REF_NAME==clk_mux_glitch_free || ORIG_REF_NAME==clk_mux_glitch_free}] -filter { NAME =~*async* }] $SOC_TCK
 
+# Reset synchronizers are themselves reset by the host synch reset
+set_max_delay -to [get_pins -of_objects [get_cells -hier -filter {NAME =~ "*i_carfield_rstgen/*/i_rstgen_bypass/synch*"}] -filter {REF_PIN_NAME == CLR}] $SOC_TCK
+set_false_path -hold -to [get_pins -of_objects [get_cells -hier -filter {NAME =~ "*i_carfield_rstgen/*/i_rstgen_bypass/synch*"}] -filter {REF_PIN_NAME == CLR}]
+
+###################
+# Carfield regtop #
+###################
+
+# Most of these paths go through proper synchronizers, but not all of them
+set_max_delay -datapath_only -through [get_cells i_carfield_reg_top] -from [get_clocks -filter {NAME !~ "*clk_50*"}] -to [get_clocks *clk_50*] $SOC_TCK
+set_max_delay -datapath_only -through [get_cells i_carfield_reg_top] -from [get_clocks *clk_50*] -to [get_clocks -filter {NAME !~ "*clk_50*"}] $SOC_TCK
+
 #################
 # Carfield CDCs #
 #################

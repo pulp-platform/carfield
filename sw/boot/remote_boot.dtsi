@@ -1,1 +1,2 @@
-remote-boot = "129.132.24.199:vcu128-01/carfield/uImage";
+// Uncomment below for remote boot
+// remote-boot = "0.0.0.0:vcu128-01/carfield/uImage-ci";
