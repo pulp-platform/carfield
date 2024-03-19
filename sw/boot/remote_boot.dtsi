@@ -1,1 +1,2 @@
-remote-boot = "129.132.24.199:vcu128-01/carfield/uImage";
+// Set the path to your uImage and uncomment use remote boot on carfield_bd_*
+// remote-boot = "0.0.0.0:path_to_your/uImage";

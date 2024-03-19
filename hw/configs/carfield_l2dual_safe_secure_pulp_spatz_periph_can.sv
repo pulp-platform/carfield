@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Yvan Tortorella <yvan.tortorella@unibo.it>
+// Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 package carfield_configuration;
 
