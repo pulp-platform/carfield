@@ -316,7 +316,7 @@ pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression
 $(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
 	$(MAKE) -C $(PULPD_ROOT) pulp-runtime
 $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
-  $(MAKE) -C $(PULPD_ROOT) regression-tests
+	$(MAKE) -C $(PULPD_ROOT) regression-tests
 
 # For independent boot of an island, we allow to compile the binary standalone.
 .PHONY: safed-sw-build
