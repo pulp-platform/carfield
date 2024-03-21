@@ -1415,7 +1415,7 @@ else begin : gen_no_safety_island
   assign safed_secd_mbox_intr = '0;
 
   assign safed_dbg_reqs = '0;
-  assign jtag_safety_island_tdo_o = '0;
+  assign jtag_safety_island_tdo_o = jtag_safety_island_tdi_i;
 end
 
 // PULP integer cluster
@@ -1897,7 +1897,7 @@ end else begin : gen_no_secure_subsystem
   assign car_regs_hw2reg.security_island_isolate_status.d = '0;
   assign car_regs_hw2reg.security_island_isolate_status.de = '0;
 
-  assign jtag_ot_tdo_o = '0;
+  assign jtag_ot_tdo_o = jtag_ot_tdi_i;
 end
 
 // Mailbox unit

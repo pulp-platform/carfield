@@ -18,12 +18,14 @@ XILINX_FLAVOR  ?= bd
 # Board in {vcu128}
 XILINX_BOARD   ?= vcu128
 
+XILINX_PORT       ?= 3121
+XILINX_FPGA_PATH  ?= xilinx_tcf/Xilinx/*
+XILINX_HOST       ?= localhost
+XILINX_BOOT_ETH   ?= 0
+
 ifeq ($(XILINX_BOARD),vcu128)
 	xilinx_part       := xcvu37p-fsvh2892-2L-e
 	xilinx_board_long := xilinx.com:vcu128:part0:1.0
-	XILINX_PORT       ?= 3232
-	XILINX_FPGA_PATH  ?= xilinx_tcf/Xilinx/091847100638A
-	XILINX_HOST       ?= bordcomputer
 endif
 
 XILINX_USE_ARTIFACTS ?= 0

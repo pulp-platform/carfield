@@ -1,0 +1,172 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+
+  reserved-memory {
+    ranges;
+    // Keep 1GiB memory for explicit management
+    reserved_dev_buffer: l3_buffer@0xc0000000 {
+      reg = <0x0 0xc0000000 0x0 0x40000000>;
+    };
+  };
+
+  cpus {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    timebase-frequency = <1000000>; // 1 MHz
+    CPU0: cpu@0 {
+      device_type = "cpu";
+      status = "okay";
+      compatible = "eth,ariane", "riscv";
+      clock-frequency = <50000000>; // 50 MHz
+      riscv,isa = "rv64imafdc";
+      mmu-type = "riscv,sv39";
+      tlb-split;
+      reg = <0>;
+      CPU0_intc: interrupt-controller {
+        #address-cells = <0>;
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+  };
+
+  sysclk: virt_50mhz {
+    #clock-cells = <0>;
+    compatible = "fixed-clock";
+    clock-frequency = <50000000>;
+  };
+
+  soc: soc {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    compatible = "eth,carfield-soc", "eth,cheshire-bare-soc", "simple-bus";
+    ranges;
+    debug@0 {
+      compatible = "riscv,debug-013";
+      reg-names = "control";
+      reg = <0x0 0x0 0x0 0x1000>;
+    };
+    idma@1000000 {
+      compatible = "eth,idma";
+      reg = <0x0 0x1000000 0x0 0x1000>;
+    };
+    ctrl-regs@3000000 {
+      compatible = "eth,control-regs";
+      reg = <0x0 0x3000000 0x0 0x1000>;
+    };
+    axi_llc@3001000 {
+      compatible = "eth,axi-llc";
+      reg = <0x0 0x3001000 0x0 0x5000>;
+    };
+    ddr_link: memory-controller@3006000 {
+      compatible = "eth,ddr-link";
+      reg = <0x0 0x3006000 0x0 0x1000>;
+    };
+    serial@3002000 {
+      compatible = "ns16550a";
+      clock-frequency = <50000000>; // 50 MHz
+      current-speed = <38400>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = <1>;
+      reg = <0x0 0x3002000 0x0 0x1000>;
+      reg-shift = <2>; // regs are spaced on 32 bit boundary
+      reg-io-width = <4>; // only 32-bit access are supported
+    };
+    spi@3004000 {
+      compatible = "opentitan,spi-host", "lowrisc,spi";
+      interrupt-parent = <&PLIC0>;
+      interrupts = <17 18>;
+      reg = <0x0 0x3004000 0x0 0x1000>;
+      clock-frequency = <50000000>;
+      max-frequency = <20000000>;
+      #address-cells = <1>;
+      #size-cells = <0>;
+      boot-with = <1>;
+      nor@1 {
+        #address-cells = <0x1>;
+        #size-cells = <0x1>;
+        // Note : u-boot does not find mt25qu02g
+        compatible = "mt25qu02g", "jedec,spi-nor";
+        reg = <0x1>; // CS
+        spi-max-frequency = <20000000>;
+        spi-rx-bus-width = <0x1>;
+        spi-tx-bus-width = <0x1>;
+        disable-wp;
+        partition@0 {
+          label = "all";
+          reg = <0x0 0x6000000>; // 96 MB
+          read-only;
+        };
+      };
+    };
+    clint@2040000 {
+      compatible = "riscv,clint0";
+      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
+      reg-names = "control";
+      reg = <0x0 0x2040000 0x0 0x040000>;
+    };
+    PLIC0: interrupt-controller@4000000 {
+      compatible = "riscv,plic0";
+      #address-cells = <0>;
+      #interrupt-cells = <1>;
+      interrupt-controller;
+      interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
+      riscv,max-priority = <7>;
+      riscv,ndev = <51>;
+      reg = <0x0 0x4000000 0x0 0x4000000>;
+    };
+    gpio@3005000 {
+      compatible = "gpio,carfield";
+      reg = <0x0 0x3005000 0x0 0x1000>;
+      interrupts-extended = <&PLIC0 19 &PLIC0 21 &PLIC0 22 &PLIC0 24>;
+    };
+    tcdm@10000000 {
+      reg = <0x0 0x10000000 0x0 0x400000>;
+    };
+    soc-ctrl@20010000 {
+      compatible = "soc-ctrl,carfield";
+      reg = <0x0 0x20010000 0x0 0x1000>;
+    };
+    mboxes@40000000 {
+      compatible = "mboxes,carfield";
+      reg = <0x0 0x40000000 0x0 0x1000>;
+    };
+    l2-intl-0@78000000 {
+      compatible = "l2-intl,carfield";
+      reg = <0x0 0x78000000 0x0 0x100000>;
+    };
+    l2-cont-0@78100000 {
+      compatible = "l2-cont,carfield";
+      reg = <0x0 0x78100000 0x0 0x100000>;
+    };
+    l2-intl-1@78200000 {
+      compatible = "l2-intl,carfield";
+      reg = <0x0 0x78200000 0x0 0x100000>;
+    };
+    l2-cont-1@78300000 {
+      compatible = "l2-cont,carfield";
+      reg = <0x0 0x78300000 0x0 0x100000>;
+    };
+    safety-island@60000000 {
+      compatible = "safety-island,carfield";
+      reg = <0x0 0x60000000 0x0 0x800000>;
+      // Link to the buffer for this device
+      memory-region = <&reserved_dev_buffer>;
+    };
+    integer-cluster@50000000 {
+      compatible = "integer-cluster,carfield";
+      reg = <0x0 0x50000000 0x0 0x800000>;
+      // Link to the buffer for this device
+      memory-region = <&reserved_dev_buffer>;
+    };
+    spatz-cluster@51000000 {
+      compatible = "spatz-cluster,carfield";
+      reg = <0x0 0x51000000 0x0 0x800000>;
+      // Link to the buffer for this device
+      memory-region = <&reserved_dev_buffer>;
+    };
+  };

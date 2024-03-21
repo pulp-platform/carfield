@@ -44,9 +44,8 @@
     clock-names = "s_axi_lite_clk", "axis_clk";
     // interrupt and mac_irq
     interrupts-extended = <&PLIC0 19 &PLIC0 24>;
-    //local-mac-address = [ 00 0A 35 04 E1 60 ]; // hero-vcu128-01
-    local-mac-address = [ 00 0A 35 04 E1 52 ]; // hero-vcu128-02
-    mac-address = [ 00 0A 35 04 E1 52 ];
+    /include/ "mac_address.dtsi"
+    /include/ "remote_boot.dtsi"
     device_type = "network";
     axistream-connected = <&eth_dma0>;
     axistream-control-connected = <&eth_dma0>;
