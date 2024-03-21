@@ -65,7 +65,7 @@ CAR_ELFLOAD_PULPD_INTF_SRC_C := $(CAR_SW_DIR)/tests/bare-metal/hostd/pulp-offloa
 CAR_ELFLOAD_PULPD_INTF_PATH := $(basename $(CAR_ELFLOAD_PULPD_INTF_SRC_C))
 
 CAR_SW_TEST_SRCS_S	= $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.S)
-CAR_SW_TEST_SRCS_C	= $(filter-out $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_PATH), $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.c))
+CAR_SW_TEST_SRCS_C	= $(filter-out $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C), $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.c))
 
 CAR_SW_TEST_DRAM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.dump) $(CAR_SW_TEST_SRCS_C:.c=.car.dram.dump)
 CAR_SW_TEST_DRAM_SLM	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.slm)  $(CAR_SW_TEST_SRCS_C:.c=.car.dram.slm)
