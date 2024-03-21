@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Yvan Tortorella <yvan.tortorella@unibo.it>
+// Luca Valente <luca.valente@unibo.it>
 //
-// Bare-metal offload test for the PULP cluster
+// Bare-metal offload test for the PULP cluster with interference
 
 #include <stdio.h>
 #include <stdint.h>
@@ -20,29 +20,31 @@
 #include "payload.h"
 #include "printf.h"
 
-long int * buffer; // 8 bytes * 256 * 1024 byte = 2 MB
+#define LCL
+
+long int buffer[128];
 
 void read_from_cache(int l1_way_size, int stride) {
     asm volatile("": : :"memory");
-    for(int j = 0; j < l1_way_size; j++)
+    for(volatile int j = 0; j < l1_way_size; j++)
     {
       * ( ( volatile long int * ) &buffer[j] );
     }
     asm volatile("": : :"memory");
-    for(int j = 0; j < l1_way_size; j++)
+    for(volatile int j = 0; j < l1_way_size; j++)
     {
-      * ( ( volatile long int * ) &buffer[(j+0)*stride]);
+      * ( ( volatile long int * ) &buffer[j*stride]);
     }
     asm volatile("": : :"memory");
 }
 
-int sweep(int stride)
+long unsigned sweep(int stride)
 {
 
   int l1_way_size = 4 * 1024 / 8;
   int working_set = l1_way_size * stride * 8;
 
-  long unsigned cycle_start;
+  volatile long unsigned cycle_start;
 
   for(int i = 0; i < 10; i++)
   {
@@ -53,21 +55,22 @@ int sweep(int stride)
     read_from_cache(l1_way_size, stride);
   }
 
-  long unsigned cycles = get_mcycle() - cycle_start;
+  volatile long unsigned cycles = get_mcycle() - cycle_start;
 
   #ifdef VERBOSE
   printf("%3dKB        , %6d     \r\n",
            working_set / 1024, (int)cycles);
   #endif
 
-  return (int)cycles;
+  return cycles;
 }
 
 int main(void)
 {
   // Set the LLC as LLC
   axi_llc_reg32_all_cache(&__base_llc);
-  int pulp_ret_val = 0;
+  writew(0x18,CAR_HYPERBUS_CFG_BASE_ADDR+0x18);
+  volatile uint32_t pulp_ret_val = 0;
   // Init the HW
   // PULP Island
   #ifdef LCL
@@ -79,7 +82,6 @@ int main(void)
   load_binary();
 
   volatile uint32_t pulp_boot_default = 0x78008080;
-  volatile uint32_t pulp_ret_val = 0;
 
   pulp_cluster_set_bootaddress(pulp_boot_default);
 
@@ -90,7 +92,11 @@ int main(void)
   pulp_cluster_start();
   #endif
 
-  long unsigned cycles[5];
+  #ifdef VERBOSE
+  printf("Buffer: %x\n", buffer);
+  #endif
+
+  volatile long unsigned cycles[5];
   int j=0;
   for( int i = 4; i<128; i=i*2){
     cycles[j] = sweep(i);
@@ -106,6 +112,8 @@ int main(void)
 
   for(int i=0;i<5;i++)
     printf("%d\r\n",cycles[i]);
+
+  printf("Done\n");
 
   return pulp_ret_val;
 
