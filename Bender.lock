@@ -369,7 +369,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: 3d3a8691a1fd87966835e89a64d4d370b379f402
+    revision: 3cd3e83fdd7a791e8ae54aef39423004581c8a48
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
