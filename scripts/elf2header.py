@@ -17,6 +17,7 @@
 #
 
 from elftools.elf.elffile import ELFFile
+from elftools.elf.sections import SymbolTableSection
 import os
 import os.path
 import struct
@@ -62,6 +63,7 @@ class stim(object):
     self.mem = {}
     self.verbose = verbose
     self.areas = []
+    self.start_addr = 0
 
     self.dump('Created stimuli generator')
 
@@ -142,6 +144,8 @@ class stim(object):
 
     with open(filename, 'w') as file:
       file.write(c_header)
+      if(self.start_addr!=0):
+        file.write('#define ELF_BOOT_ADDR %s \n' %(hex(self.start_addr)))
       file.write('int load_binary() {\n' )
       file.write(c_function)
       for key in sorted(self.mem.keys()):
@@ -149,6 +153,19 @@ class stim(object):
       file.write('#endif\n')
       file.write('return 0; \n }\n')
 
+
+  def __get_start_addr(self,filename,width):
+
+    for binary in self.binaries:
+
+      with open(binary, 'rb') as file:
+        elffile = ELFFile(file)
+        for section in elffile.iter_sections():
+          if isinstance(section, SymbolTableSection):
+            for symbol in section.iter_symbols():
+              if symbol.name == "_start":
+                self.start_addr = symbol.entry['st_value']
+                break
 
   def __parse_binaries(self, width):
 
@@ -195,6 +212,8 @@ class stim(object):
   def gen_stim_header_32(self, stim_file):
 
     self.__parse_binaries(4)
+
+    self.__get_start_addr(stim_file, 4)
 
     self.__gen_stim_header(stim_file, 4)
 
