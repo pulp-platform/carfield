@@ -676,69 +676,10 @@ localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
 /******************************/
 /* Integer Cluster Parameters */
 /******************************/
-localparam int unsigned IntClusterNumCacheBanks = 2;
-localparam int unsigned IntClusterNumAxiMst = 3;
-localparam int unsigned IntClusterNumAxiSlv = 4;
-// // IntClusterAxiIdInWidth is fixed from PULP Cluster
-localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 3;
-localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
-                                                  $clog2(IntClusterNumAxiSlv);
-localparam bit[CarfieldCfgDefault.AddrWidth-1:0] ClustPeriphOffs = 'h00200000;
-localparam bit[CarfieldCfgDefault.AddrWidth-1:0] ClustExtOffs    = 'h00400000;
-localparam int unsigned IntClusterMaxUniqId = 1;
+localparam bit[CarfieldCfgDefault.AddrWidth-1:0] PulpClustPeriphOffs = 'h00200000;
+localparam bit[CarfieldCfgDefault.AddrWidth-1:0] PulpClustExtOffs    = 'h00400000;
 localparam int unsigned IntClusterNumEoc = 1;
 localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
-localparam pulp_cluster_package::pulp_cluster_cfg_t PulpClusterCfg = '{
-  CoreType: pulp_cluster_package::RISCY,
-  NumCores: 12,
-  DmaNumPlugs: 4,
-  DmaNumOutstandingBursts: 8,
-  DmaBurstLength: 256,
-  NumMstPeriphs: 1,
-  NumSlvPeriphs: 10,
-  ClusterAlias: 1,
-  ClusterAliasBase: 'h0,
-  NumSyncStages: 3,
-  UseHci: 1,
-  TcdmSize: 256*1024,
-  TcdmNumBank: 16,
-  HwpePresent: 1,
-  HwpeNumPorts: 9,
-  iCacheNumBanks: IntClusterNumCacheBanks,
-  iCacheNumLines: 1,
-  iCacheNumWays: 4,
-  iCacheSharedSize: 4*1024,
-  iCachePrivateSize: 512,
-  iCachePrivateDataWidth: 32,
-  EnableReducedTag: 1,
-  L2Size: L2MemSize,
-  DmBaseAddr: CarfieldIslandsCfg.safed.base+
-              SafetyIslandPerOffset+
-              safety_island_pkg::DebugAddrOffset,
-  BootRomBaseAddr: CarfieldIslandsCfg.l2_port0.base + 'h8080,
-  BootAddr: CarfieldIslandsCfg.l2_port0.base + 'h8080,
-  EnablePrivateFpu: 0,
-  EnablePrivateFpDivSqrt: 0,
-  EnableSharedFpu: 0,
-  EnableSharedFpDivSqrt: 0,
-  NumSharedFpu: 0,
-  NumAxiIn: IntClusterNumAxiSlv,
-  NumAxiOut: IntClusterNumAxiMst,
-  AxiIdInWidth: IntClusterAxiIdInWidth,
-  AxiIdOutWidth:IntClusterAxiIdOutWidth,
-  AxiAddrWidth: CarfieldCfgDefault.AddrWidth,
-  AxiDataInWidth:  CarfieldCfgDefault.AxiDataWidth,
-  AxiDataOutWidth: CarfieldCfgDefault.AxiDataWidth,
-  AxiUserWidth: CarfieldCfgDefault.AxiUserWidth,
-  AxiCdcLogDepth: 3,
-  AxiCdcSyncStages: SyncStages,
-  SyncStages: SyncStages,
-  ClusterBaseAddr: CarfieldAxiMap.AxiStart[CarfieldAxiSlvIdx.pulp],
-  ClusterPeriphOffs: ClustPeriphOffs,
-  ClusterExternalOffs: ClustExtOffs,
-  EnableRemapAddress: 0,
-  default: '0
-};
 
 /*************************************/
 /* Floating Point Cluster Parameters */
@@ -757,8 +698,6 @@ localparam int unsigned AxiNarrowStrobe    = AxiNarrowDataWidth/8;
 typedef logic [     AxiNarrowAddrWidth-1:0] car_nar_addrw_t;
 typedef logic [     AxiNarrowDataWidth-1:0] car_nar_dataw_t;
 typedef logic [        AxiNarrowStrobe-1:0] car_nar_strb_t;
-typedef logic [ IntClusterAxiIdInWidth-1:0] intclust_idin_t;
-typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
 
 // APB Mapping
 localparam int unsigned NumApbMst = 5;
