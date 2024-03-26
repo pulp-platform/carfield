@@ -70,6 +70,7 @@ typedef struct packed {
   byte_bt safed;
   byte_bt spatz;
   byte_bt secured;
+  byte_bt secured_idma;
   byte_bt pulp;
 } carfield_master_idx_t;
 
@@ -124,7 +125,7 @@ function automatic int unsigned gen_num_axi_master(islands_cfg_t island_cfg);
   if (island_cfg.safed.enable  ) begin ret++; end
   if (island_cfg.spatz.enable  ) begin ret++; end
   if (island_cfg.pulp.enable   ) begin ret++; end
-  if (island_cfg.secured.enable) begin ret++; end
+  if (island_cfg.secured.enable) begin ret+=2; end
   return ret;
 endfunction
 
@@ -136,8 +137,8 @@ function automatic carfield_master_idx_t carfield_gen_axi_master_idx(islands_cfg
   byte_bt j = 0;
   if (island_cfg.safed.enable) begin ret.safed = i; i++;
   end else begin ret.safed = MaxExtAxiMst + j; j++; end
-  if (island_cfg.secured.enable) begin ret.secured = i; i++;
-  end else begin ret.secured = MaxExtAxiMst + j; j++; end
+  if (island_cfg.secured.enable) begin ret.secured = i; ret.secured_idma = i+1; i+=2;
+  end else begin ret.secured = MaxExtAxiMst + j; ret.secured_idma = MaxExtAxiMst + j + 1; j+=2; end
   if (island_cfg.spatz.enable) begin ret.spatz = i; i++;
   end else begin ret.spatz = MaxExtAxiMst + j; j++; end
   if (island_cfg.pulp.enable) begin ret.pulp = i; i++;
@@ -316,15 +317,15 @@ function automatic int unsigned gen_carfield_domains(islands_cfg_t island_cfg);
 endfunction
 
 localparam islands_cfg_t CarfieldIslandsCfg = '{
-  l2_port0: '{L2Port0Enable, L2Port0Base, L2Port0Size},
-  l2_port1: '{L2Port1Enable, L2Port1Base, L2Port1Size},
-  safed:    '{SafetyIslandEnable, SafetyIslandBase, SafetyIslandSize},
-  ethernet: '{EthernetEnable, EthernetBase, EthernetSize},
-  periph:   '{PeriphEnable, PeriphBase, PeriphSize},
-  spatz:    '{SpatzClusterEnable, SpatzClusterBase, SpatzClusterSize},
-  pulp:     '{PulpClusterEnable, PulpClusterBase, PulpClusterSize},
-  secured:  '{SecurityIslandEnable, SecurityIslandBase, SecurityIslandSize},
-  mbox:     '{MailboxEnable, MailboxBase, MailboxSize}
+  l2_port0:      '{L2Port0Enable, L2Port0Base, L2Port0Size},
+  l2_port1:      '{L2Port1Enable, L2Port1Base, L2Port1Size},
+  safed:         '{SafetyIslandEnable, SafetyIslandBase, SafetyIslandSize},
+  ethernet:      '{EthernetEnable, EthernetBase, EthernetSize},
+  periph:        '{PeriphEnable, PeriphBase, PeriphSize},
+  spatz:         '{SpatzClusterEnable, SpatzClusterBase, SpatzClusterSize},
+  pulp:          '{PulpClusterEnable, PulpClusterBase, PulpClusterSize},
+  secured:       '{SecurityIslandEnable, SecurityIslandBase, SecurityIslandSize},
+  mbox:          '{MailboxEnable, MailboxBase, MailboxSize}
 };
 
 localparam int unsigned CarfieldAxiNumSlaves  = gen_num_axi_slave(CarfieldIslandsCfg);
@@ -416,10 +417,11 @@ typedef enum byte_bt {
 } axi_slv_idx_t;
 
 typedef enum byte_bt {
-  SafetyIslandMstIdx   = CarfieldMstIdx.safed,
-  SecurityIslandMstIdx = CarfieldMstIdx.secured,
-  FPClusterMstIdx      = CarfieldMstIdx.spatz,
-  IntClusterMstIdx     = CarfieldMstIdx.pulp
+  SafetyIslandMstIdx       = CarfieldMstIdx.safed,
+  SecurityIslandTlulMstIdx = CarfieldMstIdx.secured,
+  SecurityIslandiDMAMstIdx = CarfieldMstIdx.secured_idma,
+  FPClusterMstIdx          = CarfieldMstIdx.spatz,
+  IntClusterMstIdx         = CarfieldMstIdx.pulp
 } axi_mst_idx_t;
 
 // APB peripherals
