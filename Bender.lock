@@ -21,6 +21,14 @@ packages:
     dependencies:
     - apb
     - register_interface
+  carfield_padframe_behav:
+    revision: null
+    version: null
+    source:
+      Path: target/sim/src/behav-padframe
+    dependencies:
+    - common_cells
+    - register_interface
   axi:
     revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
     version: 0.39.3

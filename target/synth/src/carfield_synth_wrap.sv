@@ -17,202 +17,791 @@ module carfield_synth_wrap
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
 #(
-  parameter int unsigned HypNumPhys  = 2,
-  parameter int unsigned HypNumChips = 2,
+  parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
+  parameter int unsigned   HypNumPhys  = 2,
+  parameter int unsigned   HypNumChips = 2,
+  parameter type           reg_req_t   = logic,
+  parameter type           reg_rsp_t   = logic
 ) (
-  // host clock
-  input   logic                                       host_clk_i,
-  // peripheral clock
-  input   logic                                       periph_clk_i,
-  // accelerator and island clock
-  input   logic                                       alt_clk_i,
-  // external reference clock for timers (CLINT, islands)
-  input   logic                                       rt_clk_i,
-
-  input   logic                                       pwr_on_rst_ni,
-
-  // testmode pin
-  input   logic                                       test_mode_i,
-  // Cheshire BOOT pins (3 pins)
-  input   logic [1:0]                                 boot_mode_i,
-  // Cheshire JTAG Interface
-  input   logic                                       jtag_tck_i,
-  input   logic                                       jtag_trst_ni,
-  input   logic                                       jtag_tms_i,
-  input   logic                                       jtag_tdi_i,
-  output  logic                                       jtag_tdo_o,
-  output  logic                                       jtag_tdo_oe_o,
-  // Secure Subsystem JTAG Interface
-  input   logic                                       jtag_ot_tck_i,
-  input   logic                                       jtag_ot_trst_ni,
-  input   logic                                       jtag_ot_tms_i,
-  input   logic                                       jtag_ot_tdi_i,
-  output  logic                                       jtag_ot_tdo_o,
-  output  logic                                       jtag_ot_tdo_oe_o,
-  // Safety Island JTAG Interface
-  input   logic                                       jtag_safety_island_tck_i,
-  input   logic                                       jtag_safety_island_trst_ni,
-  input   logic                                       jtag_safety_island_tms_i,
-  input   logic                                       jtag_safety_island_tdi_i,
-  output  logic                                       jtag_safety_island_tdo_o,
-  // Secure Subsystem BOOT pins
-  input   logic [1:0]                                 bootmode_ot_i,
-  // unused by safety island -- tdo pad always out mode
-  output  logic                                       jtag_safe_isln_tdo_oe_o,
-  // Safety Island BOOT pins
-  input   logic [1:0]                                 bootmode_safe_isln_i,
-  // Host UART Interface
-  output logic                                        uart_tx_o,
-  input  logic                                        uart_rx_i,
-  // Secure Subsystem UART Interface
-  output logic                                        uart_ot_tx_o,
-  input  logic                                        uart_ot_rx_i,
-  // Host I2C Interface pins
-  output logic                                        i2c_sda_o,
-  input  logic                                        i2c_sda_i,
-  output logic                                        i2c_sda_en_o,
-  output logic                                        i2c_scl_o,
-  input  logic                                        i2c_scl_i,
-  output logic                                        i2c_scl_en_o,
-  // Host SPI Master Interface
-  output logic                                        spih_sck_o,
-  output logic                                        spih_sck_en_o,
-  output logic [SpihNumCs-1:0]                        spih_csb_o,
-  output logic [SpihNumCs-1:0]                        spih_csb_en_o,
-  output logic [ 3:0]                                 spih_sd_o,
-  output logic [ 3:0]                                 spih_sd_en_o,
-  input  logic [ 3:0]                                 spih_sd_i,
-  // Secure Subsystem QSPI Master Interface
-  output logic                                        spih_ot_sck_o,
-  output logic                                        spih_ot_sck_en_o,
-  output logic                                        spih_ot_csb_o,
-  output logic                                        spih_ot_csb_en_o,
-  output logic [ 3:0]                                 spih_ot_sd_o,
-  output logic [ 3:0]                                 spih_ot_sd_en_o,
-  input  logic [ 3:0]                                 spih_ot_sd_i,
-  // ETHERNET interface
-  input  logic                                        eth_rxck_i,
-  input  logic                                        eth_rxctl_i,
-  input  logic  [ 3:0]                                eth_rxd_i,
-  input  logic                                        eth_md_i,
-  output logic                                        eth_txck_o,
-  output logic                                        eth_txctl_o,
-  output logic  [ 3:0]                                eth_txd_o,
-  output logic                                        eth_md_o,
-  output logic                                        eth_md_oe,
-  output logic                                        eth_mdc_o,
-  output logic                                        eth_rst_n_o,
-  // CAN interface
-  input  logic                                        can_rx_i,
-  output logic                                        can_tx_o,
-  // GPIOs
-  input  logic [31:0]                                 gpio_i,
-  output logic [31:0]                                 gpio_o,
-  output logic [31:0]                                 gpio_en_o,
-  // Serial link interface
-  input  logic [SlinkNumChan-1:0]                     slink_rcv_clk_i,
-  output logic [SlinkNumChan-1:0]                     slink_rcv_clk_o,
-  input  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_i,
-  output logic [SlinkNumChan-1:0][SlinkNumLanes-1:0]  slink_o,
-  // HyperBus interface
-  output logic [HypNumPhys-1:0][HypNumChips-1:0]      hyper_cs_no,
-  output logic [HypNumPhys-1:0]                       hyper_ck_o,
-  output logic [HypNumPhys-1:0]                       hyper_ck_no,
-  output logic [HypNumPhys-1:0]                       hyper_rwds_o,
-  input  logic [HypNumPhys-1:0]                       hyper_rwds_i,
-  output logic [HypNumPhys-1:0]                       hyper_rwds_oe_o,
-  input  logic [HypNumPhys-1:0][7:0]                  hyper_dq_i,
-  output logic [HypNumPhys-1:0][7:0]                  hyper_dq_o,
-  output logic [HypNumPhys-1:0]                       hyper_dq_oe_o,
-  output logic [HypNumPhys-1:0]                       hyper_reset_no,
-  // Debug signals
-  output carfield_debug_sigs_t                        debug_signals_o
+  inout wire logic pad_periph_reset_n_pad,
+  inout wire logic pad_periph_bypass_fll_pad,
+  inout wire logic pad_periph_ref_clk_pad,
+  inout wire logic pad_periph_ext_clk_pad,
+  inout wire logic pad_periph_secure_boot_pad,
+  inout wire logic pad_periph_jtag_pll_00_pad,
+  inout wire logic pad_periph_jtag_pll_01_pad,
+  inout wire logic pad_periph_jtag_pll_02_pad,
+  inout wire logic pad_periph_jtag_pll_03_pad,
+  inout wire logic pad_periph_jtag_pll_04_pad,
+  inout wire logic pad_periph_debug_out0_pad,
+  inout wire logic pad_periph_debug_out1_pad,
+  inout wire logic pad_periph_debug_out2_pad,
+  inout wire logic pad_periph_debug_out3_pad,
+  inout wire logic pad_periph_debug_out4_pad,
+  inout wire logic pad_periph_bootmode_host_0_pad,
+  inout wire logic pad_periph_bootmode_host_1_pad,
+  inout wire logic pad_periph_bootmode_host_2_pad,
+  inout wire logic pad_periph_jtag_host_tck_pad,
+  inout wire logic pad_periph_jtag_host_tms_pad,
+  inout wire logic pad_periph_jtag_host_tdi_pad,
+  inout wire logic pad_periph_jtag_host_trstn_pad,
+  inout wire logic pad_periph_jtag_host_tdo_pad,
+  inout wire logic pad_periph_host_00_pad,
+  inout wire logic pad_periph_host_01_pad,
+  inout wire logic pad_periph_host_02_pad,
+  inout wire logic pad_periph_host_03_pad,
+  inout wire logic pad_periph_host_04_pad,
+  inout wire logic pad_periph_host_05_pad,
+  inout wire logic pad_periph_host_06_pad,
+  inout wire logic pad_periph_host_07_pad,
+  inout wire logic pad_periph_host_08_pad,
+  inout wire logic pad_periph_host_09_pad,
+  inout wire logic pad_periph_host_10_pad,
+  inout wire logic pad_periph_bootmode_safe_0_pad,
+  inout wire logic pad_periph_bootmode_safe_1_pad,
+  inout wire logic pad_periph_jtag_safe_tck_pad,
+  inout wire logic pad_periph_jtag_safe_tms_pad,
+  inout wire logic pad_periph_jtag_safe_tdi_pad,
+  inout wire logic pad_periph_jtag_safe_trstn_pad,
+  inout wire logic pad_periph_jtag_safe_tdo_pad,
+  inout wire logic pad_periph_bootmode_secure_0_pad,
+  inout wire logic pad_periph_bootmode_secure_1_pad,
+  inout wire logic pad_periph_jtag_secure_tck_pad,
+  inout wire logic pad_periph_jtag_secure_tms_pad,
+  inout wire logic pad_periph_jtag_secure_tdi_pad,
+  inout wire logic pad_periph_jtag_secure_trstn_pad,
+  inout wire logic pad_periph_jtag_secure_tdo_pad,
+  inout wire logic pad_periph_secure_00_pad,
+  inout wire logic pad_periph_secure_01_pad,
+  inout wire logic pad_periph_secure_02_pad,
+  inout wire logic pad_periph_secure_03_pad,
+  inout wire logic pad_periph_secure_04_pad,
+  inout wire logic pad_periph_secure_05_pad,
+  inout wire logic pad_periph_secure_06_pad,
+  inout wire logic pad_periph_secure_07_pad,
+  inout wire logic pad_periph_gpio_00_pad,
+  inout wire logic pad_periph_gpio_01_pad,
+  inout wire logic pad_periph_gpio_02_pad,
+  inout wire logic pad_periph_gpio_03_pad,
+  inout wire logic pad_periph_gpio_04_pad,
+  inout wire logic pad_periph_gpio_05_pad,
+  inout wire logic pad_periph_gpio_06_pad,
+  inout wire logic pad_periph_gpio_07_pad,
+  inout wire logic pad_periph_gpio_08_pad,
+  inout wire logic pad_periph_gpio_09_pad,
+  inout wire logic pad_periph_gpio_10_pad,
+  inout wire logic pad_periph_gpio_11_pad,
+  inout wire logic pad_periph_gpio_12_pad,
+  inout wire logic pad_periph_gpio_13_pad,
+  inout wire logic pad_periph_gpio_14_pad,
+  inout wire logic pad_periph_gpio_15_pad,
+  inout wire logic pad_periph_periph_00_pad,
+  inout wire logic pad_periph_periph_01_pad,
+  inout wire logic pad_periph_periph_02_pad,
+  inout wire logic pad_periph_periph_03_pad,
+  inout wire logic pad_periph_periph_04_pad,
+  inout wire logic pad_periph_periph_05_pad,
+  inout wire logic pad_periph_periph_06_pad,
+  inout wire logic pad_periph_periph_07_pad,
+  inout wire logic pad_periph_periph_08_pad,
+  inout wire logic pad_periph_periph_09_pad,
+  inout wire logic pad_periph_periph_10_pad,
+  inout wire logic pad_periph_periph_11_pad,
+  inout wire logic pad_periph_periph_12_pad,
+  inout wire logic pad_periph_periph_13_pad,
+  inout wire logic pad_periph_periph_14_pad,
+  inout wire logic pad_periph_periph_15_pad,
+  inout wire logic pad_periph_periph_16_pad,
+  inout wire logic pad_periph_hyper0_csn0_pad,
+  inout wire logic pad_periph_hyper0_csn1_pad,
+  inout wire logic pad_periph_hyper0_ck_pad,
+  inout wire logic pad_periph_hyper0_ckn_pad,
+  inout wire logic pad_periph_hyper0_rwds_pad,
+  inout wire logic pad_periph_hyper0_rstn_pad,
+  inout wire logic pad_periph_hyper0_data0_pad,
+  inout wire logic pad_periph_hyper0_data1_pad,
+  inout wire logic pad_periph_hyper0_data2_pad,
+  inout wire logic pad_periph_hyper0_data3_pad,
+  inout wire logic pad_periph_hyper0_data4_pad,
+  inout wire logic pad_periph_hyper0_data5_pad,
+  inout wire logic pad_periph_hyper0_data6_pad,
+  inout wire logic pad_periph_hyper0_data7_pad,
+  inout wire logic pad_periph_hyper1_csn0_pad,
+  inout wire logic pad_periph_hyper1_csn1_pad,
+  inout wire logic pad_periph_hyper1_ck_pad,
+  inout wire logic pad_periph_hyper1_ckn_pad,
+  inout wire logic pad_periph_hyper1_rwds_pad,
+  inout wire logic pad_periph_hyper1_rstn_pad,
+  inout wire logic pad_periph_hyper1_data0_pad,
+  inout wire logic pad_periph_hyper1_data1_pad,
+  inout wire logic pad_periph_hyper1_data2_pad,
+  inout wire logic pad_periph_hyper1_data3_pad,
+  inout wire logic pad_periph_hyper1_data4_pad,
+  inout wire logic pad_periph_hyper1_data5_pad,
+  inout wire logic pad_periph_hyper1_data6_pad,
+  inout wire logic pad_periph_hyper1_data7_pad,
+  inout wire logic pad_periph_sl_clk_in_pad,
+  inout wire logic pad_periph_sl_data_in0_pad,
+  inout wire logic pad_periph_sl_data_in1_pad,
+  inout wire logic pad_periph_sl_data_in2_pad,
+  inout wire logic pad_periph_sl_data_in3_pad,
+  inout wire logic pad_periph_sl_data_in4_pad,
+  inout wire logic pad_periph_sl_data_in5_pad,
+  inout wire logic pad_periph_sl_data_in6_pad,
+  inout wire logic pad_periph_sl_data_in7_pad,
+  inout wire logic pad_periph_sl_clk_out_pad,
+  inout wire logic pad_periph_sl_data_out0_pad,
+  inout wire logic pad_periph_sl_data_out1_pad,
+  inout wire logic pad_periph_sl_data_out2_pad,
+  inout wire logic pad_periph_sl_data_out3_pad,
+  inout wire logic pad_periph_sl_data_out4_pad,
+  inout wire logic pad_periph_sl_data_out5_pad,
+  inout wire logic pad_periph_sl_data_out6_pad,
+  inout wire logic pad_periph_sl_data_out7_pad
 );
 
-  localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
-  `CHESHIRE_TYPEDEF_ALL(, DutCfg)
+  ////////////////////////////
+  // Carfield configuration //
+  ////////////////////////////
+
+  localparam cheshire_cfg_t CarfieldCfg = carfield_pkg::CarfieldCfgDefault;
+  `CHESHIRE_TYPEDEF_ALL(carfield_, CarfieldCfg)
+
+  ////////////////////////
+  // Connection Signals //
+  ////////////////////////
+
+  // POR
+  logic pwr_on_rst_n;
+  logic ref_clk_pwr_on_rst_n;
+
+  // clock signals
+  logic ref_clk;
+  // generated clocks
+  logic host_clk, periph_clk, alt_clk, rt_clk;
+  logic [NumPlls-1:0] clk_pll_out;
+
+  // secure boot mode signal
+  logic secure_boot;
+
+  //////////////
+  // Padframe //
+  //////////////
+
+  // register interface
+  // to padframe: ref clock domain
+  carfield_reg_req_t padframe_refclk_cfg_reg_req;
+  carfield_reg_rsp_t padframe_refclk_cfg_reg_rsp;
+
+  // signal to pad
+  static_connection_signals_pad2soc_t st_pad2soc_signals;
+  static_connection_signals_soc2pad_t st_soc2pad_signals;
+  port_signals_pad2soc_t              pad2soc_port_signals;
+  port_signals_soc2pad_t              soc2pad_port_signals;
+
+  carfield_pkg::carfield_debug_sigs_t carfield_debug_signals;
+
+  // pad2soc
+
+  // is secure boot enabled
+  assign secure_boot = st_pad2soc_signals.periph.st_secure_boot_i;
+  // safed bootmodes
+  logic [1:0] bootmode_safe_isln_s;
+  assign bootmode_safe_isln_s[0] = st_pad2soc_signals.periph.st_safe_boot_sel0;
+  assign bootmode_safe_isln_s[1] = st_pad2soc_signals.periph.st_safe_boot_sel1;
+  // secd bootmodes
+  logic [1:0] bootmode_sec_isln_s;
+  assign bootmode_sec_isln_s[0] = st_pad2soc_signals.periph.st_secure_boot_sel0;
+  assign bootmode_sec_isln_s[1] = st_pad2soc_signals.periph.st_secure_boot_sel1;
+  // hostd bootmodes
+  logic [2:0] bootmode_host_s;
+  assign bootmode_host_s[0] = st_pad2soc_signals.periph.st_host_boot_sel0;
+  assign bootmode_host_s[1] = st_pad2soc_signals.periph.st_host_boot_sel1;
+  assign bootmode_host_s[2] = st_pad2soc_signals.periph.st_host_boot_sel2; // has no loads
+  // serial link
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] serial_link_data_in_s;
+  assign serial_link_data_in_s[0][0] = st_pad2soc_signals.periph.sl_data_in0_o;
+  assign serial_link_data_in_s[0][1] = st_pad2soc_signals.periph.sl_data_in1_o;
+  assign serial_link_data_in_s[0][2] = st_pad2soc_signals.periph.sl_data_in2_o;
+  assign serial_link_data_in_s[0][3] = st_pad2soc_signals.periph.sl_data_in3_o;
+  assign serial_link_data_in_s[0][4] = st_pad2soc_signals.periph.sl_data_in4_o;
+  assign serial_link_data_in_s[0][5] = st_pad2soc_signals.periph.sl_data_in5_o;
+  assign serial_link_data_in_s[0][6] = st_pad2soc_signals.periph.sl_data_in6_o;
+  assign serial_link_data_in_s[0][7] = st_pad2soc_signals.periph.sl_data_in7_o;
+  // hyperbus signals
+  logic [HypNumPhys-1:0]      hyperbus_rwds_in_s;
+  logic [HypNumPhys-1:0][7:0] hyperbus_data_in_s;
+  // hyperbus 0
+  assign hyperbus_data_in_s[0][0] = st_pad2soc_signals.periph.st_hyper0_dq0_i;
+  assign hyperbus_data_in_s[0][1] = st_pad2soc_signals.periph.st_hyper0_dq1_i;
+  assign hyperbus_data_in_s[0][2] = st_pad2soc_signals.periph.st_hyper0_dq2_i;
+  assign hyperbus_data_in_s[0][3] = st_pad2soc_signals.periph.st_hyper0_dq3_i;
+  assign hyperbus_data_in_s[0][4] = st_pad2soc_signals.periph.st_hyper0_dq4_i;
+  assign hyperbus_data_in_s[0][5] = st_pad2soc_signals.periph.st_hyper0_dq5_i;
+  assign hyperbus_data_in_s[0][6] = st_pad2soc_signals.periph.st_hyper0_dq6_i;
+  assign hyperbus_data_in_s[0][7] = st_pad2soc_signals.periph.st_hyper0_dq7_i;
+  assign hyperbus_rwds_in_s[0]    = st_pad2soc_signals.periph.st_hyper0_rwds_i;
+  // hyperbus 1
+  assign hyperbus_data_in_s[1][0] = st_pad2soc_signals.periph.st_hyper1_dq0_i;
+  assign hyperbus_data_in_s[1][1] = st_pad2soc_signals.periph.st_hyper1_dq1_i;
+  assign hyperbus_data_in_s[1][2] = st_pad2soc_signals.periph.st_hyper1_dq2_i;
+  assign hyperbus_data_in_s[1][3] = st_pad2soc_signals.periph.st_hyper1_dq3_i;
+  assign hyperbus_data_in_s[1][4] = st_pad2soc_signals.periph.st_hyper1_dq4_i;
+  assign hyperbus_data_in_s[1][5] = st_pad2soc_signals.periph.st_hyper1_dq5_i;
+  assign hyperbus_data_in_s[1][6] = st_pad2soc_signals.periph.st_hyper1_dq6_i;
+  assign hyperbus_data_in_s[1][7] = st_pad2soc_signals.periph.st_hyper1_dq7_i;
+  assign hyperbus_rwds_in_s[1]    = st_pad2soc_signals.periph.st_hyper1_rwds_i;
+
+  // soc2pad
+
+  // serial link
+  logic [SlinkNumChan-1:0][SlinkNumLanes-1:0] serial_link_data_out_s;
+  assign st_soc2pad_signals.periph.sl_data_out0_i = serial_link_data_out_s[0][0];
+  assign st_soc2pad_signals.periph.sl_data_out1_i = serial_link_data_out_s[0][1];
+  assign st_soc2pad_signals.periph.sl_data_out2_i = serial_link_data_out_s[0][2];
+  assign st_soc2pad_signals.periph.sl_data_out3_i = serial_link_data_out_s[0][3];
+  assign st_soc2pad_signals.periph.sl_data_out4_i = serial_link_data_out_s[0][4];
+  assign st_soc2pad_signals.periph.sl_data_out5_i = serial_link_data_out_s[0][5];
+  assign st_soc2pad_signals.periph.sl_data_out6_i = serial_link_data_out_s[0][6];
+  assign st_soc2pad_signals.periph.sl_data_out7_i = serial_link_data_out_s[0][7];
+  //hyperbus
+  logic [HypNumPhys-1:0]                  hyperbus_rwds_out_s;
+  logic [HypNumPhys-1:0]                  hyperbus_rwds_oe_s;
+  logic [HypNumPhys-1:0]                  hyperbus_clk_o_s;
+  logic [HypNumPhys-1:0]                  hyperbus_clk_no_s;
+  logic [HypNumPhys-1:0]                  hyperbus_rst_no_s;
+  logic [HypNumPhys-1:0][HypNumChips-1:0] hyperbus_cs_no_s;
+  logic [HypNumPhys-1:0][7:0]             hyperbus_data_out_s;
+  logic [HypNumPhys-1:0]                  hyperbus_data_oe_s;
+  // hyper bus 0
+  assign st_soc2pad_signals.periph.st_hyper0_ck_no    = hyperbus_clk_no_s[0];
+  assign st_soc2pad_signals.periph.st_hyper0_ck_o     = hyperbus_clk_o_s[0];
+  assign st_soc2pad_signals.periph.st_hyper0_cs0_no   = hyperbus_cs_no_s[0][0];
+  assign st_soc2pad_signals.periph.st_hyper0_cs1_no   = hyperbus_cs_no_s[0][1];
+  assign st_soc2pad_signals.periph.st_hyper0_dq0_o    = hyperbus_data_out_s[0][0];
+  assign st_soc2pad_signals.periph.st_hyper0_dq1_o    = hyperbus_data_out_s[0][1];
+  assign st_soc2pad_signals.periph.st_hyper0_dq2_o    = hyperbus_data_out_s[0][2];
+  assign st_soc2pad_signals.periph.st_hyper0_dq3_o    = hyperbus_data_out_s[0][3];
+  assign st_soc2pad_signals.periph.st_hyper0_dq4_o    = hyperbus_data_out_s[0][4];
+  assign st_soc2pad_signals.periph.st_hyper0_dq5_o    = hyperbus_data_out_s[0][5];
+  assign st_soc2pad_signals.periph.st_hyper0_dq6_o    = hyperbus_data_out_s[0][6];
+  assign st_soc2pad_signals.periph.st_hyper0_dq7_o    = hyperbus_data_out_s[0][7];
+  assign st_soc2pad_signals.periph.st_hyper0_dq_oe    = hyperbus_data_oe_s[0];
+  assign st_soc2pad_signals.periph.st_hyper0_reset_no = hyperbus_rst_no_s[0];
+  assign st_soc2pad_signals.periph.st_hyper0_rwds_o   = hyperbus_rwds_out_s[0];
+  assign st_soc2pad_signals.periph.st_hyper0_rwds_oe  = hyperbus_rwds_oe_s[0];
+  // hyperbus 1
+  assign st_soc2pad_signals.periph.st_hyper1_ck_no    = hyperbus_clk_no_s[1];
+  assign st_soc2pad_signals.periph.st_hyper1_ck_o     = hyperbus_clk_o_s[1];
+  assign st_soc2pad_signals.periph.st_hyper1_cs0_no   = hyperbus_cs_no_s[1][0];
+  assign st_soc2pad_signals.periph.st_hyper1_cs1_no   = hyperbus_cs_no_s[1][1];
+  assign st_soc2pad_signals.periph.st_hyper1_dq0_o    = hyperbus_data_out_s[1][0];
+  assign st_soc2pad_signals.periph.st_hyper1_dq1_o    = hyperbus_data_out_s[1][1];
+  assign st_soc2pad_signals.periph.st_hyper1_dq2_o    = hyperbus_data_out_s[1][2];
+  assign st_soc2pad_signals.periph.st_hyper1_dq3_o    = hyperbus_data_out_s[1][3];
+  assign st_soc2pad_signals.periph.st_hyper1_dq4_o    = hyperbus_data_out_s[1][4];
+  assign st_soc2pad_signals.periph.st_hyper1_dq5_o    = hyperbus_data_out_s[1][5];
+  assign st_soc2pad_signals.periph.st_hyper1_dq6_o    = hyperbus_data_out_s[1][6];
+  assign st_soc2pad_signals.periph.st_hyper1_dq7_o    = hyperbus_data_out_s[1][7];
+  assign st_soc2pad_signals.periph.st_hyper1_dq_oe    = hyperbus_data_oe_s[1];
+  assign st_soc2pad_signals.periph.st_hyper1_reset_no = hyperbus_rst_no_s[1];
+  assign st_soc2pad_signals.periph.st_hyper1_rwds_o   = hyperbus_rwds_out_s[1];
+  assign st_soc2pad_signals.periph.st_hyper1_rwds_oe  = hyperbus_rwds_oe_s[1];
+
+  //  peripherals
+
+  // pad2soc
+  // qspi0_hostd
+  logic [ 3:0]                                 spih_sd_i_s;
+  assign spih_sd_i_s[0] = pad2soc_port_signals.periph.qspi0_host.sd0_i;
+  assign spih_sd_i_s[1] = pad2soc_port_signals.periph.qspi0_host.sd1_i;
+  assign spih_sd_i_s[2] = pad2soc_port_signals.periph.qspi0_host.sd2_i;
+  assign spih_sd_i_s[3] = pad2soc_port_signals.periph.qspi0_host.sd3_i;
+  // qspi0_secd
+  logic [ 3:0]                                 spih_ot_sd_i_s;
+  assign spih_ot_sd_i_s[0] = pad2soc_port_signals.periph.qspi0_sec_isln.sd0_i;
+  assign spih_ot_sd_i_s[1] = pad2soc_port_signals.periph.qspi0_sec_isln.sd1_i;
+  assign spih_ot_sd_i_s[2] = pad2soc_port_signals.periph.qspi0_sec_isln.sd2_i;
+  assign spih_ot_sd_i_s[3] = pad2soc_port_signals.periph.qspi0_sec_isln.sd3_i;
+  // ethernet
+  logic [3:0]                                eth_rxd_i_s;
+  assign eth_rxd_i_s[0]  = pad2soc_port_signals.periph.ethernet.eth_rxd0_o;
+  assign eth_rxd_i_s[1]  = pad2soc_port_signals.periph.ethernet.eth_rxd1_o;
+  assign eth_rxd_i_s[2]  = pad2soc_port_signals.periph.ethernet.eth_rxd2_o;
+  assign eth_rxd_i_s[3]  = pad2soc_port_signals.periph.ethernet.eth_rxd3_o;
+
+  // gpio
+  // TODO: parameterize number of gpios
+  logic [31:0]              gpio_out_s;
+  logic [31:0]              gpio_tx_en_s;
+  logic [31:0]              gpio_in_s;
+  assign soc2pad_port_signals.periph.gpio.gpio00_out = gpio_out_s[0];
+  assign soc2pad_port_signals.periph.gpio.gpio01_out = gpio_out_s[1];
+  assign soc2pad_port_signals.periph.gpio.gpio02_out = gpio_out_s[2];
+  assign soc2pad_port_signals.periph.gpio.gpio03_out = gpio_out_s[3];
+  assign soc2pad_port_signals.periph.gpio.gpio04_out = gpio_out_s[4];
+  assign soc2pad_port_signals.periph.gpio.gpio05_out = gpio_out_s[5];
+  assign soc2pad_port_signals.periph.gpio.gpio06_out = gpio_out_s[6];
+  assign soc2pad_port_signals.periph.gpio.gpio07_out = gpio_out_s[7];
+  assign soc2pad_port_signals.periph.gpio.gpio08_out = gpio_out_s[8];
+  assign soc2pad_port_signals.periph.gpio.gpio09_out = gpio_out_s[9];
+  assign soc2pad_port_signals.periph.gpio.gpio10_out = gpio_out_s[10];
+  assign soc2pad_port_signals.periph.gpio.gpio11_out = gpio_out_s[11];
+  assign soc2pad_port_signals.periph.gpio.gpio12_out = gpio_out_s[12];
+  assign soc2pad_port_signals.periph.gpio.gpio13_out = gpio_out_s[13];
+  assign soc2pad_port_signals.periph.gpio.gpio14_out = gpio_out_s[14];
+  assign soc2pad_port_signals.periph.gpio.gpio15_out = gpio_out_s[15];
+  // GPIO 16-31 remain unconnected
+  assign soc2pad_port_signals.periph.gpio.gpio00_tx_en = gpio_tx_en_s[0];
+  assign soc2pad_port_signals.periph.gpio.gpio01_tx_en = gpio_tx_en_s[1];
+  assign soc2pad_port_signals.periph.gpio.gpio02_tx_en = gpio_tx_en_s[2];
+  assign soc2pad_port_signals.periph.gpio.gpio03_tx_en = gpio_tx_en_s[3];
+  assign soc2pad_port_signals.periph.gpio.gpio04_tx_en = gpio_tx_en_s[4];
+  assign soc2pad_port_signals.periph.gpio.gpio05_tx_en = gpio_tx_en_s[5];
+  assign soc2pad_port_signals.periph.gpio.gpio06_tx_en = gpio_tx_en_s[6];
+  assign soc2pad_port_signals.periph.gpio.gpio07_tx_en = gpio_tx_en_s[7];
+  assign soc2pad_port_signals.periph.gpio.gpio08_tx_en = gpio_tx_en_s[8];
+  assign soc2pad_port_signals.periph.gpio.gpio09_tx_en = gpio_tx_en_s[9];
+  assign soc2pad_port_signals.periph.gpio.gpio10_tx_en = gpio_tx_en_s[10];
+  assign soc2pad_port_signals.periph.gpio.gpio11_tx_en = gpio_tx_en_s[11];
+  assign soc2pad_port_signals.periph.gpio.gpio12_tx_en = gpio_tx_en_s[12];
+  assign soc2pad_port_signals.periph.gpio.gpio13_tx_en = gpio_tx_en_s[13];
+  assign soc2pad_port_signals.periph.gpio.gpio14_tx_en = gpio_tx_en_s[14];
+  assign soc2pad_port_signals.periph.gpio.gpio15_tx_en = gpio_tx_en_s[15];
+  // GPIO 16-31 remain unconnected
+  assign gpio_in_s[0] = pad2soc_port_signals.periph.gpio.gpio00_in;
+  assign gpio_in_s[1] = pad2soc_port_signals.periph.gpio.gpio01_in;
+  assign gpio_in_s[2] = pad2soc_port_signals.periph.gpio.gpio02_in;
+  assign gpio_in_s[3] = pad2soc_port_signals.periph.gpio.gpio03_in;
+  assign gpio_in_s[4] = pad2soc_port_signals.periph.gpio.gpio04_in;
+  assign gpio_in_s[5] = pad2soc_port_signals.periph.gpio.gpio05_in;
+  assign gpio_in_s[6] = pad2soc_port_signals.periph.gpio.gpio06_in;
+  assign gpio_in_s[7] = pad2soc_port_signals.periph.gpio.gpio07_in;
+  assign gpio_in_s[8] = pad2soc_port_signals.periph.gpio.gpio08_in;
+  assign gpio_in_s[9] = pad2soc_port_signals.periph.gpio.gpio09_in;
+  assign gpio_in_s[10] = pad2soc_port_signals.periph.gpio.gpio10_in;
+  assign gpio_in_s[11] = pad2soc_port_signals.periph.gpio.gpio11_in;
+  assign gpio_in_s[12] = pad2soc_port_signals.periph.gpio.gpio12_in;
+  assign gpio_in_s[13] = pad2soc_port_signals.periph.gpio.gpio13_in;
+  assign gpio_in_s[14] = pad2soc_port_signals.periph.gpio.gpio14_in;
+  assign gpio_in_s[15] = pad2soc_port_signals.periph.gpio.gpio15_in;
+  // GPI0 16-31 remain unconnected
+  assign gpio_in_s[31:16] = '0;
+
+
+  // soc2pad
+  // uart0_host -- carfield itf
+  // qspi0_hostd
+  logic                                        spih_sck_o_s;
+  logic [ 1:0]                                 spih_csb_o_s;
+  logic [ 3:0]                                 spih_sd_o_s;
+  logic [ 3:0]                                 spih_sd_en_o_s;
+  assign soc2pad_port_signals.periph.qspi0_host.csn0_o   = spih_csb_o_s[0]; // TO CHECK POLARITY OF THE SIGNAL
+  assign soc2pad_port_signals.periph.qspi0_host.csn1_o   = spih_csb_o_s[1];
+  assign soc2pad_port_signals.periph.qspi0_host.sck_o    = spih_sck_o_s;
+  assign soc2pad_port_signals.periph.qspi0_host.sd0_o    = spih_sd_o_s[0];
+  assign soc2pad_port_signals.periph.qspi0_host.sd0_oe   = spih_sd_en_o_s[0];
+  assign soc2pad_port_signals.periph.qspi0_host.sd1_o    = spih_sd_o_s[1];
+  assign soc2pad_port_signals.periph.qspi0_host.sd1_oe   = spih_sd_en_o_s[1];
+  assign soc2pad_port_signals.periph.qspi0_host.sd2_o    = spih_sd_o_s[2];
+  assign soc2pad_port_signals.periph.qspi0_host.sd2_oe   = spih_sd_en_o_s[2];
+  assign soc2pad_port_signals.periph.qspi0_host.sd3_o    = spih_sd_o_s[3];
+  assign soc2pad_port_signals.periph.qspi0_host.sd3_oe   = spih_sd_en_o_s[3];
+  // i2c0_host -- carfield itf
+  // qspi0_secd
+  logic                                        spih_ot_sck_o_s;
+  logic                                        spih_ot_csb_o_s;
+  logic [ 3:0]                                 spih_ot_sd_o_s;
+  logic [ 3:0]                                 spih_ot_sd_en_o_s;
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.csn0_o    = spih_ot_csb_o_s; // TO CHECK POLARITY OF THE SIGNAL
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sck_o     = spih_ot_sck_o_s;
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd0_o     = spih_ot_sd_o_s[0];
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd0_oe    = spih_ot_sd_en_o_s[0];
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd1_o     = spih_ot_sd_o_s[1];
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd1_oe    = spih_ot_sd_en_o_s[1];
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd2_o     = spih_ot_sd_o_s[2];
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd2_oe    = spih_ot_sd_en_o_s[2];
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd3_o     = spih_ot_sd_o_s[3];
+  assign soc2pad_port_signals.periph.qspi0_sec_isln.sd3_oe    = spih_ot_sd_en_o_s[3];
+  // uart1_secd -- carfield itf
+  // spi 1 --- not sure wheter to include another spi....
+  // can0 -- carfield itf
+  // ethernet
+  logic  [ 3:0]                                eth_txd_o_s;
+  assign soc2pad_port_signals.periph.ethernet.eth_txd0_i = eth_txd_o_s[0];
+  assign soc2pad_port_signals.periph.ethernet.eth_txd1_i = eth_txd_o_s[1];
+  assign soc2pad_port_signals.periph.ethernet.eth_txd2_i = eth_txd_o_s[2];
+  assign soc2pad_port_signals.periph.ethernet.eth_txd3_i = eth_txd_o_s[3];
+
+  // Debug signals
+// Debug signals
+  logic [NumPlls-1:0] dbg_pll_out; // The unmultiplexed and ungated raw output
+
+  // The following macro divides CLK_SIGNAL by 10x using a static integer clock
+  // divider. To that end this macro also instantiates a reset synchronizer
+  // since we need a synchronous reset for the divider. Finally the divided
+  // clock is assigned to the soc2pad debug signals to be exposed by the
+  // padframes debug pads.
+`define CLK_DIV_BY_10(CLK_NAME, CLK_SIGNAL, DBG_SIGNAL_NAME)        \
+  logic CLK_NAME``_div_10x;                                         \
+  logic CLK_NAME``_div_10x_rst_synced;                              \
+  rstgen i_rstgen_``CLK_NAME``_divider (                            \
+    .clk_i(CLK_SIGNAL),                                             \
+    .rst_ni(pwr_on_rst_n),                                          \
+    .test_mode_i(1'b0),                                             \
+    .rst_no(CLK_NAME``_div_10x_rst_synced),                         \
+    .init_no()                                                      \
+  );                                                                \
+  clk_int_div_static #(.DIV_VALUE(10)) i_clk_div_10x_``CLK_NAME`` ( \
+    .clk_i          ( CLK_SIGNAL   ),                               \
+    .rst_ni         ( CLK_NAME``_div_10x_rst_synced ),              \
+    .en_i           ( 1'b1         ),                               \
+    .test_mode_en_i ( 1'b0         ),                               \
+    .clk_o          ( CLK_NAME``_div_10x )                          \
+  );                                                                \
+  assign soc2pad_port_signals.periph.debug_signals.``DBG_SIGNAL_NAME = CLK_NAME``_div_10x;\
+
+  `CLK_DIV_BY_10(host_clk, host_clk, host_clk)
+  `CLK_DIV_BY_10(host_pll, dbg_pll_out[HostDomainClkIdx], host_pll)
+  `CLK_DIV_BY_10(alt_clk, alt_clk, alt_clk)
+  `CLK_DIV_BY_10(alt_pll, dbg_pll_out[AltDomainClkIdx], alt_pll)
+  `CLK_DIV_BY_10(periph_clk, periph_clk, periph_clk)
+  `CLK_DIV_BY_10(periph_pll, dbg_pll_out[PeriphDomainClkIdx], periph_pll)
+  assign soc2pad_port_signals.periph.debug_signals.host_por_n = carfield_debug_signals.host_pwr_on_rst_n;
+  `CLK_DIV_BY_10(periph_domain_clk, carfield_debug_signals.domain_clk[0], periph_domain_clk)
+  assign soc2pad_port_signals.periph.debug_signals.periph_domain_rstn = carfield_debug_signals.domain_rsts_n[0];
+  `CLK_DIV_BY_10(safety_domain_clk, carfield_debug_signals.domain_clk[1], safety_island_domain_clk)
+  assign soc2pad_port_signals.periph.debug_signals.safety_island_domain_rstn = carfield_debug_signals.domain_rsts_n[1];
+  `CLK_DIV_BY_10(security_domain_clk, carfield_debug_signals.domain_clk[2], security_island_domain_clk)
+  assign soc2pad_port_signals.periph.debug_signals.security_island_domain_rstn = carfield_debug_signals.domain_rsts_n[2];
+  `CLK_DIV_BY_10(pulp_cluster_domain_clk, carfield_debug_signals.domain_clk[3], pulp_cluster_domain_clk)
+  assign soc2pad_port_signals.periph.debug_signals.pulp_cluster_domain_rstn = carfield_debug_signals.domain_rsts_n[3];
+  `CLK_DIV_BY_10(spatz_cluster_domain_clk, carfield_debug_signals.domain_clk[4], spatz_cluster_domain_clk)
+  assign soc2pad_port_signals.periph.debug_signals.spatz_cluster_domain_rstn = carfield_debug_signals.domain_rsts_n[4];
+
+  // External async register interface
+  logic [1:0] ext_reg_async_slv_req_src_out;
+  logic [1:0] ext_reg_async_slv_ack_src_in;
+  carfield_reg_req_t     [1:0] ext_reg_async_slv_data_src_out;
+  logic [1:0] ext_reg_async_slv_req_src_in;
+  logic [1:0] ext_reg_async_slv_ack_src_out;
+  carfield_reg_rsp_t     [1:0] ext_reg_async_slv_data_src_in;
+
+ //////////////////////
+  // Clock generation //
+  //////////////////////
+
+  // from host: host clock domain
+  carfield_reg_req_t pll_refclk_cfg_reg_req;
+  carfield_reg_rsp_t pll_refclk_cfg_reg_rsp;
+
+  // clock of the PLLs
+  assign host_clk   = clk_pll_out[HostDomainClkIdx];
+  assign periph_clk = clk_pll_out[PeriphDomainClkIdx];
+  assign alt_clk    = clk_pll_out[AltDomainClkIdx];
+
+  // ref_clk
+  assign ref_clk      = st_pad2soc_signals.periph.st_ref_clk;
+  // power on reset
+  assign pwr_on_rst_n = st_pad2soc_signals.periph.st_rst_n;
+
+  // synchronize power-on rst with ref clock (required by padframe)
+  rstgen i_ref_clk_rstgen (
+    .clk_i  (ref_clk),
+    .rst_ni (pwr_on_rst_n),
+    .test_mode_i ( '0 ),
+    .rst_no (ref_clk_pwr_on_rst_n),
+    .init_no () // TODO: connect ?
+  );
+
+`ifdef RTL // TODO: modify fll_dummy interface to match the gf12 fll
+  fll_dummy #(
+    .NumPlls(NumPlls)
+  ) fll_dummy (
+    .clk_out_gen(clk_pll_out),
+    .clk_out_gen(dbg_pll_out)
+  );
+`endif
 
   carfield      #(
-    .Cfg         ( DutCfg      ),
+    .Cfg         ( Cfg         ),
     .HypNumPhys  ( HypNumPhys  ),
     .HypNumChips ( HypNumChips ),
     .reg_req_t   ( reg_req_t ),
     .reg_rsp_t   ( reg_rsp_t )
   ) i_dut                       (
-    .host_clk_i                ,
-    .periph_clk_i              ,
-    .alt_clk_i                 ,
-    .rt_clk_i                  ,
-    .pwr_on_rst_ni             ,
-    .test_mode_i               ,
-    .boot_mode_i               ,
-    .jtag_tck_i                ,
-    .jtag_trst_ni              ,
-    .jtag_tms_i                ,
-    .jtag_tdi_i                ,
-    .jtag_tdo_o                ,
-    .jtag_tdo_oe_o             ,
-    .jtag_ot_tck_i             ,
-    .jtag_ot_trst_ni           ,
-    .jtag_ot_tms_i             ,
-    .jtag_ot_tdi_i             ,
-    .jtag_ot_tdo_o             ,
-    .jtag_ot_tdo_oe_o          ,
-    .jtag_safety_island_tck_i  ,
-    .jtag_safety_island_trst_ni, // Temporary
-    .jtag_safety_island_tms_i  , // Temporary
-    .jtag_safety_island_tdi_i  , // Temporary
-    .jtag_safety_island_tdo_o  ,
-    .uart_tx_o                 ,
-    .uart_rx_i                 ,
-    .uart_ot_tx_o              ,
-    .uart_ot_rx_i              ,
-    .i2c_sda_o                 ,
-    .i2c_sda_i                 ,
-    .i2c_sda_en_o              ,
-    .i2c_scl_o                 ,
-    .i2c_scl_i                 ,
-    .i2c_scl_en_o              ,
-    // hostd spi
-    .spih_sck_o                ,
-    .spih_sck_en_o             ,
-    .spih_csb_o                ,
-    .spih_csb_en_o             ,
-    .spih_sd_o                 ,
-    .spih_sd_en_o              ,
-    .spih_sd_i                 ,
-    // secd spi
-    .spih_ot_sck_o             ,
-    .spih_ot_sck_en_o          ,
-    .spih_ot_csb_o             ,
-    .spih_ot_csb_en_o          ,
-    .spih_ot_sd_o              ,
-    .spih_ot_sd_en_o           ,
-    .spih_ot_sd_i              ,
-    .gpio_i                    ,
-    .gpio_o                    ,
-    .gpio_en_o                 ,
-    .slink_rcv_clk_i           ,
-    .slink_rcv_clk_o           ,
-    .slink_i                   ,
-    .slink_o                   ,
-    .hyper_cs_no               ,
-    .hyper_ck_o                ,
-    .hyper_ck_no               ,
-    .hyper_rwds_o              ,
-    .hyper_rwds_i              ,
-    .hyper_rwds_oe_o           ,
-    .hyper_dq_i                ,
-    .hyper_dq_o                ,
-    .hyper_dq_oe_o             ,
-    .hyper_reset_no            ,
-    .ext_reg_async_slv_req_i   ( '0 ),
-    .ext_reg_async_slv_ack_o   (    ),
-    .ext_reg_async_slv_data_i  ( '0 ),
-    .ext_reg_async_slv_req_o   (    ),
-    .ext_reg_async_slv_ack_i   ( '0 ),
-    .ext_reg_async_slv_data_o  (    ),
-    .debug_signals_o           (    )
+    .host_clk_i                 ( host_clk                                         ),
+    .periph_clk_i               ( periph_clk                                       ),
+    .alt_clk_i                  ( alt_clk                                          ),
+    .rt_clk_i                   ( rt_clk                                           ),
+    .pwr_on_rst_ni              ( pwr_on_rst_n                                     ),
+    .test_mode_i                ( '0                                               ),
+    .jtag_tck_i                 ( st_pad2soc_signals.periph.st_jtag_host_tck       ),
+    .jtag_trst_ni               ( st_pad2soc_signals.periph.st_jtag_host_trstn     ),
+    .jtag_tms_i                 ( st_pad2soc_signals.periph.st_jtag_host_tms       ),
+    .jtag_tdi_i                 ( st_pad2soc_signals.periph.st_jtag_host_tdi       ),
+    .jtag_tdo_o                 ( st_soc2pad_signals.periph.st_jtag_host_tdo       ),
+    .jtag_tdo_oe_o              (                                                  ),
+    .jtag_ot_tck_i              ( st_pad2soc_signals.periph.st_jtag_secure_tck     ),
+    .jtag_ot_trst_ni            ( st_pad2soc_signals.periph.st_jtag_secure_trstn   ),
+    .jtag_ot_tms_i              ( st_pad2soc_signals.periph.st_jtag_secure_tms     ),
+    .jtag_ot_tdi_i              ( st_pad2soc_signals.periph.st_jtag_secure_tdi     ),
+    .jtag_ot_tdo_o              ( st_soc2pad_signals.periph.st_jtag_secure_tdo     ),
+    .jtag_ot_tdo_oe_o           (                                                  ),
+    .bootmode_ot_i              ( bootmode_sec_isln_s                              ),
+    .jtag_safety_island_tck_i   ( st_pad2soc_signals.periph.st_jtag_safe_tck       ),
+    .jtag_safety_island_trst_ni ( st_pad2soc_signals.periph.st_jtag_safe_trstn     ),
+    .jtag_safety_island_tms_i   ( st_pad2soc_signals.periph.st_jtag_safe_tms       ),
+    .jtag_safety_island_tdi_i   ( st_pad2soc_signals.periph.st_jtag_safe_tdi       ),
+    .jtag_safety_island_tdo_o   ( st_soc2pad_signals.periph.st_jtag_safe_tdo       ),
+    .bootmode_safe_isln_i       ( bootmode_safe_isln_s                             ),
+    .secure_boot_i              ( secure_boot                                      ),
+    .uart_tx_o                  ( soc2pad_port_signals.periph.uart0_host.tx_o      ),
+    .uart_rx_i                  ( pad2soc_port_signals.periph.uart0_host.rx_i      ),
+    .uart_ot_tx_o               ( soc2pad_port_signals.periph.uart1_sec_isln.tx_o  ),
+    .uart_ot_rx_i               ( pad2soc_port_signals.periph.uart1_sec_isln.rx_i  ),
+    .i2c_sda_o                  ( soc2pad_port_signals.periph.i2c0_host.sda_o      ),
+    .i2c_sda_i                  ( pad2soc_port_signals.periph.i2c0_host.sda_i      ),
+    .i2c_sda_en_o               ( soc2pad_port_signals.periph.i2c0_host.sda_oe     ),
+    .i2c_scl_o                  ( soc2pad_port_signals.periph.i2c0_host.scl_o      ),
+    .i2c_scl_i                  ( pad2soc_port_signals.periph.i2c0_host.scl_i      ),
+    .i2c_scl_en_o               ( soc2pad_port_signals.periph.i2c0_host.scl_oe     ),
+    .spih_sck_o                 ( spih_sck_o_s                                     ),
+    .spih_sck_en_o              (                                                  ),
+    .spih_csb_o                 ( spih_csb_o_s                                     ),
+    .spih_csb_en_o              (                                                  ),
+    .spih_sd_o                  ( spih_sd_o_s                                      ),
+    .spih_sd_en_o               ( spih_sd_en_o_s                                   ),
+    .spih_sd_i                  ( spih_sd_i_s                                      ),
+    // spi secd: TODO: check
+    .spih_ot_sck_o              ( spih_ot_sck_o_s                                  ),
+    .spih_ot_sck_en_o           (                                                  ),
+    .spih_ot_csb_o              ( spih_ot_csb_o_s                                  ),
+    .spih_ot_csb_en_o           (                                                  ),
+    .spih_ot_sd_o               ( spih_ot_sd_o_s                                   ),
+    .spih_ot_sd_en_o            ( spih_ot_sd_en_o_s                                ),
+    .spih_ot_sd_i               ( spih_ot_sd_i_s                                   ),
+    // ethernet
+    .eth_rxck_i                 ( pad2soc_port_signals.periph.ethernet.eth_rxck_o  ),
+    .eth_rxctl_i                ( pad2soc_port_signals.periph.ethernet.eth_rxctl_o ),
+    .eth_rxd_i                  ( eth_rxd_i_s                                      ),
+    .eth_md_i                   ( pad2soc_port_signals.periph.ethernet.eth_md_o    ),
+    .eth_txck_o                 ( soc2pad_port_signals.periph.ethernet.eth_txck_i  ),
+    .eth_txctl_o                ( soc2pad_port_signals.periph.ethernet.eth_txctl_i ),
+    .eth_txd_o                  ( eth_txd_o_s                                      ),
+    .eth_md_o                   ( soc2pad_port_signals.periph.ethernet.eth_md_i    ),
+    .eth_md_oe                  ( soc2pad_port_signals.periph.ethernet.eth_md_oe   ),
+    .eth_mdc_o                  ( soc2pad_port_signals.periph.ethernet.eth_mdc_i   ),
+    .eth_rst_n_o                ( soc2pad_port_signals.periph.ethernet.eth_rstn_i  ),
+    // can bus
+    .can_rx_i                   ( pad2soc_port_signals.periph.can0.rx_o            ),
+    .can_tx_o                   ( soc2pad_port_signals.periph.can0.tx_i            ),
+    // gpios
+    .gpio_i                     ( gpio_in_s                                        ),
+    .gpio_o                     ( gpio_out_s                                       ),
+    .gpio_en_o                  ( gpio_tx_en_s                                     ),
+    // serial link
+    .slink_rcv_clk_i            ( st_pad2soc_signals.periph.sl_clk_in_o            ),
+    .slink_rcv_clk_o            ( st_soc2pad_signals.periph.sl_clk_out_i           ),
+    .slink_i                    ( serial_link_data_in_s                            ),
+    .slink_o                    ( serial_link_data_out_s                           ),
+    // hyperbus
+    .hyper_cs_no                ( hyperbus_cs_no_s                                 ),
+    .hyper_ck_o                 ( hyperbus_clk_o_s                                 ),
+    .hyper_ck_no                ( hyperbus_clk_no_s                                ),
+    .hyper_rwds_o               ( hyperbus_rwds_out_s                              ),
+    .hyper_rwds_i               ( hyperbus_rwds_in_s                               ),
+    .hyper_rwds_oe_o            ( hyperbus_rwds_oe_s                               ),
+    .hyper_dq_i                 ( hyperbus_data_in_s                               ),
+    .hyper_dq_o                 ( hyperbus_data_out_s                              ),
+    .hyper_dq_oe_o              ( hyperbus_data_oe_s                               ),
+    .hyper_reset_no             ( hyperbus_rst_no_s                                ),
+    .ext_reg_async_slv_req_o    ( ext_reg_async_slv_req_src_out                    ),
+    .ext_reg_async_slv_ack_i    ( ext_reg_async_slv_ack_src_in                     ),
+    .ext_reg_async_slv_data_o   ( ext_reg_async_slv_data_src_out                   ),
+    .ext_reg_async_slv_req_i    ( ext_reg_async_slv_req_src_in                     ),
+    .ext_reg_async_slv_ack_o    ( ext_reg_async_slv_ack_src_out                    ),
+    .ext_reg_async_slv_data_i   ( ext_reg_async_slv_data_src_in                    ),
+    // Debug Signals
+    .debug_signals_o            ( carfield_debug_signals                           )
+  );
+
+  //////////////
+  // Padframe //
+  //////////////
+
+  reg_cdc_dst #(
+     .CDC_KIND ( "cdc_4phase" ),
+     .req_t     ( carfield_reg_req_t     ),
+     .rsp_t     ( carfield_reg_rsp_t     )
+  ) i_reg_cdc_dst_padframe (
+      .dst_clk_i   ( ref_clk ),
+      .dst_rst_ni  ( ref_clk_pwr_on_rst_n ),
+      .dst_req_o   ( padframe_refclk_cfg_reg_req ),
+      .dst_rsp_i   ( padframe_refclk_cfg_reg_rsp ),
+
+      .async_req_i ( ext_reg_async_slv_req_src_out[1]  ),
+      .async_ack_o ( ext_reg_async_slv_ack_src_in[1] ),
+      .async_data_i( ext_reg_async_slv_data_src_out[1] ),
+
+      .async_req_o ( ext_reg_async_slv_req_src_in[1]  ),
+      .async_ack_i ( ext_reg_async_slv_ack_src_out[1]   ),
+      .async_data_o( ext_reg_async_slv_data_src_in[1] )
+  );
+
+`ifdef RTL
+  carfield_padframe_behav #(
+`else
+  carfield_padframe #(
+`endif
+    .req_t  ( carfield_reg_req_t         ),
+    .resp_t ( carfield_reg_rsp_t         )
+  ) i_carfield_padframe (
+    .clk_i  ( ref_clk      ),
+    .rst_ni ( ref_clk_pwr_on_rst_n ),
+    .static_connection_signals_pad2soc ( st_pad2soc_signals ),
+    .static_connection_signals_soc2pad ( st_soc2pad_signals ),
+    .port_signals_pad2soc ( pad2soc_port_signals ),
+    .port_signals_soc2pad ( soc2pad_port_signals),
+    // Landing Pads
+    .pad_periph_reset_n_pad ,
+    .pad_periph_bypass_fll_pad ,
+    .pad_periph_ref_clk_pad ,
+    .pad_periph_ext_clk_pad ,
+    .pad_periph_secure_boot_pad,
+    .pad_periph_jtag_pll_00_pad,
+    .pad_periph_jtag_pll_01_pad,
+    .pad_periph_jtag_pll_02_pad,
+    .pad_periph_jtag_pll_03_pad,
+    .pad_periph_jtag_pll_04_pad,
+    .pad_periph_bootmode_host_0_pad ,
+    .pad_periph_bootmode_host_1_pad ,
+    .pad_periph_bootmode_host_2_pad ,
+    .pad_periph_jtag_host_tck_pad ,
+    .pad_periph_jtag_host_tms_pad ,
+    .pad_periph_jtag_host_tdi_pad ,
+    .pad_periph_jtag_host_trstn_pad ,
+    .pad_periph_jtag_host_tdo_pad ,
+    .pad_periph_host_00_pad ,
+    .pad_periph_host_01_pad ,
+    .pad_periph_host_02_pad ,
+    .pad_periph_host_03_pad ,
+    .pad_periph_host_04_pad ,
+    .pad_periph_host_05_pad ,
+    .pad_periph_host_06_pad ,
+    .pad_periph_host_07_pad ,
+    .pad_periph_host_08_pad ,
+    .pad_periph_host_09_pad ,
+    .pad_periph_host_10_pad ,
+    .pad_periph_bootmode_safe_0_pad ,
+    .pad_periph_bootmode_safe_1_pad ,
+    .pad_periph_jtag_safe_tck_pad ,
+    .pad_periph_jtag_safe_tms_pad ,
+    .pad_periph_jtag_safe_tdi_pad ,
+    .pad_periph_jtag_safe_trstn_pad ,
+    .pad_periph_jtag_safe_tdo_pad ,
+    .pad_periph_bootmode_secure_0_pad ,
+    .pad_periph_bootmode_secure_1_pad ,
+    .pad_periph_jtag_secure_tck_pad ,
+    .pad_periph_jtag_secure_tms_pad ,
+    .pad_periph_jtag_secure_tdi_pad ,
+    .pad_periph_jtag_secure_trstn_pad ,
+    .pad_periph_jtag_secure_tdo_pad ,
+    .pad_periph_secure_00_pad ,
+    .pad_periph_secure_01_pad ,
+    .pad_periph_secure_02_pad ,
+    .pad_periph_secure_03_pad ,
+    .pad_periph_secure_04_pad ,
+    .pad_periph_secure_05_pad ,
+    .pad_periph_secure_06_pad ,
+    .pad_periph_secure_07_pad ,
+    .pad_periph_gpio_00_pad ,
+    .pad_periph_gpio_01_pad ,
+    .pad_periph_gpio_02_pad ,
+    .pad_periph_gpio_03_pad ,
+    .pad_periph_gpio_04_pad ,
+    .pad_periph_gpio_05_pad ,
+    .pad_periph_gpio_06_pad ,
+    .pad_periph_gpio_07_pad ,
+    .pad_periph_gpio_08_pad ,
+    .pad_periph_gpio_09_pad ,
+    .pad_periph_gpio_10_pad ,
+    .pad_periph_gpio_11_pad ,
+    .pad_periph_gpio_12_pad ,
+    .pad_periph_gpio_13_pad ,
+    .pad_periph_gpio_14_pad ,
+    .pad_periph_gpio_15_pad ,
+    .pad_periph_periph_00_pad ,
+    .pad_periph_periph_01_pad ,
+    .pad_periph_periph_02_pad ,
+    .pad_periph_periph_03_pad ,
+    .pad_periph_periph_04_pad ,
+    .pad_periph_periph_05_pad ,
+    .pad_periph_periph_06_pad ,
+    .pad_periph_periph_07_pad ,
+    .pad_periph_periph_08_pad ,
+    .pad_periph_periph_09_pad ,
+    .pad_periph_periph_10_pad ,
+    .pad_periph_periph_11_pad ,
+    .pad_periph_periph_12_pad ,
+    .pad_periph_periph_13_pad ,
+    .pad_periph_periph_14_pad ,
+    .pad_periph_periph_15_pad ,
+    .pad_periph_periph_16_pad ,
+    .pad_periph_hyper0_csn0_pad ,
+    .pad_periph_hyper0_csn1_pad ,
+    .pad_periph_hyper0_ck_pad ,
+    .pad_periph_hyper0_ckn_pad ,
+    .pad_periph_hyper0_rwds_pad ,
+    .pad_periph_hyper0_rstn_pad ,
+    .pad_periph_hyper0_data0_pad ,
+    .pad_periph_hyper0_data1_pad ,
+    .pad_periph_hyper0_data2_pad ,
+    .pad_periph_hyper0_data3_pad ,
+    .pad_periph_hyper0_data4_pad ,
+    .pad_periph_hyper0_data5_pad ,
+    .pad_periph_hyper0_data6_pad ,
+    .pad_periph_hyper0_data7_pad ,
+    .pad_periph_hyper1_csn0_pad ,
+    .pad_periph_hyper1_csn1_pad ,
+    .pad_periph_hyper1_ck_pad ,
+    .pad_periph_hyper1_ckn_pad ,
+    .pad_periph_hyper1_rwds_pad ,
+    .pad_periph_hyper1_rstn_pad ,
+    .pad_periph_hyper1_data0_pad ,
+    .pad_periph_hyper1_data1_pad ,
+    .pad_periph_hyper1_data2_pad ,
+    .pad_periph_hyper1_data3_pad ,
+    .pad_periph_hyper1_data4_pad ,
+    .pad_periph_hyper1_data5_pad ,
+    .pad_periph_hyper1_data6_pad ,
+    .pad_periph_hyper1_data7_pad ,
+    .pad_periph_sl_clk_in_pad ,
+    .pad_periph_sl_data_in0_pad ,
+    .pad_periph_sl_data_in1_pad ,
+    .pad_periph_sl_data_in2_pad ,
+    .pad_periph_sl_data_in3_pad ,
+    .pad_periph_sl_data_in4_pad ,
+    .pad_periph_sl_data_in5_pad ,
+    .pad_periph_sl_data_in6_pad ,
+    .pad_periph_sl_data_in7_pad ,
+    .pad_periph_sl_clk_out_pad ,
+    .pad_periph_sl_data_out0_pad ,
+    .pad_periph_sl_data_out1_pad ,
+    .pad_periph_sl_data_out2_pad ,
+    .pad_periph_sl_data_out3_pad ,
+    .pad_periph_sl_data_out4_pad ,
+    .pad_periph_sl_data_out5_pad ,
+    .pad_periph_sl_data_out6_pad ,
+    .pad_periph_sl_data_out7_pad ,
+    .pad_periph_debug_out0_pad,
+    .pad_periph_debug_out1_pad,
+    .pad_periph_debug_out2_pad,
+    .pad_periph_debug_out3_pad,
+    .pad_periph_debug_out4_pad,
+    // Config Interface
+    .config_req_i ( padframe_refclk_cfg_reg_req ),
+    .config_rsp_o ( padframe_refclk_cfg_reg_rsp )
   );
 
 endmodule

@@ -1,0 +1,1258 @@
+# Carfield Padframe
+# author: Angelo Garofalo, agarofalo@iis.ee.ethz.ch
+
+name: carfield_padframe_behav
+manifest_version: 4
+pad_domains:
+  - name: periph # User defined name of the pad_domain
+    pad_types: # This section contains a list of pads
+      - name: sdio_1v8_n1
+        description: "i16 pad, north-south orientation"
+        template: |
+          (* dont_touch *)
+          sdio_1v8_n1 ${instance_name} (
+            .pad(${conn["pad"]}),
+            .ana_io_1v8(),
+            .dq(~${conn["chip2pad"]}),
+            .drv0(${conn["drv0"]}),
+            .drv1(${conn["drv1"]}),
+            .drv2(${conn["drv2"]}),
+            .enabq(${conn["rxdis"]}),
+            .enq(${conn["trie"]}),
+            .pd(${conn["pde"]}),
+            .ppen(${conn["pp_odrain_selector"]}),
+            .prg_slew(${conn["slw_pgm"]}),
+            .puq(${conn["pudis"]}),
+            .pwrupzhl(1'b0), // CHECK WITH DZ ABOUT THIS CONNECTION
+            .pwrup_pull_en(1'b0), // CHECK WITH DZ ABOUT THIS CONNECTION
+            .outi(${conn["pad2chip"]}),
+            .outi_1v8(${conn["pad2chip_hv"]})
+          );
+        pad_signals: &i16_pad_signals
+          - name: pad
+            description: " Data external input/output, dq inverted "
+            size: 1
+            kind: pad
+          - name:  chip2pad
+            description: "Data input pin from core"
+            size: 1
+            kind: input
+            conn_type: dynamic
+            default_reset_value: 0
+            default_static_value: 1'b0
+          - name: drv0
+            description: "Drive strength configuration bit 0 (LSB) "
+            size: 1
+            kind: input
+            conn_type: dynamic
+            default_reset_value: 1
+            default_static_value: 1'b1
+          - name: drv1
+            description: "Drive strength configuration bit 1 "
+            size: 1
+            kind: input
+            conn_type: dynamic
+            default_reset_value: 1
+            default_static_value: 1'b1
+          - name: drv2
+            description: "Drive strength configuration bit 2 (MSB) "
+            size: 1
+            kind: input
+            conn_type: dynamic
+            default_reset_value: 1
+            default_static_value: 1'b1
+          - name: rxdis
+            description: "active high Disable receiver"
+            size: 1
+            kind: input
+            conn_type: dynamic
+            # by default, the output driver is disabled, receiver enabled
+            default_reset_value: 0
+            default_static_value: 1'b0
+          - name: trie
+            description: " Active high tri-state enable "
+            size: 1
+            kind: input
+            conn_type: dynamic
+            # by default, the output driver is disabled, receiver enabled
+            default_reset_value: 1
+            default_static_value: 1'b1
+          - name: pde
+            description: "active high weak pull-down enable"
+            size: 1
+            kind: input
+            conn_type: dynamic
+            default_reset_value: 0
+            default_static_value: 1'b0
+          - name: pudis
+            description: "Active high disable weak pull-up"
+            size: 1
+            kind: input
+            conn_type: dynamic
+            default_reset_value: 1
+            default_static_value: 1'b1
+          - name: pp_odrain_selector
+            description: " Push-pull /Open Drain select pin "
+            size: 1
+            kind: input
+            conn_type: dynamic
+            # push-pull - 1 ; open-drain - 0
+            default_reset_value: 1
+            default_static_value: 1'b1
+          - name: slw_pgm
+            description: " Slew programmability"
+            size: 1
+            kind: input
+            conn_type: dynamic
+            # Faster edge rate - 1; Slower edge rate - 0
+            default_reset_value: 1
+            default_static_value: 1'b1
+          - name: pad2chip
+            description: " Data output to core "
+            size:  1
+            kind: output
+            conn_type: dynamic
+          - name: pad2chip_hv
+            description: " Data output to core 1v8 "
+            size:  1
+            kind: output
+            conn_type: dynamic
+
+      - name: sdio_1v8_e1
+        description: "i16 pad, east-west orientation"
+        template: |
+          sdio_1v8_e1 ${instance_name} (
+            .pad(${conn["pad"]}),
+            .ana_io_1v8(),
+            .dq(~${conn["chip2pad"]}),
+            .drv0(${conn["drv0"]}),
+            .drv1(${conn["drv1"]}),
+            .drv2(${conn["drv2"]}),
+            .enabq(${conn["rxdis"]}),
+            .enq(${conn["trie"]}),
+            .pd(${conn["pde"]}),
+            .ppen(${conn["pp_odrain_selector"]}),
+            .prg_slew(${conn["slw_pgm"]}),
+            .puq(${conn["pudis"]}),
+            .pwrupzhl(1'b0), // CHECK WITH DZ ABOUT THIS CONNECTION
+            .pwrup_pull_en(1'b0), // CHECK WITH DZ ABOUT THIS CONNECTION
+            .outi(${conn["pad2chip"]}),
+            .outi_1v8(${conn["pad2chip_hv"]})
+          );
+
+      - name: behav
+        description: "i16 pad, east-west orientation"
+        template: |
+          pad_behav ${instance_name} (
+            .pad(${conn["pad"]}),
+            .ana_io_1v8(),
+            .dq(~${conn["chip2pad"]}),
+            .drv0(${conn["drv0"]}),
+            .drv1(${conn["drv1"]}),
+            .drv2(${conn["drv2"]}),
+            .enabq(${conn["rxdis"]}),
+            .enq(${conn["trie"]}),
+            .pd(${conn["pde"]}),
+            .ppen(${conn["pp_odrain_selector"]}),
+            .prg_slew(${conn["slw_pgm"]}),
+            .puq(${conn["pudis"]}),
+            .pwrupzhl(1'b0), // CHECK WITH DZ ABOUT THIS CONNECTION
+            .pwrup_pull_en(1'b0), // CHECK WITH DZ ABOUT THIS CONNECTION
+            .outi(${conn["pad2chip"]}),
+            .outi_1v8(${conn["pad2chip_hv"]})
+          );
+        pad_signals: *i16_pad_signals
+
+      # POWER CORE AND POWER IO PADS TO BE INSTANTIATED MANUALLY
+      # SAME FOR VSS CORE AND VSS IO
+###################################################################
+###################################################################
+# PAD INSTANCES
+    pad_list:
+      # POWER ON RESET PIN
+      - name: reset_n
+        description: "Chip power on reset pin"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_rst_n
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      # BYPASS FLL PIN
+      - name: bypass_fll
+        description: "bypass fll generated clocks"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_bypass_fll
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      # REF CLK
+      - name: ref_clk
+        description: "32kHz reference clock"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_ref_clk
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      # EXT CLK SOURCE TO BYPASS PLL GENERATED CLK
+      - name: ext_clk
+        description: "ext clock src"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_ext_clk
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      # SECURE BOOT MODE PIN
+      - name: secure_boot
+        description: "once active high, this pin enables Carfield secure boot"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_secure_boot_i
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+########################################
+# HOST DOMAIN
+########################################
+
+      # BOOTMODE 3 pins
+      - name: bootmode_host_{i}
+        multiple: 3
+        description: "boot option selection pin for host"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_host_boot_sel{i}
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+
+      # JTAG 5 pins
+      - name: jtag_host_tck
+        description: "JTAG clock for host domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_host_tck
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_host_tms
+        description: "JTAG tms for host domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_host_tms
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_host_tdi
+        description: "JTAG tdi for host domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_host_tdi
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_host_trstn
+        description: "JTAG reset for host domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_host_trstn
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_host_tdo
+        description: "JTAG tdo for host domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          chip2pad: st_jtag_host_tdo
+          trie: 1'b0
+          rxdis: 1'b1
+
+      # IOs 8 pins for 1 SPI, 1 UART, 1 I2C
+      - name: host_{i:2d}
+        mux_groups: [self]
+        description: "pads for host IOs"
+        multiple: 11
+        pad_type: behav
+        is_static: false
+        quasi_static: true
+
+########################################
+# SAFETY DOMAIN
+########################################
+
+      # BOOTMODE 2 pins
+      - name: bootmode_safe_{i}
+        multiple: 2
+        description: "boot option selection pin for safety domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_safe_boot_sel{i}
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      # JTAG 5 pins
+      - name: jtag_safe_tck
+        description: "JTAG clock for safe domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_safe_tck
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_safe_tms
+        description: "JTAG tms for safe domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_safe_tms
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_safe_tdi
+        description: "JTAG tdi for safe domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_safe_tdi
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_safe_trstn
+        description: "JTAG reset for safe domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_safe_trstn
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_safe_tdo
+        description: "JTAG tdo for safe domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_jtag_safe_tdo
+          trie: 1'b0
+          rxdis: 1'b1
+
+########################################
+# SECURITY DOMAIN
+########################################
+
+      # BOOTMODE 2 pins
+      - name: bootmode_secure_{i}
+        multiple: 2
+        description: "boot option selection pin for secure domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_secure_boot_sel{i}
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      # JTAG 5 pins
+      - name: jtag_secure_tck
+        description: "JTAG clock for secure domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_secure_tck
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_secure_tms
+        description: "JTAG tms for secure domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_secure_tms
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_secure_tdi
+        description: "JTAG tdi for secure domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_secure_tdi
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_secure_trstn
+        description: "JTAG reset for secure domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: st_jtag_secure_trstn
+          chip2pad: 1'b0
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: jtag_secure_tdo
+        description: "JTAG tdo for secure domain"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_jtag_secure_tdo
+          trie: 1'b0
+          rxdis: 1'b1
+
+      # IO 8 pins for 1 QSPI, 1 UART
+      - name: secure_{i:2d}
+        multiple: 8
+        mux_groups: [self]
+        description: "pads for Security Island IOs"
+        pad_type: behav
+        is_static: false
+        quasi_static: true
+
+########################################
+# GENERAL IOs (PERIPH DOMAIN)
+########################################
+      - name: gpio_{i:2d}
+        mux_groups: [self]
+        description: "general purpose io pins"
+        multiple: 16
+        pad_type: behav
+        is_static: false
+        quasi_static: true
+
+      - name: periph_{i:2d}
+        mux_groups: [self]
+        description: "general io periphs"
+        multiple: 17
+        pad_type: behav
+        is_static: false
+        quasi_static: true
+
+########################################
+# GENERAL IOs  HIGH-SPEED
+########################################
+      # HYPERBUS 0
+      - name: hyper0_csn{i} # The instance name of the pad.
+        multiple: 2
+        description: "HYPER chip select {i} "
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper0_cs{i}_no
+          trie: 1'b0
+          rxdis: 1'b1
+
+      # FOR this pair we need to see if there is a differential pad
+      - name: hyper0_ck # The instance name of the pad.
+        description: "HYPER clock " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper0_ck_o
+          trie: 1'b0
+          rxdis: 1'b1
+
+
+      - name: hyper0_ckn # The instance name of the pad.
+        description: "HYPER clock " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper0_ck_no
+          trie: 1'b0
+          rxdis: 1'b1
+
+      - name: hyper0_rwds # The instance name of the pad.
+        description: "HYPER rwds " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper0_rwds_o
+          pad2chip: st_hyper0_rwds_i
+          trie: ~st_hyper0_rwds_oe
+          rxdis: st_hyper0_rwds_oe
+          pde: 1'b1
+
+      - name: hyper0_rstn # The instance name of the pad.
+        description: "HYPER reset " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper0_reset_no
+          trie: 1'b0
+          rxdis: 1'b1
+
+      - name: hyper0_data{i} # The instance name of the pad.
+        multiple: 8
+        description: "HYPER dq " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          chip2pad: st_hyper0_dq{i}_o
+          pad2chip: st_hyper0_dq{i}_i
+          trie: ~st_hyper0_dq_oe
+          rxdis: st_hyper0_dq_oe
+          pde: 1'b1
+
+      # HYPERBUS 1
+      - name: hyper1_csn{i} # The instance name of the pad.
+        multiple: 2
+        description: "HYPER chip select {i} " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper1_cs{i}_no
+          trie: 1'b0
+          rxdis: 1'b1
+
+      # FOR this pair we need to see if there is a differential pad
+      - name: hyper1_ck # The instance name of the pad.
+        description: "HYPER clock " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper1_ck_o
+          trie: 1'b0
+          rxdis: 1'b1
+
+      - name: hyper1_ckn # The instance name of the pad.
+        description: "HYPER clock " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper1_ck_no
+          trie: 1'b0
+          rxdis: 1'b1
+
+      - name: hyper1_rwds # The instance name of the pad.
+        description: "HYPER rwds " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper1_rwds_o
+          pad2chip: st_hyper1_rwds_i
+          trie: ~st_hyper1_rwds_oe
+          rxdis: st_hyper1_rwds_oe
+          pde: 1'b1
+
+      - name: hyper1_rstn # The instance name of the pad.
+        description: "HYPER reset " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          #pad2chip: 0
+          chip2pad: st_hyper1_reset_no
+          trie: 1'b0
+          rxdis: 1'b1
+
+      - name: hyper1_data{i} # The instance name of the pad.
+        multiple: 8
+        description: "HYPER dq " #Optional description of the pads function
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          chip2pad: st_hyper1_dq{i}_o
+          pad2chip: st_hyper1_dq{i}_i
+          trie: ~st_hyper1_dq_oe
+          rxdis: st_hyper1_dq_oe
+          pde: 1'b1
+
+      # SERIAL LINK
+      - name: sl_clk_in
+        description: "SERIAL LINK clk in"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: sl_clk_in_o
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: sl_data_in{i}
+        multiple: 8
+        description: "SERIAL LINK data in"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          pad2chip: sl_data_in{i}_o
+          trie: 1'b1
+          rxdis: 1'b0
+
+      - name: sl_clk_out
+        description: "SERIAL LINK clk out"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          chip2pad: sl_clk_out_i
+          trie: 1'b0
+          rxdis: 1'b1
+
+      - name: sl_data_out{i}
+        multiple: 8
+        description: "SERIAL LINK data out"
+        pad_type: behav
+        is_static: true # not muxed pad (static)
+        connections:
+          chip2pad: sl_data_out{i}_i
+          trie: 1'b0
+          rxdis: 1'b1
+
+      ################
+      ## Debug Pads ##
+      ################
+
+      - name: debug_out{i}
+        mux_groups: ["self", "debug_signals"]
+        multiple: 5
+        description: "Observability pads for debugging. Exposes internal clocks and other debug signals."
+        pad_type: behav
+        is_static: false
+        default_port:
+          debug_out0: debug_signals.host_pll
+          debug_out1: debug_signals.alt_pll
+          debug_out2: debug_signals.periph_pll
+          debug_out3: debug_signals.host_clk
+          debug_out4: debug_signals.host_por_n
+
+      #####################
+      ## PLLs Debug Pads ##
+      #####################
+
+      - name: jtag_pll_{i:2d}
+        mux_groups: ["self", "jtag_pll"]
+        multiple: 5
+        description: "Muxed Jtag. Exposes PLLs' jtag signals"
+        pad_type: behav
+        is_static: false
+        default_port:
+          jtag_pll_00: jtag_pll0.tck
+          jtag_pll_01: jtag_pll0.tms
+          jtag_pll_02: jtag_pll0.tdi
+          jtag_pll_03: jtag_pll0.trstn
+          jtag_pll_04: jtag_pll0.tdo
+
+# END PAD INSTANCES
+###################################################################
+###################################################################
+
+    port_groups:
+####### HOST PERIPHS
+      # LINUX PERIPH --> UART PERIPHERAL
+      - name: uart0_host
+        description: " UART Linux periph "
+        output_defaults:
+          rx_i: 1'b1
+        ports:
+          - name: rx
+            mux_groups: [host_00]
+            description: "UART RX signal"
+            connections:
+              chip2pad: 1'b1
+              rx_i: pad2chip
+              trie: 1'b1
+              rxdis: 1'b0
+          - name: tx
+            mux_groups: [host_01]
+            description: "UART TX signal"
+            connections:
+              chip2pad: tx_o
+              trie: 1'b0
+              rxdis: 1'b1
+
+      # LINUX PERIPH --> SPI PERIPHERAL
+      - name: qspi0_host
+        description: " SPI Linux periph "
+        output_defaults: 1'b0
+        ports:
+          - name: sdio{i}
+            multiple: 4
+            mux_groups: ["host_{i+2:2d}"]
+            description: "IO data port of the SPI master peripheral"
+            connections:
+              chip2pad: sd{i}_o
+              sd{i}_i: pad2chip
+              trie: ~sd{i}_oe
+              rxdis: sd{i}_oe
+              pudis: 1'b0
+              pde: 1'b0
+              slw_pgm: 1'b1
+
+          - name: sck
+            mux_groups: [host_06]
+            connections:
+              chip2pad: sck_o
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b0
+              pde: 1'b0
+              slw_pgm: 1'b1
+
+          - name: csn{i}
+            multiple: 2
+            mux_groups: ["host_{i+7:2d}"]
+            connections:
+              chip2pad: csn{i}_o
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b0
+              pde: 1'b0
+              slw_pgm: 1'b1
+
+      # LINUX PERIPH --> I2C PERIPHERAL
+      - name: i2c0_host
+        description: " I2C Linux periph "
+        output_defaults:
+          sda_i: 1'b1
+          scl_i: 1'b1
+        ports:
+        - name: sda
+          mux_groups: [host_09]
+          description: "Bidirectional I2C SDA signal"
+          connections:
+            chip2pad: sda_o
+            sda_i: pad2chip
+            trie: ~sda_oe
+            rxdis: sda_oe
+            pudis: 1'b0
+            pde: 1'b0
+        - name: scl
+          mux_groups: [host_10]
+          description: "I2C clock signal"
+          connections:
+            chip2pad: scl_o
+            scl_i: pad2chip
+            trie: ~scl_oe
+            rxdis: 1'b0
+            pudis: 1'b0
+            pde: 1'b0
+
+####### SECURITY ISLAND PERIPHS
+      # QSPI PERIPHERAL
+      - name: qspi0_sec_isln
+        description: " QSPI accessible only by the Security island "
+        output_defaults: 1'b0
+        ports:
+          - name: sdio{i}
+            multiple: 4
+            mux_groups: ["secure_{i:2d}"]
+            description: "IO data port of the SPI master peripheral"
+            connections:
+              chip2pad: sd{i}_o
+              sd{i}_i: pad2chip
+              trie: ~sd{i}_oe
+              rxdis: sd{i}_oe
+              pudis: 1'b0
+              pde: 1'b0
+              slw_pgm: 1'b1
+          - name: sck
+            mux_groups: [secure_04]
+            connections:
+              chip2pad: sck_o
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b0
+              pde: 1'b0
+              slw_pgm: 1'b1
+          - name: csn0
+            mux_groups: [secure_05]
+            connections:
+              chip2pad: csn0_o
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b0
+              pde: 1'b0
+              slw_pgm: 1'b1
+
+      # UART PERIPHERAL
+      - name: uart1_sec_isln
+        description: " UART accessible only by the Security island "
+        output_defaults:
+          rx_i: 1'b1
+        ports:
+          - name: rx
+            mux_groups: [secure_06]
+            description: "UART RX signal"
+            connections:
+              chip2pad: 1'b1
+              rx_i: pad2chip
+              trie: 1'b1
+              rxdis: 1'b0
+          - name: tx
+            mux_groups: [secure_07]
+            description: "UART TX signal"
+            connections:
+              chip2pad: tx_o
+              trie: 1'b0
+              rxdis: 1'b1
+
+####### GENERAL PERIPHS
+      # CAN BUS PERIPH
+      - name: can0
+        output_defaults:
+          rx_o: 1'b1
+        ports:
+          - name: tx
+            mux_groups: [periph_00]
+            connections:
+              chip2pad: tx_i
+              trie: 1'b0
+              rxdis: 1'b1
+          - name: rx
+            mux_groups: [periph_01]
+            connections:
+              rx_o: pad2chip
+              trie: 1'b1
+              rxdis: 1'b0
+
+      # ETHERNET PERIPHERAL
+      - name: ethernet
+        output_defaults: 1'b0
+        ports:
+          - name: eth_rst
+            mux_groups: [periph_02]
+            connections:
+              chip2pad: eth_rstn_i
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b1 # Does eth require PU or not?
+          - name: eth_txck
+            mux_groups: [periph_03]
+            connections:
+              chip2pad: eth_txck_i
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b1
+          - name: eth_txctl
+            mux_groups: [periph_04]
+            connections:
+              chip2pad: eth_txctl_i
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b1
+          - name: eth_txd{i}
+            multiple: 4
+            mux_groups: ["periph_{i+5:2d}"]
+            connections:
+              chip2pad: eth_txd{i}_i
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b1
+          - name: eth_mdc
+            mux_groups: [periph_09]
+            connections:
+              chip2pad: eth_mdc_i
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b1
+          - name: eth_mdio
+            mux_groups: [periph_10]
+            connections:
+              chip2pad: eth_md_i
+              eth_md_o: pad2chip
+              trie: ~eth_md_oe
+              rxdis: 1'b1
+              pudis: 1'b1
+          - name: eth_rxck
+            mux_groups: [periph_11]
+            connections:
+              eth_rxck_o: pad2chip
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b1
+          - name: eth_rxctl
+            mux_groups: [periph_12]
+            connections:
+              eth_rxctl_o: pad2chip
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b1
+          - name: eth_rxd{i}
+            multiple: 4
+            mux_groups: ["periph_{i+13:2d}"]
+            connections:
+              eth_rxd{i}_o: pad2chip
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b1
+
+      # GPIOS
+      - name: gpio
+        output_defaults: 1'b0
+        ports:
+          - name: gpio{i:2d}
+            multiple: 16
+            mux_groups: ["gpio_{i:2d}"]
+            description: "Bidirectional GPIO{i} signal"
+            connections:
+              chip2pad: gpio{i:2d}_out
+              gpio{i:2d}_in: pad2chip
+              trie: ~gpio{i:2d}_tx_en
+              rxdis: gpio{i:2d}_tx_en
+
+      # Debug Observation
+      - name: debug_signals
+        output_defaults: 1'b0
+        ports:
+          - name: host_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              The host clock signal after multiplexing within the PLL wrapper (clock divided by 10x)
+            connections: &dbg_signal_connections
+              chip2pad: host_clk
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b1
+
+          - name: host_pll
+            mux_groups: ["debug_signals"]
+            description: |
+              The direct output of the host clock PLL no matter the mux configuration in the PLL wrapper  (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: host_pll
+
+          - name: alt_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              The alt clock signal after multiplexing within the PLL wrapper  (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: alt_clk
+
+          - name: alt_pll
+            mux_groups: ["debug_signals"]
+            description: |
+              The direct output of the alt clock PLL no matter the mux configuration in the PLL wrapper (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: alt_pll
+
+          - name: periph_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              The periph clock signal after multiplexing within the PLL wrapper (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: periph_clk
+
+          - name: periph_pll
+            mux_groups: ["debug_signals"]
+            description: |
+              The direct output of the periph clock PLL no matter the mux configuration in the PLL wrapper (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: periph_pll
+
+          - name: host_por_n
+            mux_groups: ["debug_signals"]
+            description: |
+              The power on reset signal that resets the host.
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: host_por_n
+
+          - name: periph_domain_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              Clock (after the clock divider and clock gate) that feeds the peripheral domain (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: periph_domain_clk
+
+          - name: periph_domain_rstn
+            mux_groups: ["debug_signals"]
+            description: |
+              The reset signal (POR and SW reset) of the peripheral domain.
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: periph_domain_rstn
+
+          - name: safety_island_domain_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              Clock (after the clock divider and clock gate) that feeds the safety island (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: safety_island_domain_clk
+
+          - name: safety_island_domain_rstn
+            mux_groups: ["debug_signals"]
+            description: |
+              The reset signal (POR and SW reset) of the safety island.
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: safety_island_domain_rstn
+
+          - name: security_island_domain_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              Clock (after the clock divider and clock gate) that feeds the security island (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: security_island_domain_clk
+
+          - name: security_island_domain_rstn
+            mux_groups: ["debug_signals"]
+            description: |
+              The reset signal (POR and SW reset) of the security island.
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: security_island_domain_rstn
+
+          - name: pulp_cluster_domain_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              Clock (after the clock divider and clock gate) that feeds the pulp cluster (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: pulp_cluster_domain_clk
+
+          - name: pulp_cluster_domain_rstn
+            mux_groups: ["debug_signals"]
+            description: |
+              The reset signal (POR and SW reset) of the pulp cluster domain.
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: pulp_cluster_domain_rstn
+
+          - name: spatz_cluster_domain_clk
+            mux_groups: ["debug_signals"]
+            description: |
+              Clock (after the clock divider and clock gate) that feeds the spatz cluster (clock divided by 10x)
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: spatz_cluster_domain_clk
+
+          - name: spatz_cluster_domain_rstn
+            mux_groups: ["debug_signals"]
+            description: |
+              The reset signal (POR and SW reset) of the spatz cluster
+            connections:
+              <<: *dbg_signal_connections
+              chip2pad: spatz_cluster_domain_rstn
+
+      # PLLs JTAG signals
+
+      # PLL0
+      - name: jtag_pll0
+        output_defaults: 1'b0
+        ports:
+          - name: tck
+            mux_groups: [jtag_pll_00]
+            description: "JTAG clock for pll domain"
+            connections:
+              tck_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tms
+            mux_groups: [jtag_pll_01]
+            description: "JTAG clock for pll domain"
+            connections:
+              tms_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tdi
+            mux_groups: [jtag_pll_02]
+            description: "JTAG clock for pll domain"
+            connections:
+              tdi_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: trstn
+            mux_groups: [jtag_pll_03]
+            description: "JTAG clock for pll domain"
+            connections:
+              trstn_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tdo
+            mux_groups: [jtag_pll_04]
+            description: "JTAG tdo for pll domain"
+            connections:
+              chip2pad: tdo_o
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b0
+              pde: 1'b0
+
+      # PLL1
+      - name: jtag_pll1
+        output_defaults: 1'b0
+        ports:
+          - name: tck
+            mux_groups: [jtag_pll_00]
+            description: "JTAG clock for pll domain"
+            connections:
+              tck_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tms
+            mux_groups: [jtag_pll_01]
+            description: "JTAG clock for pll domain"
+            connections:
+              tms_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tdi
+            mux_groups: [jtag_pll_02]
+            description: "JTAG clock for pll domain"
+            connections:
+              tdi_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: trstn
+            mux_groups: [jtag_pll_03]
+            description: "JTAG clock for pll domain"
+            connections:
+              trstn_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tdo
+            mux_groups: [jtag_pll_04]
+            description: "JTAG tdo for pll domain"
+            connections:
+              chip2pad: tdo_o
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b0
+              pde: 1'b0
+
+      # PLL2
+      - name: jtag_pll2
+        output_defaults: 1'b0
+        ports:
+          - name: tck
+            mux_groups: [jtag_pll_00]
+            description: "JTAG clock for pll domain"
+            connections:
+              tck_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tms
+            mux_groups: [jtag_pll_01]
+            description: "JTAG clock for pll domain"
+            connections:
+              tms_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tdi
+            mux_groups: [jtag_pll_02]
+            description: "JTAG clock for pll domain"
+            connections:
+              tdi_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: trstn
+            mux_groups: [jtag_pll_03]
+            description: "JTAG clock for pll domain"
+            connections:
+              trstn_i: pad2chip
+              chip2pad: 1'b0
+              trie: 1'b1
+              rxdis: 1'b0
+              pudis: 1'b0
+              pde: 1'b0
+
+          - name: tdo
+            mux_groups: [jtag_pll_04]
+            description: "JTAG tdo for pll domain"
+            connections:
+              chip2pad: tdo_o
+              trie: 1'b0
+              rxdis: 1'b1
+              pudis: 1'b0
+              pde: 1'b0
+
+######### GP TIMER 1
+
+######### GP TIMER 2
+
+######### GP TIMER 3
+
+######### WATCHDOG
