@@ -71,6 +71,10 @@ sources:
     files:
       - hw/configs/carfield_l2dual_safe_pulp_spatz_periph.sv
 
+  - target: carfield_l2dual_secure_pulp_periph_can
+    files:
+      - hw/configs/carfield_l2dual_secure_pulp_periph_can.sv
+
   # Source files grouped in levels. Files in level 0 have no dependencies on files in this
   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
   # levels 1 and 0, etc. Files within a level are ordered alphabetically.
