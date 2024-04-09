@@ -25,7 +25,12 @@ CAR_PULPD_BARE ?= -I$(CAR_SW_DIR)/tests/bare-metal/pulpd
 CAR_PULPD_SW_OFFLOAD_TESTS := car-pulpd-sw-offload-tests
 endif
 
-CAR_SW_INCLUDES    = -I$(CAR_SW_DIR)/include -I$(CAR_SW_DIR)/tests/bare-metal/safed $(CAR_PULPD_BARE) -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
+ifeq ($(shell echo $(SAFED_PRESENT)), 1)
+CAR_SAFED_BARE ?= -I$(CAR_SW_DIR)/tests/bare-metal/safed
+CAR_SAFED_SW_OFFLOAD_TESTS := car-safed-sw-offload-tests
+endif
+
+CAR_SW_INCLUDES    = -I$(CAR_SW_DIR)/include $(CAR_SAFED_BARE) $(CAR_PULPD_BARE) -I$(CHS_SW_DIR)/include $(CHS_SW_DEPS_INCS)
 CAR_SW_LIB_SRCS_S  = $(wildcard $(CAR_SW_DIR)/lib/*.S $(CAR_SW_DIR)/lib/**/*.S)
 CAR_SW_LIB_SRCS_C  = $(wildcard $(CAR_SW_DIR)/lib/*.c $(CAR_SW_DIR)/lib/**/*.c)
 CAR_SW_LIB_SRCS_O  = $(CAR_SW_DEPS_SRCS:.c=.o) $(CAR_SW_LIB_SRCS_S:.S=.o) $(CAR_SW_LIB_SRCS_C:.c=.o)
@@ -76,7 +81,7 @@ CAR_SW_TEST_L2_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.l2.dump)   $(CAR_SW_TEST_SRCS
 CAR_SW_TEST_SPM_ROMH	= $(CAR_SW_TEST_SRCS_S:.S=.car.rom.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.rom.memh)
 CAR_SW_TEST_SPM_GPTH	= $(CAR_SW_TEST_SRCS_S:.S=.car.gpt.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.gpt.memh)
 
-car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_DRAM_SLM) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH) $(CAR_PULPD_SW_OFFLOAD_TESTS) car-safed-sw-offload-tests mibench-automotive
+car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_DRAM_SLM) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH) $(CAR_PULPD_SW_OFFLOAD_TESTS) $(CAR_SAFED_SW_OFFLOAD_TESTS) mibench-automotive
 
 # Generate .slm files from elf binaries. Only used when linking against external dram
 %.car.dram.slm: %.car.dram.elf
@@ -98,10 +103,12 @@ define offload_tests_template
 endef
 
 # Safety Island offload tests
+ifeq ($(shell echo $(SAFED_PRESENT)), 1)
 include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk
 
 car-safed-sw-offload-tests:
 	$(call offload_tests_template,$(SAFED_HEADER_TARGETS),safed,$(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C),$(CAR_ELFLOAD_BLOCKING_SAFED_PATH))
+endif
 
 # Integer Cluster offload tests
 ifeq ($(shell echo $(PULPD_PRESENT)), 1)
