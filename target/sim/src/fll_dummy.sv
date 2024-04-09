@@ -21,14 +21,15 @@ module fll_dummy #(
 
    initial begin
      clk = 1'b0;
-     end
-     always begin
+   end
+
+   always begin
        // Emit rising clock edge.
        clk = 1'b1;
        #(ClkPeriod/2);
        clk = 1'b0;
        #(ClkPeriod/2);
-     end
+   end
 
      for (genvar i=0;i<NumPlls;i++) begin
         assign clk_pll_out[i] = clk;
