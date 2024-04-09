@@ -157,6 +157,10 @@ car-checkout: car-checkout-deps
 # Build SW #
 ############
 include $(CAR_SW_DIR)/sw.mk
+ifeq ($(shell echo $(PULPD_PRESENT)), 1)
+PULPD_SW_BUILD := pulpd-sw-build
+PULPD_SW_INIT := pulpd-sw-init
+endif
 
 ## @section Carfield platform SW build
 .PHONY: chs-sw-build
@@ -166,7 +170,7 @@ chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
+car-sw-build: chs-sw-build safed-sw-build $(PULPD_SW_BUILD) car-sw-all
 
 .PHONY: safed-sw-init pulpd-sw-init
 ## Clone safe domain's SW stack in the dedicated repository.
@@ -289,7 +293,7 @@ include $(CAR_SIM_DIR)/sim.mk
 
 .PHONY: car-init-all
 ## Shortcut to initialize carfield with all the targets described above.
-car-init-all: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibench
+car-init-all: car-checkout car-hw-init car-sim-init safed-sw-init $(PULPD_SW_INIT) mibench
 
 ## Initialize Carfield and build SW
 .PHONY: car-all
