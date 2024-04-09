@@ -167,6 +167,7 @@ module carfield_synth_wrap
   localparam cheshire_cfg_t CarfieldCfg = carfield_pkg::CarfieldCfgDefault;
   `CHESHIRE_TYPEDEF_ALL(carfield_, CarfieldCfg)
 
+
   ////////////////////////
   // Connection Signals //
   ////////////////////////
@@ -434,7 +435,6 @@ module carfield_synth_wrap
   assign soc2pad_port_signals.periph.ethernet.eth_txd3_i = eth_txd_o_s[3];
 
   // Debug signals
-// Debug signals
   logic [NumPlls-1:0] dbg_pll_out; // The unmultiplexed and ungated raw output
 
   // The following macro divides CLK_SIGNAL by 10x using a static integer clock
@@ -487,7 +487,7 @@ module carfield_synth_wrap
   logic [1:0] ext_reg_async_slv_ack_src_out;
   carfield_reg_rsp_t     [1:0] ext_reg_async_slv_data_src_in;
 
- //////////////////////
+  //////////////////////
   // Clock generation //
   //////////////////////
 
@@ -518,24 +518,99 @@ module carfield_synth_wrap
   fll_dummy #(
     .NumPlls(NumPlls)
   ) fll_dummy (
-    .clk_out_gen(clk_pll_out),
-    .clk_out_gen(dbg_pll_out)
+    .clk_out_o(clk_pll_out),
+    .dbg_out_o(dbg_pll_out),
+    .rt_clk_o(rt_clk)
   );
+  assign ext_reg_async_slv_ack_src_in[0] = '0;
+  assign ext_reg_async_slv_req_src_in[0] = '0;
+  assign pll_refclk_cfg_a12_d32_reg_rsp = '0;
+  assign soc2pad_port_signals.periph.jtag_pll2.tdo_o = '0;
+  assign soc2pad_port_signals.periph.jtag_pll1.tdo_o = '0;
+  assign soc2pad_port_signals.periph.jtag_pll0.tdo_o = '0;
+  assign dbg_pll_out = '0;
 `endif
+
+/*
+  /////////////////////////////
+  /// Put here GF12 FLL/PLL ///
+  /////////////////////////////
+
+  // to pll: ref clock domain
+  pll_digital_pkg::pll_cfg_intf_req_t pll_refclk_cfg_a12_d32_reg_req;
+  pll_digital_pkg::pll_cfg_intf_rsp_t pll_refclk_cfg_a12_d32_reg_rsp;
+
+  // crop the address from carfield to fit PLL's reg interface
+  assign pll_refclk_cfg_a12_d32_reg_req.addr  = ext_reg_async_slv_data_src_out[0].addr[Aw-1:0];
+  assign pll_refclk_cfg_a12_d32_reg_req.write = ext_reg_async_slv_data_src_out[0].write;
+  assign pll_refclk_cfg_a12_d32_reg_req.wdata = ext_reg_async_slv_data_src_out[0].wdata;
+  assign pll_refclk_cfg_a12_d32_reg_req.wstrb = ext_reg_async_slv_data_src_out[0].wstrb;
+  assign pll_refclk_cfg_a12_d32_reg_req.valid = ext_reg_async_slv_data_src_out[0].valid;
+
+  // feedthrough assignment for response
+  `REG_BUS_ASSIGN_TO_RSP(ext_reg_async_slv_data_src_in[0], pll_refclk_cfg_a12_d32_reg_rsp)
+
+  pll_digital #(
+    .IdcodeValue   ( carfield_chip_pkg::CarfieldPllJtagIdCode )
+  ) i_pll (
+    .async_req_i   ( ext_reg_async_slv_req_src_out[0] ),
+    .async_ack_o   ( ext_reg_async_slv_ack_src_in[0]  ),
+    .async_data_i  ( pll_refclk_cfg_a12_d32_reg_req   ),
+
+    .async_req_o   ( ext_reg_async_slv_req_src_in[0]  ),
+    .async_ack_i   ( ext_reg_async_slv_ack_src_out[0] ),
+    .async_data_o  ( pll_refclk_cfg_a12_d32_reg_rsp   ),
+
+    .rtc_clk_o     ( rt_clk                 ),
+    .pad_rst_ni    ( pwr_on_rst_n           ),
+    .bypass_clk_i  ( st_pad2soc_signals.periph.st_ext_clk    ),
+    .pad_bypass_i  ( st_pad2soc_signals.periph.st_bypass_fll ),
+
+    .devmode_i     ( '1                     ),
+
+    `ifndef INTEL_NO_PWR_PINS .vccdig_nom  ( vccdig_nom  ),`endif
+    `ifndef INTEL_NO_PWR_PINS .vccdist_nom ( vccdist_nom ),`endif
+    `ifndef INTEL_NO_PWR_PINS .vccldo_hv   ( vccldo_hv   ),`endif
+    `ifndef INTEL_NO_PWR_PINS .vnnaon_nom  ( vnnaon_nom  ),`endif
+    `ifndef INTEL_NO_PWR_PINS .vss         ( vss         ),`endif
+
+    // Reference clock
+    .clkref        ( ref_clk                ),
+    .clkpostdist   ( '0                     ),
+    // Generated clocks
+    .clkpll_o      ( clk_pll_out            ),
+    .viewanabus    (                        ),
+    .test_mode_i   ( '0 ),
+    .tck_i         ( { pad2soc_port_signals.periph.jtag_pll2.tck_i,   pad2soc_port_signals.periph.jtag_pll1.tck_i,   pad2soc_port_signals.periph.jtag_pll0.tck_i } ),
+    .tdi_i         ( { pad2soc_port_signals.periph.jtag_pll2.tdi_i,   pad2soc_port_signals.periph.jtag_pll1.tdi_i,   pad2soc_port_signals.periph.jtag_pll0.tdi_i } ),
+    .tms_i         ( { pad2soc_port_signals.periph.jtag_pll2.tms_i,   pad2soc_port_signals.periph.jtag_pll1.tms_i,   pad2soc_port_signals.periph.jtag_pll0.tms_i } ),
+    .trst_ni       ( { pad2soc_port_signals.periph.jtag_pll2.trstn_i, pad2soc_port_signals.periph.jtag_pll1.trstn_i, pad2soc_port_signals.periph.jtag_pll0.trstn_i } ),
+    .tdo_o         ( { soc2pad_port_signals.periph.jtag_pll2.tdo_o,   soc2pad_port_signals.periph.jtag_pll1.tdo_o,   soc2pad_port_signals.periph.jtag_pll0.tdo_o } ),
+    .tdo_oe_o      (), // pad output enable not needed
+    .ldo_vref      ( '1                     ),
+    .powergood_vnn ( '1                     ),
+    .dbg_pll_clk_unmuxed_o( dbg_pll_out     )
+  );
+*/
+
+  //////////////////
+  // Carfield SoC //
+  //////////////////
 
   carfield      #(
     .Cfg         ( Cfg         ),
     .HypNumPhys  ( HypNumPhys  ),
     .HypNumChips ( HypNumChips ),
-    .reg_req_t   ( reg_req_t ),
-    .reg_rsp_t   ( reg_rsp_t )
-  ) i_dut                       (
+    .reg_req_t   ( carfield_reg_req_t ),
+    .reg_rsp_t   ( carfield_reg_rsp_t )
+  ) i_carfield_soc (
     .host_clk_i                 ( host_clk                                         ),
     .periph_clk_i               ( periph_clk                                       ),
     .alt_clk_i                  ( alt_clk                                          ),
     .rt_clk_i                   ( rt_clk                                           ),
     .pwr_on_rst_ni              ( pwr_on_rst_n                                     ),
     .test_mode_i                ( '0                                               ),
+    .boot_mode_i                ( bootmode_host_s[1:0]                             ),
     .jtag_tck_i                 ( st_pad2soc_signals.periph.st_jtag_host_tck       ),
     .jtag_trst_ni               ( st_pad2soc_signals.periph.st_jtag_host_trstn     ),
     .jtag_tms_i                 ( st_pad2soc_signals.periph.st_jtag_host_tms       ),

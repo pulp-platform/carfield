@@ -13,27 +13,30 @@ module fll_dummy #(
    parameter int unsigned NumPlls = 3
 ) (
    logic [NumPlls-1:0] clk_pll_out,
-   logic [NumPlls-1:0] dbg_pll_out
+   logic [NumPlls-1:0] dbg_pll_out,
+   logic               rt_clk_o
 );
 
-   logic  clk;
-   parameter time ClkPeriod = 10ns;
+  logic  clk;
+  parameter time ClkPeriod = 10ns;
 
-   initial begin
-     clk = 1'b0;
-   end
+  initial begin
+    clk = 1'b0;
+  end
 
-   always begin
-       // Emit rising clock edge.
-       clk = 1'b1;
-       #(ClkPeriod/2);
-       clk = 1'b0;
-       #(ClkPeriod/2);
-   end
+  always begin
+    // Emit rising clock edge.
+    clk = 1'b1;
+    #(ClkPeriod/2);
+    clk = 1'b0;
+    #(ClkPeriod/2);
+  end
 
-     for (genvar i=0;i<NumPlls;i++) begin
-        assign clk_pll_out[i] = clk;
-        assign dbg_pll_out[i] = clk;
-     end
+  for (genvar i=0;i<NumPlls;i++) begin
+    assign clk_pll_out[i] = clk;
+    assign dbg_pll_out[i] = clk;
+  end
+
+  assign rt_clk_o = clk;
 
 endmodule
