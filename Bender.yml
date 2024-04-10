@@ -28,7 +28,7 @@ dependencies:
   common_cells:            { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
   pulp-ethernet:           { git: https://github.com/pulp-platform/pulp-ethernet.git,        rev: bdc8031ab270a49da28df269266ce9ab9a133636 } # branch: carfield
   riscv-dbg:               { git: https://github.com/pulp-platform/riscv-dbg.git,            version: =0.8.0                               }
-  carfield_padframe_behav: { path: "target/sim/src/behav-padframe"}
+  carfield_padframe_behav: { path: "target/sim/src/behav-padframe"                                                                         }
 
 workspace:
   package_links:

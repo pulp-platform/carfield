@@ -346,6 +346,8 @@ localparam regbus_struct_t CarfieldRegBusMap = carfield_gen_regbus_map(NumTotalR
 
 localparam int unsigned CarfieldNumDomains = gen_carfield_domains(CarfieldIslandsCfg);
 
+localparam int unsigned NumPlls = 3;
+
 typedef struct {
   int unsigned clock_div_value[CarfieldNumDomains];
 } carfield_clk_div_values_t;

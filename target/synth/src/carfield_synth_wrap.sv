@@ -16,6 +16,10 @@ module carfield_synth_wrap
   import carfield_pkg::*;
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
+  import safety_island_pkg::*;
+  import tlul_ot_pkg::*;
+  import spatz_cluster_pkg::*;
+  import pkg_carfield_padframe_behav::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned   HypNumPhys  = 2,
@@ -514,7 +518,7 @@ module carfield_synth_wrap
     .init_no () // TODO: connect ?
   );
 
-`ifdef RTL // TODO: modify fll_dummy interface to match the gf12 fll
+`ifdef TARGET_RTL // TODO: modify fll_dummy interface to match the gf12 fll
   fll_dummy #(
     .NumPlls(NumPlls)
   ) fll_dummy (
@@ -603,7 +607,7 @@ module carfield_synth_wrap
     .HypNumChips ( HypNumChips ),
     .reg_req_t   ( carfield_reg_req_t ),
     .reg_rsp_t   ( carfield_reg_rsp_t )
-  ) i_carfield_soc (
+  ) i_dut (
     .host_clk_i                 ( host_clk                                         ),
     .periph_clk_i               ( periph_clk                                       ),
     .alt_clk_i                  ( alt_clk                                          ),
@@ -724,11 +728,7 @@ module carfield_synth_wrap
       .async_data_o( ext_reg_async_slv_data_src_in[1] )
   );
 
-`ifdef RTL
   carfield_padframe_behav #(
-`else
-  carfield_padframe #(
-`endif
     .req_t  ( carfield_reg_req_t         ),
     .resp_t ( carfield_reg_rsp_t         )
   ) i_carfield_padframe (
