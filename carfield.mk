@@ -167,7 +167,7 @@ SAFED_SW_BUILD := safed-sw-build
 SAFED_SW_INIT := safed-sw-init
 endif
 
-ifeq ($(shell echo $(SAFED_PRESENT)), 1)
+ifeq ($(shell echo $(SPATZD_PRESENT)), 1)
 SPATZD_HW_INIT := spatzd-hw-init
 endif
 

@@ -7,7 +7,7 @@
 export PULPD_PRESENT=1
 export SAFED_PRESENT=0
 export SECURED_PRESENT=1
-export SPATZD_PRESENT=0
+export SPATZD_PRESENT=1
 
 # set up environment variables for rtl simulation
 ROOTD=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)
