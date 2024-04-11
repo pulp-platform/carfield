@@ -347,7 +347,7 @@ include $(CAR_XIL_DIR)/xilinx.mk
 mibench: $(CAR_SW_DIR)/benchmarks/mibench
 
 $(CAR_SW_DIR)/benchmarks/mibench:
-	git clone git@github.com:alex96295/mibench.git -b carfield $@
+	git clone https://github.com/alex96295/mibench.git -b carfield $@
 
 # Litmus tests
 LITMUS_WORK_DIR  := work-litmus
