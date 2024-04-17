@@ -7,7 +7,8 @@
 ## @section Carfield platform simulation
 
 QUESTA ?= questa-2023.4
-TBENCH ?= tb_carfield_soc
+#TBENCH ?= tb_carfield_soc
+TBENCH ?= tb_carfield_chip
 
 ## Get HyperRAM verification IP (VIP) for simulation
 $(CAR_TGT_DIR)/sim/src/hyp_vip:
