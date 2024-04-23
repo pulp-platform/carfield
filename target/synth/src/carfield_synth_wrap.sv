@@ -522,8 +522,8 @@ module carfield_synth_wrap
   fll_dummy #(
     .NumPlls(NumPlls)
   ) fll_dummy (
-    .clk_out_o(clk_pll_out),
-    .dbg_out_o(dbg_pll_out),
+    .clk_pll_o(clk_pll_out),
+    .dbg_pll_o(dbg_pll_out),
     .rt_clk_o(rt_clk)
   );
   assign ext_reg_async_slv_ack_src_in[0] = '0;
@@ -532,7 +532,6 @@ module carfield_synth_wrap
   assign soc2pad_port_signals.periph.jtag_pll2.tdo_o = '0;
   assign soc2pad_port_signals.periph.jtag_pll1.tdo_o = '0;
   assign soc2pad_port_signals.periph.jtag_pll0.tdo_o = '0;
-  assign dbg_pll_out = '0;
 `endif
 
 /*

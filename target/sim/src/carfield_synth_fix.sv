@@ -685,18 +685,18 @@ module carfield_chip_fixture;
 
   VJTAG_DV vjtag_pll(jtag_pll_tck);
 
-  // typedef vjtag_test::vjtag_driver #(
-  //   .IrLength( 5                        ),
-  //   .IrIDCODE( PLL_JTAG_IR_IDCODE       ),
-  //   .TA      ( ClkPeriodPllJtag * TAppl ),
-  //   .TT      ( ClkPeriodPllJtag * TTest )
-  // ) vjtag_driver_t;
+  typedef vjtag_test::vjtag_driver #(
+    .IrLength( 5                        ),
+    .IrIDCODE( PLL_JTAG_IR_IDCODE       ),
+    .TA      ( ClkPeriodPllJtag * TAppl ),
+    .TT      ( ClkPeriodPllJtag * TTest )
+  ) vjtag_driver_t;
 
-  // vjtag_driver_t vjtag_pll_dv = new(vjtag_pll);
+  vjtag_driver_t vjtag_pll_dv = new(vjtag_pll);
 
-  // initial begin
-  //   vjtag_pll_dv.reset_master();
-  // end
+  initial begin
+    vjtag_pll_dv.reset_master();
+  end
 
   assign jtag_pll_trst_n = vjtag_pll.trst_n;
   assign jtag_pll_tms = vjtag_pll.tms;
@@ -732,13 +732,14 @@ module carfield_chip_fixture;
       .freq       ( sampled_freq_debug_signals[p] )
     );
 
-    freq_meter #(
-      .MAX_SAMPLE ( MaxSample )
-    ) i_freq_meter_pll_out (
-      .clk        ( i_dut.i_pll.clkpll_o[p] ),
-      .print_freq ( print_freq_pll_out[p]   ),
-      .freq       ( sampled_freq_pll_out[p] )
-    );
+    //TODO: how should this be managed??? PLL, FLL???
+    // freq_meter #(
+    //   .MAX_SAMPLE ( MaxSample )
+    // ) i_freq_meter_pll_out (
+    //   .clk        ( i_dut.i_pll.clkpll_o[p] ),
+    //   .print_freq ( print_freq_pll_out[p]   ),
+    //   .freq       ( sampled_freq_pll_out[p] )
+    // );
   end
 
   task sample_freq_debug_signals ();
@@ -752,16 +753,17 @@ module carfield_chip_fixture;
      end
   endtask
 
-  task sample_freq_pll_out ();
-     for(int i=0; i<NumPlls; i++) begin
-         repeat(MaxSample*2)
-           @(posedge  i_dut.i_pll.clkpll_o[i]);
+  //TODO: how should this be managed??? PLL, FLL???
+  // task sample_freq_pll_out ();
+  //    for(int i=0; i<NumPlls; i++) begin
+  //        repeat(MaxSample*2)
+  //          @(posedge  i_dut.i_pll.clkpll_o[i]);
 
-         @(posedge print_freq_pll_out[i]);
+  //        @(posedge print_freq_pll_out[i]);
 
-         $display("Sampling PLL output %d. Measured frequency: %f MHz\n", i, sampled_freq_pll_out[i]*10);
-     end
-  endtask
+  //        $display("Sampling PLL output %d. Measured frequency: %f MHz\n", i, sampled_freq_pll_out[i]*10);
+  //    end
+  // endtask
 
   task check_freq_pll_out (
     input real sampled_freq_pll_out,
@@ -783,10 +785,10 @@ module carfield_chip_fixture;
 
   task passthrough_or_wait_for_secd_hw_init();
 `ifndef CARFIELD_CHIP_NETLIST
-    if ((secure_boot || !i_dut.i_carfield_soc.car_regs_hw2reg.security_island_isolate_status.d) &&
-        i_dut.i_carfield_soc.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable != lc_ctrl_pkg::On) begin
+    if ((secure_boot || !i_dut.i_dut.car_regs_hw2reg.security_island_isolate_status.d) &&
+        i_dut.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable != lc_ctrl_pkg::On) begin
       $display("Wait for OT to boot...");
-      wait (i_dut.i_carfield_soc.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
+      wait (i_dut.i_dut.gen_secure_subsystem.i_security_island.u_RoT.u_rv_core_ibex.fetch_enable == lc_ctrl_pkg::On);
     end
 `endif
   endtask

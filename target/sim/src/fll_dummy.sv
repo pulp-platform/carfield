@@ -12,9 +12,9 @@
 module fll_dummy #(
    parameter int unsigned NumPlls = 3
 ) (
-   logic [NumPlls-1:0] clk_pll_out,
-   logic [NumPlls-1:0] dbg_pll_out,
-   logic               rt_clk_o
+   output logic [NumPlls-1:0] clk_pll_o,
+   output logic [NumPlls-1:0] dbg_pll_o,
+   output logic               rt_clk_o
 );
 
   logic  clk;
@@ -33,8 +33,8 @@ module fll_dummy #(
   end
 
   for (genvar i=0;i<NumPlls;i++) begin
-    assign clk_pll_out[i] = clk;
-    assign dbg_pll_out[i] = clk;
+    assign clk_pll_o[i] = clk;
+    assign dbg_pll_o[i] = clk;
   end
 
   assign rt_clk_o = clk;

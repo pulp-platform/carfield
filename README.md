@@ -32,12 +32,15 @@ floating-point and integer workloads.
   [Targets](https://pulp-platform.github.io/carfield/tg).
 * For detailed information on Carfield's inner workings, consult the [User
   Manual](https://pulp-platform.github.io/carfield/um/).
+  
 
 If you are impatient and have all needed
 [dependencies](https://pulp-platform.github.io/carfield/gs/#dependencies), type:
 
 ```
-make car-all
+source env/env-iis.sh
+bender update
+make car-all PYTHON=python3
 ```
 
 and then run a [simulation](https://pulp-platform.github.io/carfield/tg/sim) with Questasim by
@@ -45,7 +48,7 @@ typing:
 
 ```tcl
 make car-vsim-sim-build
-make car-vsim-sim-run CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf
+make car-vsim-sim-run CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf DEBUG=1
 ```
 
 ---

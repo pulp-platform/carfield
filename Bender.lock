@@ -21,14 +21,6 @@ packages:
     dependencies:
     - apb
     - register_interface
-  carfield_padframe_behav:
-    revision: null
-    version: null
-    source:
-      Path: target/sim/src/behav-padframe
-    dependencies:
-    - common_cells
-    - register_interface
   axi:
     revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
     version: 0.39.3
@@ -120,6 +112,14 @@ packages:
     source:
       Git: https://github.com/AlSaqr-platform/can_bus.git
     dependencies: []
+  carfield_padframe_behav:
+    revision: null
+    version: null
+    source:
+      Path: target/sim/src/behav-padframe
+    dependencies:
+    - common_cells
+    - register_interface
   cheshire:
     revision: 6d389373df6b54c09888f89411b7e231d2430722
     version: null
@@ -177,13 +177,8 @@ packages:
     dependencies:
     - hci
   common_cells:
-<<<<<<< HEAD
-    revision: f4d6406070d8e7767e4e9a433f11b039859f03a1
-    version: null
-=======
-    revision: 13f28aa0021fc22c0d01a12d618fda58d2c93239
-    version: 1.33.0
->>>>>>> 4c563a2 (Fix configurable top level bugs and integrate CI flow. (#2))
+    revision: ad22699793d98ef714f120c6268fe92d096a61e1
+    version: 1.33.1
     source:
       Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
@@ -394,6 +389,16 @@ packages:
       Git: https://github.com/pulp-platform/per2axi.git
     dependencies:
     - axi_slice
+  pll_wrap:
+    revision: e9277fbd73bc0597d5e6259f9d3955ffb13973db
+    version: 2.1.0
+    source:
+      Git: git@iis-git.ee.ethz.ch:carfield/pll_wrap_if.git
+    dependencies:
+    - common_cells
+    - common_verification
+    - register_interface
+    - tech_cells_generic
   pulp-ethernet:
     revision: bdc8031ab270a49da28df269266ce9ab9a133636
     version: null
@@ -454,13 +459,8 @@ packages:
     - register_interface
     - tech_cells_generic
   register_interface:
-<<<<<<< HEAD
-    revision: ae616e5a1ec2b41e72d200e5ab09c65e94aebd3d
-    version: 0.4.4
-=======
     revision: e25b36670ff7aab3402f40efcc2b11ee0f31cf19
     version: 0.4.3
->>>>>>> 4c563a2 (Fix configurable top level bugs and integrate CI flow. (#2))
     source:
       Git: https://github.com/pulp-platform/register_interface.git
     dependencies:

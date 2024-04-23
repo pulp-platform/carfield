@@ -18,7 +18,7 @@ dependencies:
   dyn_mem:                 { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
   safety_island:           { git: https://github.com/pulp-platform/safety_island.git,        rev: aaef55c798ab53560faaf451a86668fa1e6d0f3b } # branch: carfield
   pulp_cluster:            { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 3cd3e83fdd7a791e8ae54aef39423004581c8a48 } # branch: astral
-  opentitan:               { git: https://github.com/pulp-platform/opentitan.git,            rev: f1bd0be4dfd77982d99db15c0cd21aae70e8dbb3 } # branch: mc/astral
+  opentitan:               { git: https://github.com/pulp-platform/opentitan.git,            rev: 3fc11c14f29a161054766fabd95f90ab2a9e473a } # branch: ???
   mailbox_unit:            { git: https://github.com/pulp-platform/mailbox_unit.git,         version: 1.1.0                                }
   apb:                     { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }
   timer_unit:              { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
@@ -29,6 +29,7 @@ dependencies:
   pulp-ethernet:           { git: https://github.com/pulp-platform/pulp-ethernet.git,        rev: bdc8031ab270a49da28df269266ce9ab9a133636 } # branch: carfield
   riscv-dbg:               { git: https://github.com/pulp-platform/riscv-dbg.git,            version: =0.8.0                               }
   carfield_padframe_behav: { path: "target/sim/src/behav-padframe"                                                                         }
+  pll_wrap:                { git: git@iis-git.ee.ethz.ch:carfield/pll_wrap_if.git,           version: 2.1.0                                }
 
 workspace:
   package_links:
