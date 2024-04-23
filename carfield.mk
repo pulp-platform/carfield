@@ -175,25 +175,6 @@ ifeq ($(shell echo $(SECURED_PRESENT)), 1)
 SECD_HW_INIT := secd-hw-init
 endif
 
-## @section Islands compile exclusion
-ifeq ($(shell echo $(PULPD_PRESENT)), 1)
-PULPD_SW_BUILD := pulpd-sw-build
-PULPD_SW_INIT := pulpd-sw-init
-endif
-
-ifeq ($(shell echo $(SAFED_PRESENT)), 1)
-SAFED_SW_BUILD := safed-sw-build
-SAFED_SW_INIT := safed-sw-init
-endif
-
-ifeq ($(shell echo $(SPATZD_PRESENT)), 1)
-SPATZD_HW_INIT := spatzd-hw-init
-endif
-
-ifeq ($(shell echo $(SECURED_PRESENT)), 1)
-SECD_HW_INIT := secd-hw-init
-endif
-
 ## @section Carfield platform SW build
 include $(CAR_SW_DIR)/sw.mk
 .PHONY: chs-sw-build
