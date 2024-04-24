@@ -463,11 +463,6 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pci_express_x1] [get_bd_intf_pins xdma_0/pcie_mgt]
 
   # Create port connections
-  connect_bd_net -net Net [get_bd_pins carfield_xilinx_ip_0/pad_hyper_csn]
-  connect_bd_net -net Net1 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_ck]
-  connect_bd_net -net Net2 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_ckn]
-  connect_bd_net -net Net3 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_rwds]
-  connect_bd_net -net Net4 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_dq]
   connect_bd_net -net axi_dma_0_mm2s_cntrl_reset_out_n [get_bd_pins axi_dma_0/mm2s_cntrl_reset_out_n] [get_bd_pins axi_ethernet_0/axi_txc_arstn]
   connect_bd_net -net axi_dma_0_mm2s_introut [get_bd_pins axi_dma_0/mm2s_introut] [get_bd_pins concat_irq/In2]
   connect_bd_net -net axi_dma_0_mm2s_prmry_reset_out_n [get_bd_pins axi_dma_0/mm2s_prmry_reset_out_n] [get_bd_pins axi_ethernet_0/axi_txd_arstn]
