@@ -14,8 +14,8 @@ set_property PACKAGE_PIN A24             [get_ports "pad_hyper_csn[1]"] ;# (FMCP
 set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_csn[1]"] ;# (FMCP_HSPC_LA13_N) Bank  72 VCCO - VADJ     - IO_L24N_T3U_N11_72
 set_property PACKAGE_PIN A25      [get_ports "pad_hyper_csn[0]"] ;# (FMCP_HSPC_LA13_P) Bank  72 VCCO - VADJ     - IO_L24P_T3U_N10_72
 set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_csn[0]"] ;# (FMCP_HSPC_LA13_P) Bank  72 VCCO - VADJ     - IO_L24P_T3U_N10_72
-set_property PACKAGE_PIN C23      [get_ports "pad_hyper_rwds[0]"] ;# (FMCP_HSPC_LA14_P) Bank  72 VCCO - VADJ     - IO_L19P_T3L_N0_DBC_AD9P_72
-set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_rwds[0]"] ;# (FMCP_HSPC_LA14_P) Bank  72 VCCO - VADJ     - IO_L19P_T3L_N0_DBC_AD9P_72
+set_property PACKAGE_PIN C23      [get_ports "pad_hyper_rwds"] ;# (FMCP_HSPC_LA14_P) Bank  72 VCCO - VADJ     - IO_L19P_T3L_N0_DBC_AD9P_72
+set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_rwds"] ;# (FMCP_HSPC_LA14_P) Bank  72 VCCO - VADJ     - IO_L19P_T3L_N0_DBC_AD9P_72
 set_property PACKAGE_PIN D26      [get_ports "pad_hyper_dq[2] "] ;# (FMCP_HSPC_LA09_N) Bank  72 VCCO - VADJ     - IO_L17N_T2U_N9_AD10N_72
 set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_dq[2] "] ;# (FMCP_HSPC_LA09_N) Bank  72 VCCO - VADJ     - IO_L17N_T2U_N9_AD10N_72
 set_property PACKAGE_PIN A23      [get_ports pad_hyper_dq[3]] ;# (FMCP_HSPC_LA10_N)
@@ -28,10 +28,10 @@ set_property PACKAGE_PIN D22      [get_ports "pad_hyper_dq[7]"] ;# (FMCP_HSPC_LA
 set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_dq[7]"] ;# (FMCP_HSPC_LA06_N) Bank  72 VCCO - VADJ     - IO_L15N_T2L_N5_AD11N_72
 set_property PACKAGE_PIN E22      [get_ports "pad_hyper_dq[1]"] ;# (FMCP_HSPC_LA06_P) Bank  72 VCCO - VADJ     - IO_L15P_T2L_N4_AD11P_72
 set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_dq[1]"] ;# (FMCP_HSPC_LA06_P) Bank  72 VCCO - VADJ     - IO_L15P_T2L_N4_AD11P_72
-set_property PACKAGE_PIN F25      [get_ports "pad_hyper_ckn[0]"] ;# (FMCP_HSPC_LA01_CC_N)  Bank  72 VCCO - VADJ     - IO_L14N_T2L_N3_GC_72
-set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_ckn[0]"] ;# (FMCP_HSPC_LA01_CC_N)  Bank  72 VCCO - VADJ     - IO_L14N_T2L_N3_GC_72
-set_property PACKAGE_PIN F26      [get_ports "pad_hyper_ck[0]"] ;# (FMCP_HSPC_LA01_CC_P) Bank  72 VCCO - VADJ     - IO_L14P_T2L_N2_GC_72
-set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_ck[0]"] ;# (FMCP_HSPC_LA01_CC_P) Bank  72 VCCO - VADJ     - IO_L14P_T2L_N2_GC_72
+set_property PACKAGE_PIN F25      [get_ports "pad_hyper_ckn"] ;# (FMCP_HSPC_LA01_CC_N)  Bank  72 VCCO - VADJ     - IO_L14N_T2L_N3_GC_72
+set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_ckn"] ;# (FMCP_HSPC_LA01_CC_N)  Bank  72 VCCO - VADJ     - IO_L14N_T2L_N3_GC_72
+set_property PACKAGE_PIN F26      [get_ports "pad_hyper_ck"] ;# (FMCP_HSPC_LA01_CC_P) Bank  72 VCCO - VADJ     - IO_L14P_T2L_N2_GC_72
+set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_ck"] ;# (FMCP_HSPC_LA01_CC_P) Bank  72 VCCO - VADJ     - IO_L14P_T2L_N2_GC_72
 set_property PACKAGE_PIN G27      [get_ports "pad_hyper_dq[5]"] ;# (FMCP_HSPC_LA05_N) Bank  72 VCCO - VADJ     - IO_L9N_T1L_N5_AD12N_72
 set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_dq[5]"] ;# (FMCP_HSPC_LA05_N) Bank  72 VCCO - VADJ     - IO_L9N_T1L_N5_AD12N_72
 set_property PACKAGE_PIN H27      [get_ports "pad_hyper_dq[6]"] ;# (FMCP_HSPC_LA05_P) Bank  72 VCCO - VADJ     - IO_L9P_T1L_N4_AD12P_72
