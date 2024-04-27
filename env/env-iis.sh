@@ -3,6 +3,12 @@
 # SPDX-License-Identifier: SHL-0.51
 #
 
+# Set environment variables to choose of which island we have to compile the sw
+export PULPD_PRESENT=1
+export SAFED_PRESENT=1
+export SECURED_PRESENT=1
+export SPATZD_PRESENT=1
+
 # set up environment variables for rtl simulation
 ROOTD=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)
 export PATH=/usr/pack/riscv-1.0-kgf/riscv64-gcc-11.2.0/bin:$PATH # RV64 GCC toolchain

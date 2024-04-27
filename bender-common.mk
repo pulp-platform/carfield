@@ -26,3 +26,20 @@ common_defs += -D PRIVATE_ICACHE
 common_defs += -D HIERARCHY_ICACHE_32BIT
 common_defs += -D ICAHE_USE_FF
 common_defs += -D CLUSTER_ALIAS
+
+# Island exclusion
+ifeq ($(shell echo $(PULPD_PRESENT)), 0)
+common_targs += -e pulp_cluster
+endif
+
+ifeq ($(shell echo $(SAFED_PRESENT)), 0)
+common_targs += -e safety_island
+endif
+
+ifeq ($(shell echo $(SPATZD_PRESENT)), 0)
+common_targs += -e spatz
+endif
+
+ifeq ($(shell echo $(SECURED_PRESENT)), 0)
+common_targs += -e opentitan
+endif

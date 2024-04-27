@@ -156,9 +156,27 @@ car-checkout: car-checkout-deps
 ############
 # Build SW #
 ############
-include $(CAR_SW_DIR)/sw.mk
+## @section Islands compile exclusion
+ifeq ($(shell echo $(PULPD_PRESENT)), 1)
+PULPD_SW_BUILD := pulpd-sw-build
+PULPD_SW_INIT := pulpd-sw-init
+endif
+
+ifeq ($(shell echo $(SAFED_PRESENT)), 1)
+SAFED_SW_BUILD := safed-sw-build
+SAFED_SW_INIT := safed-sw-init
+endif
+
+ifeq ($(shell echo $(SAFED_PRESENT)), 1)
+SPATZD_HW_INIT := spatzd-hw-init
+endif
+
+ifeq ($(shell echo $(SECURED_PRESENT)), 1)
+SECD_HW_INIT := secd-hw-init
+endif
 
 ## @section Carfield platform SW build
+include $(CAR_SW_DIR)/sw.mk
 .PHONY: chs-sw-build
 ## Build the host domain (Cheshire) SW libraries and generates an archive (`libcheshire.a`)
 ## available for Carfield as static library at link time.
@@ -166,7 +184,7 @@ chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
+car-sw-build: chs-sw-build $(SAFED_SW_BUILD) $(PULPD_SW_BUILD) car-sw-all
 
 .PHONY: safed-sw-init pulpd-sw-init
 ## Clone safe domain's SW stack in the dedicated repository.
@@ -214,7 +232,7 @@ pulpd-sw-build: pulpd-sw-init
 ## Initialize Carfield HW. This step takes care of the generation of the missing hardware or the
 ## update of default HW configurations in some of the domains. See the two prerequisite's comment
 ## for more information.
-car-hw-init: spatzd-hw-init chs-hw-init secd-hw-init
+car-hw-init: $(SPATZD_HW_INIT) chs-hw-init $(SECD_HW_INIT)
 
 #Build OpenTitan's debug rom with support for coreid != 0x0
 secd-hw-init:
@@ -289,7 +307,7 @@ include $(CAR_SIM_DIR)/sim.mk
 
 .PHONY: car-init-all
 ## Shortcut to initialize carfield with all the targets described above.
-car-init-all: car-checkout car-hw-init car-sim-init safed-sw-init pulpd-sw-init mibench
+car-init-all: car-checkout car-hw-init car-sim-init $(SAFED_SW_INIT) $(PULPD_SW_INIT) mibench
 
 ## Initialize Carfield and build SW
 .PHONY: car-all
@@ -329,7 +347,7 @@ include $(CAR_XIL_DIR)/xilinx.mk
 mibench: $(CAR_SW_DIR)/benchmarks/mibench
 
 $(CAR_SW_DIR)/benchmarks/mibench:
-	git clone git@github.com:alex96295/mibench.git -b carfield $@
+	git clone https://github.com/alex96295/mibench.git -b carfield $@
 
 # Litmus tests
 LITMUS_WORK_DIR  := work-litmus

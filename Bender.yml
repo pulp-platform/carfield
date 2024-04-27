@@ -13,7 +13,7 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.3                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 6d389373df6b54c09888f89411b7e231d2430722 } # branch: astral-new
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: fa4d7301d4e1cbe472d66a4dd8d210855e690249 } # branch: astral-new
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: f039e601c8b6590181734e6d26ff8b77aa380412 } # branch: chi/add_fsm_with_Tcsh
   dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
   safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: aaef55c798ab53560faaf451a86668fa1e6d0f3b } # branch: carfield
@@ -70,6 +70,10 @@ sources:
   - target: carfield_l2dual_safe_pulp_spatz_periph
     files:
       - hw/configs/carfield_l2dual_safe_pulp_spatz_periph.sv
+
+  - target: carfield_l2dual_secure_pulp_periph_can
+    files:
+      - hw/configs/carfield_l2dual_secure_pulp_periph_can.sv
 
   # Source files grouped in levels. Files in level 0 have no dependencies on files in this
   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
