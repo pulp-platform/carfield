@@ -115,7 +115,11 @@ module tb_carfield_soc;
 
       // If the safety island is enabled, when Cheshire is offloading to it
       // it should be set in passive preload bootmode
-      fix.boot_mode_safed = (CarfieldIslandsCfg.safed.enable) ? safety_island_pkg::Preloaded : '0;
+      `ifdef SAFED_PRESENT
+        fix.boot_mode_safed = safety_island_pkg::Preloaded;
+      `else
+        fix.boot_mode_safed = '0;
+      `endif
 
       // Preload in idle mode or wait for completion in autonomous boot
       if (boot_mode == 0) begin
@@ -480,8 +484,8 @@ module tb_carfield_soc;
             fix.chs_vip.jtag_elf_halt_load(spatzd_preload_elf, spatzd_binary_entry );
 
             // write start address into the csr
-            $display("[JTAG SPATZD] write the CSR %x of spatz with the entry point %x", spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry);
-            fix.chs_vip.jtag_write_reg32(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry, jtag_check_write);
+            $display("[JTAG SPATZD] write the CSR %x of spatz with the entry point %x", SpatzClusterPeriphStartAddr + SpatzClusterPeripheralBootControlOffset, spatzd_binary_entry);
+            fix.chs_vip.jtag_write_reg32(SpatzClusterPeriphStartAddr + SpatzClusterPeripheralBootControlOffset, spatzd_binary_entry, jtag_check_write);
 
             // Set interrupt on mailbox mailbox id MBOX_SPATZD_CORE0_ID and MBOX_SPATZD_CORE1_ID
             spatzd_reg_value = 64'h1;
@@ -499,7 +503,7 @@ module tb_carfield_soc;
             fix.chs_vip.jtag_write_reg32(CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) , spatzd_reg_value, jtag_check_write);
 
             // Poll memory address for Spatz EOC
-            fix.chs_vip.jtag_poll_bit0(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_EOC_EXIT_OFFSET, spatzd_exit_code, 20);
+            fix.chs_vip.jtag_poll_bit0(SpatzClusterPeriphStartAddr + SpatzClusterPeripheralsEocOffset, spatzd_exit_code, 20);
             spatzd_exit_code >>= 1;
             if (spatzd_exit_code) $error("[JTAG SPATZ] FAILED: return code %0d", spatzd_exit_code);
             else $display("[JTAG SPATZD] SUCCESS");
@@ -511,8 +515,8 @@ module tb_carfield_soc;
             fix.chs_vip.slink_elf_preload(spatzd_preload_elf, spatzd_binary_entry);
 
             // write start address into the csr
-            $display("[SLINK SPATZD] Write the CSR %x of spatz with the entry point %x", spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry);
-            fix.chs_vip.slink_write_32(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry);
+            $display("[SLINK SPATZD] Write the CSR %x of spatz with the entry point %x", SpatzClusterPeriphStartAddr + SpatzClusterPeripheralBootControlOffset, spatzd_binary_entry);
+            fix.chs_vip.slink_write_32(SpatzClusterPeriphStartAddr + SpatzClusterPeripheralBootControlOffset, spatzd_binary_entry);
 
             // Set interrupt on mailbox ids MBOX_SPATZ_CORE0_ID and MBOX_SPATZ_CORE1_ID
             spatzd_reg_value = 64'h1;
@@ -530,7 +534,7 @@ module tb_carfield_soc;
             fix.chs_vip.slink_write_32(CAR_MBOX_BASE +  MBOX_INT_SND_EN_OFFSET + (MBOX_SPATZ_CORE1_ID*32'h100) , spatzd_reg_value);
 
             // Poll memory address for Spatz EOC
-            fix.chs_vip.slink_poll_bit0(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_EOC_EXIT_OFFSET, spatzd_exit_code, 20);
+            fix.chs_vip.slink_poll_bit0(SpatzClusterPeriphStartAddr + SpatzClusterPeripheralsEocOffset, spatzd_exit_code, 20);
             spatzd_exit_code >>= 1;
             if (spatzd_exit_code) $error("[SLINK SPATZ] FAILED: return code %0d", spatzd_exit_code);
             else $display("[SLINK SPATZ] SUCCESS");

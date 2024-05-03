@@ -13,7 +13,6 @@
 module carfield_top_xilinx
   import carfield_pkg::*;
   import cheshire_pkg::*;
-  import safety_island_pkg::*;
 (
 `ifdef USE_RESET
   input logic         cpu_reset,

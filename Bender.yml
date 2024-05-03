@@ -13,12 +13,12 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.3                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: fa4d7301d4e1cbe472d66a4dd8d210855e690249 } # branch: astral-new
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 459bbe06d34560508beb7fa7cca8c153a85f800f } # branch: cl/idma-wrapper
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: f039e601c8b6590181734e6d26ff8b77aa380412 } # branch: chi/add_fsm_with_Tcsh
   dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
   safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: aaef55c798ab53560faaf451a86668fa1e6d0f3b } # branch: carfield
-  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 3cd3e83fdd7a791e8ae54aef39423004581c8a48 } # branch: astral
-  opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: 3fc11c14f29a161054766fabd95f90ab2a9e473a } # branch: mc/astral
+  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 9a69d99db30c8ef1f47416e058b0f31445cbcf6b } # branch: astral
+  opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: 3682dfcc08281ff6de5bf629368ab612fd17f0de } # branch: mc/astral
   mailbox_unit:       { git: https://github.com/pulp-platform/mailbox_unit.git,         version: 1.1.0                                }
   apb:                { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
@@ -39,6 +39,11 @@ workspace:
 
 sources:
   # Configurations
+    # "Small" Astral configuration
+  - target: carfield_l2dual_secure_pulp_periph_can
+    files:
+      - hw/configs/carfield_l2dual_secure_pulp_periph_can.sv
+
   - target: carfield_l2dual_safe_secure_pulp_spatz_periph_can
     files:
       - hw/configs/carfield_l2dual_safe_secure_pulp_spatz_periph_can.sv
@@ -86,10 +91,13 @@ sources:
   - hw/cheshire_wrap.sv
   - hw/hyperbus_wrap.sv
   - hw/l2_wrap.sv
-  - hw/spatz_cluster_wrapper.sv
   - hw/carfield_rstgen.sv
   # Level 2
   - hw/carfield.sv
+
+  - target: spatz
+    files:
+      - hw/spatz_cluster_wrapper.sv
 
   - target: test
     files:

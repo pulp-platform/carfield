@@ -386,7 +386,8 @@ localparam carfield_domain_idx_t CarfieldDomainIdx = gen_domain_idx(CarfieldIsla
 /*******************************
 * Carfield package starts here *
 *******************************/
-
+localparam int unsigned CheshireNumInternalHarts = 2;
+localparam bit CheshireSerialLinkEnable = 1;
 localparam int unsigned CarfieldNumExtIntrs           = 32; // Number of external interrupts
 localparam int unsigned CarfieldNumInterruptibleHarts = 2;  // Spatz (2 Snitch cores)
 localparam int unsigned CarfieldNumRouterTargets      = 1;  // Safety Island
@@ -453,7 +454,7 @@ typedef enum hartid_t {
 
 
 localparam int unsigned MaxHartId = 63;
-localparam int unsigned IntClusterNumCores = 12;
+localparam int unsigned IntClusterNumCores = 8;
 localparam bit [MaxHartId:0] SafetyIslandExtHarts =
   {MaxHartId+1{1'b0}} | (((1<<IntClusterNumCores) - 1) << PulpHartIdOffs);
 
@@ -476,38 +477,65 @@ function automatic dm::hartinfo_t [MaxHartId:0] pulp_hart_info(bit [MaxHartId:0]
 endfunction
 
 localparam dm::hartinfo_t [MaxHartId:0] SafetyIslandExtHartinfo =
-  pulp_hart_info(SafetyIslandExtHarts);
+  carfield_pkg::pulp_hart_info(SafetyIslandExtHarts);
 
 // Safety island configuration
-localparam safety_island_pkg::safety_island_cfg_t SafetyIslandCfg = '{
-    HartId:             SafetyIslHartIdOffs,
-    BankNumBytes:       32'h0001_0000,
-    NumBanks:           2,
-    // JTAG ID code:
-    // LSB                        [0]:     1'h1
-    // PULP Platform Manufacturer [11:1]:  11'h6d9
-    // Part Number                [27:12]: 16'hca71
-    // Version                    [31:28]: 4'h1
-    PulpJtagIdCode:     32'h1_ca71_db3,
-    NumTimers:          1,
-    UseClic:            1,
-    ClicIntCtlBits:     8,
-    UseSSClic:          0,
-    UseUSClic:          0,
-    UseVSClic:          0,
-    UseVSPrio:          0,
-    NVsCtxts:           0,
-    UseFastIrq:         1,
-    UseFpu:             1,
-    UseIntegerCluster:  1,
-    UseXPulp:           1,
-    UseZfinx:           1,
-    UseTCLS:            1,
-    NumInterrupts:      128,
-    NumMhpmCounters:    1,
-    // All non-set values should be zero
-    default: '0
-};
+`ifdef SAFED_ENABLE
+  localparam bit [31:0] SafedDebugOffs          = safety_island_pkg::DebugAddrOffset;
+  localparam int unsigned SafetyIslandMemOffset = 'h0000_0000;
+  localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
+  localparam safety_island_pkg::safety_island_cfg_t SafetyIslandCfg = '{
+      HartId:             carfield_pkg::SafetyIslHartIdOffs,
+      BankNumBytes:       32'h0001_0000,
+      NumBanks:           2,
+      // JTAG ID code:
+      // LSB                        [0]:     1'h1
+      // PULP Platform Manufacturer [11:1]:  11'h6d9
+      // Part Number                [27:12]: 16'hca71
+      // Version                    [31:28]: 4'h1
+      PulpJtagIdCode:     32'h1_ca71_db3,
+      NumTimers:          1,
+      UseClic:            1,
+      ClicIntCtlBits:     8,
+      UseSSClic:          0,
+      UseUSClic:          0,
+      UseVSClic:          0,
+      UseVSPrio:          0,
+      NVsCtxts:           0,
+      UseFastIrq:         1,
+      UseFpu:             1,
+      UseIntegerCluster:  1,
+      UseXPulp:           1,
+      UseZfinx:           1,
+      UseTCLS:            1,
+      NumInterrupts:      128,
+      NumMhpmCounters:    1,
+      // All non-set values should be zero
+      default: '0
+  };
+`else
+  localparam int unsigned SafetyIslandCfg = '0;
+  localparam bit [31:0] SafedDebugOffs          = 0;
+  localparam int unsigned SafetyIslandMemOffset = 0;
+  localparam int unsigned SafetyIslandPerOffset = 0;
+`endif
+
+// Compute the number of atomic MSBs depending on the configuration
+function automatic dw_bt carfield_get_axi_user_amo_msb(islands_cfg_t island_cfg,
+                                                       int unsigned CheshireNumHarts,
+                                                       bit SerialLinkEnabled);
+  dw_bt ret = '{default: 0}; // Initialize value
+  int unsigned i = CheshireNumHarts; // Start with the number of Cheshire internal Harts
+  if (SerialLinkEnabled) i += 1;
+  if (island_cfg.safed.enable) i += 1;
+  if (island_cfg.spatz.enable) i += 1;
+  ret = $clog2(i);
+  return ret;
+endfunction
+
+localparam dw_bt AxiUserAmoMsb = carfield_get_axi_user_amo_msb(CarfieldIslandsCfg,
+                                                               CheshireNumInternalHarts,
+                                                               CheshireSerialLinkEnable);
 
 // verilog_lint: waive-start line-length
 // Cheshire configuration
@@ -521,7 +549,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                    // [0x7000_0000, 0x8000_0000) is CIE
   Cva6ExtCieOnTop   : 1,
   // Harts
-  NumCores          : 2,
+  NumCores          : CheshireNumInternalHarts,
   CoreMaxTxns       : 8,
   CoreMaxTxnsPerId  : 4,
   CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
@@ -543,10 +571,11 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   AxiDataWidth      : 64,
   AxiUserWidth      : 10,  // {CACHE_PARTITIONING(5[9:5]), ECC_ERROR(1[4:4]), ATOPS(4[3:0])}
   AxiMstIdWidth     : 2,
+  TFLenWidth        : 32,
   AxiMaxMstTrans    : 64,
   AxiMaxSlvTrans    : 64,
-  AxiUserAmoMsb     : 3, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
-  AxiUserAmoLsb     : 0, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
+  AxiUserAmoMsb     : AxiUserAmoMsb, // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
+  AxiUserAmoLsb     : 0,             // A0:0001, A1:0011, SF:0101, FP:0111, SL:1XXX, none: '0
   AxiUserErrBits    : 1,
   AxiUserErrLsb     : 4,
   RegMaxReadTxns    : 8,
@@ -579,7 +608,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   SpiHost           : 1,
   Gpio              : 1,
   Dma               : 1,
-  SerialLink        : 1,
+  SerialLink        : CheshireSerialLinkEnable,
   Vga               : 0,
   AxiRt             : 1,
   Clic              : 1,
@@ -669,12 +698,6 @@ localparam doub_bt L2Port1InterlBase = CarfieldIslandsCfg.l2_port1.base;
 localparam doub_bt L2Port0NonInterlBase = CarfieldIslandsCfg.l2_port0.base + L2MemSize;
 localparam doub_bt L2Port1NonInterlBase = CarfieldIslandsCfg.l2_port1.base + L2MemSize;
 
-/****************************/
-/* Safety Island Parameters */
-/****************************/
-localparam int unsigned SafetyIslandMemOffset = 'h0000_0000;
-localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
-
 /******************************/
 /* Integer Cluster Parameters */
 /******************************/
@@ -683,11 +706,22 @@ localparam bit[CarfieldCfgDefault.AddrWidth-1:0] PulpClustExtOffs    = 'h0040000
 localparam int unsigned IntClusterNumEoc = 1;
 localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
 
-/*************************************/
-/* Floating Point Cluster Parameters */
-/*************************************/
-localparam int unsigned FpClustAxiMaxOutTrans   = 4;
-localparam int unsigned FpClustIwcAxiIdOutWidth = 3;
+/****************************/
+/* Spatz Cluster Parameters */
+/****************************/
+`ifdef SPATZ_ENABLE
+  localparam int unsigned SpatzNumIntHarts = spatz_cluster_pkg::NumCores;
+  localparam int unsigned SpatzClusterPeriphStartAddr = spatz_cluster_pkg::PeriStartAddr;
+  localparam int unsigned SpatzClusterPeripheralBootControlOffset =
+  spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET;
+  localparam int unsigned SpatzClusterPeripheralsEocOffset =
+  spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_EOC_EXIT_OFFSET;
+`else
+  localparam int unsigned SpatzNumIntHarts = 0;
+  localparam int unsigned SpatzClusterPeriphStartAddr = 0;
+  localparam int unsigned SpatzClusterPeripheralBootControlOffset = 0;
+  localparam int unsigned SpatzClusterPeripheralsEocOffset = 0;
+`endif
 
 /*******************************/
 /* Narrow Parameters: A32, D32 */

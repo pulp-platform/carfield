@@ -16,7 +16,6 @@ module carfield_soc_fixture;
 
   import cheshire_pkg::*;
   import carfield_pkg::*;
-  import safety_island_pkg::*;
 
   ///////////
   //  DPI  //

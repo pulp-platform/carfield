@@ -90,6 +90,13 @@ packages:
       Git: https://github.com/pulp-platform/axi_slice.git
     dependencies:
     - common_cells
+  axi_stream:
+    revision: 54891ff40455ca94a37641b9da4604647878cc07
+    version: 0.1.1
+    source:
+      Git: https://github.com/pulp-platform/axi_stream.git
+    dependencies:
+    - common_cells
   axi_vga:
     revision: 3718b9930f94a9eaad8ee50b4bccc71df0403084
     version: 0.1.3
@@ -106,7 +113,7 @@ packages:
       Git: https://github.com/AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: fa4d7301d4e1cbe472d66a4dd8d210855e690249
+    revision: 459bbe06d34560508beb7fa7cca8c153a85f800f
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -155,7 +162,7 @@ packages:
     dependencies:
     - common_cells
   cluster_peripherals:
-    revision: c9defcfb4f4e8733383b28a451c430783c2febbd
+    revision: 0b8e8ab9e6be3a5030a18256bb7e75cf6b6f6cac
     version: null
     source:
       Git: https://github.com/pulp-platform/cluster_peripherals.git
@@ -231,8 +238,8 @@ packages:
     dependencies:
     - common_cells
   hci:
-    revision: 4823e503851eb7e8cc765a58621d767a01d6a77b
-    version: null
+    revision: 97b79affd5d11d45000fa9c97918763d8bffed88
+    version: 2.0.2
     source:
       Git: https://github.com/pulp-platform/hci.git
     dependencies:
@@ -252,15 +259,15 @@ packages:
     - scm
     - tech_cells_generic
   hwpe-ctrl:
-    revision: b7857919ea14b586901ff4282ad7749a3d50501e
+    revision: a5966201aeeb988d607accdc55da933a53c6a56e
     version: null
     source:
       Git: https://github.com/pulp-platform/hwpe-ctrl.git
     dependencies:
     - tech_cells_generic
   hwpe-stream:
-    revision: bcb4435f802add732f557dc7fa1c6b5dd8854458
-    version: 1.7.1
+    revision: 65c99a4a2f37a79acee800ab0151f67dfb1edef1
+    version: 1.8.0
     source:
       Git: https://github.com/pulp-platform/hwpe-stream.git
     dependencies:
@@ -289,14 +296,16 @@ packages:
       Git: https://github.com/pulp-platform/icache-intc.git
     dependencies: []
   idma:
-    revision: ca1b28816a3706be0bf9ce01378246d5346384f0
-    version: 0.5.1
+    revision: 88fbe67d8350b4de5ceb3673073bc216b8d585b7
+    version: null
     source:
       Git: https://github.com/pulp-platform/idma.git
     dependencies:
     - axi
+    - axi_stream
     - common_cells
     - common_verification
+    - obi
     - register_interface
   irq_router:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
@@ -329,6 +338,16 @@ packages:
       Git: https://github.com/pulp-platform/mchan.git
     dependencies:
     - common_cells
+  neureka:
+    revision: 60c51c0a5f6b30140ca99cc546ddcfde00af0044
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/neureka.git
+    dependencies:
+    - hci
+    - hwpe-ctrl
+    - hwpe-stream
+    - zeroriscy
   obi:
     revision: 1aa411df145c4ebdd61f8fed4d003c33f7b20636
     version: 0.1.2
@@ -338,7 +357,7 @@ packages:
     - common_cells
     - common_verification
   opentitan:
-    revision: 3fc11c14f29a161054766fabd95f90ab2a9e473a
+    revision: 3682dfcc08281ff6de5bf629368ab612fd17f0de
     version: null
     source:
       Git: https://github.com/pulp-platform/opentitan.git
@@ -372,7 +391,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: 3cd3e83fdd7a791e8ae54aef39423004581c8a48
+    revision: 9a69d99db30c8ef1f47416e058b0f31445cbcf6b
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -390,6 +409,7 @@ packages:
     - ibex
     - idma
     - mchan
+    - neureka
     - per2axi
     - redmule
     - redundancy_cells
@@ -399,7 +419,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   redmule:
-    revision: 1b30b0b9a31afa702eb2d166d672ceda2f5d463a
+    revision: 7abb25690090c7f5548a8aa905c7bf0440d4ba6b
     version: null
     source:
       Git: https://github.com/pulp-platform/redmule.git
@@ -531,3 +551,9 @@ packages:
     - axi
     - common_cells
     - register_interface
+  zeroriscy:
+    revision: cc4068a0ccb7691cd062b809c34b2304e7fbfa36
+    version: null
+    source:
+      Git: git@github.com:yvantor/ibex.git
+    dependencies: []

@@ -17,11 +17,8 @@ module carfield
   import carfield_pkg::*;
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
-  import safety_island_pkg::*;
-  import tlul_ot_pkg::*;
-  import spatz_cluster_pkg::*;
 #(
-  parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
+  parameter cheshire_pkg::cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2,
 `ifdef GEN_NO_HYPERBUS // bender-xilinx.mk
@@ -35,7 +32,10 @@ module carfield
   parameter type reg_req_t           = logic,
   parameter type reg_rsp_t           = logic,
   // Having a dedicated synchronous port, the mailbox is not taken into account
-  localparam int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 1
+  localparam int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 1,
+  localparam int unsigned SpihNumCs = cheshire_pkg::SpihNumCs,
+  localparam int unsigned SlinkNumChan = cheshire_pkg::SlinkNumChan,
+  localparam int unsigned SlinkNumLanes = cheshire_pkg::SlinkNumLanes
 ) (
   // host clock
   input   logic                                       host_clk_i,
@@ -170,7 +170,7 @@ module carfield
   output logic     [1:0]                              ext_reg_async_slv_ack_o,
   input  reg_rsp_t [1:0]                              ext_reg_async_slv_data_i,
   // Debug signals
-  output carfield_debug_sigs_t                        debug_signals_o
+  output carfield_pkg::carfield_debug_sigs_t          debug_signals_o
 );
 
 /*********************************
@@ -272,8 +272,8 @@ assign car_periph_intrs = {
 // Mailbox unit interrupts
 
 localparam int unsigned CheshireNumIntHarts = Cfg.NumCores;
-localparam int unsigned SafedNumIntHarts    = 1;
-localparam int unsigned SecdNumIntHarts     = 1;
+localparam int unsigned SafedNumIntHarts    = (CarfieldIslandsCfg.safed.enable) ? 1 : 0;
+localparam int unsigned SecdNumIntHarts     = (CarfieldIslandsCfg.secured.enable) ? 1 : 0;
 
 // TODO: Comment these constants: the name is not clear, I personally prefer to have raw numbers
 //localparam int unsigned IntClusterNumIrq    = 1;
@@ -282,7 +282,7 @@ localparam int unsigned SecdNumIntHarts     = 1;
 // Number of receiving side mailboxes per subsystem
 // For Cheshire, 4 mailboxes for each application class processor
 localparam int unsigned NumMailboxesHostd      = 4 * CheshireNumIntHarts;
-localparam int unsigned NumMailboxesFPCluster  = spatz_cluster_pkg::NumCores * (CheshireNumIntHarts + SafedNumIntHarts);
+localparam int unsigned NumMailboxesFPCluster  = SpatzNumIntHarts * (CheshireNumIntHarts + SafedNumIntHarts);
 localparam int unsigned NumMailboxesIntCluster = CheshireNumIntHarts + SafedNumIntHarts;
 // For the safety island, consider host domain and security island, and one callback SW interrupt
 // from integer and floating point clusters
@@ -294,12 +294,6 @@ localparam int unsigned NumMailboxes           = NumMailboxesHostd + NumMailboxe
 // Interrupt lines
 logic [NumMailboxes-1:0] snd_mbox_intrs;
 
-// Floating point cluster (Spatz cluster)
-
-// from hostd to spatz cluster
-logic [spatz_cluster_pkg::NumCores-1:0][CheshireNumIntHarts-1:0] hostd_spatzcl_mbox_intr;
-// from safety island to spatz cluster
-logic [spatz_cluster_pkg::NumCores-1:0] safed_spatzcl_mbox_intr;
 // Integer cluster (PULP cluster)
 logic [CheshireNumIntHarts-1:0] hostd_pulpcl_mbox_intr;  // from hostd to pulp cluster
 logic                           safed_pulpcl_mbox_intr;  // from safety island to pulp cluster
@@ -325,8 +319,8 @@ logic [MaxHartId:0] safed_dbg_reqs;
 assign pulpcl_dbg_reqs = safed_dbg_reqs[PulpHartIdOffs+:IntClusterNumCores];
 
 // Generate indices and get maps for all ports
-localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
-localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
+localparam cheshire_pkg::axi_in_t   AxiIn   = gen_axi_in(Cfg);
+localparam cheshire_pkg::axi_out_t  AxiOut  = gen_axi_out(Cfg);
 
 ///////////////////////////////
 // Wide Parameters: A48, D32 //
@@ -432,7 +426,7 @@ logic security_island_isolate_req;
 logic [iomsb(Cfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
 logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
 
-// All AXI Slaves (except the Integer Cluster and the Mailbox)
+// All AXI Slaves (except the Mailbox)
 logic [iomsb(NumSlaveCDCs):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
 logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_aw_wptr;
 logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_aw_rptr;
@@ -449,7 +443,7 @@ logic [iomsb(NumSlaveCDCs):0][ CarfieldAxiSlvRWidth-1:0] axi_slv_ext_r_data ;
 logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_r_wptr ;
 logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_r_rptr ;
 
-// All AXI Masters (except the Integer Cluster)
+// All AXI Masters
 logic [iomsb(Cfg.AxiExtNumMst):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
 logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_wptr;
 logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_rptr;
@@ -767,6 +761,7 @@ cheshire_wrap #(
   .cheshire_reg_ext_rsp_t         ( carfield_reg_rsp_t           ),
   .LogDepth                       ( LogDepth                     ),
   .CdcSyncStages                  ( SyncStages                   ),
+  .NumSlaveCDCs                   ( NumSlaveCDCs                 ),
   .AxiIn                          ( AxiIn                        ),
   .AxiOut                         ( AxiOut                       )
 ) i_cheshire_wrap                 (
@@ -796,7 +791,7 @@ cheshire i_cheshire_wrap                 (
   .llc_mst_w_data_o   ( llc_w_data         ),
   .llc_mst_w_wptr_o   ( llc_w_wptr         ),
   .llc_mst_w_rptr_i   ( llc_w_rptr         ),
-  // External AXI slave devices (except the Integer Cluster)
+  // External AXI slave devices
   .axi_ext_slv_isolate_i  ( slave_isolate_req   ),
   .axi_ext_slv_isolated_o ( slave_isolated_rsp  ),
   .axi_ext_slv_ar_data_o  ( axi_slv_ext_ar_data ),
@@ -814,7 +809,7 @@ cheshire i_cheshire_wrap                 (
   .axi_ext_slv_w_data_o   ( axi_slv_ext_w_data  ),
   .axi_ext_slv_w_wptr_o   ( axi_slv_ext_w_wptr  ),
   .axi_ext_slv_w_rptr_i   ( axi_slv_ext_w_rptr  ),
-  // External AXI master devices (except the Integer Cluster)
+  // External AXI master devices
   .axi_ext_mst_ar_data_i ( axi_mst_ext_ar_data ),
   .axi_ext_mst_ar_wptr_i ( axi_mst_ext_ar_wptr ),
   .axi_ext_mst_ar_rptr_o ( axi_mst_ext_ar_rptr ),
@@ -981,10 +976,9 @@ hyperbus_wrap      #(
 
 // Temporary Mailbox parameters (evaluate if we can move everything here).
 // The best approach would be to move all these parameters to the package.
-localparam int unsigned HostdMboxOffset = (spatz_cluster_pkg::NumCores +
-                                           (spatz_cluster_pkg::NumCores *
-                                            CheshireNumIntHarts         )
-                                           );
+localparam int unsigned HostdMboxOffset = (SpatzNumIntHarts +
+                                           (SpatzNumIntHarts * CheshireNumIntHarts)
+                                          );
 
 localparam int unsigned SpatzMboxOffset = HostdMboxOffset +
                                           3*CheshireNumIntHarts;
@@ -1086,54 +1080,56 @@ end else begin: gen_no_l2
 end
 
 // Safety Island
-logic [SafetyIslandCfg.NumInterrupts-1:0] safed_intrs;
-
-// Safety island interrupts from interrupt router
-logic [(NumIntIntrs+CarfieldNumExtIntrs)-1:0] safed_intrs_distributed;
-// Safety island edge-triggered interrupts and synchronized edge-triggered interrupts
-logic [CarfieldNumTimerIntrs-1:0] safed_edge_triggered_intrs, safed_edge_triggered_intrs_sync;
-// Safety island is the only external target for the router in carfield
-assign safed_intrs_distributed = chs_intrs_distributed[(NumIntIntrs+CarfieldNumExtIntrs)-1:0];
-
-// verilog_lint: waive-start line-length
-localparam int unsigned EdgeTriggeredIntrsOffset = NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd+
-                                                   CarfieldNumPeriphsIntrs-CarfieldNumTimerIntrs;
-assign safed_edge_triggered_intrs = safed_intrs_distributed[
-                                    EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs-1:
-                                    EdgeTriggeredIntrsOffset];
-
-// Propagate edge-triggered interrupts between host and safety_island clock domains. In carfield,
-// edge-triggered interrupts come from the system timer peripherals (`CarfieldNumTimerIntrs`
-// interrupt lines, see `carfield_pkg.sv`). Other interrupt lines are level-triggered.
-for (genvar i = 0; i < CarfieldNumTimerIntrs; i++) begin : gen_sync_safed_edge_triggered_intrs
-  edge_propagator i_sync_safed_edge_triggered_intrs (
-    .clk_tx_i  ( host_clk_i                         ),
-    .rstn_tx_i ( host_pwr_on_rst_n                  ),
-    .edge_i    ( safed_edge_triggered_intrs[i]      ),
-    .clk_rx_i  ( safety_clk                         ),
-    .rstn_rx_i ( safety_pwr_on_rst_n                ),
-    .edge_o    ( safed_edge_triggered_intrs_sync[i] )
-  );
-end
-
-// Collect interrupts for the safety island: private interrupts from mailboxes, shared interrupts
-// from the interrupt router.
-assign safed_intrs = {
-  {(SafetyIslandCfg.NumInterrupts-(NumIntIntrs+CarfieldNumExtIntrs+NumMailboxesSafed)){1'b0}}, // Pad remaining interrupts
-  // Shared interrupts (cheshire and carfield's peripherals interrupts)
-  safed_intrs_distributed[(NumIntIntrs+CarfieldNumExtIntrs)-1:(EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs)], // Others up to CarfieldNumExtIntrs
-  safed_edge_triggered_intrs_sync, // Timer interrupts
-  safed_intrs_distributed[EdgeTriggeredIntrsOffset-1:(NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd)], // CAN, WDT interrupts
-  safed_intrs_distributed[(NumIntIntrs+IntClusterNumEoc)-1:0], // cheshire's peripherals, pulp cluster EOC
-  // Mailboxes
-  spatzcl_safed_mbox_intr, // 1
-  pulpcl_safed_mbox_intr,  // 1
-  secd_safed_mbox_intr,    // 1
-  hostd_safed_mbox_intr    // 1
-};
-// verilog_lint: waive-stop line-length
-
 if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
+
+  logic [SafetyIslandCfg.NumInterrupts-1:0] safed_intrs;
+
+  // Safety island interrupts from interrupt router
+  logic [(cheshire_pkg::NumIntIntrs+CarfieldNumExtIntrs)-1:0] safed_intrs_distributed;
+  // Safety island edge-triggered interrupts and synchronized edge-triggered interrupts
+  logic [CarfieldNumTimerIntrs-1:0] safed_edge_triggered_intrs, safed_edge_triggered_intrs_sync;
+  // Safety island is the only external target for the router in carfield
+  assign safed_intrs_distributed = chs_intrs_distributed[(cheshire_pkg::NumIntIntrs+
+                                                          CarfieldNumExtIntrs)-1:0];
+
+  // verilog_lint: waive-start line-length
+  localparam int unsigned EdgeTriggeredIntrsOffset = cheshire_pkg::NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd+
+                                                     CarfieldNumPeriphsIntrs-CarfieldNumTimerIntrs;
+  assign safed_edge_triggered_intrs = safed_intrs_distributed[
+                                      EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs-1:
+                                      EdgeTriggeredIntrsOffset];
+
+  // Propagate edge-triggered interrupts between host and safety_island clock domains. In carfield,
+  // edge-triggered interrupts come from the system timer peripherals (`CarfieldNumTimerIntrs`
+  // interrupt lines, see `carfield_pkg.sv`). Other interrupt lines are level-triggered.
+  for (genvar i = 0; i < CarfieldNumTimerIntrs; i++) begin : gen_sync_safed_edge_triggered_intrs
+    edge_propagator i_sync_safed_edge_triggered_intrs (
+      .clk_tx_i  ( host_clk_i                         ),
+      .rstn_tx_i ( host_pwr_on_rst_n                  ),
+      .edge_i    ( safed_edge_triggered_intrs[i]      ),
+      .clk_rx_i  ( safety_clk                         ),
+      .rstn_rx_i ( safety_pwr_on_rst_n                ),
+      .edge_o    ( safed_edge_triggered_intrs_sync[i] )
+    );
+  end
+
+  // Collect interrupts for the safety island: private interrupts from mailboxes, shared interrupts
+  // from the interrupt router.
+  assign safed_intrs = {
+    {(SafetyIslandCfg.NumInterrupts-(cheshire_pkg::NumIntIntrs+CarfieldNumExtIntrs+NumMailboxesSafed)){1'b0}}, // Pad remaining interrupts
+    // Shared interrupts (cheshire and carfield's peripherals interrupts)
+    safed_intrs_distributed[(cheshire_pkg::NumIntIntrs+CarfieldNumExtIntrs)-1:(EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs)], // Others up to CarfieldNumExtIntrs
+    safed_edge_triggered_intrs_sync, // Timer interrupts
+    safed_intrs_distributed[EdgeTriggeredIntrsOffset-1:(cheshire_pkg::NumIntIntrs+IntClusterNumEoc+NumMailboxesHostd)], // CAN, WDT interrupts
+    safed_intrs_distributed[(cheshire_pkg::NumIntIntrs+IntClusterNumEoc)-1:0], // cheshire's peripherals, pulp cluster EOC
+    // Mailboxes
+    spatzcl_safed_mbox_intr, // 1
+    pulpcl_safed_mbox_intr,  // 1
+    secd_safed_mbox_intr,    // 1
+    hostd_safed_mbox_intr    // 1
+  };
+  // verilog_lint: waive-stop line-length
+
   assign reset_vector[CarfieldDomainIdx.safed] = car_regs_reg2hw.safety_island_rst.q;
   assign safety_rst_n = rsts_n[CarfieldDomainIdx.safed];
   assign safety_pwr_on_rst_n = pwr_on_rsts_n[CarfieldDomainIdx.safed];
@@ -1319,7 +1315,7 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
 
 localparam pulp_cluster_package::pulp_cluster_cfg_t PulpClusterCfg = '{
   CoreType: pulp_cluster_package::RISCY,
-  NumCores: 12,
+  NumCores: IntClusterNumCores,
   DmaNumPlugs: 4,
   DmaNumOutstandingBursts: 8,
   DmaBurstLength: 256,
@@ -1329,9 +1325,13 @@ localparam pulp_cluster_package::pulp_cluster_cfg_t PulpClusterCfg = '{
   ClusterAliasBase: 'h0,
   NumSyncStages: 3,
   UseHci: 1,
-  TcdmSize: 256*1024,
+  TcdmSize: 128*1024,
   TcdmNumBank: 16,
   HwpePresent: 1,
+  HwpeCfg: '{NumHwpes: 2,
+             HwpeList: {pulp_cluster_package::NEUREKA,
+                        pulp_cluster_package::REDMULE}
+            },
   HwpeNumPorts: 9,
   iCacheNumBanks: 2,
   iCacheNumLines: 1,
@@ -1343,10 +1343,10 @@ localparam pulp_cluster_package::pulp_cluster_cfg_t PulpClusterCfg = '{
   L2Size: L2MemSize,
   DmBaseAddr: carfield_pkg::CarfieldIslandsCfg.safed.base+
               carfield_pkg::SafetyIslandPerOffset +
-              safety_island_pkg::DebugAddrOffset,
+              carfield_pkg::SafedDebugOffs,
   BootRomBaseAddr: carfield_pkg::CarfieldIslandsCfg.l2_port0.base + 'h8080,
   BootAddr: carfield_pkg::CarfieldIslandsCfg.l2_port0.base + 'h8080,
-  EnablePrivateFpu: 0,
+  EnablePrivateFpu: 1,
   EnablePrivateFpDivSqrt: 0,
   EnableSharedFpu: 0,
   EnableSharedFpDivSqrt: 0,
@@ -1475,14 +1475,18 @@ end else begin : gen_no_pulp_cluster
 end
 
 // Floating Point Spatz Cluster
-// Spatz cluster interrupts
-// msi (machine software interrupt): hostd, safed
-logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr;
-// mti (machine timer interrupt) : hostd (RISC-V clint)
 // verilog_lint: waive-start line-length
-logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr;
 if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
+  // Spatz cluster interrupts
+  // msi (machine software interrupt): hostd, safed
+  logic [SpatzNumIntHarts-1:0] spatzcl_mbox_intr;
+  // mti (machine timer interrupt) : hostd (RISC-V clint)
+  logic [SpatzNumIntHarts-1:0] spatzcl_timer_intr;
+  // from safety island to spatz cluster
+  logic [SpatzNumIntHarts-1:0] safed_spatzcl_mbox_intr;
 
+  // from hostd to spatz cluster
+  logic [SpatzNumIntHarts-1:0][CheshireNumIntHarts-1:0] hostd_spatzcl_mbox_intr;
   assign reset_vector[CarfieldDomainIdx.spatz] = car_regs_reg2hw.spatz_cluster_rst.q;
 
   assign domain_clk_sel[CarfieldDomainIdx.spatz] = car_regs_reg2hw.spatz_cluster_clk_sel.q;
@@ -1510,11 +1514,11 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
     .AxiUserWidth             ( Cfg.AxiUserWidth        ),
     .AxiInIdWidth             ( AxiSlvIdWidth           ),
     .AxiOutIdWidth            ( Cfg.AxiMstIdWidth       ),
-    .IwcAxiIdOutWidth         ( FpClustIwcAxiIdOutWidth ),
+    .IwcAxiIdOutWidth         ( 3                       ),
     .LogDepth                 ( LogDepth                ),
     .CdcSyncStages            ( SyncStages              ),
     .SyncStages               ( SyncStages              ),
-    .AxiMaxOutTrans           ( FpClustAxiMaxOutTrans   ),
+    .AxiMaxOutTrans           ( 4                       ),
     // AXI type IN
     .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
     .axi_in_req_t             ( carfield_axi_slv_req_t     ),
@@ -1593,10 +1597,10 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
     .cluster_probe_o         ( car_regs_hw2reg.spatz_cluster_busy.d  )
   );
 
-  for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_spatz_harts
+  for (genvar i = 0; i < SpatzNumIntHarts; i++ ) begin : gen_spatzcl_mbox_intrs_spatz_harts
     assign safed_spatzcl_mbox_intr[i] = snd_mbox_intrs[i];
     for (genvar j = 0; j < CheshireNumIntHarts; j++ ) begin :  gen_spatzcl_mbox_intrs_host_harts
-      assign hostd_spatzcl_mbox_intr[i][j] = snd_mbox_intrs[spatz_cluster_pkg::NumCores + (spatz_cluster_pkg::NumCores * j) + i];
+      assign hostd_spatzcl_mbox_intr[i][j] = snd_mbox_intrs[SpatzNumIntHarts + (SpatzNumIntHarts * j) + i];
     end
   end
 
@@ -1605,9 +1609,9 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
   end
   assign spatzcl_safed_mbox_intr = snd_mbox_intrs[SpatzMboxOffset + CheshireNumIntHarts];
 
-  logic [spatz_cluster_pkg::NumCores-1:0] hostd_spatzcl_mbox_intr_ored;
+  logic [SpatzNumIntHarts-1:0] hostd_spatzcl_mbox_intr_ored;
   // Floating point cluster
-  for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_or
+  for (genvar i = 0; i < SpatzNumIntHarts; i++ ) begin : gen_spatzcl_mbox_intrs_or
     assign hostd_spatzcl_mbox_intr_ored[i] = |hostd_spatzcl_mbox_intr[i];
   end
   // For the spatz FP cluster SW interrupt in machine mode (msi), OR together interrupts coming from the
@@ -1615,14 +1619,10 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
   assign spatzcl_mbox_intr = hostd_spatzcl_mbox_intr_ored | safed_spatzcl_mbox_intr;
   // verilog_lint: waive-stop line-length
 end else begin : gen_no_spatz_cluster
-  assign spatzcl_mbox_intr = '0;
-  assign spatzcl_timer_intr = '0;
   assign car_regs_hw2reg.spatz_cluster_isolate_status.d = 1'b0;
   assign car_regs_hw2reg.spatz_cluster_isolate_status.de = 1'b0;
   assign car_regs_hw2reg.spatz_cluster_busy.d = '0;
   assign car_regs_hw2reg.spatz_cluster_busy.de = 1'b0;
-  assign safed_spatzcl_mbox_intr = '0;
-  assign hostd_spatzcl_mbox_intr = '0;
   assign spatzcl_hostd_mbox_intr = '0;
   assign spatzcl_safed_mbox_intr = '0;
   assign spatz_rst_n = '0;

@@ -13,6 +13,7 @@
 #include "params.h"
 #include "regs/cheshire.h"
 #include "util.h"
+#include "printf.h"
 
 #define N_SAMPLES 64
 #define DEFAULT_SEED 0xcaca5a5adeadbeef
@@ -144,107 +145,125 @@ int main(void) {
 
     // Init the HW
     // Safety Island
-    car_enable_domain(CAR_SAFETY_RST);
+    // car_enable_domain(CAR_SAFETY_RST);
 
     // PULP Island
     car_enable_domain(CAR_PULP_RST);
 
     // Spatz Island
-    car_enable_domain(CAR_SPATZ_RST);
+    // car_enable_domain(CAR_SPATZ_RST);
 
-    int errors = 0;
+    uint32_t error = 0;
+    uint32_t errors = 0;
 
     // Probe an address range with pseudo-random values and read after each write
     // (wrwr)
 
     // L2 shared memory
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_L2_SPM_PORT1_INTERLEAVED_BASE_ADDR(car_l2_intl_1),
+    error += probe_range_lfsr_wrwr((uint64_t *)CAR_L2_SPM_PORT1_INTERLEAVED_BASE_ADDR(car_l2_intl_1),
                                     (uint64_t *)CAR_L2_SPM_PORT1_INTERLEAVED_END_ADDR(car_l2_intl_1), N_SAMPLES);
-    if (errors) {
-        char str[] = "1\n";
-        diyprintf(str, sizeof(str));
+    if (error) {
+        printf("L2 port 0: WRWR failed.");
+        errors += error;
+        error = 0;
     }
 
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_L2_SPM_PORT1_CONTIGUOUS_BASE_ADDR(car_l2_cont_1),
+    error += probe_range_lfsr_wrwr((uint64_t *)CAR_L2_SPM_PORT1_CONTIGUOUS_BASE_ADDR(car_l2_cont_1),
                                     (uint64_t *)CAR_L2_SPM_PORT1_CONTIGUOUS_END_ADDR(car_l2_cont_1), N_SAMPLES);
-    if (errors) {
-        char str[] = "2\n";
-        diyprintf(str, sizeof(str));
+    if (error) {
+        printf("L2 port 1: WRWR failed.");
+        errors += error;
+        error = 0;
     }
 
     // Safety Island
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR(car_safety_island),
-                                    (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR(car_safety_island), N_SAMPLES);
-    if (errors) {
-        char str[] = "3\n";
-        diyprintf(str, sizeof(str));
-    }
+    // errors += probe_range_lfsr_wrwr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR(car_safety_island),
+    //                                 (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR(car_safety_island), N_SAMPLES);
+    // if (errors) {
+    //     char str[] = "3\n";
+    //     diyprintf(str, sizeof(str));
+    // }
+
     // Integer Cluster
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_INT_CLUSTER_SPM_BASE_ADDR(car_integer_cluster), (uint64_t *)CAR_INT_CLUSTER_SPM_END_ADDR(car_integer_cluster),
+    error += probe_range_lfsr_wrwr((uint64_t *)CAR_INT_CLUSTER_SPM_BASE_ADDR(car_integer_cluster), (uint64_t *)CAR_INT_CLUSTER_SPM_END_ADDR(car_integer_cluster),
                                     N_SAMPLES);
-    if (errors) {
-        char str[] = "4\n";
-        diyprintf(str, sizeof(str));
+    if (error) {
+        printf("PULP: WRWR failed.");
+        errors += error;
+        error = 0;
     }
     // HyperRAM
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR, N_SAMPLES);
-    if (errors) {
-        char str[] = "5\n";
-        diyprintf(str, sizeof(str));
+    
+    error += probe_range_lfsr_wrwr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR, N_SAMPLES);
+    
+    if (error) {
+        printf("L3: WRWR failed.");
+        errors += error;
+        error = 0;
     }
+
     // FP Cluster
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_FP_CLUSTER_SPM_BASE_ADDR(car_spatz_cluster), (uint64_t *)CAR_FP_CLUSTER_SPM_END_ADDR(car_spatz_cluster),
-                                    N_SAMPLES);
-    if (errors) {
-        char str[] = "6\n";
-        diyprintf(str, sizeof(str));
-    }
+    // errors += probe_range_lfsr_wrwr((uint64_t *)CAR_FP_CLUSTER_SPM_BASE_ADDR(car_spatz_cluster), (uint64_t *)CAR_FP_CLUSTER_SPM_END_ADDR(car_spatz_cluster),
+    //                                 N_SAMPLES);
+    // if (errors) {
+    //     char str[] = "6\n";
+    //     diyprintf(str, sizeof(str));
+    // }
     // TODO Mailboxes
 
     // Probe an address space with pseudo-random values and read all after
     // writing (wwrr)
 
     // L2 shared memory
-    errors += probe_range_lfsr_wwrr((uint64_t *)CAR_L2_SPM_PORT1_INTERLEAVED_BASE_ADDR(car_l2_intl_1),
+    error += probe_range_lfsr_wwrr((uint64_t *)CAR_L2_SPM_PORT1_INTERLEAVED_BASE_ADDR(car_l2_intl_1),
                                     (uint64_t *)CAR_L2_SPM_PORT1_INTERLEAVED_END_ADDR(car_l2_intl_1), N_SAMPLES);
-    if (errors) {
-        char str[] = "7\n";
-        diyprintf(str, sizeof(str));
+    if (error) {
+        printf("L2 port 0: WWRR failed.");
+        errors += error;
+        error = 0;
     }
-    errors += probe_range_lfsr_wwrr((uint64_t *)CAR_L2_SPM_PORT1_CONTIGUOUS_BASE_ADDR(car_l2_cont_1),
+
+    error += probe_range_lfsr_wwrr((uint64_t *)CAR_L2_SPM_PORT1_CONTIGUOUS_BASE_ADDR(car_l2_cont_1),
                                     (uint64_t *)CAR_L2_SPM_PORT1_CONTIGUOUS_END_ADDR(car_l2_cont_1), N_SAMPLES);
-    if (errors) {
-        char str[] = "8\n";
-        diyprintf(str, sizeof(str));
+    if (error) {
+        printf("L2 port 1: WWRR failed.");
+        errors += error;
+        error = 0;
     }
 
     // Safety Island
-    errors += probe_range_lfsr_wwrr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR(car_safety_island),
-                                    (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR(car_safety_island), N_SAMPLES);
-    if (errors) {
-        char str[] = "9\n";
-        diyprintf(str, sizeof(str));
-    }
+    // errors += probe_range_lfsr_wwrr((uint64_t *)CAR_SAFETY_ISLAND_SPM_BASE_ADDR(car_safety_island),
+    //                                 (uint64_t *)CAR_SAFETY_ISLAND_SPM_END_ADDR(car_safety_island), N_SAMPLES);
+    // if (errors) {
+    //     char str[] = "9\n";
+    //     diyprintf(str, sizeof(str));
+    // }
+
     // Integer Cluster
-    errors += probe_range_lfsr_wwrr((uint64_t *)CAR_INT_CLUSTER_SPM_BASE_ADDR(car_integer_cluster), (uint64_t *)CAR_INT_CLUSTER_SPM_END_ADDR(car_integer_cluster),
+    error += probe_range_lfsr_wwrr((uint64_t *)CAR_INT_CLUSTER_SPM_BASE_ADDR(car_integer_cluster), (uint64_t *)CAR_INT_CLUSTER_SPM_END_ADDR(car_integer_cluster),
                                     N_SAMPLES);
-    if (errors) {
-        char str[] = "a\n";
-        diyprintf(str, sizeof(str));
+    if (error) {
+        printf("PULP: WWRR failed.");
+        errors += error;
+        error = 0;
     }
+
     // HyperRAM
-    errors += probe_range_lfsr_wwrr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR, N_SAMPLES);
-    if (errors) {
-        char str[] = "b\n";
-        diyprintf(str, sizeof(str));
+    error += probe_range_lfsr_wwrr((uint64_t *)CAR_HYPERRAM_BASE_ADDR, (uint64_t *)CAR_HYPERRAM_END_ADDR, N_SAMPLES);
+    
+    if (error) {
+        printf("L3: WWRR failed.");
+        errors += error;
+        error = 0;
     }
+
     // FP Cluster
-    errors += probe_range_lfsr_wrwr((uint64_t *)CAR_FP_CLUSTER_SPM_BASE_ADDR(car_spatz_cluster), (uint64_t *)CAR_FP_CLUSTER_SPM_END_ADDR(car_spatz_cluster),
-                                    N_SAMPLES);
-    if (errors) {
-        char str[] = "c\n";
-        diyprintf(str, sizeof(str));
-    }
+    // errors += probe_range_lfsr_wrwr((uint64_t *)CAR_FP_CLUSTER_SPM_BASE_ADDR(car_spatz_cluster), (uint64_t *)CAR_FP_CLUSTER_SPM_END_ADDR(car_spatz_cluster),
+    //                                 N_SAMPLES);
+    // if (errors) {
+    //     char str[] = "c\n";
+    //     diyprintf(str, sizeof(str));
+    // }
     // TODO Mailboxes
 
     return errors;

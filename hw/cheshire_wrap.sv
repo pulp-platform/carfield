@@ -43,6 +43,9 @@ module cheshire_wrap
   parameter type cheshire_reg_ext_rsp_t         = logic,
   parameter int unsigned LogDepth = 3,
   parameter int unsigned CdcSyncStages = 2,
+  // External Slaves Parameters
+  // Having a dedicated synchronous port, the mailbox is not taken into account
+  parameter int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 1,
   parameter axi_in_t    AxiIn  = gen_axi_in(Cfg) ,
   parameter axi_out_t   AxiOut = gen_axi_out(Cfg),
   // LLC Parameters
@@ -67,9 +70,6 @@ module cheshire_wrap
   localparam int unsigned LlcWWidth  = (2**LogDepth)*
                                         axi_pkg::w_width(Cfg.AxiDataWidth,
                                                          Cfg.AxiUserWidth),
-  // External Slaves Parameters
-  // Having a dedicated synchronous port, the mailbox is not taken into account
-  localparam int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 1,
   localparam int unsigned ExtSlvIdWidth = Cfg.AxiMstIdWidth   +
                                           $clog2(AxiIn.num_in ),
   localparam int unsigned ExtSlvArWidth = (2**LogDepth)*
@@ -136,7 +136,7 @@ module cheshire_wrap
   // External AXI isolate slave Ports (except the Mailbox)
   input  logic [iomsb(Cfg.AxiExtNumSlv):0]                axi_ext_slv_isolate_i,
   output logic [iomsb(Cfg.AxiExtNumSlv):0]                axi_ext_slv_isolated_o,
-  // External async AXI slave Ports (except the Integer Cluster and the Mailbox)
+  // External async AXI slave Ports (except the Mailbox)
   output logic [iomsb(NumSlaveCDCs):0][ExtSlvArWidth-1:0] axi_ext_slv_ar_data_o,
   output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_wptr_o,
   input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_rptr_i,
@@ -152,7 +152,7 @@ module cheshire_wrap
   output logic [iomsb(NumSlaveCDCs):0][ ExtSlvWWidth-1:0] axi_ext_slv_w_data_o ,
   output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_wptr_o ,
   input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_rptr_i ,
-  // External async AXI master Ports (except the Integer Cluster)
+  // External async AXI master Ports
   input  logic [iomsb(Cfg.AxiExtNumMst):0][ExtMstArWidth-1:0] axi_ext_mst_ar_data_i,
   input  logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_ar_wptr_i,
   output logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_ar_rptr_o,
@@ -358,8 +358,7 @@ cheshire_soc #(
   .vga_blue_o
 );
 
-// Cheshire's AXI master cdc generation, except for the Integer Cluster (slave 6) and the Mailbox
-// (slave 7)
+// Cheshire's AXI master cdc generation, the Mailbox (slave 7)
 for (genvar i = 0; i < NumSlaveCDCs; i++) begin: gen_ext_slv_src_cdc
   axi_isolate              #(
     .NumPending             ( Cfg.AxiMaxSlvTrans           ),
@@ -417,7 +416,7 @@ for (genvar i = 0; i < NumSlaveCDCs; i++) begin: gen_ext_slv_src_cdc
   );
 end
 
-// Cheshire's AXI slave cdc and isolate generation, except for the Integer Cluster (slave 7)
+// Cheshire's AXI slave cdc and isolate generation
 for (genvar i = 0; i < Cfg.AxiExtNumMst; i++) begin: gen_ext_mst_dst_cdc
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),

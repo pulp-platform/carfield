@@ -16,9 +16,6 @@ module carfield_synth_wrap
   import carfield_pkg::*;
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
-  import safety_island_pkg::*;
-  import tlul_ot_pkg::*;
-  import spatz_cluster_pkg::*;
 #(
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2,

@@ -15,9 +15,9 @@ const void* car_safety_island = 0x60000000;
 const void* car_integer_cluster = 0x50000000;
 const void* car_spatz_cluster = 0x51000000;
 const void* car_l2_intl_0 = 0x78000000;
-const void* car_l2_cont_0 = 0x78100000;
-const void* car_l2_intl_1 = 0x78200000;
-const void* car_l2_cont_1 = 0x78300000;
+const void* car_l2_cont_0 = 0x78010000;
+const void* car_l2_intl_1 = 0x78020000;
+const void* car_l2_cont_1 = 0x78030000;
 
 #else // Pointers to be mapped by the driver
 void* car_soc_ctrl;

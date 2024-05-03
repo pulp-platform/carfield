@@ -13,7 +13,7 @@ import cheshire_pkg::*;
 //L2, port 0
 localparam bit     L2Port0Enable = 1;
 localparam doub_bt L2Port0Base = 'h78000000;
-localparam doub_bt L2Port0Size = 'h00200000;
+localparam doub_bt L2Port0Size = 'h00020000;
 // L2, port 1
 localparam bit     L2Port1Enable = 1;
 localparam doub_bt L2Port1Base = L2Port0Base + L2Port0Size;
@@ -45,7 +45,7 @@ localparam doub_bt SecurityIslandSize = 'h0;
 // Mailbox
 localparam bit     MailboxEnable = 1;
 localparam doub_bt MailboxBase = 'h40000000;
-localparam doub_bt MailboxSize = 'h00001000;
+localparam doub_bt MailboxSize = 'h00003000;
 /*********************
  * APB Configuration *
  ********************/
@@ -80,7 +80,7 @@ localparam bit     PadframeCfgEnable = 1;
 localparam doub_bt PadframeCfgBase = 'h200A0000;
 localparam doub_bt PadframeCfgSize = 'h00001000;
 // L2 ECC
-localparam bit     L2EccCfgEnable = 1;
+localparam bit     L2EccCfgEnable = 0;
 localparam doub_bt L2EccCfgBase = 'h200B0000;
 localparam doub_bt L2EccCfgSize = 'h00001000;
 
