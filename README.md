@@ -41,14 +41,15 @@ If you are impatient and have all needed
 source env/env-iis.sh
 bender update
 make car-all PYTHON=python3
+make tech-init
 ```
 
 and then run a [simulation](https://pulp-platform.github.io/carfield/tg/sim) with Questasim by
 typing:
 
 ```tcl
-make car-vsim-sim-build
-make car-vsim-sim-run CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf DEBUG=1
+make car-vsim-sim-build TECH_SIM=1
+make car-vsim-sim-run CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf TECH_SIM=1 DEBUG=1
 ```
 
 ---

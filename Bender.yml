@@ -98,6 +98,15 @@ sources:
   # Level 2
   - hw/carfield.sv
   - target/synth/src/carfield_synth_wrap.sv
+  # Level 3 - Behavioural padframe
+  - target/sim/src/behav-padframe/src/pkg_carfield_padframe_behav.sv
+  - target/sim/src/behav-padframe/src/pkg_internal_carfield_padframe_behav_periph.sv
+  - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph_config_reg_pkg.sv
+  - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph_config_reg_top.sv
+  - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph_pads.sv
+  - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph_muxer.sv
+  - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph.sv
+  - target/sim/src/behav-padframe/src/carfield_padframe_behav.sv
 
   - target: spatz
     files:
@@ -130,14 +139,16 @@ sources:
 
   - target: tech_sim
     files:
+      # TODO: add technology dependent padframe
+      # TODO: add technology dependent memory cells
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_128x40m2b1w0.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x32m2b1w1.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x44m2b1w1.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x46m2b1w1.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x64m2b1w1.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x128m2b1w1.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_1024x39m4b1w0.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_1024x64m4b1w1.v
-      - tech/sourcecode/tc_clk.sv
       - tech/sourcecode/tc_sram.sv
 
   - target: all(xilinx, fpga, xilinx_vanilla)
