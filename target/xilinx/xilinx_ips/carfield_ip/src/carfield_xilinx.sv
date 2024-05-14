@@ -12,7 +12,6 @@
 module carfield_xilinx
   import carfield_pkg::*;
   import cheshire_pkg::*;
-  import safety_island_pkg::*;
 #(
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2,

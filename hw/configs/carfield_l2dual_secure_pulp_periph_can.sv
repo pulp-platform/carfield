@@ -80,7 +80,7 @@ localparam bit     PadframeCfgEnable = 1;
 localparam doub_bt PadframeCfgBase = 'h200A0000;
 localparam doub_bt PadframeCfgSize = 'h00001000;
 // L2 ECC
-localparam bit     L2EccCfgEnable = 0;
+localparam bit     L2EccCfgEnable = 1;
 localparam doub_bt L2EccCfgBase = 'h200B0000;
 localparam doub_bt L2EccCfgSize = 'h00001000;
 

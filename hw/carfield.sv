@@ -1082,7 +1082,7 @@ end
 // Safety Island
 if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
 
-  logic [SafetyIslandCfg.NumInterrupts-1:0] safed_intrs;
+  logic [SafetyIslandIrqs-1:0] safed_intrs;
 
   // Safety island interrupts from interrupt router
   logic [(cheshire_pkg::NumIntIntrs+CarfieldNumExtIntrs)-1:0] safed_intrs_distributed;
@@ -1116,7 +1116,7 @@ if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
   // Collect interrupts for the safety island: private interrupts from mailboxes, shared interrupts
   // from the interrupt router.
   assign safed_intrs = {
-    {(SafetyIslandCfg.NumInterrupts-(cheshire_pkg::NumIntIntrs+CarfieldNumExtIntrs+NumMailboxesSafed)){1'b0}}, // Pad remaining interrupts
+    {(SafetyIslandIrqs-(cheshire_pkg::NumIntIntrs+CarfieldNumExtIntrs+NumMailboxesSafed)){1'b0}}, // Pad remaining interrupts
     // Shared interrupts (cheshire and carfield's peripherals interrupts)
     safed_intrs_distributed[(cheshire_pkg::NumIntIntrs+CarfieldNumExtIntrs)-1:(EdgeTriggeredIntrsOffset+CarfieldNumTimerIntrs)], // Others up to CarfieldNumExtIntrs
     safed_edge_triggered_intrs_sync, // Timer interrupts

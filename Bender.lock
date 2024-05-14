@@ -22,8 +22,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: ac5deb3ff086aa34b168f392c051e92603d6c0e2
-    version: 0.39.2
+    revision: 9402c8a9ce0a7b5253c3c29e788612d771e8b5d6
+    version: 0.39.3
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -46,7 +46,7 @@ packages:
     dependencies:
     - axi_slice
   axi_llc:
-    revision: d79a00b8673b814efacbbe9bf106103407fc401b
+    revision: 4deb8c6281c74b3882846ad933f42a8c6568cbe0
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_llc
@@ -66,7 +66,7 @@ packages:
     - common_cells
     - obi
   axi_riscv_atomics:
-    revision: 034bf89414bad5eeb1d44451798f3debc8365ca5
+    revision: 46d567cad5a614a82778702d48b3a789aed7711b
     version: null
     source:
       Git: https://github.com/pulp-platform/axi_riscv_atomics.git
@@ -113,7 +113,7 @@ packages:
       Git: https://github.com/AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: 459bbe06d34560508beb7fa7cca8c153a85f800f
+    revision: d04f50cb7f5a1d55a2b73f72f7a0f61d574f9f9a
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -238,8 +238,8 @@ packages:
     dependencies:
     - common_cells
   hci:
-    revision: 97b79affd5d11d45000fa9c97918763d8bffed88
-    version: 2.0.2
+    revision: d31af36ebcaf2196fb51676b40782aa8cbd9cc69
+    version: null
     source:
       Git: https://github.com/pulp-platform/hci.git
     dependencies:
@@ -296,8 +296,8 @@ packages:
       Git: https://github.com/pulp-platform/icache-intc.git
     dependencies: []
   idma:
-    revision: 88fbe67d8350b4de5ceb3673073bc216b8d585b7
-    version: null
+    revision: 95f366e56f7e772c283fb3c8b343afc4a3978375
+    version: 0.6.2
     source:
       Git: https://github.com/pulp-platform/idma.git
     dependencies:
@@ -339,7 +339,7 @@ packages:
     dependencies:
     - common_cells
   neureka:
-    revision: 60c51c0a5f6b30140ca99cc546ddcfde00af0044
+    revision: 4f201c238c7dd0c1f84306f40d66ebdaa8589307
     version: null
     source:
       Git: https://github.com/pulp-platform/neureka.git
@@ -391,7 +391,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: 9a69d99db30c8ef1f47416e058b0f31445cbcf6b
+    revision: e7a99bb56e3eb57c115c12f0719ec9d9fb4ababa
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -419,7 +419,7 @@ packages:
     - tech_cells_generic
     - timer_unit
   redmule:
-    revision: 7abb25690090c7f5548a8aa905c7bf0440d4ba6b
+    revision: 60ba008c339ec70b5ffa7120bec2cbf5a8f53c99
     version: null
     source:
       Git: https://github.com/pulp-platform/redmule.git

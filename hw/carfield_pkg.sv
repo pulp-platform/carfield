@@ -513,11 +513,13 @@ localparam dm::hartinfo_t [MaxHartId:0] SafetyIslandExtHartinfo =
       // All non-set values should be zero
       default: '0
   };
+  localparam int unsigned SafetyIslandIrqs = SafetyIslandCfg.NumInterrupts;
 `else
   localparam int unsigned SafetyIslandCfg = '0;
   localparam bit [31:0] SafedDebugOffs          = 0;
   localparam int unsigned SafetyIslandMemOffset = 0;
   localparam int unsigned SafetyIslandPerOffset = 0;
+  localparam int unsigned SafetyIslandIrqs = 1;
 `endif
 
 // Compute the number of atomic MSBs depending on the configuration
