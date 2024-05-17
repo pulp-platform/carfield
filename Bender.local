@@ -19,4 +19,4 @@ overrides:
   cv32e40p:             { git: "https://github.com/pulp-platform/cv32e40p.git"            , rev: e863f576699815b38cc9d80dbdede8ed5efd5991   }
   axi_rt:               { git: "https://github.com/pulp-platform/axi_rt.git"              , version: =0.0.0-alpha.4                         }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , version: 0.4.4                                  }
-  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git"        , version: 1.35.0                                 }
+  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git"        , rev: f4d6406070d8e7767e4e9a433f11b039859f03a1   } # branch: master

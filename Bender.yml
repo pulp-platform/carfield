@@ -13,19 +13,19 @@ package:
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.3                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: d04f50cb7f5a1d55a2b73f72f7a0f61d574f9f9a } # branch: cl/idma-wrapper
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: d6274a52dab68d12765b64d670d528774eb36c2c } # branch: idma-rebase
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: f039e601c8b6590181734e6d26ff8b77aa380412 } # branch: chi/add_fsm_with_Tcsh
   dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
   safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: aaef55c798ab53560faaf451a86668fa1e6d0f3b } # branch: carfield
-  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: e7a99bb56e3eb57c115c12f0719ec9d9fb4ababa } # branch: astral
-  opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: 3682dfcc08281ff6de5bf629368ab612fd17f0de } # branch: mc/astral
+  pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         rev: 1a167ec4ec46fa4a0c3d054b1213c0e6bc15d075 } # branch: astral
+  opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: faca6f28e20195e9b56eb822c58bec4a3a19dd4f } # branch: mc/astral
   mailbox_unit:       { git: https://github.com/pulp-platform/mailbox_unit.git,         version: 1.1.0                                }
   apb:                { git: https://github.com/pulp-platform/apb.git,                  version: 0.2.3                                }
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: https://github.com/AlSaqr-platform/can_bus.git,            rev: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379 } # branch: pulp
   spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: 98de97f24fe42675c9b4a8cc08354a03af57400a } # branch: yt/astral
-  common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
+  common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         rev: f4d6406070d8e7767e4e9a433f11b039859f03a1 } # branch: master
   pulp-ethernet:      { git: https://github.com/pulp-platform/pulp-ethernet.git,        rev: bdc8031ab270a49da28df269266ce9ab9a133636 } # branch: carfield
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg.git,            version: =0.8.0                               }
 
