@@ -46,6 +46,8 @@ QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7 +UVM_NO_RELNO
 ifeq ($(TECH_SIM), 1)
 	QUESTA_FLAGS += +nospecify
 	QUESTA_FLAGS += -suppress 13271
+## TODO: this is a workaround to suppress sdf error! Fix it!
+	QUESTA_FLAGS += -sdfnoerror
 endif
 ifdef DEBUG
 	VOPT_FLAGS := $(QUESTA_FLAGS) +acc
