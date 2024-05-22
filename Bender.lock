@@ -154,6 +154,17 @@ packages:
     dependencies:
     - common_cells
     - register_interface
+  cluster_icache:
+    revision: b3b0c474eb5baa2fdeece65369805206398ab63b
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/cluster_icache.git
+    dependencies:
+    - axi
+    - common_cells
+    - register_interface
+    - scm
+    - tech_cells_generic
   cluster_interconnect:
     revision: 89e1019d64a86425211be6200770576cbdf3e8b3
     version: null
@@ -245,18 +256,6 @@ packages:
     - cluster_interconnect
     - hwpe-stream
     - l2_tcdm_hybrid_interco
-  hier-icache:
-    revision: 2886cb2a46cea3e2bd2d979b505d88fadfbe150c
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/hier-icache.git
-    dependencies:
-    - axi
-    - axi_slice
-    - common_cells
-    - icache-intc
-    - scm
-    - tech_cells_generic
   hwpe-ctrl:
     revision: a5966201aeeb988d607accdc55da933a53c6a56e
     version: null
@@ -288,12 +287,6 @@ packages:
       Git: https://github.com/pulp-platform/ibex.git
     dependencies:
     - tech_cells_generic
-  icache-intc:
-    revision: 663c3b6d3c2bf63ff25cda46f33c799c647b3985
-    version: 1.0.1
-    source:
-      Git: https://github.com/pulp-platform/icache-intc.git
-    dependencies: []
   idma:
     revision: 95f366e56f7e772c283fb3c8b343afc4a3978375
     version: 0.6.2
@@ -390,7 +383,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: 1a167ec4ec46fa4a0c3d054b1213c0e6bc15d075
+    revision: 25cd063691a9279c647f3bc4a4f9ab86171ec599
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -398,13 +391,13 @@ packages:
     - axi
     - axi2mem
     - axi2per
+    - cluster_icache
     - cluster_interconnect
     - cluster_peripherals
     - common_cells
     - cv32e40p
     - event_unit_flex
     - hci
-    - hier-icache
     - ibex
     - idma
     - mchan
