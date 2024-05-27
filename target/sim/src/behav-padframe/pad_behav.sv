@@ -24,7 +24,7 @@ module pad_behav (
 
    wire   PAD_wi;
 
-   bufif0 (pad, dq, enq);
+   bufif0 (pad, ~dq, enq);
    buf    (outi, pad);
    bufif0 (PAD_wi, ~pwrup_pull_en, 1'b0);
    rpmos  (pad, PAD_wi, 1'b0);

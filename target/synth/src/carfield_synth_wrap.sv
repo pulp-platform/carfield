@@ -14,6 +14,7 @@
 // Wrap for synthesis of carfield
 module carfield_synth_wrap
   import carfield_pkg::*;
+  import carfield_chip_pkg::*;
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
   import safety_island_pkg::*;

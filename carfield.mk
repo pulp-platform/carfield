@@ -385,14 +385,9 @@ car-check-litmus-tests: $(LITMUS_WORK_DIR)/litmus.log
 # Technology #
 ##############
 tech-repo := git@iis-git.ee.ethz.ch:Astral/gf12.git
-# no commit by default, change during development
-tech-commit := b02050c2a4f8b66397e596a127228369d7d74b96 # branch: main
-
-tech-clone:
-	git clone $(tech-repo) tech
-
-tech-init: tech-clone
-	cd $(TECH_ROOT) && git checkout $(tech-commit) && cd $(CAR_ROOT)
+tech-branch := vi/mem_cuts
+tech-init:
+	git clone -b $(tech-branch) $(tech-repo) tech
 	$(MAKE) -C $(TECH_ROOT) init
 
 ########
