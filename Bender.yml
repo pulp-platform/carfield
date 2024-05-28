@@ -90,15 +90,6 @@ sources:
   - hw/carfield_chip_pkg.sv
   - hw/regs/carfield_reg_pkg.sv
   - hw/regs/carfield_reg_top.sv
-  # Level 1
-  - hw/cheshire_wrap.sv
-  - hw/hyperbus_wrap.sv
-  - hw/l2_wrap.sv
-  - hw/carfield_rstgen.sv
-  # Level 2
-  - hw/carfield.sv
-  - target/synth/src/carfield_synth_wrap.sv
-  # Level 3 - Behavioural padframe
   - target/sim/src/behav-padframe/src/pkg_carfield_padframe_behav.sv
   - target/sim/src/behav-padframe/src/pkg_internal_carfield_padframe_behav_periph.sv
   - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph_config_reg_pkg.sv
@@ -107,6 +98,14 @@ sources:
   - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph_muxer.sv
   - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph.sv
   - target/sim/src/behav-padframe/src/carfield_padframe_behav.sv
+  # Level 1
+  - hw/cheshire_wrap.sv
+  - hw/hyperbus_wrap.sv
+  - hw/l2_wrap.sv
+  - hw/carfield_rstgen.sv
+  # Level 2
+  - hw/carfield.sv
+  - target/synth/src/carfield_synth_wrap.sv
 
   - target: spatz
     files:

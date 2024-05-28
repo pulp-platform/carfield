@@ -484,8 +484,8 @@ module tb_carfield_soc;
             fix.chs_vip.jtag_elf_halt_load(spatzd_preload_elf, spatzd_binary_entry );
 
             // write start address into the csr
-            $display("[JTAG SPATZD] write the CSR %x of spatz with the entry point %x", spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry);
-            fix.chs_vip.jtag_write_reg32(spatz_cluster_pkg::PeriStartAddr + spatz_cluster_peripheral_reg_pkg::SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_OFFSET, spatzd_binary_entry, jtag_check_write);
+            $display("[JTAG SPATZD] write the CSR %x of spatz with the entry point %x", SpatzClusterPeriphStartAddr + SpatzClusterPeripheralBootControlOffset, spatzd_binary_entry);
+            fix.chs_vip.jtag_write_reg32(SpatzClusterPeriphStartAddr + SpatzClusterPeripheralBootControlOffset, spatzd_binary_entry, jtag_check_write);
 
             // Set interrupt on mailbox mailbox id MBOX_SPATZD_CORE0_ID and MBOX_SPATZD_CORE1_ID
             spatzd_reg_value = 64'h1;

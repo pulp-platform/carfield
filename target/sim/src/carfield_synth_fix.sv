@@ -13,7 +13,9 @@ module carfield_chip_fixture;
   import carfield_chip_pkg::*;
   import cheshire_pkg::*;
   import carfield_pkg::*;
+`ifdef SAFED_ENABLE
   import safety_island_pkg::*;
+`endif
 
   ///////////
   //  DPI  //
@@ -580,90 +582,101 @@ module carfield_chip_fixture;
   // Safety island VIP //
   ///////////////////////
 
-  localparam time ClkPeriodSafedJtag = 20ns;
+  if (CarfieldIslandsCfg.safed.enable) begin : gen_safed_vip
+    localparam time ClkPeriodSafedJtag = 20ns;
 
-  localparam axi_in_t AxiIn = gen_axi_in(DutCfg);
-  localparam int unsigned AxiSlvIdWidth = DutCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+    localparam axi_in_t AxiIn = gen_axi_in(DutCfg);
+    localparam int unsigned AxiSlvIdWidth = DutCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
-  // VIP
-  vip_safety_island_soc #(
-    .DutCfg            ( SafetyIslandCfg ),
-    .axi_mst_ext_req_t ( axi_mst_req_t ),
-    .axi_mst_ext_rsp_t ( axi_mst_rsp_t ),
-    .axi_slv_ext_req_t ( axi_mst_req_t ),
-    .axi_slv_ext_rsp_t ( axi_mst_rsp_t ),
-    .GlobalAddrWidth   ( 32            ),
-    .BaseAddr          ( 32'h6000_0000 ),
-    .AddrRange         ( CarfieldIslandsCfg.safed.size      ),
-    .MemOffset         ( SafetyIslandMemOffset ),
-    .PeriphOffset      ( SafetyIslandPerOffset ),
-    .ClkPeriodSys      ( ClkPeriodRef          ),
-    .ClkPeriodJtag     ( ClkPeriodSafedJtag    ),
-    .RstCycles         ( RstCycles             ),
-    .AxiDataWidth      ( DutCfg.AxiDataWidth   ),
-    .AxiAddrWidth      ( DutCfg.AddrWidth      ),
-    .AxiInputIdWidth   ( AxiSlvIdWidth         ),
-    .AxiOutputIdWidth  ( DutCfg.AxiMstIdWidth  ),
-    .AxiUserWidth      ( DutCfg.AxiUserWidth   ),
-    .AxiDebug          ( 0     ),
-    .ApplFrac          ( TAppl ),
-    .TestFrac          ( TTest )
-  ) safed_vip (
-    // we use the clock generated in cheshire VIP
-    .clk_vip      (),
-    .ext_clk_vip  (),
-    // we use the reset generated in cheshire VIP
-    .rst_n_vip    (),
-    .test_mode    (),
-    .boot_mode    ( bootmode_safed ),
-    // we use the rtc generated in cheshire VIP
-    .rtc          (),
-    // Not used in carfield
-    .axi_mst_req  ( '0 ),
-    .axi_mst_rsp  (    ),
-    // Virtual driver to be multiplexed and then serialized through the serial link
-    .axi_slv_req  ( ext_to_vip_req[SafedNumAxiExtMstPorts-1:0] ),
-    .axi_slv_rsp  ( ext_to_vip_rsp[SafedNumAxiExtMstPorts-1:0] ),
-    // JTAG interface
-    .jtag_tck     ( jtag_safed_tck    ),
-    .jtag_trst_n  ( jtag_safed_trst_n ),
-    .jtag_tms     ( jtag_safed_tms    ),
-    .jtag_tdi     ( jtag_safed_tdi    ),
-    .jtag_tdo     ( jtag_safed_tdo    ),
-    // Exit
-    .exit_status  ( )
-  );
+    // VIP
+    vip_safety_island_soc #(
+      .DutCfg            ( SafetyIslandCfg ),
+      .axi_mst_ext_req_t ( axi_mst_req_t ),
+      .axi_mst_ext_rsp_t ( axi_mst_rsp_t ),
+      .axi_slv_ext_req_t ( axi_mst_req_t ),
+      .axi_slv_ext_rsp_t ( axi_mst_rsp_t ),
+      .GlobalAddrWidth   ( 32            ),
+      .BaseAddr          ( 32'h6000_0000 ),
+      .AddrRange         ( CarfieldIslandsCfg.safed.size      ),
+      .MemOffset         ( SafetyIslandMemOffset ),
+      .PeriphOffset      ( SafetyIslandPerOffset ),
+      .ClkPeriodSys      ( ClkPeriodRef          ),
+      .ClkPeriodJtag     ( ClkPeriodSafedJtag    ),
+      .RstCycles         ( RstCycles             ),
+      .AxiDataWidth      ( DutCfg.AxiDataWidth   ),
+      .AxiAddrWidth      ( DutCfg.AddrWidth      ),
+      .AxiInputIdWidth   ( AxiSlvIdWidth         ),
+      .AxiOutputIdWidth  ( DutCfg.AxiMstIdWidth  ),
+      .AxiUserWidth      ( DutCfg.AxiUserWidth   ),
+      .AxiDebug          ( 0     ),
+      .ApplFrac          ( TAppl ),
+      .TestFrac          ( TTest )
+    ) safed_vip (
+      // we use the clock generated in cheshire VIP
+      .clk_vip      (),
+      .ext_clk_vip  (),
+      // we use the reset generated in cheshire VIP
+      .rst_n_vip    (),
+      .test_mode    (),
+      .boot_mode    ( bootmode_safed ),
+      // we use the rtc generated in cheshire VIP
+      .rtc          (),
+      // Not used in carfield
+      .axi_mst_req  ( '0 ),
+      .axi_mst_rsp  (    ),
+      // Virtual driver to be multiplexed and then serialized through the serial link
+      .axi_slv_req  ( ext_to_vip_req[SafedNumAxiExtMstPorts-1:0] ),
+      .axi_slv_rsp  ( ext_to_vip_rsp[SafedNumAxiExtMstPorts-1:0] ),
+      // JTAG interface
+      .jtag_tck     ( jtag_safed_tck    ),
+      .jtag_trst_n  ( jtag_safed_trst_n ),
+      .jtag_tms     ( jtag_safed_tms    ),
+      .jtag_tdi     ( jtag_safed_tdi    ),
+      .jtag_tdo     ( jtag_safed_tdo    ),
+      // Exit
+      .exit_status  ( )
+    );
+  end else begin: gen_no_safed_vip
+    assign jtag_safed_tck    = '0;
+    assign jtag_safed_trst_n = '0;
+    assign jtag_safed_tms    = '0;
+    assign jtag_safed_tdi    = '0;
+  end
 
   /////////////////////////
   // Security island VIP //
   /////////////////////////
 
-  localparam time ClkPeriodSecdJtag = 20ns;
+  if (CarfieldIslandsCfg.secured.enable) begin: gen_scured_vip
+    localparam time ClkPeriodSecdJtag = 20ns;
 
-  // VIP
-  vip_security_island_soc #(
-    .ClkPeriodJtag ( ClkPeriodSecdJtag ),
-    .RstCycles     ( RstCycles ),
-    .TAppl         ( TAppl ),
-    .TTest         ( TTest )
-  ) secd_vip (
-    .clk_vip      ( ),
-    .rst_n_vip    ( ),
-    .bootmode     ( bootmode_secd   ),
-    // UART interface
-    .uart_tx      ( uart_secd_tx     ),
-    .uart_rx      ( uart_secd_rx     ),
-    // JTAG interface
-    .jtag_tck     ( jtag_secd_tck    ),
-    .jtag_trst_n  ( jtag_secd_trst_n ),
-    .jtag_tms     ( jtag_secd_tms    ),
-    .jtag_tdi     ( jtag_secd_tdi    ),
-    .jtag_tdo     ( jtag_secd_tdo    ),
-    .SPI_D0       ( w_spi_secd_sd[0] ),
-    .SPI_D1       ( w_spi_secd_sd[1] ),
-    .SPI_SCK      ( w_spi_secd_sck   ),
-    .SPI_CSB      ( w_spi_secd_csb[0])
-  );
+    // VIP
+    vip_security_island_soc #(
+      .ClkPeriodJtag ( ClkPeriodSecdJtag ),
+      .RstCycles     ( RstCycles ),
+      .TAppl         ( TAppl ),
+      .TTest         ( TTest )
+    ) secd_vip (
+      .clk_vip      ( ),
+      .rst_n_vip    ( ),
+      .bootmode     ( bootmode_secd   ),
+      // UART interface
+      .uart_tx      ( uart_secd_tx     ),
+      .uart_rx      ( uart_secd_rx     ),
+      // JTAG interface
+      .jtag_tck     ( jtag_secd_tck    ),
+      .jtag_trst_n  ( jtag_secd_trst_n ),
+      .jtag_tms     ( jtag_secd_tms    ),
+      .jtag_tdi     ( jtag_secd_tdi    ),
+      .jtag_tdo     ( jtag_secd_tdo    ),
+      .SPI_D0       ( w_spi_secd_sd[0] ),
+      .SPI_D1       ( w_spi_secd_sd[1] ),
+      .SPI_SCK      ( w_spi_secd_sck   ),
+      .SPI_CSB      ( w_spi_secd_csb[0])
+    );
+  end else begin
+    assign bootmode_secd = '0;
+  end
 
   /////////////////////////
   // PLL JTAG verif      //
