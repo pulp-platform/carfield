@@ -76,7 +76,7 @@ module tb_carfield_chip;
     if (!$value$plusargs("CHS_PRELMODE=%d", preload_mode))    preload_mode    = 0;
     if (!$value$plusargs("CHS_BINARY=%s",   chs_preload_elf)) chs_preload_elf = "";
     if (!$value$plusargs("CHS_IMAGE=%s",    chs_boot_hex))    chs_boot_hex    = "";
-    if (!$value$plusargs("CHS_MEM_RAND=%d", chs_mem_rand))   chs_mem_rand     = 0;
+    if (!$value$plusargs("CHS_MEM_RAND=%d", chs_mem_rand))    chs_mem_rand    = 0;
 
     // PLL bypass
     fix.set_bypass_pll(bypass_pll);

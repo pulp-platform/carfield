@@ -641,6 +641,7 @@ module carfield_chip_fixture;
     assign jtag_safed_trst_n = '0;
     assign jtag_safed_tms    = '0;
     assign jtag_safed_tdi    = '0;
+    assign bootmode_safed    = '0;
   end
 
   /////////////////////////
