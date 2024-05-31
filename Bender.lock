@@ -331,8 +331,8 @@ packages:
     dependencies:
     - common_cells
   neureka:
-    revision: 6221fd4d17809166333ace71aec37b58ac28ce72
-    version: null
+    revision: b6141132d915b3fa5c1db712b730ac463a949a34
+    version: 1.0.0
     source:
       Git: https://github.com/pulp-platform/neureka.git
     dependencies:
@@ -383,7 +383,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: 25cd063691a9279c647f3bc4a4f9ab86171ec599
+    revision: 0f294fd56d1754cc33866b4fc8abf71f06d231dd
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
