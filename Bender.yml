@@ -126,6 +126,10 @@ sources:
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x64m2b1w1.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_256x128m2b1w1.v
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_1024x64m4b1w1.v
+      - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_128x264m1b1w0.v
+      - tech/sourcecode/macros/sram_dp_hse_rvt_mvt_16384x8m16b8w1.v
+      - tech/sourcecode/macros/sram_sp_hse_rvt_mvt_2560x76m4b4w0.v
+      - tech/sourcecode/macros/sram_sp_hse_rvt_mvt_4096x76m4b4w0.v
       - tech/sourcecode/tc_clk.sv
       - tech/sourcecode/tc_sram.sv
 
