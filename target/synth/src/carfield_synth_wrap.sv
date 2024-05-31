@@ -189,7 +189,6 @@ module carfield_synth_wrap
   logic ref_clk;
   // generated clocks
   logic host_clk, periph_clk, alt_clk, rt_clk;
-  logic [NumPlls-1:0] clk_pll_out;
 
   // secure boot mode signal
   logic secure_boot;
@@ -443,49 +442,77 @@ module carfield_synth_wrap
   assign soc2pad_port_signals.periph.ethernet.eth_txd2_i = eth_txd_o_s[2];
   assign soc2pad_port_signals.periph.ethernet.eth_txd3_i = eth_txd_o_s[3];
 
-  // Debug signals
-  logic [NumPlls-1:0] dbg_pll_out; // The unmultiplexed and ungated raw output
-
   // The following macro divides CLK_SIGNAL by 10x using a static integer clock
   // divider. To that end this macro also instantiates a reset synchronizer
-  // since we need a synchronous reset for the divider. Finally the divided
-  // clock is assigned to the soc2pad debug signals to be exposed by the
-  // padframes debug pads.
-`define CLK_DIV_BY_10(CLK_NAME, CLK_SIGNAL, DBG_SIGNAL_NAME)        \
-  logic CLK_NAME``_div_10x;                                         \
-  logic CLK_NAME``_div_10x_rst_synced;                              \
-  rstgen i_rstgen_``CLK_NAME``_divider (                            \
-    .clk_i(CLK_SIGNAL),                                             \
-    .rst_ni(pwr_on_rst_n),                                          \
-    .test_mode_i(1'b0),                                             \
-    .rst_no(CLK_NAME``_div_10x_rst_synced),                         \
-    .init_no()                                                      \
-  );                                                                \
-  clk_int_div_static #(.DIV_VALUE(10)) i_clk_div_10x_``CLK_NAME`` ( \
-    .clk_i          ( CLK_SIGNAL   ),                               \
-    .rst_ni         ( CLK_NAME``_div_10x_rst_synced ),              \
-    .en_i           ( 1'b1         ),                               \
-    .test_mode_en_i ( 1'b0         ),                               \
-    .clk_o          ( CLK_NAME``_div_10x )                          \
-  );                                                                \
-  assign soc2pad_port_signals.periph.debug_signals.``DBG_SIGNAL_NAME = CLK_NAME``_div_10x;\
+  // since we need a synchronous reset for the divider.
+  `define CLK_DIV_BY_10(CLK_NAME, CLK_SIGNAL)                         \
+    logic CLK_NAME``_div_10x;                                         \
+    logic CLK_NAME``_div_10x_rst_synced;                              \
+    rstgen i_rstgen_``CLK_NAME``_10x_divider (                        \
+      .clk_i(CLK_SIGNAL),                                             \
+      .rst_ni(pwr_on_rst_n),                                          \
+      .test_mode_i(1'b0),                                             \
+      .rst_no(CLK_NAME``_div_10x_rst_synced),                         \
+      .init_no()                                                      \
+    );                                                                \
+    clk_int_div_static #(.DIV_VALUE(10)) i_clk_div_10x_``CLK_NAME`` ( \
+      .clk_i          ( CLK_SIGNAL   ),                               \
+      .rst_ni         ( CLK_NAME``_div_10x_rst_synced ),              \
+      .en_i           ( 1'b1         ),                               \
+      .test_mode_en_i ( 1'b0         ),                               \
+      .clk_o          ( CLK_NAME``_div_10x )                          \
+    );
+  
+  // The following macro divides CLK_SIGNAL by 100x using a static integer clock
+  // divider. To that end this macro also instantiates a reset synchronizer
+  // since we need a synchronous reset for the divider.
+  `define CLK_DIV_BY_100(CLK_NAME, CLK_SIGNAL)                          \
+    logic CLK_NAME``_div_100x;                                          \
+    logic CLK_NAME``_div_100x_rst_synced;                               \
+    rstgen i_rstgen_``CLK_NAME``_100x_divider (                         \
+      .clk_i(CLK_SIGNAL),                                               \
+      .rst_ni(pwr_on_rst_n),                                            \
+      .test_mode_i(1'b0),                                               \
+      .rst_no(CLK_NAME``_div_100x_rst_synced),                          \
+      .init_no()                                                        \
+    );                                                                  \
+    clk_int_div_static #(.DIV_VALUE(100)) i_clk_div_100x_``CLK_NAME`` ( \
+      .clk_i          ( CLK_SIGNAL   ),                                 \
+      .rst_ni         ( CLK_NAME``_div_100x_rst_synced ),               \
+      .en_i           ( 1'b1         ),                                 \
+      .test_mode_en_i ( 1'b0         ),                                 \
+      .clk_o          ( CLK_NAME``_div_100x )                           \
+    );                                                                  \
 
-  `CLK_DIV_BY_10(host_clk, host_clk, host_clk)
-  `CLK_DIV_BY_10(host_pll, dbg_pll_out[HostDomainClkIdx], host_pll)
-  `CLK_DIV_BY_10(alt_clk, alt_clk, alt_clk)
-  `CLK_DIV_BY_10(alt_pll, dbg_pll_out[AltDomainClkIdx], alt_pll)
-  `CLK_DIV_BY_10(periph_clk, periph_clk, periph_clk)
-  `CLK_DIV_BY_10(periph_pll, dbg_pll_out[PeriphDomainClkIdx], periph_pll)
+  // The clock is assigned to the soc2pad debug signals to be exposed
+  // by the padframes debug pads.
+  `define ASSIGN_CLK_DBG(CLK_NAME, DBG_SIGNAL_NAME)                                 \
+    assign soc2pad_port_signals.periph.debug_signals.``DBG_SIGNAL_NAME = CLK_NAME;  \
+
+  `define ASSIGN_CLK_DIV_BY_10_DBG(CLK_NAME, CLK_SIGNAL, DBG_SIGNAL_NAME) \
+    `CLK_DIV_BY_10(CLK_NAME, CLK_SIGNAL)                                  \
+    `ASSIGN_CLK_DBG(CLK_NAME``_div_10x, DBG_SIGNAL_NAME)                  \
+
+  `define ASSIGN_CLK_DIV_BY_100_DBG(CLK_NAME, CLK_SIGNAL, DBG_SIGNAL_NAME) \
+    `CLK_DIV_BY_100(CLK_NAME, CLK_SIGNAL)                                  \
+    `ASSIGN_CLK_DBG(CLK_NAME``_div_100x, DBG_SIGNAL_NAME)                  \
+
+  `ASSIGN_CLK_DIV_BY_10_DBG(host_clk, host_clk, host_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(host_pll, host_dbg_clk, host_pll)
+  `ASSIGN_CLK_DIV_BY_10_DBG(alt_clk, alt_clk, alt_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(alt_pll, alt_dbg_clk, alt_pll)
+  `ASSIGN_CLK_DIV_BY_10_DBG(periph_clk, periph_clk, periph_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(periph_pll, periph_dbg_clk, periph_pll)
   assign soc2pad_port_signals.periph.debug_signals.host_por_n = carfield_debug_signals.host_pwr_on_rst_n;
-  `CLK_DIV_BY_10(periph_domain_clk, carfield_debug_signals.domain_clk[0], periph_domain_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(periph_domain_clk, carfield_debug_signals.domain_clk[0], periph_domain_clk)
   assign soc2pad_port_signals.periph.debug_signals.periph_domain_rstn = carfield_debug_signals.domain_rsts_n[0];
-  `CLK_DIV_BY_10(safety_domain_clk, carfield_debug_signals.domain_clk[1], safety_island_domain_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(safety_domain_clk, carfield_debug_signals.domain_clk[1], safety_island_domain_clk)
   assign soc2pad_port_signals.periph.debug_signals.safety_island_domain_rstn = carfield_debug_signals.domain_rsts_n[1];
-  `CLK_DIV_BY_10(security_domain_clk, carfield_debug_signals.domain_clk[2], security_island_domain_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(security_domain_clk, carfield_debug_signals.domain_clk[2], security_island_domain_clk)
   assign soc2pad_port_signals.periph.debug_signals.security_island_domain_rstn = carfield_debug_signals.domain_rsts_n[2];
-  `CLK_DIV_BY_10(pulp_cluster_domain_clk, carfield_debug_signals.domain_clk[3], pulp_cluster_domain_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(pulp_cluster_domain_clk, carfield_debug_signals.domain_clk[3], pulp_cluster_domain_clk)
   assign soc2pad_port_signals.periph.debug_signals.pulp_cluster_domain_rstn = carfield_debug_signals.domain_rsts_n[3];
-  `CLK_DIV_BY_10(spatz_cluster_domain_clk, carfield_debug_signals.domain_clk[4], spatz_cluster_domain_clk)
+  `ASSIGN_CLK_DIV_BY_10_DBG(spatz_cluster_domain_clk, carfield_debug_signals.domain_clk[4], spatz_cluster_domain_clk)
   assign soc2pad_port_signals.periph.debug_signals.spatz_cluster_domain_rstn = carfield_debug_signals.domain_rsts_n[4];
 
   // External async register interface
@@ -500,19 +527,66 @@ module carfield_synth_wrap
   // Clock generation //
   //////////////////////
 
-  // from host: host clock domain
-  carfield_reg_req_t pll_refclk_cfg_reg_req;
-  carfield_reg_rsp_t pll_refclk_cfg_reg_rsp;
-
-  // clock of the PLLs
-  assign host_clk   = clk_pll_out[HostDomainClkIdx];
-  assign periph_clk = clk_pll_out[PeriphDomainClkIdx];
-  assign alt_clk    = clk_pll_out[AltDomainClkIdx];
+  logic       clk_fll_out;
+  logic       clk_fll_e;
+  logic       clk_fll_ref;
+  logic       fll_lock;
+  logic       fll_cfg_req;
+  logic       fll_cfg_ack;
+  logic[ 1:0] fll_cfg_addr;
+  logic[31:0] fll_cfg_data_in;
+  logic[31:0] fll_cfg_data_out;
+  logic       fll_cfg_wen;
+  logic       fll_rst_n;
+  logic       fll_pwd;
+  logic       fll_test_mode;
+  logic       fll_scan_e;
+  logic       fll_scan_in;
+  logic       fll_scan_out;
+  logic       fll_scan_jtag_in;
+  logic       fll_scan_jtag_out;
 
   // ref_clk
   assign ref_clk      = st_pad2soc_signals.periph.st_ref_clk;
   // power on reset
   assign pwr_on_rst_n = st_pad2soc_signals.periph.st_rst_n;
+
+  assign host_clk    = clk_fll_out;
+  assign periph_clk  = clk_fll_out;
+  assign alt_clk     = clk_fll_out;
+  assign clk_fll_e   = 1'b1;
+
+  assign clk_fll_ref = ref_clk;
+
+  assign fll_rst_n        = pwr_on_rst_n;
+  assign fll_pwd          = 1'b0;
+  assign fll_test_mode    = 1'b0;
+  assign fll_scan_e       = 1'b0;
+  assign fll_scan_in      = 1'b0;
+  assign fll_scan_jtag_in = 1'b0;
+  
+  assign fll_cfg_req                     = ext_reg_async_slv_req_src_out[0] & ext_reg_async_slv_data_src_out[0].valid;
+  assign ext_reg_async_slv_ack_src_in[0] = fll_cfg_ack;
+  assign fll_cfg_addr                    = ext_reg_async_slv_data_src_out[0].addr[31:0];
+  assign fll_cfg_data_in                 = ext_reg_async_slv_data_src_out[0].wdata;
+  assign fll_cfg_wen                     = ~ext_reg_async_slv_data_src_out[0].write;
+
+  assign ext_reg_async_slv_req_src_in[0]             = 1'b0;
+  assign ext_reg_async_slv_data_src_in[0].rdata      = fll_cfg_data_out;
+  assign ext_reg_async_slv_data_src_in[0].error      = '1;
+  assign ext_reg_async_slv_data_src_in[0].ready      = fll_cfg_ack;
+
+  `CLK_DIV_BY_100(rt_from_fll_clk, clk_fll_out)
+  assign rt_clk = rt_from_fll_clk_div_100x; //TODO: check correctness
+
+  assign soc2pad_port_signals.periph.jtag_pll2.tdo_o = '0;  //TODO
+  assign soc2pad_port_signals.periph.jtag_pll1.tdo_o = '0;  //TODO
+  assign soc2pad_port_signals.periph.jtag_pll0.tdo_o = '0;  //TODO
+
+  assign clk_dbg_fll_out = clk_fll_out; //TODO: check correctness
+  assign host_dbg_clk    = clk_dbg_fll_out; //TODO: check correctness
+  assign periph_dbg_clk  = clk_dbg_fll_out; //TODO: check correctness
+  assign alt_dbg_clk     = clk_dbg_fll_out; //TODO: check correctness
 
   // synchronize power-on rst with ref clock (required by padframe)
   rstgen i_ref_clk_rstgen (
@@ -523,83 +597,26 @@ module carfield_synth_wrap
     .init_no () // TODO: connect ?
   );
 
-`ifdef TARGET_RTL // TODO: modify fll_dummy interface to match the gf12 fll
-  fll_dummy #(
-    .NumPlls(NumPlls)
-  ) fll_dummy (
-    .clk_pll_o(clk_pll_out),
-    .dbg_pll_o(dbg_pll_out),
-    .rt_clk_o(rt_clk)
+  gf12_FLL i_fll (
+    .FLLCLK ( clk_fll_out       ), // out - FLL clock out
+    .FLLOE  ( clk_fll_e         ), // in  - FLL clock output enable (active high)
+    .REFCLK ( clk_fll_ref       ), // in  - reference clock input
+    .LOCK   ( fll_lock          ), // out - FLL lock signal (active high)
+    .CFGREQ ( fll_cfg_req       ), // in  - configuration port handshake: req
+    .CFGACK ( fll_cfg_ack       ), // out - configuration port handshake: ack
+    .CFGAD  ( fll_cfg_addr      ), // in  - config address in
+    .CFGD   ( fll_cfg_data_in   ), // in  - config data in
+    .CFGQ   ( fll_cfg_data_out  ), // out - config data out
+    .CFGWEB ( fll_cfg_wen       ), // in  - config reg write enable (active low)
+    .RSTB   ( fll_rst_n         ), // in  - global async reset (active low)
+    .PWD    ( fll_pwd           ), // in  - async power down (active high)
+    .TM     ( fll_test_mode     ), // in  - test mode
+    .TE     ( fll_scan_e        ), // in  - scan enable
+    .TD     ( fll_scan_in       ), // in  - scan in
+    .TQ     ( fll_scan_out      ), // out - scan out
+    .JTD    ( fll_scan_jtag_in  ), // in  - scan in (jtag)
+    .JTQ    ( fll_scan_jtag_out )  // out - scan out (jtag)
   );
-  assign ext_reg_async_slv_ack_src_in[0] = '0;
-  assign ext_reg_async_slv_req_src_in[0] = '0;
-  assign pll_refclk_cfg_a12_d32_reg_rsp = '0;
-  assign soc2pad_port_signals.periph.jtag_pll2.tdo_o = '0;
-  assign soc2pad_port_signals.periph.jtag_pll1.tdo_o = '0;
-  assign soc2pad_port_signals.periph.jtag_pll0.tdo_o = '0;
-`endif
-
-/*
-  /////////////////////////////
-  /// Put here GF12 FLL/PLL ///
-  /////////////////////////////
-
-  // to pll: ref clock domain
-  pll_digital_pkg::pll_cfg_intf_req_t pll_refclk_cfg_a12_d32_reg_req;
-  pll_digital_pkg::pll_cfg_intf_rsp_t pll_refclk_cfg_a12_d32_reg_rsp;
-
-  // crop the address from carfield to fit PLL's reg interface
-  assign pll_refclk_cfg_a12_d32_reg_req.addr  = ext_reg_async_slv_data_src_out[0].addr[Aw-1:0];
-  assign pll_refclk_cfg_a12_d32_reg_req.write = ext_reg_async_slv_data_src_out[0].write;
-  assign pll_refclk_cfg_a12_d32_reg_req.wdata = ext_reg_async_slv_data_src_out[0].wdata;
-  assign pll_refclk_cfg_a12_d32_reg_req.wstrb = ext_reg_async_slv_data_src_out[0].wstrb;
-  assign pll_refclk_cfg_a12_d32_reg_req.valid = ext_reg_async_slv_data_src_out[0].valid;
-
-  // feedthrough assignment for response
-  `REG_BUS_ASSIGN_TO_RSP(ext_reg_async_slv_data_src_in[0], pll_refclk_cfg_a12_d32_reg_rsp)
-
-  pll_digital #(
-    .IdcodeValue   ( carfield_chip_pkg::CarfieldPllJtagIdCode )
-  ) i_pll (
-    .async_req_i   ( ext_reg_async_slv_req_src_out[0] ),
-    .async_ack_o   ( ext_reg_async_slv_ack_src_in[0]  ),
-    .async_data_i  ( pll_refclk_cfg_a12_d32_reg_req   ),
-
-    .async_req_o   ( ext_reg_async_slv_req_src_in[0]  ),
-    .async_ack_i   ( ext_reg_async_slv_ack_src_out[0] ),
-    .async_data_o  ( pll_refclk_cfg_a12_d32_reg_rsp   ),
-
-    .rtc_clk_o     ( rt_clk                 ),
-    .pad_rst_ni    ( pwr_on_rst_n           ),
-    .bypass_clk_i  ( st_pad2soc_signals.periph.st_ext_clk    ),
-    .pad_bypass_i  ( st_pad2soc_signals.periph.st_bypass_fll ),
-
-    .devmode_i     ( '1                     ),
-
-    `ifndef INTEL_NO_PWR_PINS .vccdig_nom  ( vccdig_nom  ),`endif
-    `ifndef INTEL_NO_PWR_PINS .vccdist_nom ( vccdist_nom ),`endif
-    `ifndef INTEL_NO_PWR_PINS .vccldo_hv   ( vccldo_hv   ),`endif
-    `ifndef INTEL_NO_PWR_PINS .vnnaon_nom  ( vnnaon_nom  ),`endif
-    `ifndef INTEL_NO_PWR_PINS .vss         ( vss         ),`endif
-
-    // Reference clock
-    .clkref        ( ref_clk                ),
-    .clkpostdist   ( '0                     ),
-    // Generated clocks
-    .clkpll_o      ( clk_pll_out            ),
-    .viewanabus    (                        ),
-    .test_mode_i   ( '0 ),
-    .tck_i         ( { pad2soc_port_signals.periph.jtag_pll2.tck_i,   pad2soc_port_signals.periph.jtag_pll1.tck_i,   pad2soc_port_signals.periph.jtag_pll0.tck_i } ),
-    .tdi_i         ( { pad2soc_port_signals.periph.jtag_pll2.tdi_i,   pad2soc_port_signals.periph.jtag_pll1.tdi_i,   pad2soc_port_signals.periph.jtag_pll0.tdi_i } ),
-    .tms_i         ( { pad2soc_port_signals.periph.jtag_pll2.tms_i,   pad2soc_port_signals.periph.jtag_pll1.tms_i,   pad2soc_port_signals.periph.jtag_pll0.tms_i } ),
-    .trst_ni       ( { pad2soc_port_signals.periph.jtag_pll2.trstn_i, pad2soc_port_signals.periph.jtag_pll1.trstn_i, pad2soc_port_signals.periph.jtag_pll0.trstn_i } ),
-    .tdo_o         ( { soc2pad_port_signals.periph.jtag_pll2.tdo_o,   soc2pad_port_signals.periph.jtag_pll1.tdo_o,   soc2pad_port_signals.periph.jtag_pll0.tdo_o } ),
-    .tdo_oe_o      (), // pad output enable not needed
-    .ldo_vref      ( '1                     ),
-    .powergood_vnn ( '1                     ),
-    .dbg_pll_clk_unmuxed_o( dbg_pll_out     )
-  );
-*/
 
   //////////////////
   // Carfield SoC //

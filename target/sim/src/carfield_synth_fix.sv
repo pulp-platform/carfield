@@ -30,13 +30,14 @@ module carfield_chip_fixture;
   // DUT //
   /////////
 
-  localparam time         ClkPeriodRef  = 10ns;  // 100MHz reference clock
+  localparam time         ClkPeriodRef  = 73.464ns;  // 13.61MHz reference clock: same frequency as the FLL in stand-alone mode
   localparam time         ClkPeriodExt  = 3.3ns; // 300MHz: the maximum
                                                  // frequency supported by the
                                                  // pads according to intel16's
                                                  // datasheet
-  localparam time         ClkPeriodJtag = 40ns;
+  localparam time         ClkPeriodJtag = ClkPeriodRef*4; // 3.4MHz JTAG clock
   localparam int unsigned RstCycles     = 5;
+  localparam int unsigned RstCyclesVip  = 5;
   localparam real         TAppl         = 0.1;
   localparam real         TTest         = 0.9;
 
@@ -499,7 +500,7 @@ module carfield_chip_fixture;
     .Hyp1UserPreloadMemFile ( `HYP1_PRELOAD_MEM_FILE ),
     .ClkPeriodSys  ( ClkPeriodRef ),
     .ClkPeriodJtag ( ClkPeriodJtag ),
-    .RstCycles     ( RstCycles ),
+    .RstCycles     ( RstCyclesVip ),
     .TAppl         ( TAppl ),
     .TTest         ( TTest ),
     .NumAxiExtSlvPorts ( CarNumAxiExtSlvPorts ),
@@ -536,7 +537,7 @@ module carfield_chip_fixture;
     .axi_ext_mst_rsp_t ( axi_mst_rsp_t ),
     .ClkPeriodSys      ( ClkPeriodRef  ),
     .ClkPeriodJtag     ( ClkPeriodJtag ),
-    .RstCycles         ( RstCycles ),
+    .RstCycles         ( RstCyclesVip ),
     .TAppl             ( TAppl ),
     .TTest             ( TTest ),
     .SlinkAxiDebug     ( 0     )
@@ -583,7 +584,7 @@ module carfield_chip_fixture;
   ///////////////////////
 
   if (CarfieldIslandsCfg.safed.enable) begin : gen_safed_vip
-    localparam time ClkPeriodSafedJtag = 20ns;
+    localparam time ClkPeriodSafedJtag = ClkPeriodRef * 2;
 
     localparam axi_in_t AxiIn = gen_axi_in(DutCfg);
     localparam int unsigned AxiSlvIdWidth = DutCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
@@ -602,7 +603,7 @@ module carfield_chip_fixture;
       .PeriphOffset      ( SafetyIslandPerOffset ),
       .ClkPeriodSys      ( ClkPeriodRef          ),
       .ClkPeriodJtag     ( ClkPeriodSafedJtag    ),
-      .RstCycles         ( RstCycles             ),
+      .RstCycles         ( RstCyclesVip             ),
       .AxiDataWidth      ( DutCfg.AxiDataWidth   ),
       .AxiAddrWidth      ( DutCfg.AddrWidth      ),
       .AxiInputIdWidth   ( AxiSlvIdWidth         ),
@@ -649,12 +650,12 @@ module carfield_chip_fixture;
   /////////////////////////
 
   if (CarfieldIslandsCfg.secured.enable) begin: gen_scured_vip
-    localparam time ClkPeriodSecdJtag = 20ns;
+    localparam time ClkPeriodSecdJtag = ClkPeriodRef * 2;
 
     // VIP
     vip_security_island_soc #(
       .ClkPeriodJtag ( ClkPeriodSecdJtag ),
-      .RstCycles     ( RstCycles ),
+      .RstCycles     ( RstCyclesVip ),
       .TAppl         ( TAppl ),
       .TTest         ( TTest )
     ) secd_vip (
@@ -683,7 +684,7 @@ module carfield_chip_fixture;
   // PLL JTAG verif      //
   /////////////////////////
 
-  localparam time ClkPeriodPllJtag  = 20ns;
+  localparam time ClkPeriodPllJtag  = ClkPeriodRef * 2;
   localparam int PLL_JTAG_IR_BYPASS = 'h0;
   localparam int PLL_JTAG_IR_IDCODE = 'h1;
   localparam int PLL_JTAG_IR_PLLREG = 'h10;
@@ -691,7 +692,7 @@ module carfield_chip_fixture;
   // Generate clock for JTAG
   clk_rst_gen #(
     .ClkPeriod    ( ClkPeriodPllJtag ),
-    .RstClkCycles ( RstCycles        )
+    .RstClkCycles ( RstCyclesVip        )
   ) i_clk_jtag (
     .clk_o  ( jtag_pll_tck ),
     .rst_no ( )
@@ -817,5 +818,10 @@ module carfield_chip_fixture;
     chs_vip.slink_read_beats(addr, 2, 0, beats);
     data = beats[0];
   endtask
+
+  task wait_fll_lock();
+    @(posedge i_dut.fll_lock);
+    @(posedge i_dut.clk_fll_out);
+  endtask: wait_fll_lock
 
 endmodule

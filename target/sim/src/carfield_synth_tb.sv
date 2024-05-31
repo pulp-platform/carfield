@@ -92,6 +92,9 @@ module tb_carfield_chip;
       // Wait for reset
       fix.chs_vip.wait_for_reset();
 
+      // Wait for FLL lock
+      fix.wait_fll_lock();
+
       // We need to initialize memories after the reset due to limitations of the memory models.
       if (chs_mem_rand) begin
 `ifdef CHS_NETLIST
@@ -215,6 +218,9 @@ module tb_carfield_chip;
 
         fix.gen_safed_vip.safed_vip.safed_wait_for_reset();
 
+        // Wait for FLL lock
+        fix.wait_fll_lock();
+
         // Writing max burst length in Hyperbus configuration registers to
         // prevent the Verification IPs from triggering timing checks.
         $display("[TB] INFO: Configuring Hyperbus through serial link.");
@@ -272,6 +278,9 @@ module tb_carfield_chip;
       if (secd_preload_elf != "" || secd_flash_vmem != "") begin
         // Wait for reset
         fix.chs_vip.wait_for_reset();
+
+        // Wait for FLL lock
+        fix.wait_fll_lock();
 
         // Writing max burst length in Hyperbus configuration registers to
         // prevent the Verification IPs from triggering timing checks.
@@ -338,6 +347,9 @@ module tb_carfield_chip;
 
       // Wait for reset
       fix.chs_vip.wait_for_reset();
+
+      // Wait for FLL lock
+      fix.wait_fll_lock();
 
       if (pulpd_preload_elf != "") begin
 
@@ -489,6 +501,9 @@ module tb_carfield_chip;
 
         // Wait for reset
         fix.chs_vip.wait_for_reset();
+
+        // Wait for FLL lock
+        fix.wait_fll_lock();
 
         // Writing max burst length in Hyperbus configuration registers to
         // prevent the Verification IPs from triggering timing checks.
