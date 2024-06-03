@@ -7,6 +7,7 @@
 // Alessandro Ottaviano <aottaviano@ii.ee.ethz.ch>
 
 `include "cheshire/typedef.svh"
+`include "carfield/typedef.svh"
  `include "axi/typedef.svh"
  `include "axi/assign.svh"
 
@@ -44,8 +45,8 @@ module cheshire_wrap
   parameter int unsigned LogDepth = 3,
   parameter int unsigned CdcSyncStages = 2,
   // External Slaves Parameters
-  // Having a dedicated synchronous port, the mailbox is not taken into account
-  parameter int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 1,
+  // Having a dedicated synchronous port, the mailbox and iommu are not taken into account
+  parameter int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 2,
   parameter axi_in_t    AxiIn  = gen_axi_in(Cfg) ,
   parameter axi_out_t   AxiOut = gen_axi_out(Cfg),
   // LLC Parameters
@@ -250,8 +251,13 @@ cheshire_axi_ext_slv_req_t [iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_req;
 cheshire_axi_ext_slv_rsp_t [iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_rsp;
 
 // All AXI master buses
-cheshire_axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req;
-cheshire_axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp;
+cheshire_axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_pre_mmu_req, axi_ext_mst_post_mmu_req;
+cheshire_axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_pre_mmu_rsp, axi_ext_mst_post_mmu_rsp;
+
+// All external interrupt (dirty fix to add iommu irqs too)
+parameter IOMMU_N_INT_VEC = 8;
+logic [iomsb(Cfg.NumExtInIntrs):0] intr_ext_fixme;
+logic [IOMMU_N_INT_VEC-1:0] intr_iommu;
 
 // External LLC (DRAM) bus
 cheshire_axi_ext_llc_req_t axi_llc_mst_req, axi_llc_mst_isolated_req;
@@ -291,15 +297,15 @@ cheshire_soc #(
   .axi_llc_mst_req_o ( axi_llc_mst_req ),
   .axi_llc_mst_rsp_i ( axi_llc_mst_rsp ),
   // External AXI crossbar ports
-  .axi_ext_mst_req_i ( axi_ext_mst_req ),
-  .axi_ext_mst_rsp_o ( axi_ext_mst_rsp ),
+  .axi_ext_mst_req_i ( axi_ext_mst_post_mmu_req ),
+  .axi_ext_mst_rsp_o ( axi_ext_mst_post_mmu_rsp ),
   .axi_ext_slv_req_o ( axi_ext_slv_req ),
   .axi_ext_slv_rsp_i ( axi_ext_slv_rsp ),
   // External reg demux slaves
   .reg_ext_slv_req_o ( ext_reg_req     ),
   .reg_ext_slv_rsp_i ( ext_reg_rsp     ),
   // Interrupts from external devices
-  .intr_ext_i,
+  .intr_ext_i        ( intr_ext_fixme  ),
   .intr_ext_o,
   // Interrupts to external harts
   .xeip_ext_o,
@@ -358,8 +364,8 @@ cheshire_soc #(
   .vga_blue_o
 );
 
-// Cheshire's AXI master cdc generation, except for the Integer Cluster (slave 6) and the Mailbox
-// (slave 7)
+// Cheshire's AXI master cdc generation, except the the Mailbox (slave 7)
+// and the IOMMU (slave 8)
 for (genvar i = 0; i < NumSlaveCDCs; i++) begin: gen_ext_slv_src_cdc
   axi_isolate              #(
     .NumPending             ( Cfg.AxiMaxSlvTrans           ),
@@ -419,6 +425,7 @@ end
 
 // Cheshire's AXI slave cdc and isolate generation, except for the Integer Cluster (slave 7)
 for (genvar i = 0; i < Cfg.AxiExtNumMst; i++) begin: gen_ext_mst_dst_cdc
+  if ( i != IOMMUMstIdx )
   axi_cdc_dst #(
     .LogDepth   ( LogDepth                   ),
     .SyncStages ( CdcSyncStages              ),
@@ -449,10 +456,74 @@ for (genvar i = 0; i < Cfg.AxiExtNumMst; i++) begin: gen_ext_mst_dst_cdc
     // synchronous master port
     .dst_clk_i                  ( clk_i               ),
     .dst_rst_ni                 ( rst_ni              ),
-    .dst_req_o                  ( axi_ext_mst_req [i] ),
-    .dst_resp_i                 ( axi_ext_mst_rsp [i] )
+    .dst_req_o                  ( axi_ext_mst_pre_mmu_req [i] ),
+    .dst_resp_i                 ( axi_ext_mst_pre_mmu_rsp [i] )
   );
 end
+
+for (genvar i = 0; i < Cfg.AxiExtNumMst; i++) begin: gen_ext_mst_iommu_bypass
+  if ( i != FPClusterMstIdx ) begin
+    `AXI_ASSIGN_REQ_STRUCT(axi_ext_mst_post_mmu_req[i], axi_ext_mst_pre_mmu_req[i])
+    `AXI_ASSIGN_RESP_STRUCT(axi_ext_mst_pre_mmu_rsp[i], axi_ext_mst_post_mmu_rsp[i])
+  end
+end
+
+`CARFIELD_TYPEDEF_IOMMU(axi_iommu, Cfg);
+
+// IOMMU
+axi_iommu_req_t axi_iommu_req;
+axi_iommu_rsp_t axi_iommu_rsp;
+`AXI_ASSIGN_REQ_STRUCT(axi_iommu_req, axi_ext_mst_pre_mmu_req[FPClusterMstIdx])
+`AXI_ASSIGN_RESP_STRUCT(axi_ext_mst_pre_mmu_rsp[FPClusterMstIdx], axi_iommu_rsp)
+assign axi_iommu_req.aw.stream_id = '0;
+assign axi_iommu_req.aw.ss_id_valid = '1;
+assign axi_iommu_req.aw.substream_id = '0;
+assign axi_iommu_req.ar.stream_id = '0;
+assign axi_iommu_req.ar.ss_id_valid = '1;
+assign axi_iommu_req.ar.substream_id = '0;
+// For now put the IOMMU IRQs at the end (unused) of the ext irqs
+assign intr_ext_fixme = {intr_iommu, intr_ext_i[iomsb(Cfg.NumExtInIntrs)-IOMMU_N_INT_VEC:0]};
+
+riscv_iommu #(
+  .InclPC           ( 0                               ),
+  .InclBC           ( 0                               ),
+  .InclDBG          ( 1                               ),
+  .N_INT_VEC        ( IOMMU_N_INT_VEC                 ),
+  .ADDR_WIDTH			  ( Cfg.AddrWidth                   ),
+  .DATA_WIDTH			  ( Cfg.AxiDataWidth                ),
+  .ID_WIDTH			    ( Cfg.AxiMstIdWidth               ),
+  .ID_SLV_WIDTH		  ( Cfg.AxiMstIdWidth               ),
+  .USER_WIDTH			  ( Cfg.AxiUserWidth                ),
+  .aw_chan_t			  ( cheshire_axi_ext_mst_aw_chan_t  ),
+  .w_chan_t			    ( cheshire_axi_ext_mst_w_chan_t   ),
+  .b_chan_t			    ( cheshire_axi_ext_mst_b_chan_t   ),
+  .ar_chan_t			  ( cheshire_axi_ext_mst_ar_chan_t  ),
+  .r_chan_t		      ( cheshire_axi_ext_mst_r_chan_t   ),
+  .axi_req_t			  ( cheshire_axi_ext_mst_req_t      ),
+  .axi_rsp_t			  ( cheshire_axi_ext_mst_rsp_t      ),
+  .axi_req_slv_t		( cheshire_axi_ext_slv_req_t      ),
+  .axi_rsp_slv_t		( cheshire_axi_ext_slv_rsp_t      ),
+  .axi_req_iommu_t  ( axi_iommu_req_t                 ),
+  .reg_req_t		    ( cheshire_reg_ext_req_t          ),
+  .reg_rsp_t		    ( cheshire_reg_ext_rsp_t          )
+) i_spatz_iommu (
+  .clk_i,
+  .rst_ni,
+  // Translation Request Interface (Slave)
+  .dev_tr_req_i		  ( axi_iommu_req ),
+  .dev_tr_resp_o	  ( axi_iommu_rsp ),
+  // Translation Completion Interface (Master)
+  .dev_comp_resp_i  ( axi_ext_mst_post_mmu_rsp[FPClusterMstIdx]),
+  .dev_comp_req_o   ( axi_ext_mst_post_mmu_req[FPClusterMstIdx]),
+  // Implicit Memory Accesses Interface (Master)
+  .ds_resp_i			  ( axi_ext_mst_pre_mmu_rsp[IOMMUMstIdx]     ),
+  .ds_req_o			    ( axi_ext_mst_pre_mmu_req[IOMMUMstIdx]     ),
+  // Programming Interface (Slave) (AXI4 Full -> AXI4-Lite -> Reg IF)
+  .prog_req_i			  ( axi_ext_slv_req[IOMMUSlvIdx]         ),
+  .prog_resp_o		  ( axi_ext_slv_rsp[IOMMUSlvIdx]         ),
+  .wsi_wires_o 		  ( intr_iommu                           )
+);
+
 
 // AXI isolate and CDC for external LLC connection
 axi_isolate              #(
