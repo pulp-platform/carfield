@@ -37,6 +37,9 @@ workspace:
     opentitan: opentitan
     pulp_cluster: pulp_cluster
 
+export_include_dirs:
+  - hw/include
+
 sources:
   # Configurations
   - target: carfield_l2dual_safe_secure_pulp_spatz_periph_can

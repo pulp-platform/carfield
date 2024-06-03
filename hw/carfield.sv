@@ -34,8 +34,8 @@ module carfield
 `endif
   parameter type reg_req_t           = logic,
   parameter type reg_rsp_t           = logic,
-  // Having a dedicated synchronous port, the mailbox is not taken into account
-  localparam int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 1
+  // Having a dedicated synchronous port, the mailbox and iommus are not taken into account
+  localparam int unsigned NumSlaveCDCs = Cfg.AxiExtNumSlv - 2
 ) (
   // host clock
   input   logic                                       host_clk_i,
