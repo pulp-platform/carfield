@@ -59,6 +59,10 @@ sources:
     files:
       - hw/configs/carfield_l2dual_safe_periph.sv
 
+  - target: carfield_l2dual_safe_spatz_periph
+    files:
+      - hw/configs/carfield_l2dual_safe_spatz_periph.sv
+
   - target: carfield_l2dual_spatz_periph
     files:
       - hw/configs/carfield_l2dual_spatz_periph.sv

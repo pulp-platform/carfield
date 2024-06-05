@@ -34,9 +34,8 @@ $(CAR_SW_DIR)/lib/libcarfield.a: $(CAR_SW_LIB_SRCS_O)
 car-sw-libs: $(CAR_SW_LIBS)
 
 # Compilation
-
-carfield_%.dtb: carfield_%.dts
-	$(CHS_SW_DTC) -I dts -O dtb -i $(CAR_SW_DIR)/boot -o $@ $<
+carfield_%.dtb: carfield_%.dts $(wildcard $(CAR_SW_DIR)/boot/*.dtsi)
+	$(CHS_SW_DTC) -@ -I dts -O dtb -i $(CAR_SW_DIR)/boot -o $@ $<
 
 # All objects require up-to-date patches and headers
 %.car.o: %.c
@@ -165,13 +164,18 @@ $(CAR_SW_DIR)/boot/linux_carfield_%.gpt.bin: $(CHS_SW_DIR)/boot/zsl.rom.bin $(CA
 	dd if=$(word 1,$^) of=$@ bs=512 seek=64 conv=notrunc
 	dd if=$(word 2,$^) of=$@ bs=512 seek=128 conv=notrunc
 	dd if=$(word 3,$^) of=$@ bs=512 seek=2048 conv=notrunc
+ifneq ($(XILINX_BOOT_ETH),1)
 	dd if=$(word 4,$^) of=$@ bs=512 seek=8192 conv=notrunc
+else
+# If we plan in booting over ethernet do not add Linux
+	truncate -s 4M $@
+endif
 
 #########################
 # Linux app compilation #
 #########################
 
-CAR_CVA6_SDK      ?= $(realpath cva6-sdk)
+CAR_CVA6_SDK      ?= $(realpath sw/deps/cva6-sdk)
 CAR_CROSS_COMPILE := $(CAR_CVA6_SDK)/buildroot/output/host/bin/riscv64-buildroot-linux-gnu-
 CAR_APP_CC        := $(CAR_CROSS_COMPILE)gcc
 CAR_APP_OBJDUMP   := $(CAR_CROSS_COMPILE)objdump

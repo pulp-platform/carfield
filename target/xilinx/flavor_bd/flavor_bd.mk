@@ -45,7 +45,7 @@ $(CAR_XIL_DIR)/flavor_bd/scripts/add_includes.tcl:
 $(CAR_XIL_DIR)/flavor_bd/out/%.bit: $(xilinx_ips_paths_bd) $(CAR_XIL_DIR)/flavor_bd/scripts/add_includes.tcl
 	mkdir -p $(CAR_XIL_DIR)/flavor_bd/out
 	cd $(CAR_XIL_DIR)/flavor_bd && $(vivado_env_bd) $(VIVADO) $(VIVADO_FLAGS) -source scripts/run.tcl
-	find $(CAR_XIL_DIR)/flavor_bd -name "*.ltx" -o -name "*.bit" -o -name "*routed.rpt" | xargs -I {} cp {} $(CAR_XIL_DIR)/flavor_bd/out
+	find $(CAR_XIL_DIR)/flavor_bd/carfield* -name "*.ltx" -o -name "*.bit" -o -name "*routed.rpt" | xargs -I {} cp {} $(CAR_XIL_DIR)/flavor_bd/out
 .PRECIOUS: $(CAR_XIL_DIR)/flavor_bd/out/%.bit
 
 car-xil-clean-bd:
