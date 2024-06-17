@@ -1,3 +1,9 @@
+# Copyright 2024 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+#
+# Cyril Koenig <cykoenig@iis.ee.ethz.ch>
+
 # VIOs are asynchronous
 set_false_path -through [get_pins -of_objects [get_cells design_1_i/vio_0] -filter {NAME =~ *probe*}]
 

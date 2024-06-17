@@ -49,6 +49,6 @@ $(CAR_XIL_DIR)/flavor_bd/out/%.bit: $(xilinx_ips_paths_bd) $(CAR_XIL_DIR)/flavor
 .PRECIOUS: $(CAR_XIL_DIR)/flavor_bd/out/%.bit
 
 car-xil-clean-bd:
-	cd $(CAR_XIL_DIR)/flavor_bd && rm -rf scripts/add_includes.tcl* *.log *.jou *.str *.mif carfield_$(XILINX_BOARD) .Xil/
+	cd $(CAR_XIL_DIR)/flavor_bd && rm -rf scripts/add_includes.tcl* *.log *.jou *.str *.mif carfield_* .Xil/
 
 .PHONY: car-xil-clean-bd
