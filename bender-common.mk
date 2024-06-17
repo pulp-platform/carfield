@@ -30,6 +30,7 @@ common_defs += -D PRIVATE_ICACHE
 common_defs += -D HIERARCHY_ICACHE_32BIT
 common_defs += -D ICAHE_USE_FF
 common_defs += -D CLUSTER_ALIAS
+common_defs += -D SNITCH_ICACHE
 
 # Island exclusion
 ifeq ($(shell echo $(PULPD_PRESENT)), 0)
