@@ -41,13 +41,33 @@ handle_domain_clock_mux [get_cells -hier u_l2_clk_sel] 0 l2_domain_clk
 # Carfield CDCs #
 #################
 
+## Find a parent cdc cell from a path to an object
+## @param str path to an object
+## @example
+## find_cdc design_1_i/carfield_xilinx_ip_0/inst/i_carfield_xilinx/i_carfield/i_hyperbus_wrap/i_hyper_cdc_dst/i_cdc_fifo_gray_src_b/gen_sync[3].i_sync/reg_q_reg[0]/D
+## -> ./design_1_i/carfield_xilinx_ip_0/inst/i_carfield_xilinx/i_carfield/i_hyperbus_wrap/i_hyper_cdc_dst
+proc find_cdc { str } {
+  set path ".";
+  set ref_to_find [list "axi_cdc_dst" "axi_cdc_src"]
+  foreach cell [split $str '/'] {
+    if {[get_cells $path] != ""} {
+      set ref_name [get_property "ORIG_REF_NAME" [get_cell $path]]
+      if { [lsearch -exact $ref_to_find $ref_name] >= 0} {
+        return $path
+      }
+    }
+    set path $path/$cell;
+  }
+  return ""
+}
+
 # Safety Island
 ################
 
 proc handle_slv_cdc { slv_cdc_path } {
   upvar SOC_TCK SOC_TCK
   # Start from a known slv cdc_dst and get fanout to find the mst cdc_src
-  set mst_cdc_path [lindex [regexp -inline {.*i_cheshire_ext_slv_cdc_src|.*i_intcluster_slv_cdc} [lindex [filter [all_fanout -flat [get_pins $slv_cdc_path/*rptr*]] -filter {NAME =~ *gen_ext_slv_src_cdc* || NAME =~ *gen_pulp_cluster*}] 0]] 0]
+  set mst_cdc_path [find_cdc [lindex [all_fanout -flat [get_pins $slv_cdc_path/*rptr*]] 0]]
   if { $mst_cdc_path != "" } {
     set_max_delay -datapath \
      -from [get_pins $mst_cdc_path/i_cdc_fifo_gray_*/*reg*/C] \
@@ -76,12 +96,12 @@ handle_slv_cdc [get_cells -hier gen_safety_island.i_safety_island_wrap]/i_cdc_in
 handle_slv_cdc [get_cells -hier gen_spatz_cluster.i_fp_cluster_wrapper]/i_spatz_cluster_cdc_dst
 handle_slv_cdc [get_cells -hier gen_pulp_cluster.i_integer_cluster]/axi_slave_cdc_i
 handle_slv_cdc [get_cells -hier gen_l2.i_reconfigurable_l2]/gen_cdc_fifos[0].i_dst_cdc
+handle_slv_cdc [get_cells -hier i_hyperbus_wrap]/i_hyper_cdc_dst
 
 proc handle_mst_cdc { mst_cdc_path } {
   upvar SOC_TCK SOC_TCK
   # Get the dst_cdc in cheshire
-  set slv_cdc_path [lindex [regexp -inline {.*i_cheshire_ext_mst_cdc_dst|.*i_intcluster_mst_cdc} [lindex [filter [all_fanout -flat [get_pins $mst_cdc_path/*wptr*]] -filter {NAME =~ *gen_ext_mst_dst_cdc* || NAME =~ *gen_pulp_cluster*}] 0]] 0]
-
+  set slv_cdc_path [find_cdc [lindex [all_fanout -flat [get_pins $mst_cdc_path/*rptr*]] 0]]
   if { $slv_cdc_path != "" } {
     # From Safety Island master
     set_max_delay -datapath \
