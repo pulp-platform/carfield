@@ -6,8 +6,10 @@
 
 `ifdef TARGET_VCU128
   `define USE_RESET
-  `define USE_JTAG
-  `define USE_JTAG_VDDGND
+  `ifdef GEN_EXT_JTAG
+    `define USE_JTAG
+    `define USE_JTAG_VDDGND
+  `endif
   `define USE_QSPI
   `define USE_STARTUPE3
   `define USE_VIO
@@ -16,16 +18,6 @@
   `ifdef GEN_NO_HYPERBUS
     `define USE_DDR4
   `endif
-`endif
-
-`ifdef TARGET_ZCU102
-  `define USE_RESET
-  `define USE_JTAG
-  `define HypNumChips 1
-  `define HypNumPhys 1
-  `ifdef GEN_NO_HYPERBUS
-    `define USE_DDR4
-  `endif  `define USE_VIO
 `endif
 
 /////////////////////

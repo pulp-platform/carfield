@@ -151,6 +151,15 @@ module carfield_top_xilinx
   logic jtag_trst_ni;
   assign jtag_trst_ni = '1;
 `endif
+`ifndef USE_JTAG
+  logic jtag_tck_i;
+  logic jtag_tms_i;
+  logic jtag_tdi_i;
+  logic jtag_tdo_o;
+  assign jtag_tck_i = '0;
+  assign jtag_tms_i = '0;
+  assign jtag_tdi_i = '0;
+`endif
 
   //////////////////
   // Clock Wizard //
