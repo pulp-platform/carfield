@@ -116,10 +116,11 @@ sources:
   - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_zerodelta.vhd
   - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_digital.vhd
   - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL_DCO_model.tc.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL_DCO_model.vhd
+  #- /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL_DCO_model.vhd
   - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL_model.vhd
   - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL.v
   # Level 1
+  - target/synth/src/gf12_fll_wrap.sv
   - hw/cheshire_wrap.sv
   - hw/hyperbus_wrap.sv
   - hw/l2_wrap.sv

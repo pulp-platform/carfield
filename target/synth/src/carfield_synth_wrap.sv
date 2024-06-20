@@ -531,12 +531,6 @@ module carfield_synth_wrap
   logic       clk_fll_e;
   logic       clk_fll_ref;
   logic       fll_lock;
-  logic       fll_cfg_req;
-  logic       fll_cfg_ack;
-  logic[ 1:0] fll_cfg_addr;
-  logic[31:0] fll_cfg_data_in;
-  logic[31:0] fll_cfg_data_out;
-  logic       fll_cfg_wen;
   logic       fll_rst_n;
   logic       fll_pwd;
   logic       fll_test_mode;
@@ -563,18 +557,7 @@ module carfield_synth_wrap
   assign fll_test_mode    = 1'b0;
   assign fll_scan_e       = 1'b0;
   assign fll_scan_in      = 1'b0;
-  assign fll_scan_jtag_in = 1'b0;
-  
-  assign fll_cfg_req                     = ext_reg_async_slv_req_src_out[0] & ext_reg_async_slv_data_src_out[0].valid;
-  assign ext_reg_async_slv_ack_src_in[0] = fll_cfg_ack;
-  assign fll_cfg_addr                    = ext_reg_async_slv_data_src_out[0].addr[31:0];
-  assign fll_cfg_data_in                 = ext_reg_async_slv_data_src_out[0].wdata;
-  assign fll_cfg_wen                     = ~ext_reg_async_slv_data_src_out[0].write;
-
-  assign ext_reg_async_slv_req_src_in[0]             = 1'b0;
-  assign ext_reg_async_slv_data_src_in[0].rdata      = fll_cfg_data_out;
-  assign ext_reg_async_slv_data_src_in[0].error      = '1;
-  assign ext_reg_async_slv_data_src_in[0].ready      = fll_cfg_ack;
+  assign fll_scan_jtag_in = 1'b0;  
 
   `CLK_DIV_BY_100(rt_from_fll_clk, clk_fll_out)
   assign rt_clk = rt_from_fll_clk_div_100x; //TODO: check correctness
@@ -597,25 +580,27 @@ module carfield_synth_wrap
     .init_no () // TODO: connect ?
   );
 
-  gf12_FLL i_fll (
-    .FLLCLK ( clk_fll_out       ), // out - FLL clock out
-    .FLLOE  ( clk_fll_e         ), // in  - FLL clock output enable (active high)
-    .REFCLK ( clk_fll_ref       ), // in  - reference clock input
-    .LOCK   ( fll_lock          ), // out - FLL lock signal (active high)
-    .CFGREQ ( fll_cfg_req       ), // in  - configuration port handshake: req
-    .CFGACK ( fll_cfg_ack       ), // out - configuration port handshake: ack
-    .CFGAD  ( fll_cfg_addr      ), // in  - config address in
-    .CFGD   ( fll_cfg_data_in   ), // in  - config data in
-    .CFGQ   ( fll_cfg_data_out  ), // out - config data out
-    .CFGWEB ( fll_cfg_wen       ), // in  - config reg write enable (active low)
-    .RSTB   ( fll_rst_n         ), // in  - global async reset (active low)
-    .PWD    ( fll_pwd           ), // in  - async power down (active high)
-    .TM     ( fll_test_mode     ), // in  - test mode
-    .TE     ( fll_scan_e        ), // in  - scan enable
-    .TD     ( fll_scan_in       ), // in  - scan in
-    .TQ     ( fll_scan_out      ), // out - scan out
-    .JTD    ( fll_scan_jtag_in  ), // in  - scan in (jtag)
-    .JTQ    ( fll_scan_jtag_out )  // out - scan out (jtag)
+  gf12_fll_wrap i_fll_wrap (
+    .ref_clk_cdc_i       ( ref_clk                           ),
+    .pwr_on_rst_n_cdc_i  ( ref_clk_pwr_on_rst_n              ),
+    .async_req_i         ( ext_reg_async_slv_req_src_out[0]  ),
+    .async_ack_o         ( ext_reg_async_slv_ack_src_in[0]   ),
+    .async_data_i        ( ext_reg_async_slv_data_src_out[0] ),
+    .async_req_o         ( ext_reg_async_slv_req_src_in[0]   ),
+    .async_ack_i         ( ext_reg_async_slv_ack_src_out[0]  ),
+    .async_data_o        ( ext_reg_async_slv_data_src_in[0]  ),
+    .clk_fll_out_o       ( clk_fll_out                       ),
+    .clk_fll_e_i         ( clk_fll_e                         ),
+    .clk_fll_ref_i       ( clk_fll_ref                       ),
+    .fll_lock_o          ( fll_lock                          ),
+    .fll_rst_n_i         ( fll_rst_n                         ),
+    .fll_pwd_i           ( fll_pwd                           ),
+    .fll_test_mode_i     ( fll_test_mode                     ),
+    .fll_scan_e_i        ( fll_scan_e                        ),
+    .fll_scan_in_i       ( fll_scan_in                       ),
+    .fll_scan_out_o      ( fll_scan_out                      ),
+    .fll_scan_jtag_in_i  ( fll_scan_jtag_in                  ),
+    .fll_scan_jtag_out_o ( fll_scan_jtag_out                 )
   );
 
   //////////////////
