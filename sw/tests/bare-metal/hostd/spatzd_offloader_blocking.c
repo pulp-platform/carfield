@@ -17,6 +17,7 @@
 #include "car_util.h"
 #include "car_params.h"
 #include "printf.h"
+#include "car_iommu.h"
 
 #define CAR_FP_CLUSTER_MBOX_CORE0_ID 0
 #define CAR_FP_CLUSTER_MBOX_CORE1_ID 1
@@ -26,6 +27,17 @@
 int main(void) {
 
     // Init the HW
+
+    set_iommu_bare();
+
+    // s1pt_map(0x78000000, 0x78000000, 0x10000);
+    // // Init device directory table for device 0
+	// root_ddt[0].tc = DC_TC_VALID;
+	// root_ddt[0].iohgatp = 0;
+	// root_ddt[0].ta = 0;
+	// root_ddt[0].fsc = (((uintptr_t)&(s1pt[0][0])) >> 12) | (IOSATP_MODE_SV39);
+    // set_iommu_1lvl();
+
     // Spatz Island
     car_enable_domain(CAR_SPATZ_RST);
 
