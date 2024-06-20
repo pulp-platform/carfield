@@ -13,4 +13,5 @@ ifeq ($(TECH_SIM), 1)
 	sim_targs += -t tech_sim
 	sim_defs  += -D INITIALIZE_MEMORY
 	sim_defs  += -D INITIALIZE_OUTPUT
+	sim_defs  += -D GF12_FLL
 endif

@@ -98,29 +98,7 @@ sources:
   - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph_muxer.sv
   - target/sim/src/behav-padframe/src/carfield_padframe_behav_periph.sv
   - target/sim/src/behav-padframe/src/carfield_padframe_behav.sv
-  # FLL Model
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLLPkg.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_clk_divider.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_clk_period_quantizer.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_clock_gated.gf12.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_clock_gated.rtl.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_dither_pattern_gen.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_glitchfree_clkdiv.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_glitchfree_clkmux.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_loop_filter.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_mux.gf12.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_mux.rtl.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_reg.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_settling_monitor.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_synchroedge.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_zerodelta.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/FLL_digital/FLL_digital.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL_DCO_model.tc.vhd
-  #- /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL_DCO_model.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL_model.vhd
-  - /usr/pack/gf-12-kgf/eth/gf12_FLL_v1p0/rtl/behavioral/gf12_FLL.v
   # Level 1
-  - target/synth/src/gf12_fll_wrap.sv
   - hw/cheshire_wrap.sv
   - hw/hyperbus_wrap.sv
   - hw/l2_wrap.sv
@@ -168,6 +146,28 @@ sources:
       - tech/sourcecode/macros/rf_sp_uhse_rvt_mvt_1024x64m4b1w1.v
       - tech/sourcecode/tc_clk.sv
       - tech/sourcecode/tc_sram.sv
+      # FLL Model
+      - tech/sourcecode/fll/rtl/FLL_digital/FLLPkg.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_clk_divider.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_clk_period_quantizer.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_clock_gated.gf12.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_clock_gated.rtl.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_dither_pattern_gen.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_glitchfree_clkdiv.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_glitchfree_clkmux.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_loop_filter.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_mux.gf12.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_mux.rtl.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_reg.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_settling_monitor.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_synchroedge.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_zerodelta.vhd
+      - tech/sourcecode/fll/rtl/FLL_digital/FLL_digital.vhd
+      - tech/sourcecode/fll/rtl/behavioral/gf12_FLL_DCO_model.tc.vhd
+      #- tech/sourcecode/fll/rtl/behavioral/gf12_FLL_DCO_model.vhd
+      - tech/sourcecode/fll/rtl/behavioral/gf12_FLL_model.vhd
+      - tech/sourcecode/fll/rtl/behavioral/gf12_FLL.v
+      - tech/sourcecode/gf12_fll_wrap.sv
 
   - target: all(xilinx, fpga, xilinx_vanilla)
     files:

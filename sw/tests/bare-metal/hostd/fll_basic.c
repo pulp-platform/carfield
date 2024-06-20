@@ -34,7 +34,7 @@ int main(void) {
 
     config_reg_1 = readw(FLL_CONFIG_REG_I);
     config_reg_1 = (config_reg_1 & ~FLL_DCO_CODE_MASK) | (0x1F5 << 16);
-    // config_reg_1 = (config_reg_1 & ~FLL_CLK_DIV_MASK) | (0x1 << 26);
+    config_reg_1 = (config_reg_1 & ~FLL_CLK_DIV_MASK) | (0x1 << 26);
     writew(config_reg_1, FLL_CONFIG_REG_I);
 
     config_reg_1 = readw(FLL_CONFIG_REG_I);

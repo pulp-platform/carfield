@@ -580,7 +580,11 @@ module carfield_synth_wrap
     .init_no () // TODO: connect ?
   );
 
-  gf12_fll_wrap i_fll_wrap (
+`ifdef GF12_FLL
+  gf12_fll_wrap #(
+    .reg_req_t ( carfield_reg_req_t ),
+    .reg_rsp_t ( carfield_reg_rsp_t )
+  ) i_fll_wrap (
     .ref_clk_cdc_i       ( ref_clk                           ),
     .pwr_on_rst_n_cdc_i  ( ref_clk_pwr_on_rst_n              ),
     .async_req_i         ( ext_reg_async_slv_req_src_out[0]  ),
@@ -602,6 +606,15 @@ module carfield_synth_wrap
     .fll_scan_jtag_in_i  ( fll_scan_jtag_in                  ),
     .fll_scan_jtag_out_o ( fll_scan_jtag_out                 )
   );
+`else
+  clk_rst_gen #(
+    .ClkPeriod    ( 18.1ns ),
+    .RstClkCycles ( 0 )
+  ) i_clk_rst_sys (
+    .clk_o  ( clk_fll_out ),
+    .rst_no (  )
+  );
+`endif
 
   //////////////////
   // Carfield SoC //

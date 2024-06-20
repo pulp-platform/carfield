@@ -30,12 +30,9 @@ module carfield_chip_fixture;
   // DUT //
   /////////
 
-  localparam time         ClkPeriodRef  = 73.464ns;  // 13.61MHz reference clock: same frequency as the FLL in stand-alone mode
-  localparam time         ClkPeriodExt  = 3.3ns; // 300MHz: the maximum
-                                                 // frequency supported by the
-                                                 // pads according to intel16's
-                                                 // datasheet
-  localparam time         ClkPeriodJtag = ClkPeriodRef*4; // 3.4MHz JTAG clock
+  localparam time         ClkPeriodRef  = 18.1ns;  // 55.24MHz reference clock: same frequency as the FLL in stand-alone mode
+  localparam time         ClkPeriodExt  = 8.33ns; // 120MHz: the maximum frequency supported by the pads according to doc
+  localparam time         ClkPeriodJtag = ClkPeriodRef*4; // 13.8MHz JTAG clock
   localparam int unsigned RstCycles     = 5;
   localparam int unsigned RstCyclesVip  = 5;
   localparam real         TAppl         = 0.1;
