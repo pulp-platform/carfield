@@ -23,7 +23,17 @@
 
 #define FLL_DCO_CODE_MASK (0x03FF0000)
 #define FLL_CLK_DIV_MASK  (0x3C000000)
+#define FLL_CLK_MUL_MASK  (0x0000FFFF)
 #define FLL_MODE_MASK     (0x80000000)
+
+#define FLL_DCO_CODE_OFFSET (16)
+#define FLL_CLK_DIV_OFFSET  (26)
+#define FLL_CLK_MUL_OFFSET  (0)
+#define FLL_MODE_OFFSET     (31)
+
+inline uint32_t write_bitfield(uint32_t src_reg, uint32_t bitfield_mask, uint32_t bitfield_offset, uint32_t val){
+    return (src_reg & ~bitfield_mask) | (val << bitfield_offset);
+}
 
 int main(void) {
 
@@ -33,12 +43,13 @@ int main(void) {
     uint32_t config_reg_1;
 
     config_reg_1 = readw(FLL_CONFIG_REG_I);
-    config_reg_1 = (config_reg_1 & ~FLL_DCO_CODE_MASK) | (0x1F5 << 16);
-    config_reg_1 = (config_reg_1 & ~FLL_CLK_DIV_MASK) | (0x1 << 26);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_DCO_CODE_MASK, FLL_DCO_CODE_OFFSET, 0x1F5);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_CLK_DIV_MASK,  FLL_CLK_DIV_OFFSET,  0x1);
     writew(config_reg_1, FLL_CONFIG_REG_I);
 
     config_reg_1 = readw(FLL_CONFIG_REG_I);
-    config_reg_1 = (config_reg_1 & ~FLL_MODE_MASK) | (0x1 << 31);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_CLK_MUL_MASK, FLL_CLK_MUL_OFFSET, 0x2);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_MODE_MASK,    FLL_MODE_OFFSET,    0x1);
     writew(config_reg_1, FLL_CONFIG_REG_I);
 
     // Init the HW
