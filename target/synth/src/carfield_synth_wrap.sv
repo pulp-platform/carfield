@@ -529,9 +529,7 @@ module carfield_synth_wrap
 
   logic       clk_fll_out;
   logic       clk_fll_e;
-  logic       clk_fll_ref;
   logic       fll_lock;
-  logic       fll_rst_n;
   logic       fll_pwd;
   logic       fll_test_mode;
   logic       fll_scan_e;
@@ -550,9 +548,7 @@ module carfield_synth_wrap
   assign alt_clk     = clk_fll_out;
   assign clk_fll_e   = 1'b1;
 
-  assign clk_fll_ref = ref_clk;
 
-  assign fll_rst_n        = pwr_on_rst_n;
   assign fll_pwd          = 1'b0;
   assign fll_test_mode    = 1'b0;
   assign fll_scan_e       = 1'b0;
@@ -582,11 +578,12 @@ module carfield_synth_wrap
 
 `ifdef GF12_FLL
   gf12_fll_wrap #(
-    .reg_req_t ( carfield_reg_req_t ),
-    .reg_rsp_t ( carfield_reg_rsp_t )
+    .FLL_REG_OFFSET ( 3                  ), // Addresses: 0x2002_0000, 0x2002_0008, 0x2002_0010, 0x2002_0018
+    .reg_req_t      ( carfield_reg_req_t ),
+    .reg_rsp_t      ( carfield_reg_rsp_t )
   ) i_fll_wrap (
-    .ref_clk_cdc_i       ( ref_clk                           ),
-    .pwr_on_rst_n_cdc_i  ( ref_clk_pwr_on_rst_n              ),
+    .clk_i               ( ref_clk                           ),
+    .rst_n_i             ( ref_clk_pwr_on_rst_n              ),
     .async_req_i         ( ext_reg_async_slv_req_src_out[0]  ),
     .async_ack_o         ( ext_reg_async_slv_ack_src_in[0]   ),
     .async_data_i        ( ext_reg_async_slv_data_src_out[0] ),
@@ -595,9 +592,7 @@ module carfield_synth_wrap
     .async_data_o        ( ext_reg_async_slv_data_src_in[0]  ),
     .clk_fll_out_o       ( clk_fll_out                       ),
     .clk_fll_e_i         ( clk_fll_e                         ),
-    .clk_fll_ref_i       ( clk_fll_ref                       ),
     .fll_lock_o          ( fll_lock                          ),
-    .fll_rst_n_i         ( fll_rst_n                         ),
     .fll_pwd_i           ( fll_pwd                           ),
     .fll_test_mode_i     ( fll_test_mode                     ),
     .fll_scan_e_i        ( fll_scan_e                        ),
@@ -608,7 +603,7 @@ module carfield_synth_wrap
   );
 `else
   clk_rst_gen #(
-    .ClkPeriod    ( 18.1ns ),
+    .ClkPeriod    ( 10ns ),
     .RstClkCycles ( 0 )
   ) i_clk_rst_sys (
     .clk_o  ( clk_fll_out ),

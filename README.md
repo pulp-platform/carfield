@@ -48,8 +48,8 @@ and then run a [simulation](https://pulp-platform.github.io/carfield/tg/sim) wit
 typing:
 
 ```tcl
-make car-vsim-sim-build TECH_SIM=1
-make car-vsim-sim-run CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf TECH_SIM=1 DEBUG=1
+make car-vsim-sim-build DEBUG=1 TECH_SIM=1
+make car-vsim-sim-run CHS_BINARY=./sw/tests/bare-metal/hostd/helloworld.car.l2.elf DEBUG=1 TECH_SIM=1
 ```
 
 ---

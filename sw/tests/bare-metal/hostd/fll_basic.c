@@ -44,12 +44,13 @@ int main(void) {
 
     config_reg_1 = readw(FLL_CONFIG_REG_I);
     config_reg_1 = write_bitfield(config_reg_1, FLL_DCO_CODE_MASK, FLL_DCO_CODE_OFFSET, 0x1F5);
-    config_reg_1 = write_bitfield(config_reg_1, FLL_CLK_DIV_MASK,  FLL_CLK_DIV_OFFSET,  0x1);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_CLK_DIV_MASK, FLL_CLK_DIV_OFFSET, 0x1);
     writew(config_reg_1, FLL_CONFIG_REG_I);
 
     config_reg_1 = readw(FLL_CONFIG_REG_I);
-    config_reg_1 = write_bitfield(config_reg_1, FLL_CLK_MUL_MASK, FLL_CLK_MUL_OFFSET, 0x2);
-    config_reg_1 = write_bitfield(config_reg_1, FLL_MODE_MASK,    FLL_MODE_OFFSET,    0x1);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_CLK_DIV_MASK, FLL_CLK_DIV_OFFSET, 0x2);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_CLK_MUL_MASK, FLL_CLK_MUL_OFFSET, 0x3);
+    config_reg_1 = write_bitfield(config_reg_1, FLL_MODE_MASK, FLL_MODE_OFFSET, 0x1);
     writew(config_reg_1, FLL_CONFIG_REG_I);
 
     // Init the HW
