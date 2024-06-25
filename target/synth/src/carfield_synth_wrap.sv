@@ -602,13 +602,41 @@ module carfield_synth_wrap
     .fll_scan_jtag_out_o ( fll_scan_jtag_out                 )
   );
 `else
+  logic              dummy_rst;
+  logic              dummy_clk;
+  carfield_reg_rsp_t dummy_rsp;
+  
   clk_rst_gen #(
-    .ClkPeriod    ( 10ns ),
-    .RstClkCycles ( 0 )
-  ) i_clk_rst_sys (
-    .clk_o  ( clk_fll_out ),
-    .rst_no (  )
+    .ClkPeriod    ( 20ns ),
+    .RstClkCycles ( 33   )
+  ) i_dummy_fll (
+    .clk_o  ( dummy_clk ),
+    .rst_no ( dummy_rst )
   );
+  assign clk_fll_out = dummy_clk & dummy_rst;
+  assign fll_lock    = dummy_rst;
+
+  reg_cdc_dst #(
+  .CDC_KIND ( "cdc_4phase"       ),
+  .req_t    ( carfield_reg_req_t ),
+  .rsp_t    ( carfield_reg_rsp_t )
+  ) i_fake_cdc (
+    .dst_clk_i    ( dummy_clk                         ),
+    .dst_rst_ni   ( dummy_rst                         ),
+    .dst_req_o    (                                   ),
+    .dst_rsp_i    ( dummy_rsp                         ),
+
+    .async_req_i  ( ext_reg_async_slv_req_src_out[0]  ),
+    .async_ack_o  ( ext_reg_async_slv_ack_src_in[0]   ),
+    .async_data_i ( ext_reg_async_slv_data_src_out[0] ),
+
+    .async_req_o  ( ext_reg_async_slv_req_src_in[0]   ),
+    .async_ack_i  ( ext_reg_async_slv_ack_src_out[0]  ),
+    .async_data_o ( ext_reg_async_slv_data_src_in[0]  )
+   );
+   assign dummy_rsp.ready = 1'b1;
+   assign dummy_rsp.error = 1'b0;
+   assign dummy_rsp.rdata = 'hCACABABE;
 `endif
 
   //////////////////

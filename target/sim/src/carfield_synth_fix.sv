@@ -537,7 +537,8 @@ module carfield_chip_fixture;
     .RstCycles         ( RstCyclesVip ),
     .TAppl             ( TAppl ),
     .TTest             ( TTest ),
-    .SlinkAxiDebug     ( 0     )
+    .SlinkAxiDebug     ( 0     ),
+    .UartBaudRate      ( 57600 )  // Vadid for 50MHz clock. If the actual clock, clk, is clk = a*50MHz the the baudrate, UartBaudRate, should be UartBaudRate = a*57600
   ) chs_vip (
     // Generate reference clock for the PLL
     .clk             ( ref_clk                ),
