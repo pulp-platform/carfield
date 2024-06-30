@@ -10,7 +10,7 @@
 INCLUDE common.ldh
 
 MEMORY {
-  l2 (rwx)    : ORIGIN = 0x78000000, LENGTH = 1M
+  l2 (rwx)    : ORIGIN = 0x78000000, LENGTH = 128K
 }
 
 SECTIONS {
