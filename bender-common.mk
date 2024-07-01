@@ -14,7 +14,7 @@ common_targs += -t mchan
 common_targs += -t integer_cluster
 common_targs += -t cv32e40p_use_ff_regfile
 common_targs += -t scm_use_fpga_scm
-common_targs += -t cv64a6_imafdcsclic_sv39
+common_targs += -t cv64a6_imafdc_sv39_wb # cv64a6_imafdcsclic_sv39
 common_targs += -t rtl
 # The `snitch_cluster` target is needed for iDMA backend generation
 common_targs += -t snitch_cluster

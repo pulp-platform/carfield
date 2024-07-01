@@ -220,7 +220,6 @@ packages:
     - axi
     - common_cells
     - fpnew
-    - redundancy_cells
     - tech_cells_generic
   dyn_mem:
     revision: 480590062742230dc9bd4050358a15b4747bdf34
