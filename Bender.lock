@@ -68,7 +68,7 @@ packages:
     revision: null
     version: null
     source:
-      Path: .bender/git/checkouts/safety_island-f408198401cf8b88/future/axi_obi
+      Path: .bender/git/checkouts/safety_island-aa28ece0f32f21fa/future/axi_obi
     dependencies:
     - axi
     - common_cells
@@ -452,10 +452,10 @@ packages:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: aaef55c798ab53560faaf451a86668fa1e6d0f3b
+    revision: 251c8084eba118ef8824a0c77deaf34c7daee42b
     version: null
     source:
-      Git: https://github.com/pulp-platform/safety_island.git
+      Git: git@github.com:CyrilKoe/safety_island.git
     dependencies:
     - apb
     - axi
