@@ -237,8 +237,6 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.POLARITY {ACTIVE_LOW} \
  ] $pcie_perstn
-  set phy_reset_out [ create_bd_port -dir O -from 0 -to 0 -type rst phy_reset_out ]
-
   set uart_rx_i [ create_bd_port -dir I uart_rx_i ]
   set uart_tx_o [ create_bd_port -dir O uart_tx_o ]
 
@@ -258,11 +256,15 @@ proc create_root_design { parentCell } {
    CONFIG.DIFFCLK_BOARD_INTERFACE {sgmii_phyclk} \
    CONFIG.ENABLE_LVDS {true} \
    CONFIG.ETHERNET_BOARD_INTERFACE {sgmii_lvds} \
+   CONFIG.InstantiateBitslice0 {false} \
    CONFIG.MDIO_BOARD_INTERFACE {mdio_mdc} \
-   CONFIG.PHYRST_BOARD_INTERFACE {phy_reset_out} \
+   CONFIG.PHYADDR {0} \
+   CONFIG.PHYRST_BOARD_INTERFACE {Custom} \
    CONFIG.PHY_TYPE {SGMII} \
    CONFIG.gtlocation {X0Y4} \
    CONFIG.lvdsclkrate {625} \
+   CONFIG.rxlane0_placement {DIFF_PAIR_0} \
+   CONFIG.rxnibblebitslice0used {false} \
    CONFIG.tx_in_upper_nibble {false} \
    CONFIG.txlane0_placement {DIFF_PAIR_2} \
  ] $axi_ethernet_0
@@ -476,7 +478,6 @@ proc create_root_design { parentCell } {
   connect_bd_net -net axi_dma_0_s2mm_sts_reset_out_n [get_bd_pins axi_dma_0/s2mm_sts_reset_out_n] [get_bd_pins axi_ethernet_0/axi_rxs_arstn]
   connect_bd_net -net axi_ethernet_0_interrupt [get_bd_pins axi_ethernet_0/interrupt] [get_bd_pins concat_irq/In0]
   connect_bd_net -net axi_ethernet_0_mac_irq [get_bd_pins axi_ethernet_0/mac_irq] [get_bd_pins concat_irq/In5]
-  connect_bd_net -net axi_ethernet_0_phy_rst_n [get_bd_ports phy_reset_out] [get_bd_pins axi_ethernet_0/phy_rst_n]
   connect_bd_net -net carfield_xilinx_ip_0_dram_axi_m_aclk [get_bd_pins carfield_xilinx_ip_0/dram_axi_m_aclk] [get_bd_pins xbar_dram/aclk]
   connect_bd_net -net carfield_xilinx_ip_0_periph_axi_m_aclk [get_bd_pins carfield_xilinx_ip_0/periph_axi_m_aclk] [get_bd_pins xbar_periph_out/aclk]
   connect_bd_net -net carfield_xilinx_ip_0_uart_tx_o [get_bd_ports uart_tx_o] [get_bd_pins carfield_xilinx_ip_0/uart_tx_o]
