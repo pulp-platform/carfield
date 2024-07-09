@@ -24,17 +24,10 @@ if {$::env(XILINX_BOARD) eq "vcu128"} {
   set hw_mem_device [lindex [get_cfgmem_parts {mt25qu02g-spi-x1_x2_x4}] 0]
 }
 
-if {$::env(XILINX_BOARD) eq "vcu118"} {
-  write_cfgmem -force -format mcs -size 256 -interface SPIx4 \
-  -loaddata "up $offset $file" \
-  -checksum \
-  -file $mcs_file
-} else {
-  write_cfgmem -force -format mcs -size 256 -interface SPIx4 \
-  -loaddata "up $offset $file" \
-  -checksum \
-  -file $mcs_file
-}
+write_cfgmem -force -format mcs -size 256 -interface SPIx4 \
+-loaddata "up $offset $file" \
+-checksum \
+-file $mcs_file
 
 set_property PARAM.FREQUENCY 15000000 [get_hw_targets *]
 
