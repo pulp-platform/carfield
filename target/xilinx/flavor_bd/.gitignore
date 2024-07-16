@@ -1,6 +1,9 @@
-.Xil
-carfield_*
-scripts/add_sources.tcl*
-scripts/add_includes.tcl
-out/
-probes.ltx
+# Makefile
+/out/
+# Bender
+/scripts/add_sources.tcl*
+/scripts/add_includes.tcl
+# Vivado
+/.Xil
+/carfield_*
+/probes.ltx
