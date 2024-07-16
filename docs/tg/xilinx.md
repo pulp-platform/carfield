@@ -9,6 +9,7 @@ Additionally, for on-chip debugging you need:
 We currently provide working setups for:
 
 - Xilinx VCU128 with Vivado `>= 2020.2`
+- Xilinx VCU118 with Vivado `>= 2020.2`
 
 We are working on support for more boards in the future.
 
@@ -24,7 +25,7 @@ design flow to link Carfield with external IPs. This flow is less human readable
 integrating more complex IPs as Xilinx Ethernet. *Note that this may require you to own the
 respective licenses.*
 
-## Building the vanilla bistream
+## Building the vanilla bistream (VCU128 only)
 
 Due to the structure of the Makefile flow. All the following commands are to be executed at the root
 of the Carfield repository. If you want to see the Makefiles that you will be using, you can find
@@ -90,7 +91,7 @@ Generate the bitstream in `target/xilinx/out/` by running:
 
 ```bash
 make car-xil-all XILINX_FLAVOR=bd [VIVADO=version] [VIVADO_MODE={batch,gui}]
-[XILINX_BOARD={vcu128}] [GEN_NO_HYPERBUS={0,1}] [GEN_EXT_JTAG={0,1}]
+[XILINX_BOARD={vcu128, vcu118}] [GEN_NO_HYPERBUS={0,1}] [GEN_EXT_JTAG={0,1}]
 [CARFIELD_CONFIG=carfield_l2dual_{safe,spatz}_periph]
 ```
 
@@ -99,12 +100,12 @@ See the argument list below:
 | Argument        | Relevance | Description                                                                                                                           |
 |---------------- |-----------|---------------------------------------------------------------------------------------------------------------------------------------|
 | VIVADO          | all       | Vivado command to use                                                                                                                 |
-| XILINX_BOARD    | all       | `vcu128`                                                                                                                              |
+| XILINX_BOARD    | all       | `vcu128` `vcu118`                                                                                                                              |
 | GEN_NO_HYPERBUS | all       | `0` Use the hyperram controller inside `carfield.sv`<br>`1` Use the Xilinx DDR controller                                             |
-| GEN_EXT_JTAG    | vcu128    | `0` Connect the JTAG debugger to the board's JTAG (see [vcu128](#xilinx-vcu128)) <br>`1` Connect the JTAG debugger to an external JTAG chain |
+| GEN_EXT_JTAG    | all    | `0` Connect the JTAG debugger to the board's JTAG (see [vcu128](#xilinx-vcu128)) <br>`1` Connect the JTAG debugger to an external JTAG chain |
 | CARFIELD_CONFIG | all       | Select the Carfield configuration to implement. See below for supported configs.                                                      |
 | VIVADO_MODE     | all       | `batch` Compile in Vivado shell<br>`gui` Compile in Vivado gui                                                                        |
-| XILINX_BOOT_ETH | all       | `0` Boot via SPI flash only (see [booting Linux](#booting_linux)) <br>`1` Boot via SPI flash and Ethernet                             |
+| XILINX_BOOT_ETH | vcu128       | `0` Boot via SPI flash only (see [booting Linux](#booting_linux)) <br>`1` Boot via SPI flash and Ethernet                             |
 
 See below some typical building time for reference:
 
@@ -141,7 +142,6 @@ can be set in the Vivado GUI (see [Using Vivado GUI](#bringup_vivado_gui)).
 > The VCU128 development board only provides one JTAG chain, used by Vivado to program the
 bitstream, and interact with certain Xilinx IPs (ILAs, VIOs, ...). The RV64 requires access to a
 JTAG chain to connect GDB to the debug-module in the bitstream.
-
 > When using `EXT_JTAG=0` it is possible to connect the debug module to the internal FPGA's JTAG by
 using the Xilinx BSCANE macro. With this, you will only need the normal Xilinx USB cable to interact
 with CVA6. Note that it means that
@@ -149,10 +149,26 @@ Vivado and OpenOCD can not use the same cable at the same time.
 >**WARNING: this setup (with `EXT_JTAG=0`) will only work for designs containing the host only** as
 it is not possible to chain multiple devices on the BSCANE macro. If you need to use `EXT_JTAG=0`
 consider modifying the RTL to remove the debug modules of the IPs.
-
 > When using `EXT_JTAG=1` we add an external JTAG chain for the RV64 host and other island through
 the FPGA's GPIOs. Since the VCU128 does not have GPIOs we use we use a Digilent JTAG-HS2 cable
 connected to the Xilinx XM105 FMC debug card. See the connections in `vcu128.xdc`.
+
+### Xilinx VCU118
+> #### Bootmodes and VIOs
+>
+> We currently do not use the switches on this board, the CVA6 bootmode (see [Cheshire
+bootrom](https://pulp-platform.github.io/cheshire/um/sw/#boot-rom)) is selected by Xilinx VIOs that
+can be set in the Vivado GUI (see [Using Vivado GUI](#bringup_vivado_gui)).
+>
+> #### External JTAG chain
+>
+> Similarly to the VCU128 we use GPIOs to connect an external JTAG-USB dongle (Digilent HS2). Unlike the VCU128, the availability of GPIOs directly on the board allow us to connect the HS2 without an FMC debug board (see constraints for related pins).
+>**WARNING: this setup (with `EXT_JTAG=0`) will only work for designs containing the host only** as
+it is not possible to chain multiple devices on the BSCANE macro. If you need to use `EXT_JTAG=0`
+consider modifying the RTL to remove the debug modules of the IPs.
+> #### Block design and Xilinx Ethernet IP
+>
+> The Xilinx Ethernet IP integration is still under debug and does not work out of the box in Linux or U-boot at the moment.
 
 ## Bare-metal bringup
 
@@ -248,7 +264,7 @@ integrated flash:
 > This script will erase your bitstream, once the flash has been written (c.a.
 10min) you will need to re-program the bitstream on the board.
 > You can attach the UART port of the FPGA to minicom and see the boot process! 
-### Via Ethernet
+### Via Ethernet (VCU128 only)
 >
 > As flashing and reading the kernel from SPI can take a few minutes, a faster way is to
 > [ask U-Boot to fetch the image from the network](https://www.emcraft.com/som/using-dhcp).
@@ -259,9 +275,6 @@ integrated flash:
 > ```
 > make chs-xil-flash VIVADO_MODE=batch XILINX_BOARD=vcu128 XILINX_FLAVOR=bd XILINX_BOOT_ETH=1
 > ```
-### Via Ethernet
-
-Tbd
 
 ## Add your own board
 
