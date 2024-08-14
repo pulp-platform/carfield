@@ -5,6 +5,48 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_ports pad_hyper_rwds[0]]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets gen_hyper_phy[0].padinst_hyper_rwds0/iobuf_i/O]
+
+
+set period_hyperbus 100
+
+create_clock -period [expr $period_hyperbus] -name hyper_rwds_clk [get_ports pad_hyper_rwds[0]]
+
+create_generated_clock -name hyper_clk_phy -source [get_pins i_carfield/i_hyperbus_wrap/i_hyperbus/CLK] -divide_by 2 [get_pins i_carfield/i_hyperbus_wrap/i_hyperbus/clock_generator.ddr_clk/r_clk0_o_reg/Q]
+create_generated_clock -name hyper_clk_phy_90 -source [get_pins i_carfield/i_hyperbus_wrap/i_hyperbus/CLK] -edges {2 4 6} [get_pins i_carfield/i_hyperbus_wrap/i_hyperbus/clock_generator.ddr_clk/r_clk90_o_reg/Q]
+
+set clk_rwds_delayed_pin [get_pins -of_objects [get_cells i_carfield/i_hyperbus_wrap/i_hyperbus/i_phy/i_phy/i_trx/i_delay_rx_rwds_90/i_delay] -filter {DIRECTION =~ OUT}]
+set clk_rwds_delayed_inv_pin [get_pins i_carfield/i_hyperbus_wrap/i_hyperbus/i_phy/i_phy/i_trx/i_rx_rwds_cdc_fifo/CLK]
+
+set clk_rx_shift [expr $period_hyperbus/10]
+set rwds_input_delay [expr $period_hyperbus/4]
+create_generated_clock -name hyper_clk_rwds_delayed0 -edges {1 2 3} -edge_shift "$clk_rx_shift $clk_rx_shift $clk_rx_shift" \
+  -source [get_ports pad_hyper_rwds[0]] $clk_rwds_delayed_pin
+set_clock_latency [expr ${rwds_input_delay}] hyper_clk_rwds_delayed0
+
+create_generated_clock -name hyper_clk_rwds_sample0 -invert -divide_by 1 -source $clk_rwds_delayed_pin $clk_rwds_delayed_inv_pin
+set_clock_latency [expr ${rwds_input_delay}] hyper_clk_rwds_sample0
+
+set_false_path -from [get_ports pad_hyper_rwds[0]] -to [get_ports pad_hyper_rwds[0]]
+# these are for clock domain crossing
+set_false_path -from [get_clocks hyper_rwds_clk] -to [get_clocks hyper_clk_phy]
+set_false_path -from [get_clocks hyper_clk_phy] -to [get_clocks hyper_rwds_clk]
+set_false_path -from [get_clocks hyper_clk_phy_90] -to [get_clocks hyper_clk_phy]
+set_false_path -from [get_clocks hyper_clk_phy_90] -to [get_clocks hyper_rwds_clk]
+
+# Todo correct build correct input / output constraints
+
+set hyper_output_ports [get_ports pad_hyper_dq*]
+set_output_delay [expr $period_hyperbus/2 ] -clock hyper_clk_phy [get_ports $hyper_output_ports] -max
+set_output_delay [expr $period_hyperbus/-2] -clock hyper_clk_phy [get_ports $hyper_output_ports] -min -add_delay
+set_output_delay [expr $period_hyperbus/2 ] -clock hyper_clk_phy [get_ports $hyper_output_ports] -max -clock_fall -add_delay
+set_output_delay [expr $period_hyperbus/-2] -clock hyper_clk_phy [get_ports $hyper_output_ports] -min -clock_fall -add_delay
+
+set hyper_input_ports [get_ports -regexp pad_hyper_dq.*]
+set_input_delay -max [expr $period_hyperbus/2] -clock hyper_clk_phy [get_ports $hyper_input_ports]
+set_input_delay -min [expr $period_hyperbus/2] -clock hyper_clk_phy [get_ports $hyper_input_ports] -add_delay
+set_input_delay -max [expr $period_hyperbus/2] -clock hyper_clk_phy [get_ports $hyper_input_ports] -add_delay -clock_fall
+set_input_delay -min [expr $period_hyperbus/2] -clock hyper_clk_phy [get_ports $hyper_input_ports] -add_delay -clock_fall
 
 #set_property PACKAGE_PIN A16      [get_ports "pad_hyper_csn[0]"] ;# (FMCP_HSPC_LA22_N) Bank  71 VCCO - VADJ     - IO_L24N_T3U_N11_71
 #set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_csn[0]"] ;# (FMCP_HSPC_LA22_N) Bank  71 VCCO - VADJ     - IO_L24N_T3U_N11_71

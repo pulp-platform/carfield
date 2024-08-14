@@ -5,7 +5,11 @@
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {design_1_i/carfield_xilinx_ip_0/inst/i_carfield_xilinx/gen_hyper_phy[0].padinst_hyper_rwds0/iobuf_i/O}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets gen_hyper_phy[0].padinst_hyper_rwds0/iobuf_i/O]
 
+############
+# Hyperbus #
+############
 
 #set_property PACKAGE_PIN A16      [get_ports "pad_hyper_csn[0]"] ;# (FMCP_HSPC_LA22_N) Bank  71 VCCO - VADJ     - IO_L24N_T3U_N11_71
 #set_property IOSTANDARD  LVCMOS18     [get_ports "pad_hyper_csn[0]"] ;# (FMCP_HSPC_LA22_N) Bank  71 VCCO - VADJ     - IO_L24N_T3U_N11_71
