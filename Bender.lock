@@ -22,8 +22,8 @@ packages:
     - apb
     - register_interface
   axi:
-    revision: fccffb5953ec8564218ba05e20adbedec845e014
-    version: 0.39.1
+    revision: 587355b77b8ce94dcd600efbd5d5bd118ff913a7
+    version: 0.39.4
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -154,6 +154,16 @@ packages:
     dependencies:
     - common_cells
     - register_interface
+  cluster_icache:
+    revision: 0e1fb6751d9684d968ba7fb40836e6118b448ecd
+    version: 0.1.1
+    source:
+      Git: https://github.com/pulp-platform/cluster_icache.git
+    dependencies:
+    - axi
+    - common_cells
+    - scm
+    - tech_cells_generic
   cluster_interconnect:
     revision: 89e1019d64a86425211be6200770576cbdf3e8b3
     version: null
@@ -489,14 +499,28 @@ packages:
     dependencies:
     - tech_cells_generic
   serial_link:
-    revision: 77bec1aebd92b2ebea9962814f2370d5d48390c3
-    version: 1.1.0
+    revision: 5a25f5a71074f1ebb6de7b5280f2b16924bcc666
+    version: 1.1.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
     - axi
     - common_cells
     - register_interface
+  snitch_cluster:
+    revision: 269830af872fa943d8b079470120d42d62e1cb69
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/snitch_cluster.git
+    dependencies:
+    - axi
+    - axi_riscv_atomics
+    - cluster_icache
+    - common_cells
+    - fpnew
+    - register_interface
+    - riscv-dbg
+    - tech_cells_generic
   spatz:
     revision: b4e651b9e0b884e8119dbc970f84ebdb2dc25103
     version: null
