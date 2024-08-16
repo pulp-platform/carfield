@@ -31,8 +31,8 @@ package snitch_cluster_pkg;
   localparam int unsigned WideIdWidthIn = 1;
   localparam int unsigned WideIdWidthOut = $clog2(NrDmaMasters) + WideIdWidthIn;
 
-  localparam int unsigned NarrowUserWidth = 1;
-  localparam int unsigned WideUserWidth = 1;
+  localparam int unsigned NarrowUserWidth = 10;
+  localparam int unsigned WideUserWidth = 10;
 
   localparam int unsigned ICacheLineWidth [NrHives] = '{
     256

@@ -91,6 +91,7 @@ handle_slv_cdc [get_cells -hier gen_ethernet.i_ethernet_cdc_dst]
 handle_slv_cdc [get_cells -hier gen_l2.i_reconfigurable_l2]/gen_cdc_fifos[1].i_dst_cdc
 handle_slv_cdc [get_cells -hier gen_safety_island.i_safety_island_wrap]/i_cdc_in
 handle_slv_cdc [get_cells -hier gen_spatz_cluster.i_fp_cluster_wrapper]/i_spatz_cluster_cdc_dst
+handle_slv_cdc [get_cells -hier gen_spatz_cluster.i_fp_cluster_wrapper]/i_snitch_cluster_cdc_dst
 handle_slv_cdc [get_cells -hier gen_pulp_cluster.i_integer_cluster]/axi_slave_cdc_i
 handle_slv_cdc [get_cells -hier gen_l2.i_reconfigurable_l2]/gen_cdc_fifos[0].i_dst_cdc
 handle_slv_cdc [get_cells -hier i_hyperbus_wrap]/i_hyper_cdc_dst
@@ -122,4 +123,5 @@ proc handle_mst_cdc { mst_cdc_path } {
 
 handle_mst_cdc [get_cells -hier gen_safety_island.i_safety_island_wrap]/i_cdc_out
 handle_mst_cdc [get_cells -hier gen_spatz_cluster.i_fp_cluster_wrapper]/i_spatz_cluster_cdc_src
+handle_mst_cdc [get_cells -hier gen_spatz_cluster.i_fp_cluster_wrapper]/i_snitch_cluster_cdc_src
 handle_mst_cdc [get_cells -hier gen_pulp_cluster.i_integer_cluster]/axi_master_cdc_i

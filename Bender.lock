@@ -521,20 +521,6 @@ packages:
     - register_interface
     - riscv-dbg
     - tech_cells_generic
-  spatz:
-    revision: b4e651b9e0b884e8119dbc970f84ebdb2dc25103
-    version: null
-    source:
-      Git: https://github.com/pulp-platform/spatz.git
-    dependencies:
-    - axi
-    - axi_riscv_atomics
-    - common_cells
-    - fpnew
-    - idma
-    - register_interface
-    - riscv-dbg
-    - tech_cells_generic
   tagger:
     revision: b288376b65b6bbd5feea196bb3c220f783d96e29
     version: null
