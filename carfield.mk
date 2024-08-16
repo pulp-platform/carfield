@@ -211,7 +211,7 @@ pulpd-sw-build: pulpd-sw-init
 ## Initialize Carfield HW. This step takes care of the generation of the missing hardware or the
 ## update of default HW configurations in some of the domains. See the two prerequisite's comment
 ## for more information.
-car-hw-init: spatzd-hw-init chs-hw-init
+car-hw-init: chs-hw-init
 
 ## @section Carfield platform PCRs generation
 .PHONY: regenerate_soc_regs

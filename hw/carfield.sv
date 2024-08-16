@@ -19,7 +19,6 @@ module carfield
   import cheshire_pkg::*;
   import safety_island_pkg::*;
   import tlul_ot_pkg::*;
-  import spatz_cluster_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
   parameter int unsigned HypNumPhys  = 2,
@@ -282,7 +281,7 @@ localparam int unsigned SecdNumIntHarts     = 1;
 // Number of receiving side mailboxes per subsystem
 // For Cheshire, 4 mailboxes for each application class processor
 localparam int unsigned NumMailboxesHostd      = 4 * CheshireNumIntHarts;
-localparam int unsigned NumMailboxesFPCluster  = spatz_cluster_pkg::NumCores * (CheshireNumIntHarts + SafedNumIntHarts);
+localparam int unsigned NumMailboxesFPCluster  = 9 * (CheshireNumIntHarts + SafedNumIntHarts);
 localparam int unsigned NumMailboxesIntCluster = CheshireNumIntHarts + SafedNumIntHarts;
 // For the safety island, consider host domain and security island, and one callback SW interrupt
 // from integer and floating point clusters
@@ -297,9 +296,9 @@ logic [NumMailboxes-1:0] snd_mbox_intrs;
 // Floating point cluster (Spatz cluster)
 
 // from hostd to spatz cluster
-logic [spatz_cluster_pkg::NumCores-1:0][CheshireNumIntHarts-1:0] hostd_spatzcl_mbox_intr;
+logic [9-1:0][CheshireNumIntHarts-1:0] hostd_spatzcl_mbox_intr;
 // from safety island to spatz cluster
-logic [spatz_cluster_pkg::NumCores-1:0] safed_spatzcl_mbox_intr;
+logic [9-1:0] safed_spatzcl_mbox_intr;
 // Integer cluster (PULP cluster)
 logic [CheshireNumIntHarts-1:0] hostd_pulpcl_mbox_intr;  // from hostd to pulp cluster
 logic                           safed_pulpcl_mbox_intr;  // from safety island to pulp cluster
@@ -982,8 +981,8 @@ hyperbus_wrap      #(
 
 // Temporary Mailbox parameters (evaluate if we can move everything here).
 // The best approach would be to move all these parameters to the package.
-localparam int unsigned HostdMboxOffset = (spatz_cluster_pkg::NumCores +
-                                           (spatz_cluster_pkg::NumCores *
+localparam int unsigned HostdMboxOffset = (9 +
+                                           (9 *
                                             CheshireNumIntHarts         )
                                            );
 
@@ -1467,10 +1466,10 @@ end
 // Floating Point Spatz Cluster
 // Spatz cluster interrupts
 // msi (machine software interrupt): hostd, safed
-logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_mbox_intr;
+logic [9-1:0] spatzcl_mbox_intr;
 // mti (machine timer interrupt) : hostd (RISC-V clint)
 // verilog_lint: waive-start line-length
-logic [spatz_cluster_pkg::NumCores-1:0] spatzcl_timer_intr;
+logic [9-1:0] spatzcl_timer_intr;
 if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
 
   assign reset_vector[CarfieldDomainIdx.spatz] = car_regs_reg2hw.spatz_cluster_rst.q;
@@ -1494,7 +1493,7 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
                                            master_isolated_rsp[FPClusterMstIdx];
 
 `ifndef FP_CLUSTER_NETLIST
-  spatz_cluster_wrapper #(
+  snitch_cluster_carfield #(
     .AxiAddrWidth             ( Cfg.AddrWidth           ),
     .AxiDataWidth             ( Cfg.AxiDataWidth        ),
     .AxiUserWidth             ( Cfg.AxiUserWidth        ),
@@ -1583,10 +1582,10 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
     .cluster_probe_o         ( car_regs_hw2reg.spatz_cluster_busy.d  )
   );
 
-  for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_spatz_harts
+  for (genvar i = 0; i < 9; i++ ) begin : gen_spatzcl_mbox_intrs_spatz_harts
     assign safed_spatzcl_mbox_intr[i] = snd_mbox_intrs[i];
     for (genvar j = 0; j < CheshireNumIntHarts; j++ ) begin :  gen_spatzcl_mbox_intrs_host_harts
-      assign hostd_spatzcl_mbox_intr[i][j] = snd_mbox_intrs[spatz_cluster_pkg::NumCores + (spatz_cluster_pkg::NumCores * j) + i];
+      assign hostd_spatzcl_mbox_intr[i][j] = snd_mbox_intrs[9 + (9 * j) + i];
     end
   end
 
@@ -1595,9 +1594,9 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
   end
   assign spatzcl_safed_mbox_intr = snd_mbox_intrs[SpatzMboxOffset + CheshireNumIntHarts];
 
-  logic [spatz_cluster_pkg::NumCores-1:0] hostd_spatzcl_mbox_intr_ored;
+  logic [9-1:0] hostd_spatzcl_mbox_intr_ored;
   // Floating point cluster
-  for (genvar i = 0; i < spatz_cluster_pkg::NumCores; i++ ) begin : gen_spatzcl_mbox_intrs_or
+  for (genvar i = 0; i < 9; i++ ) begin : gen_spatzcl_mbox_intrs_or
     assign hostd_spatzcl_mbox_intr_ored[i] = |hostd_spatzcl_mbox_intr[i];
   end
   // For the spatz FP cluster SW interrupt in machine mode (msi), OR together interrupts coming from the

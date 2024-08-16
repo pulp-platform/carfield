@@ -33,7 +33,6 @@ dependencies:
 workspace:
   package_links:
     cheshire: cheshire
-    spatz: spatz
     safety_island: safety_island
     opentitan: opentitan
     pulp_cluster: pulp_cluster
@@ -91,7 +90,9 @@ sources:
   - hw/hyperbus_wrap.sv
   - hw/l2_wrap.sv
   - hw/snitch_cluster_wrapper.sv
-  - hw/spatz_cluster_wrapper.sv
+  - hw/snitch_cluster_bootrom.sv
+  - hw/snitch_cluster_carfield.sv
+  #- hw/spatz_cluster_wrapper.sv
   - hw/carfield_rstgen.sv
   # Level 2
   - hw/carfield.sv
