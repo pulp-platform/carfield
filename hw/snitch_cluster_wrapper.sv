@@ -76,7 +76,7 @@ package snitch_cluster_pkg;
   function automatic snitch_pma_pkg::rule_t [snitch_pma_pkg::NrMaxRules-1:0] get_cached_regions();
     automatic snitch_pma_pkg::rule_t [snitch_pma_pkg::NrMaxRules-1:0] cached_regions;
     cached_regions = '{default: '0};
-    cached_regions[0] = '{base: 48'h80000000, mask: 48'hffff80000000};
+    cached_regions[0] = '{base: 48'h78000000, mask: 48'hffffffc00000};
     return cached_regions;
   endfunction
 

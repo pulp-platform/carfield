@@ -10,7 +10,7 @@
 module carfield_reg_top #(
   parameter type reg_req_t = logic,
   parameter type reg_rsp_t = logic,
-  parameter int AW = 8
+  parameter int AW = 9
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -237,6 +237,21 @@ module carfield_reg_top #(
   logic [19:0] eth_mdio_clk_div_value_qs;
   logic [19:0] eth_mdio_clk_div_value_wd;
   logic eth_mdio_clk_div_value_we;
+  logic [31:0] dram_aw_delay_qs;
+  logic [31:0] dram_aw_delay_wd;
+  logic dram_aw_delay_we;
+  logic [31:0] dram_w_delay_qs;
+  logic [31:0] dram_w_delay_wd;
+  logic dram_w_delay_we;
+  logic [31:0] dram_b_delay_qs;
+  logic [31:0] dram_b_delay_wd;
+  logic dram_b_delay_we;
+  logic [31:0] dram_ar_delay_qs;
+  logic [31:0] dram_ar_delay_wd;
+  logic dram_ar_delay_we;
+  logic [31:0] dram_r_delay_qs;
+  logic [31:0] dram_r_delay_wd;
+  logic dram_r_delay_we;
 
   // Register instances
   // R[version0]: V(False)
@@ -1830,9 +1845,144 @@ module carfield_reg_top #(
   );
 
 
+  // R[dram_aw_delay]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dram_aw_delay (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dram_aw_delay_we),
+    .wd     (dram_aw_delay_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dram_aw_delay.q ),
+
+    // to register interface (read)
+    .qs     (dram_aw_delay_qs)
+  );
 
 
-  logic [62:0] addr_hit;
+  // R[dram_w_delay]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dram_w_delay (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dram_w_delay_we),
+    .wd     (dram_w_delay_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dram_w_delay.q ),
+
+    // to register interface (read)
+    .qs     (dram_w_delay_qs)
+  );
+
+
+  // R[dram_b_delay]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dram_b_delay (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dram_b_delay_we),
+    .wd     (dram_b_delay_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dram_b_delay.q ),
+
+    // to register interface (read)
+    .qs     (dram_b_delay_qs)
+  );
+
+
+  // R[dram_ar_delay]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dram_ar_delay (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dram_ar_delay_we),
+    .wd     (dram_ar_delay_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dram_ar_delay.q ),
+
+    // to register interface (read)
+    .qs     (dram_ar_delay_qs)
+  );
+
+
+  // R[dram_r_delay]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_dram_r_delay (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (dram_r_delay_we),
+    .wd     (dram_r_delay_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dram_r_delay.q ),
+
+    // to register interface (read)
+    .qs     (dram_r_delay_qs)
+  );
+
+
+
+
+  logic [67:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == CARFIELD_VERSION0_OFFSET);
@@ -1898,6 +2048,11 @@ module carfield_reg_top #(
     addr_hit[60] = (reg_addr == CARFIELD_ETH_RGMII_PHY_CLK_DIV_VALUE_OFFSET);
     addr_hit[61] = (reg_addr == CARFIELD_ETH_MDIO_CLK_DIV_EN_OFFSET);
     addr_hit[62] = (reg_addr == CARFIELD_ETH_MDIO_CLK_DIV_VALUE_OFFSET);
+    addr_hit[63] = (reg_addr == CARFIELD_DRAM_AW_DELAY_OFFSET);
+    addr_hit[64] = (reg_addr == CARFIELD_DRAM_W_DELAY_OFFSET);
+    addr_hit[65] = (reg_addr == CARFIELD_DRAM_B_DELAY_OFFSET);
+    addr_hit[66] = (reg_addr == CARFIELD_DRAM_AR_DELAY_OFFSET);
+    addr_hit[67] = (reg_addr == CARFIELD_DRAM_R_DELAY_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1967,7 +2122,12 @@ module carfield_reg_top #(
                (addr_hit[59] & (|(CARFIELD_PERMIT[59] & ~reg_be))) |
                (addr_hit[60] & (|(CARFIELD_PERMIT[60] & ~reg_be))) |
                (addr_hit[61] & (|(CARFIELD_PERMIT[61] & ~reg_be))) |
-               (addr_hit[62] & (|(CARFIELD_PERMIT[62] & ~reg_be)))));
+               (addr_hit[62] & (|(CARFIELD_PERMIT[62] & ~reg_be))) |
+               (addr_hit[63] & (|(CARFIELD_PERMIT[63] & ~reg_be))) |
+               (addr_hit[64] & (|(CARFIELD_PERMIT[64] & ~reg_be))) |
+               (addr_hit[65] & (|(CARFIELD_PERMIT[65] & ~reg_be))) |
+               (addr_hit[66] & (|(CARFIELD_PERMIT[66] & ~reg_be))) |
+               (addr_hit[67] & (|(CARFIELD_PERMIT[67] & ~reg_be)))));
   end
 
   assign jedec_idcode_we = addr_hit[5] & reg_we & !reg_error;
@@ -2128,6 +2288,21 @@ module carfield_reg_top #(
 
   assign eth_mdio_clk_div_value_we = addr_hit[62] & reg_we & !reg_error;
   assign eth_mdio_clk_div_value_wd = reg_wdata[19:0];
+
+  assign dram_aw_delay_we = addr_hit[63] & reg_we & !reg_error;
+  assign dram_aw_delay_wd = reg_wdata[31:0];
+
+  assign dram_w_delay_we = addr_hit[64] & reg_we & !reg_error;
+  assign dram_w_delay_wd = reg_wdata[31:0];
+
+  assign dram_b_delay_we = addr_hit[65] & reg_we & !reg_error;
+  assign dram_b_delay_wd = reg_wdata[31:0];
+
+  assign dram_ar_delay_we = addr_hit[66] & reg_we & !reg_error;
+  assign dram_ar_delay_wd = reg_wdata[31:0];
+
+  assign dram_r_delay_we = addr_hit[67] & reg_we & !reg_error;
+  assign dram_r_delay_wd = reg_wdata[31:0];
 
   // Read data return
   always_comb begin
@@ -2385,6 +2560,26 @@ module carfield_reg_top #(
         reg_rdata_next[19:0] = eth_mdio_clk_div_value_qs;
       end
 
+      addr_hit[63]: begin
+        reg_rdata_next[31:0] = dram_aw_delay_qs;
+      end
+
+      addr_hit[64]: begin
+        reg_rdata_next[31:0] = dram_w_delay_qs;
+      end
+
+      addr_hit[65]: begin
+        reg_rdata_next[31:0] = dram_b_delay_qs;
+      end
+
+      addr_hit[66]: begin
+        reg_rdata_next[31:0] = dram_ar_delay_qs;
+      end
+
+      addr_hit[67]: begin
+        reg_rdata_next[31:0] = dram_r_delay_qs;
+      end
+
       default: begin
         reg_rdata_next = '1;
       end
@@ -2407,7 +2602,7 @@ endmodule
 
 module carfield_reg_top_intf
 #(
-  parameter int AW = 8,
+  parameter int AW = 9,
   localparam int DW = 32
 ) (
   input logic clk_i,

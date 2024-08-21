@@ -9,7 +9,7 @@ set project carfield_$::env(XILINX_BOARD)
 
 create_project $project ./$project -force -part $::env(XILINX_PART)
 set_property board_part $::env(XILINX_BOARD_LONG) [current_project]
-set_property XPM_LIBRARIES XPM_MEMORY [current_project]
+set_property XPM_LIBRARIES {XPM_MEMORY XPM_FIFO} [current_project]
 
 # set number of threads to 8 (maximum, unfortunately)
 set_param general.maxThreads 8
@@ -54,6 +54,7 @@ foreach run $all_ooc_synth {
         lappend runs_queued $run
         # Default synthesis strategy
         # set_property strategy Flow_RuntimeOptimized [get_runs $run]
+        #set_property strategy Flow_AlternateRoutability [get_runs $run]
     } else {
         puts "Skipping 100% complete run: $run"
     }
@@ -69,8 +70,9 @@ if {[llength $runs_queued] != 0} {
     reset_run synth_1
 }
 
-# set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
-# set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+#set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
+#set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+#set_property strategy Congestion_SpreadLogic_high [get_runs impl_1]
 
 set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
 # Enable sfcu due to package conflicts
