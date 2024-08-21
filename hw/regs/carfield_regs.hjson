@@ -704,5 +704,60 @@
         { bits: "19:0" }
       ],
     }
+
+    { name: "DRAM_AW_DELAY",
+      desc: "Delay on AW channel towards DRAM",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "DRAM_W_DELAY",
+      desc: "Delay on W channel towards DRAM",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "DRAM_B_DELAY",
+      desc: "Delay on B channel towards DRAM",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "DRAM_AR_DELAY",
+      desc: "Delay on AR channel towards DRAM",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "DRAM_R_DELAY",
+      desc: "Delay on R channel towards DRAM",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
   ],
 }

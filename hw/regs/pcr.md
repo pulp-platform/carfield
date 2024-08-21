@@ -65,6 +65,11 @@
 | carfield.[`ETH_RGMII_PHY_CLK_DIV_VALUE`](#eth_rgmii_phy_clk_div_value)       | 0xf0     |        4 | Ethernet RGMII PHY clock divider value                                 |
 | carfield.[`ETH_MDIO_CLK_DIV_EN`](#eth_mdio_clk_div_en)                       | 0xf4     |        4 | Ethernet MDIO clock divider enable bit                                 |
 | carfield.[`ETH_MDIO_CLK_DIV_VALUE`](#eth_mdio_clk_div_value)                 | 0xf8     |        4 | Ethernet MDIO clock divider value                                      |
+| carfield.[`DRAM_AW_DELAY`](#dram_aw_delay)                                   | 0xfc     |        4 | Delay on AW channel towards DRAM                                       |
+| carfield.[`DRAM_W_DELAY`](#dram_w_delay)                                     | 0x100    |        4 | Delay on W channel towards DRAM                                        |
+| carfield.[`DRAM_B_DELAY`](#dram_b_delay)                                     | 0x104    |        4 | Delay on B channel towards DRAM                                        |
+| carfield.[`DRAM_AR_DELAY`](#dram_ar_delay)                                   | 0x108    |        4 | Delay on AR channel towards DRAM                                       |
+| carfield.[`DRAM_R_DELAY`](#dram_r_delay)                                     | 0x10c    |        4 | Delay on R channel towards DRAM                                        |
 
 ## VERSION0
 Cheshire sha256 commit
@@ -1123,4 +1128,84 @@ Ethernet MDIO clock divider value
 |:------:|:------:|:-------:|:-----------------------|:--------------|
 | 31:20  |        |         |                        | Reserved      |
 |  19:0  |   rw   |  0x64   | ETH_MDIO_CLK_DIV_VALUE |               |
+
+## DRAM_AW_DELAY
+Delay on AW channel towards DRAM
+- Offset: `0xfc`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "DRAM_AW_DELAY", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name          | Description   |
+|:------:|:------:|:-------:|:--------------|:--------------|
+|  31:0  |   rw   |   0x0   | DRAM_AW_DELAY |               |
+
+## DRAM_W_DELAY
+Delay on W channel towards DRAM
+- Offset: `0x100`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "DRAM_W_DELAY", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description   |
+|:------:|:------:|:-------:|:-------------|:--------------|
+|  31:0  |   rw   |   0x0   | DRAM_W_DELAY |               |
+
+## DRAM_B_DELAY
+Delay on B channel towards DRAM
+- Offset: `0x104`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "DRAM_B_DELAY", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description   |
+|:------:|:------:|:-------:|:-------------|:--------------|
+|  31:0  |   rw   |   0x0   | DRAM_B_DELAY |               |
+
+## DRAM_AR_DELAY
+Delay on AR channel towards DRAM
+- Offset: `0x108`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "DRAM_AR_DELAY", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name          | Description   |
+|:------:|:------:|:-------:|:--------------|:--------------|
+|  31:0  |   rw   |   0x0   | DRAM_AR_DELAY |               |
+
+## DRAM_R_DELAY
+Delay on R channel towards DRAM
+- Offset: `0x10c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "DRAM_R_DELAY", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description   |
+|:------:|:------:|:-------:|:-------------|:--------------|
+|  31:0  |   rw   |   0x0   | DRAM_R_DELAY |               |
 

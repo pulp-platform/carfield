@@ -221,6 +221,7 @@ module snitch_cluster_carfield
   };
 
   localparam bit [MergeXbarCfg.NoSlvPorts-1:0] MergeEnableDefaultMstPort = '1;
+  logic [MergeXbarCfg.NoSlvPorts-1:0][$clog2(MergeXbarCfg.NoMstPorts)-1:0] merge_xbar_default_port;
   assign merge_xbar_default_port = '{default: Merge_SoC};
 
   generate
@@ -288,22 +289,10 @@ module snitch_cluster_carfield
 
   // From SoC (CDC in) to Cluster
   axi_in_req_t   axi_to_cluster_req;
-  axi_in_resp_t  axi_to_cluster_resp;
+  axi_in_resp_t  axi_to_cluster_rsp;
   // From Cluster to SoC (CDC out)
-  axi_in_req_t   axi_from_cluster_req;
-  axi_in_resp_t  axi_from_cluster_resp;
-
-  typedef logic [AxiDataWidth-1:0]  axi_data_t;
-  typedef logic [AxiStrbWidth-1:0]  axi_strb_t;
-  typedef logic [AxiAddrWidth-1:0]  axi_addr_t;
-  typedef logic [AxiInIdWidth-1:0]  axi_id_in_t;
-  typedef logic [AxiOutIdWidth-1:0] axi_id_out_t;
-  typedef logic [AxiUserWidth-1:0]  axi_user_t;
-  typedef logic [IwcAxiIdOutWidth-1:0]   axi_id_out_iwc_t;
-  `AXI_TYPEDEF_ALL(axi_iwc_out, axi_addr_t, axi_id_out_iwc_t, axi_data_t, axi_strb_t, axi_user_t)
-
-  axi_iwc_out_req_t axi_from_cluster_iwc_req;
-  axi_iwc_out_resp_t axi_from_cluster_iwc_resp;
+  axi_out_req_t   axi_from_cluster_req;
+  axi_out_resp_t  axi_from_cluster_rsp;
 
   axi_iw_converter #(
     .AxiSlvPortIdWidth      ( MergeIdWidthOut    ),
@@ -316,8 +305,8 @@ module snitch_cluster_carfield
     .AxiAddrWidth           ( AxiAddrWidth       ),
     .AxiDataWidth           ( AxiDataWidth       ),
     .AxiUserWidth           ( AxiUserWidth       ),
-    .slv_req_t              ( axi_iwc_out_req_t  ),
-    .slv_resp_t             ( axi_iwc_out_resp_t ),
+    .slv_req_t              ( merge_slv_req_t  ),
+    .slv_resp_t             ( merge_slv_resp_t ),
     .mst_req_t              ( axi_out_req_t      ),
     .mst_resp_t             ( axi_out_resp_t     )
   ) i_soc_out_iw (
@@ -326,7 +315,7 @@ module snitch_cluster_carfield
     .slv_req_i  ( merge_axi_slv_req[Merge_SoC] ),
     .slv_resp_o ( merge_axi_slv_rsp[Merge_SoC] ),
     .mst_req_o  ( axi_from_cluster_req      ),
-    .mst_resp_i ( axi_from_cluster_resp     )
+    .mst_resp_i ( axi_from_cluster_rsp     )
    );
 
   axi_iw_converter #(
@@ -348,14 +337,14 @@ module snitch_cluster_carfield
     .clk_i      ( clk_i                  ),
     .rst_ni     ( rst_ni                 ),
     .slv_req_i  ( axi_to_cluster_req     ),
-    .slv_resp_o ( axi_to_cluster_resp    ),
+    .slv_resp_o ( axi_to_cluster_rsp    ),
     .mst_req_o  ( snitch_narrow_in_req   ),
     .mst_resp_i ( snitch_narrow_in_rsp   )
   );
 
   // From AXI Isolate to CDC
   axi_out_req_t  axi_from_cluster_iso_req;
-  axi_out_resp_t axi_from_cluster_iso_resp;
+  axi_out_resp_t axi_from_cluster_iso_rsp;
   logic axi_isolate_sync;
 
   sync #(
@@ -382,9 +371,9 @@ module snitch_cluster_carfield
     .clk_i                ( clk_i                     ),
     .rst_ni               ( rst_ni                    ),
     .slv_req_i            ( axi_from_cluster_req      ),
-    .slv_resp_o           ( axi_from_cluster_resp     ),
+    .slv_resp_o           ( axi_from_cluster_rsp     ),
     .mst_req_o            ( axi_from_cluster_iso_req  ),
-    .mst_resp_i           ( axi_from_cluster_iso_resp ),
+    .mst_resp_i           ( axi_from_cluster_iso_rsp ),
     .isolate_i            ( axi_isolate_sync          ),
     .isolated_o           ( axi_isolated_o            )
   );
@@ -420,7 +409,7 @@ module snitch_cluster_carfield
     .dst_clk_i                  ( clk_i                  ),
     .dst_rst_ni                 ( pwr_on_rst_ni          ),
     .dst_req_o                  ( axi_to_cluster_req     ),
-    .dst_resp_i                 ( axi_to_cluster_resp    )
+    .dst_resp_i                 ( axi_to_cluster_rsp    )
   );
 
   axi_cdc_src #(
@@ -454,7 +443,7 @@ module snitch_cluster_carfield
     .src_clk_i                  ( clk_i                    ),
     .src_rst_ni                 ( pwr_on_rst_ni          ),
     .src_req_i                  ( axi_from_cluster_iso_req ),
-    .src_resp_o                 ( axi_from_cluster_iso_resp)
+    .src_resp_o                 ( axi_from_cluster_iso_rsp)
   );
 
   // ----------------

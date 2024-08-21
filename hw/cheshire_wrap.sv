@@ -240,7 +240,12 @@ module cheshire_wrap
   output logic                         vga_vsync_o,
   output logic [Cfg.VgaRedWidth  -1:0] vga_red_o,
   output logic [Cfg.VgaGreenWidth-1:0] vga_green_o,
-  output logic [Cfg.VgaBlueWidth -1:0] vga_blue_o
+  output logic [Cfg.VgaBlueWidth -1:0] vga_blue_o,
+  input  logic                  [31:0] aw_delay_i,
+  input  logic                   [31:0] w_delay_i,
+  input  logic                   [31:0] b_delay_i,
+  input  logic                  [31:0] ar_delay_i,
+  input  logic                   [31:0] r_delay_i
 );
 
 // All AXI slave buses
@@ -260,8 +265,8 @@ logic [iomsb(Cfg.NumExtInIntrs):0] intr_ext_fixme;
 logic [IOMMU_N_INT_VEC-1:0] intr_iommu;
 
 // External LLC (DRAM) bus
-cheshire_axi_ext_llc_req_t axi_llc_mst_req, axi_llc_mst_isolated_req;
-cheshire_axi_ext_llc_rsp_t axi_llc_mst_rsp, axi_llc_mst_isolated_rsp;
+cheshire_axi_ext_llc_req_t axi_llc_mst_req, axi_llc_delayed_mst_req, axi_llc_mst_isolated_req;
+cheshire_axi_ext_llc_rsp_t axi_llc_mst_rsp, axi_llc_delayed_mst_rsp, axi_llc_mst_isolated_rsp;
 
 // Feedthrough mailbox req/rsp: same clock domain of cheshire (no CDCs)
 `AXI_ASSIGN_REQ_STRUCT(axi_mbox_slv_req_o, axi_ext_slv_req[MailboxSlvIdx])
@@ -524,6 +529,60 @@ riscv_iommu #(
   .wsi_wires_o 		  ( intr_iommu                           )
 );
 
+//   axi_fifo_delay #(
+//   .aw_chan_t    (cheshire_axi_ext_llc_aw_chan_t),
+//   .w_chan_t     (cheshire_axi_ext_llc_w_chan_t),
+//   .b_chan_t     (cheshire_axi_ext_llc_b_chan_t),
+//   .ar_chan_t    (cheshire_axi_ext_llc_ar_chan_t),
+//   .r_chan_t     (cheshire_axi_ext_llc_r_chan_t),
+//   .axi_req_t    (cheshire_axi_ext_llc_req_t),
+//   .axi_resp_t   (cheshire_axi_ext_llc_rsp_t),
+//   .DelayAR      (0    ),
+//   .DelayAW      (0    ),
+//   .DelayR       (1024 ),
+//   .DelayW       (0    ),
+//   .DelayB       (1024 ),
+//   .DepthAR      (0    ), // Power of two
+//   .DepthAW      (0    ), // Power of two
+//   .DepthR       (1024 ), // Power of two
+//   .DepthW       (0    ), // Power of two
+//   .DepthB       (1024 )  // Power of two
+// ) i_axi_fifo_delay (
+//   .clk_i,
+//   .rst_ni,
+//   .slv_req_i (axi_llc_mst_req),
+//   .slv_resp_o(axi_llc_mst_rsp),
+//   .mst_req_o (axi_llc_delayed_mst_req),
+//   .mst_resp_i(axi_llc_delayed_mst_rsp)
+// );
+
+  axi_fifo_delay_dyn #(
+  .aw_chan_t    (cheshire_axi_ext_llc_aw_chan_t),
+  .w_chan_t     (cheshire_axi_ext_llc_w_chan_t),
+  .b_chan_t     (cheshire_axi_ext_llc_b_chan_t),
+  .ar_chan_t    (cheshire_axi_ext_llc_ar_chan_t),
+  .r_chan_t     (cheshire_axi_ext_llc_r_chan_t),
+  .axi_req_t    (cheshire_axi_ext_llc_req_t),
+  .axi_resp_t   (cheshire_axi_ext_llc_rsp_t),
+  .DepthAR      (0    ), // Power of two
+  .DepthAW      (0    ), // Power of two
+  .DepthR       (2048 ), // Power of two
+  .DepthW       (0    ), // Power of two
+  .DepthB       (2048 ), // Power of two
+  .MaxDelay     (2**16-1)
+) i_axi_fifo_delay (
+  .clk_i,
+  .rst_ni,
+  .aw_delay_i (aw_delay_i),
+  .w_delay_i  (w_delay_i ),
+  .b_delay_i  (b_delay_i ),
+  .ar_delay_i (ar_delay_i),
+  .r_delay_i  (r_delay_i ),
+  .slv_req_i  (axi_llc_mst_req),
+  .slv_resp_o (axi_llc_mst_rsp),
+  .mst_req_o  (axi_llc_delayed_mst_req),
+  .mst_resp_i (axi_llc_delayed_mst_rsp)
+);
 
 // AXI isolate and CDC for external LLC connection
 axi_isolate              #(
@@ -539,8 +598,8 @@ axi_isolate              #(
 ) i_axi_llc_isolate       (
   .clk_i                  ( clk_i                    ),
   .rst_ni                 ( rst_ni                   ),
-  .slv_req_i              ( axi_llc_mst_req          ),
-  .slv_resp_o             ( axi_llc_mst_rsp          ),
+  .slv_req_i              ( axi_llc_delayed_mst_req  ),
+  .slv_resp_o             ( axi_llc_delayed_mst_rsp  ),
   .mst_req_o              ( axi_llc_mst_isolated_req ),
   .mst_resp_i             ( axi_llc_mst_isolated_rsp ),
   .isolate_i              ( axi_llc_isolate_i        ),

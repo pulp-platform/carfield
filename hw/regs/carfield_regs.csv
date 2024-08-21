@@ -62,4 +62,8 @@ ETH_RGMII_PHY_CLK_DIV_EN,1,rw,hro,1,1,Ethernet RGMII PHY clock divider enable bi
 ETH_RGMII_PHY_CLK_DIV_VALUE,20,rw,hro,1,100,Ethernet RGMII PHY clock divider value
 ETH_MDIO_CLK_DIV_EN,1,rw,hro,1,1,Ethernet MDIO clock divider enable bit
 ETH_MDIO_CLK_DIV_VALUE,20,rw,hro,1,100,Ethernet MDIO clock divider value
-
+DRAM_AW_DELAY,32,rw,hro,0,0,Delay on AW channel towards DRAM
+DRAM_W_DELAY,32,rw,hro,0,0,Delay on W channel towards DRAM
+DRAM_B_DELAY,32,rw,hro,0,0,Delay on B channel towards DRAM
+DRAM_AR_DELAY,32,rw,hro,0,0,Delay on AR channel towards DRAM
+DRAM_R_DELAY,32,rw,hro,0,0,Delay on R channel towards DRAM

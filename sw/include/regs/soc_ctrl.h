@@ -310,6 +310,21 @@ extern "C" {
 #define CARFIELD_ETH_MDIO_CLK_DIV_VALUE_ETH_MDIO_CLK_DIV_VALUE_FIELD \
   ((bitfield_field32_t) { .mask = CARFIELD_ETH_MDIO_CLK_DIV_VALUE_ETH_MDIO_CLK_DIV_VALUE_MASK, .index = CARFIELD_ETH_MDIO_CLK_DIV_VALUE_ETH_MDIO_CLK_DIV_VALUE_OFFSET })
 
+// Delay on AW channel towards DRAM
+#define CARFIELD_DRAM_AW_DELAY_REG_OFFSET 0xfc
+
+// Delay on W channel towards DRAM
+#define CARFIELD_DRAM_W_DELAY_REG_OFFSET 0x100
+
+// Delay on B channel towards DRAM
+#define CARFIELD_DRAM_B_DELAY_REG_OFFSET 0x104
+
+// Delay on AR channel towards DRAM
+#define CARFIELD_DRAM_AR_DELAY_REG_OFFSET 0x108
+
+// Delay on R channel towards DRAM
+#define CARFIELD_DRAM_R_DELAY_REG_OFFSET 0x10c
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
