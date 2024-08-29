@@ -34,9 +34,8 @@ if {[info exists ::env(GEN_EXT_JTAG)] && ($::env(GEN_EXT_JTAG)==1)} {
 
 # Add the hyperbus pins to block design
 if {![info exists ::env(GEN_NO_HYPERBUS)] || ($::env(GEN_NO_HYPERBUS)==0)} {
+  source scripts/carfield_bd_hyperbus.tcl
   import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD)_hyperbus.xdc
-} else {
-  delete_bd_objs [get_bd_ports pad_hyper*]
 }
 
 make_wrapper -files [get_files $project/$project.srcs/sources_1/bd/design_1/design_1.bd] -top
