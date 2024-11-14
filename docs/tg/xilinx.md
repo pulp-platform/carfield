@@ -8,8 +8,10 @@ Additionally, for on-chip debugging you need:
 
 We currently provide working setups for:
 
-- Xilinx VCU128 with Vivado `>= 2020.2`
-- Xilinx VCU118 with Vivado `>= 2020.2`
+- Xilinx VCU128 with Vivado `== 2020.2`
+- Xilinx VCU118 with Vivado `== 2020.2`
+
+**Note: Certain version of Vivado might cause issue, until these issues are resolved it is safer to use 2020.2**
 
 We are working on support for more boards in the future.
 
@@ -24,6 +26,16 @@ in the RTL, only the Xilinx DDR, Xilinx VIO and Xilinx clock wizard are availabl
 design flow to link Carfield with external IPs. This flow is less human readable but allows
 integrating more complex IPs as Xilinx Ethernet. *Note that this may require you to own the
 respective licenses.*
+
+## For impatient readers
+
+The recommended command to build a bitstream (for VCU128) is
+
+```bash
+make car-xil-all XILINX_FLAVOR=bd VIVADO="vitis-2020.2 vivado" VIVADO_MODE=gui XILINX_BOARD=vcu128 GEN_NO_HYPERBUS=1 GEN_EXT_JTAG=1 CARFIELD_CONFIG=carfield_l2dual_spatz_periph
+```
+
+Please find below more explanations.
 
 ## Building the vanilla bistream (VCU128 only)
 

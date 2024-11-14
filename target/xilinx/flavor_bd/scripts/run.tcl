@@ -32,12 +32,6 @@ if {[info exists ::env(GEN_EXT_JTAG)] && ($::env(GEN_EXT_JTAG)==1)} {
   import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD)_ext_jtag.xdc
 }
 
-# Add the hyperbus pins to block design
-if {![info exists ::env(GEN_NO_HYPERBUS)] || ($::env(GEN_NO_HYPERBUS)==0)} {
-  source scripts/carfield_bd_hyperbus.tcl
-  import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD)_hyperbus.xdc
-}
-
 make_wrapper -files [get_files $project/$project.srcs/sources_1/bd/design_1/design_1.bd] -top
 add_files -norecurse $project/$project.gen/sources_1/bd/design_1/hdl/design_1_wrapper.v
 
