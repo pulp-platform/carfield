@@ -519,7 +519,7 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
                                    // [0x7000_0000, 0x8000_0000) is CIE
   Cva6ExtCieOnTop   : 1,
   // Harts
-  NumCores          : 2,
+  NumCores          : 1,
   CoreMaxTxns       : 8,
   CoreMaxTxnsPerId  : 4,
   CoreUserAmoOffs   : 0, // Convention: lower AMO bits for cores, MSB for serial link
@@ -572,8 +572,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // Features
   Bootrom           : 1,
   Uart              : 1,
-  I2c               : 1,
-  SpiHost           : 1,
+  I2c               : 0,
+  SpiHost           : 0,
   Gpio              : 1,
   Dma               : 1,
   SerialLink        : 1,

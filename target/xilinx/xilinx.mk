@@ -28,6 +28,11 @@ ifeq ($(XILINX_BOARD),vcu128)
 	xilinx_board_long := xilinx.com:vcu128:part0:1.0
 endif
 
+ifeq ($(XILINX_BOARD),zcu102)
+	xilinx_part       := xczu9eg-ffvb1156-2-e
+	xilinx_board_long := xilinx.com:zcu102:part0:3.4
+endif
+
 XILINX_USE_ARTIFACTS ?= 0
 XILINX_ARTIFACTS_ROOT ?=
 XILINX_ELABORATION_ONLY ?= 0

@@ -24,7 +24,7 @@
   `define HypNumChips 1
   `define HypNumPhys 1
   `ifdef GEN_NO_HYPERBUS
-    `define USE_DDR4
+    // `define USE_DDR4
   `endif  `define USE_VIO
 `endif
 

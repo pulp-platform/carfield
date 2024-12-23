@@ -24,6 +24,16 @@ switch $::env(XILINX_BOARD) {
     set_property SCOPED_TO_REF carfield [get_files carfield.xdc]
     set_property processing_order LATE [get_files carfield.xdc]
   }
+  "zcu102" {
+    import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
+    import_files -fileset constrs_1 -norecurse constraints/carfield_top_xilinx.xdc
+    # General constraints
+    import_files -fileset constrs_1 -norecurse ../constraints/carfield_islands.tcl
+    # Make sure carfield.xdc executes after carfield_islands.tcl (that generates the clocks)
+    import_files -fileset constrs_1 -norecurse ../constraints/carfield.xdc
+    set_property SCOPED_TO_REF carfield [get_files carfield.xdc]
+    set_property processing_order LATE [get_files carfield.xdc]
+  }  
   default {
       exit 1
   }
