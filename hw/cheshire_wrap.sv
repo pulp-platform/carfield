@@ -529,33 +529,6 @@ riscv_iommu #(
   .wsi_wires_o 		  ( intr_iommu                           )
 );
 
-//   axi_fifo_delay #(
-//   .aw_chan_t    (cheshire_axi_ext_llc_aw_chan_t),
-//   .w_chan_t     (cheshire_axi_ext_llc_w_chan_t),
-//   .b_chan_t     (cheshire_axi_ext_llc_b_chan_t),
-//   .ar_chan_t    (cheshire_axi_ext_llc_ar_chan_t),
-//   .r_chan_t     (cheshire_axi_ext_llc_r_chan_t),
-//   .axi_req_t    (cheshire_axi_ext_llc_req_t),
-//   .axi_resp_t   (cheshire_axi_ext_llc_rsp_t),
-//   .DelayAR      (0    ),
-//   .DelayAW      (0    ),
-//   .DelayR       (1024 ),
-//   .DelayW       (0    ),
-//   .DelayB       (1024 ),
-//   .DepthAR      (0    ), // Power of two
-//   .DepthAW      (0    ), // Power of two
-//   .DepthR       (1024 ), // Power of two
-//   .DepthW       (0    ), // Power of two
-//   .DepthB       (1024 )  // Power of two
-// ) i_axi_fifo_delay (
-//   .clk_i,
-//   .rst_ni,
-//   .slv_req_i (axi_llc_mst_req),
-//   .slv_resp_o(axi_llc_mst_rsp),
-//   .mst_req_o (axi_llc_delayed_mst_req),
-//   .mst_resp_i(axi_llc_delayed_mst_rsp)
-// );
-
   axi_fifo_delay_dyn #(
   .aw_chan_t    (cheshire_axi_ext_llc_aw_chan_t),
   .w_chan_t     (cheshire_axi_ext_llc_w_chan_t),
