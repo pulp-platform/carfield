@@ -31,100 +31,14 @@ module stream_fifo_delay_dyn #(
   output logic                    valid_o
 );
 
+  `ifdef SYNTHESIS
+  `ifndef TARGET_XILINX
+  $fatal(1, "Delay unit is not made for synthesis");
+  `endif
+  `endif
+
   if (Depth & (Depth - 1) == 0)
     $fatal(1, "Depth must be a power of two");
-
-/*
-  localparam int unsigned AddrWidth = (Depth > 1) ? $clog2(Depth) : 1;
-
-  typedef logic    [AddrWidth-1:0] addr_t;
-  typedef logic [CounterWidth-1:0] count_t;
-
-  count_t count_val;
-
-  logic fifo_empty, fifo_full;
-  logic fifo_push, fifo_pop, fifo_next; 
-
-  logic [AddrWidth:0] fill_level_d, fill_level_q;
-  logic [AddrWidth:0] ready_level_d, ready_level_q;
-
-  payload_t [Depth-1:0] fifo_d, fifo_q;
-
-  count_t [Depth-1:0] target_d, target_q;
-
-  addr_t read_pointer_d, read_pointer_q;
-  addr_t write_pointer_d, write_pointer_q;
-  addr_t ready_pointer_d, ready_pointer_q;
-
-  assign fifo_push = valid_i & ready_o;
-  assign fifo_pop  = valid_o & ready_i;
-  assign fifo_next = (ready_level_q < fill_level_q) && (target_q[ready_pointer_q] == count_val);
-
-  assign fifo_empty = fill_level_q == 0;
-  assign fifo_full  = fill_level_q == Depth;
-
-  assign ready_o   = ~fifo_full;
-  assign valid_o   = ready_level_q > 0;
-  assign payload_o = fifo_q[read_pointer_q];
-
-  always_comb begin
-    fifo_d          = fifo_q;
-    target_d        = target_q;
-    read_pointer_d  = read_pointer_q;
-    write_pointer_d = write_pointer_q;
-    ready_pointer_d = ready_pointer_q;
-    fill_level_d    = fill_level_q;
-    ready_level_d   = ready_level_q;
-    if (fifo_push) begin
-      fifo_d[write_pointer_q]   = payload_i;
-      target_d[write_pointer_q] = count_val + delay_i + 1;
-      write_pointer_d           = write_pointer_q + 1;
-      fill_level_d              = fill_level_q + 1;
-    end
-    if (fifo_pop) begin
-      read_pointer_d = read_pointer_q + 1;
-      fill_level_d   = fill_level_q - 1;
-      ready_level_d  = ready_level_q - 1;
-    end
-    if (fifo_next) begin
-      ready_pointer_d = ready_pointer_q + 1;
-      ready_level_d   = ready_level_q + 1;
-    end
-    if (fifo_push & fifo_pop) begin // keep fill level stable if push and pop in same cycle
-      fill_level_d = fill_level_q;
-    end
-    if (fifo_next & fifo_pop) begin // keep ready level stable if next and pop in same cycle
-      ready_level_d = ready_level_q;
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if(~rst_ni) begin
-      fill_level_q    <= '0;
-      ready_level_q   <= '0;
-      read_pointer_q  <= '0;
-      write_pointer_q <= '0;
-      ready_pointer_q <= '0;
-    end else begin
-      fill_level_q    <= fill_level_d;
-      ready_level_q   <= ready_level_d;
-      read_pointer_q  <= read_pointer_d;
-      write_pointer_q <= write_pointer_d;
-      ready_pointer_q <= ready_pointer_d;
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if(~rst_ni) begin
-      fifo_q   <= '0;
-      target_q <= '0;
-    end else begin
-      fifo_q   <= fifo_d;
-      target_q <= target_d;
-    end
-  end
-
-*/
 
   localparam int unsigned BookeepingBits = $clog2(Depth) + 1;
   logic [BookeepingBits-1 : 0] dead_count_d, dead_count_q;
@@ -175,6 +89,7 @@ module stream_fifo_delay_dyn #(
     .overflow_o (              )
   );
 
+`ifdef TARGET_XILINX
   xpm_fifo_sync #(
     .FIFO_MEMORY_TYPE    ( "auto"                      ) , // string; "auto", "block", "distributed", or "ultra";
     .ECC_MODE            ( "no_ecc"                    ) , // string; "no_ecc" or "en_ecc";
@@ -204,7 +119,27 @@ module stream_fifo_delay_dyn #(
     .din(payload_i),
     .dout(head_data)
   );
+`else
+  fifo_v3 #(
+    .DATA_WIDTH  ( $bits(payload_t) ),
+    .DEPTH       ( Depth            ),
+    .FALL_THROUGH( 1'b0             )
+  ) data_fifo (
+    .clk_i     (clk_i               ),
+    .rst_ni    (rst_ni              ),
+    .flush_i   (1'b0                ),
+    .testmode_i(1'b0                ),
+    .data_i    (payload_i           ),
+    .push_i    (fifo_data_push      ),
+    .full_o    (fifo_data_full      ),
+    .data_o    (head_data           ),
+    .pop_i     (fifo_data_pop       ),
+    .empty_o   (fifo_data_empty     ),
+    .usage_o   (/* Unused */        )
+  );
+`endif
 
+`ifdef TARGET_XILINX
   xpm_fifo_sync #(
     .FIFO_MEMORY_TYPE    ( "auto"                      ) , // string; "auto", "block", "distributed", or "ultra";
     .ECC_MODE            ( "no_ecc"                    ) , // string; "no_ecc" or "en_ecc";
@@ -234,5 +169,24 @@ module stream_fifo_delay_dyn #(
     .din(tail_deadline),
     .dout(head_deadline)
   );
+`else
+  fifo_v3 #(
+    .DATA_WIDTH  ( CounterWidth     ),
+    .DEPTH       ( Depth            ),
+    .FALL_THROUGH( 1'b0             )
+  ) deadline_fifo (
+    .clk_i     (clk_i               ),
+    .rst_ni    (rst_ni              ),
+    .flush_i   (1'b0                ),
+    .testmode_i(1'b0                ),
+    .data_i    (tail_deadline       ),
+    .push_i    (fifo_dead_push      ),
+    .full_o    (fifo_dead_full      ),
+    .data_o    (head_deadline       ),
+    .pop_i     (fifo_dead_pop       ),
+    .empty_o   (fifo_dead_empty     ),
+    .usage_o   (/* Unused */        )
+  );
+`endif
 
 endmodule
