@@ -43,12 +43,12 @@ RUNTIME_DEFINES += +define+HYP1_PRELOAD_MEM_FILE=\"$(HYP1_PRELOAD_MEM_FILE)\"
 
 QUESTA_FLAGS := -permissive -suppress 3009 -suppress 8386 -error 7 +UVM_NO_RELNOTES
 ifdef DEBUG
-	VOPT_FLAGS := $(QUESTA_FLAGS) +acc -L xpm
-	VSIM_FLAGS := $(QUESTA_FLAGS) -L xpm
+	VOPT_FLAGS := $(QUESTA_FLAGS) +acc
+	VSIM_FLAGS := $(QUESTA_FLAGS)
 	RUN_AND_EXIT := log -r /*; run -all
 else
-	VOPT_FLAGS := $(QUESTA_FLAGS) -L xpm -O5 +acc=p+$(TBENCH). +noacc=p+carfield.
-	VSIM_FLAGS := $(QUESTA_FLAGS) -L xpm -c
+	VOPT_FLAGS := $(QUESTA_FLAGS) -O5 +acc=p+$(TBENCH). +noacc=p+carfield.
+	VSIM_FLAGS := $(QUESTA_FLAGS) -c
 	RUN_AND_EXIT := run -all; exit
 endif
 

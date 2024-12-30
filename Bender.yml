@@ -90,8 +90,6 @@ sources:
   - hw/cheshire_wrap.sv
   - hw/hyperbus_wrap.sv
   - hw/l2_wrap.sv
-  - hw/stream_fifo_delay.sv
-  - hw/axi_fifo_delay.sv
   - hw/stream_fifo_delay_dyn.sv
   - hw/axi_fifo_delay_dyn.sv
   - hw/snitch_cluster_wrapper.sv
