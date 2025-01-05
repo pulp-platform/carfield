@@ -624,6 +624,8 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   LlcOutConnect     : 1,
   LlcOutRegionStart : 'h8000_0000,
   LlcOutRegionEnd   : 'h1_0000_0000,
+  LlcBypassRegionStart : 'h8_0000_0000,
+  LlcBypassRegionEnd   : 'h8_8000_0000,
   LlcUserMsb        : 9,
   LlcUserLsb        : 5,
   LlcCachePartition : 1,
