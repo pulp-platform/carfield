@@ -76,6 +76,9 @@ extern void *__base_l2;
 #define CAR_HYPERRAM_BASE_ADDR 0x80400000
 #define CAR_HYPERRAM_END_ADDR  0x80800000
 
+// Bypass LLC
+#define CAR_LLC_BYPASS_OFFSET 0x200000000
+
 // Peripheral devices
 // from cheshire
 #define CAR_BOOTROM_BASE_ADDR        0x000002000000

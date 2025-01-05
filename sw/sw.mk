@@ -66,12 +66,16 @@ CAR_ELFLOAD_PULPD_INTF_PATH := $(basename $(CAR_ELFLOAD_PULPD_INTF_SRC_C))
 CAR_SW_TEST_SRCS_S	= $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.S)
 CAR_SW_TEST_SRCS_C	= $(filter-out $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C), $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.c))
 
-CAR_SW_TEST_DRAM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.dump) $(CAR_SW_TEST_SRCS_C:.c=.car.dram.dump)
-CAR_SW_TEST_DRAM_SLM	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.slm)  $(CAR_SW_TEST_SRCS_C:.c=.car.dram.slm)
-CAR_SW_TEST_SPM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.spm.dump)  $(CAR_SW_TEST_SRCS_C:.c=.car.spm.dump)
-CAR_SW_TEST_L2_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.l2.dump)   $(CAR_SW_TEST_SRCS_C:.c=.car.l2.dump)
-CAR_SW_TEST_SPM_ROMH	= $(CAR_SW_TEST_SRCS_S:.S=.car.rom.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.rom.memh)
-CAR_SW_TEST_SPM_GPTH	= $(CAR_SW_TEST_SRCS_S:.S=.car.gpt.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.gpt.memh)
+CAR_SW_TEST_SRC_EXCLUDE_DRAM =
+CAR_SW_TEST_SRC_EXCLUDE_SPM = llc_test.c
+CAR_SW_TEST_SRC_EXCLUDE_L2 = llc_test.c
+
+CAR_SW_TEST_DRAM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.dump) $(filter-out $(CAR_SW_TEST_SRC_EXCLUDE_DRAM),$(CAR_SW_TEST_SRCS_C:.c=.car.dram.dump))
+CAR_SW_TEST_DRAM_SLM	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.slm)  $(filter-out $(CAR_SW_TEST_SRC_EXCLUDE_DRAM),$(CAR_SW_TEST_SRCS_C:.c=.car.dram.slm))
+CAR_SW_TEST_SPM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.spm.dump)  $(filter-out $(CAR_SW_TEST_SRC_EXCLUDE_SPM),$(CAR_SW_TEST_SRCS_C:.c=.car.spm.dump))
+CAR_SW_TEST_L2_DUMP	    = $(CAR_SW_TEST_SRCS_S:.S=.car.l2.dump)   $(filter-out $(CAR_SW_TEST_SRC_EXCLUDE_L2),$(CAR_SW_TEST_SRCS_C:.c=.car.l2.dump))
+CAR_SW_TEST_SPM_ROMH	= $(CAR_SW_TEST_SRCS_S:.S=.car.rom.memh)  $(filter-out $(CAR_SW_TEST_SRC_EXCLUDE_SPM),$(CAR_SW_TEST_SRCS_C:.c=.car.rom.memh))
+CAR_SW_TEST_SPM_GPTH	= $(CAR_SW_TEST_SRCS_S:.S=.car.gpt.memh)  $(filter-out $(CAR_SW_TEST_SRC_EXCLUDE_SPM),$(CAR_SW_TEST_SRCS_C:.c=.car.gpt.memh))
 
 car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_DRAM_SLM) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH) car-pulpd-sw-offload-tests car-safed-sw-offload-tests mibench-automotive
 
