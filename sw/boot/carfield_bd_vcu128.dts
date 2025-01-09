@@ -75,12 +75,8 @@
         reg = <3>;
         #phy-cells = <1>;
         device_type = "ethernet-phy";
-        //ti,sgmii-ref-clock-output-enable;
+        ti,sgmii-ref-clock-output-enable;
         ti,dp83867-rxctrl-strap-quirk;
-        //ti,6-wire-mode;
-        //ti,rx-internal-delay = <0x8>;
-        //ti,tx-internal-delay = <0xa>;
-        //ti,fifo-depth = <0x1>;
       };
     };
   };

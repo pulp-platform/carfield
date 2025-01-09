@@ -99,7 +99,7 @@ car-xil-program:
 ## @param XILINX_BOARD The target Xilinx board to be programmed
 ## @param XILINX_FLAVOR=<vanilla|bd> The flavor of the implementation.
 ## @param VIVADO_FLAGS Some flags for Vivado, such as batch or gui mode
-car-xil-flash: $(CAR_SW_DIR)/boot/linux_carfield_$(XILINX_FLAVOR).gpt.bin
+car-xil-flash: $(CAR_SW_DIR)/boot/linux_carfield_$(XILINX_FLAVOR)_$(XILINX_BOARD).gpt.bin
 	$(vivado_env) FILE=$< OFFSET=0 $(VIVADO) $(VIVADO_FLAGS) -source $(CAR_XIL_DIR)/scripts/flash_spi.tcl
 
 ## Clean Xilinx artifacts for all implementations
