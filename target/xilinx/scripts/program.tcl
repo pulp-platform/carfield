@@ -9,7 +9,7 @@ puts $::env(XILINX_BIT)
 open_hw_manager
 
 connect_hw_server -url $::env(XILINX_HOST):$::env(XILINX_PORT)
-open_hw_target $::env(XILINX_HOST):$::env(XILINX_PORT)/$::env(XILINX_FPGA_PATH)
+open_hw_target [get_hw_targets $::env(XILINX_FPGA_PATH)]
 
 if {$::env(XILINX_BOARD) eq "genesys2"} {
   set hw_device [get_hw_devices xc7k325t_0]
@@ -34,7 +34,8 @@ program_hw_devices $hw_device
 refresh_hw_device [lindex $hw_device 0]
 
 # Force reset
-set_property OUTPUT_VALUE 1 [get_hw_probes [list *aux_reset* probe_out0] -of_objects [get_hw_vios *]]
+get_hw_vios *
+set_property OUTPUT_VALUE 1 [get_hw_probes [list *aux_reset* probe_out0 *probe_out2_1] -of_objects [get_hw_vios *]]
 commit_hw_vio [get_hw_vios *]
-set_property OUTPUT_VALUE 0 [get_hw_probes [list *aux_reset* probe_out0] -of_objects [get_hw_vios *]]
+set_property OUTPUT_VALUE 0 [get_hw_probes [list *aux_reset* probe_out0 *probe_out2_1] -of_objects [get_hw_vios *]]
 commit_hw_vio [get_hw_vios *]

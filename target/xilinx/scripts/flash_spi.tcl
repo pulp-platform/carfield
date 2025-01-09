@@ -8,7 +8,7 @@
 open_hw_manager
 
 connect_hw_server -url $::env(XILINX_HOST):$::env(XILINX_PORT)
-open_hw_target $::env(XILINX_HOST):$::env(XILINX_PORT)/$::env(XILINX_FPGA_PATH)
+open_hw_target [get_hw_targets $::env(XILINX_FPGA_PATH)]
 
 set file $::env(FILE)
 set offset $::env(OFFSET)
