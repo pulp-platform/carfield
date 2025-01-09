@@ -595,13 +595,6 @@ module carfield_xilinx
      .USRDONETS (1'b1)
   );
 
-  `ila(qspi_dqi_ila, qspi_dqi)
-  `ila(qspi_dqo_ila, qspi_dqo)
-  `ila(qspi_cs_b_ila, qspi_cs_b[1])
-  `ila(qspi_cs_b_ts_ila, qspi_cs_b_ts[1])
-  `ila(qspi_clk_ila, qspi_clk)
-  `ila(qspi_clk_ts_ila, qspi_clk_ts)
-
 
   ///////////////////
   // Hyperram PADS //
