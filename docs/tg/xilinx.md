@@ -11,6 +11,8 @@ We currently provide working setups for:
 - Xilinx VCU128 with Vivado `== 2020.2`
 - Xilinx VCU118 with Vivado `== 2020.2`
 
+:warning: At the moment it is required to use the Vivado version above
+
 **Note: Certain version of Vivado might cause issue, until these issues are resolved it is safer to use 2020.2**
 
 We are working on support for more boards in the future.
@@ -27,7 +29,7 @@ design flow to link Carfield with external IPs. This flow is less human readable
 integrating more complex IPs as Xilinx Ethernet. *Note that this may require you to own the
 respective licenses.*
 
-## For impatient readers
+## Quick Start
 
 The recommended command to build a bitstream (for VCU128) is
 
@@ -158,7 +160,7 @@ JTAG chain to connect GDB to the debug-module in the bitstream.
 using the Xilinx BSCANE macro. With this, you will only need the normal Xilinx USB cable to interact
 with CVA6. Note that it means that
 Vivado and OpenOCD can not use the same cable at the same time.
->**WARNING: this setup (with `EXT_JTAG=0`) will only work for designs containing the host only** as
+> :warning: This setup (with `EXT_JTAG=0`) will only work for designs containing the host only** as
 it is not possible to chain multiple devices on the BSCANE macro. If you need to use `EXT_JTAG=0`
 consider modifying the RTL to remove the debug modules of the IPs.
 > When using `EXT_JTAG=1` we add an external JTAG chain for the RV64 host and other island through
