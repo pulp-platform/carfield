@@ -48,8 +48,8 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
-   create_project project_1 myproj -part xcvu37p-fsvh2892-2L-e
-   set_property BOARD_PART xilinx.com:vcu128:part0:1.0 [current_project]
+   create_project project_1 myproj -part xcvu9p-flga2104-2L-e
+   set_property BOARD_PART xilinx.com:vcu118:part0:2.4 [current_project]
 }
 
 
@@ -204,11 +204,16 @@ proc create_root_design { parentCell } {
 
 
   # Create interface ports
-  set ddr4_sdram [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram ]
+  set ddr4_sdram_c1_062 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c1_062 ]
+
+  set default_250mhz_clk1 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 default_250mhz_clk1 ]
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {250000000} \
+   ] $default_250mhz_clk1
 
   set mdio_mdc [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:mdio_rtl:1.0 mdio_mdc ]
 
-  set pci_express_x1 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pci_express_x1 ]
+  set pci_express_x4 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pci_express_x4 ]
 
   set pcie_refclk [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 pcie_refclk ]
   set_property -dict [ list \
@@ -222,25 +227,16 @@ proc create_root_design { parentCell } {
    CONFIG.FREQ_HZ {625000000} \
    ] $sgmii_phyclk
 
-  set sys_clk [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 sys_clk ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {100000000} \
-   ] $sys_clk
-
 
   # Create ports
-  set dummy_port_in [ create_bd_port -dir I -type rst dummy_port_in ]
+  set cpu_reset [ create_bd_port -dir I -type rst cpu_reset ]
   set_property -dict [ list \
    CONFIG.POLARITY {ACTIVE_HIGH} \
- ] $dummy_port_in
+ ] $cpu_reset
   set pcie_perstn [ create_bd_port -dir I -type rst pcie_perstn ]
   set_property -dict [ list \
    CONFIG.POLARITY {ACTIVE_LOW} \
  ] $pcie_perstn
-  set reset [ create_bd_port -dir I -type rst reset ]
-  set_property -dict [ list \
-   CONFIG.POLARITY {ACTIVE_HIGH} \
- ] $reset
   set uart_rx_i [ create_bd_port -dir I uart_rx_i ]
   set uart_tx_o [ create_bd_port -dir O uart_tx_o ]
 
@@ -260,18 +256,17 @@ proc create_root_design { parentCell } {
    CONFIG.DIFFCLK_BOARD_INTERFACE {sgmii_phyclk} \
    CONFIG.ENABLE_LVDS {true} \
    CONFIG.ETHERNET_BOARD_INTERFACE {sgmii_lvds} \
-   CONFIG.InstantiateBitslice0 {true} \
+   CONFIG.InstantiateBitslice0 {false} \
    CONFIG.MDIO_BOARD_INTERFACE {mdio_mdc} \
    CONFIG.PHYADDR {0} \
    CONFIG.PHYRST_BOARD_INTERFACE {Custom} \
-   CONFIG.PHYRST_BOARD_INTERFACE_DUMMY_PORT {dummy_port_in} \
    CONFIG.PHY_TYPE {SGMII} \
-   CONFIG.RXCSUM {Full} \
-   CONFIG.TXCSUM {Full} \
+   CONFIG.gtlocation {X0Y4} \
    CONFIG.lvdsclkrate {625} \
-   CONFIG.rxlane0_placement {DIFF_PAIR_2} \
+   CONFIG.rxlane0_placement {DIFF_PAIR_0} \
    CONFIG.rxnibblebitslice0used {false} \
-   CONFIG.txlane0_placement {DIFF_PAIR_1} \
+   CONFIG.tx_in_upper_nibble {false} \
+   CONFIG.txlane0_placement {DIFF_PAIR_2} \
  ] $axi_ethernet_0
 
   # Create instance: carfield_xilinx_ip_0, and set properties
@@ -280,36 +275,39 @@ proc create_root_design { parentCell } {
   # Create instance: clk_wiz_0, and set properties
   set clk_wiz_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:clk_wiz:6.0 clk_wiz_0 ]
   set_property -dict [ list \
-   CONFIG.CLKOUT1_JITTER {188.586} \
+   CONFIG.CLKIN1_JITTER_PS {40.0} \
+   CONFIG.CLKOUT1_JITTER {213.887} \
+   CONFIG.CLKOUT1_PHASE_ERROR {154.678} \
    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {10.000} \
-   CONFIG.CLKOUT1_USED {true} \
-   CONFIG.CLKOUT2_JITTER {162.167} \
-   CONFIG.CLKOUT2_PHASE_ERROR {87.180} \
+   CONFIG.CLKOUT2_JITTER {184.746} \
+   CONFIG.CLKOUT2_PHASE_ERROR {154.678} \
    CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {20.000} \
    CONFIG.CLKOUT2_USED {true} \
-   CONFIG.CLKOUT3_JITTER {132.683} \
-   CONFIG.CLKOUT3_PHASE_ERROR {87.180} \
+   CONFIG.CLKOUT3_JITTER {153.164} \
+   CONFIG.CLKOUT3_PHASE_ERROR {154.678} \
    CONFIG.CLKOUT3_REQUESTED_OUT_FREQ {50.000} \
    CONFIG.CLKOUT3_USED {true} \
-   CONFIG.CLKOUT4_JITTER {115.831} \
-   CONFIG.CLKOUT4_PHASE_ERROR {87.180} \
+   CONFIG.CLKOUT4_JITTER {134.506} \
+   CONFIG.CLKOUT4_PHASE_ERROR {154.678} \
    CONFIG.CLKOUT4_USED {true} \
    CONFIG.CLK_IN1_BOARD_INTERFACE {Custom} \
    CONFIG.CLK_OUT1_PORT {clk_10} \
    CONFIG.CLK_OUT2_PORT {clk_20} \
    CONFIG.CLK_OUT3_PORT {clk_50} \
    CONFIG.CLK_OUT4_PORT {clk_100} \
-   CONFIG.ENABLE_CLOCK_MONITOR {false} \
+   CONFIG.MMCM_CLKFBOUT_MULT_F {24.000} \
+   CONFIG.MMCM_CLKIN1_PERIOD {4.000} \
+   CONFIG.MMCM_CLKIN2_PERIOD {10.0} \
    CONFIG.MMCM_CLKOUT0_DIVIDE_F {120.000} \
    CONFIG.MMCM_CLKOUT1_DIVIDE {60} \
    CONFIG.MMCM_CLKOUT2_DIVIDE {24} \
    CONFIG.MMCM_CLKOUT3_DIVIDE {12} \
+   CONFIG.MMCM_DIVCLK_DIVIDE {5} \
    CONFIG.NUM_OUT_CLKS {4} \
-   CONFIG.PRIMITIVE {MMCM} \
+   CONFIG.PRIM_IN_FREQ {250.000} \
    CONFIG.PRIM_SOURCE {No_buffer} \
    CONFIG.RESET_BOARD_INTERFACE {reset} \
    CONFIG.USE_BOARD_FLOW {true} \
-   CONFIG.USE_LOCKED {true} \
    CONFIG.USE_RESET {false} \
  ] $clk_wiz_0
 
@@ -323,8 +321,18 @@ proc create_root_design { parentCell } {
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
   set_property -dict [ list \
    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {None} \
+   CONFIG.C0.BANK_GROUP_WIDTH {1} \
+   CONFIG.C0.DDR4_AxiAddressWidth {31} \
+   CONFIG.C0.DDR4_AxiDataWidth {512} \
+   CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
+   CONFIG.C0.DDR4_CasWriteLatency {12} \
+   CONFIG.C0.DDR4_DataWidth {64} \
+   CONFIG.C0.DDR4_InputClockPeriod {4000} \
+   CONFIG.C0.DDR4_MemoryPart {MT40A256M16LY-062E} \
+   CONFIG.C0.DDR4_TimePeriod {833} \
    CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
-   CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
+   CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c1_062} \
+   CONFIG.RESET_BOARD_INTERFACE {reset} \
    CONFIG.System_Clock {No_Buffer} \
  ] $ddr4_0
 
@@ -345,12 +353,13 @@ proc create_root_design { parentCell } {
    CONFIG.USE_BOARD_FLOW {true} \
  ] $psr_10
 
-  # Create instance: psr_333, and set properties
-  set psr_333 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 psr_333 ]
+  # Create instance: psr_300, and set properties
+  set psr_300 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 psr_300 ]
   set_property -dict [ list \
    CONFIG.C_AUX_RESET_HIGH {1} \
    CONFIG.RESET_BOARD_INTERFACE {reset} \
- ] $psr_333
+   CONFIG.USE_BOARD_FLOW {true} \
+ ] $psr_300
 
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0 ]
@@ -414,25 +423,18 @@ proc create_root_design { parentCell } {
    CONFIG.axi_addr_width {64} \
    CONFIG.axisten_freq {125} \
    CONFIG.bar_indicator {BAR_1:0} \
-   CONFIG.c_s_axi_supports_narrow_burst {false} \
    CONFIG.en_gt_selection {true} \
    CONFIG.functional_mode {AXI_Bridge} \
    CONFIG.mode_selection {Advanced} \
    CONFIG.pf0_bar0_64bit {true} \
    CONFIG.pf0_bar0_prefetchable {true} \
    CONFIG.pf0_bar0_scale {Gigabytes} \
-   CONFIG.pf0_bar0_size {4} \
-   CONFIG.pf0_base_class_menu {Simple_communication_controllers} \
-   CONFIG.pf0_class_code {070001} \
-   CONFIG.pf0_class_code_base {07} \
-   CONFIG.pf0_class_code_interface {01} \
+   CONFIG.pf0_bar0_size {1} \
    CONFIG.pf0_device_id {9014} \
    CONFIG.pf0_msix_cap_pba_bir {BAR_1:0} \
    CONFIG.pf0_msix_cap_table_bir {BAR_1:0} \
-   CONFIG.pf0_sub_class_interface_menu {16450_compatible_serial_controller} \
-   CONFIG.pl_link_cap_max_link_speed {2.5_GT/s} \
    CONFIG.pl_link_cap_max_link_width {X4} \
-   CONFIG.plltype {CPLL} \
+   CONFIG.ref_clk_freq {100_MHz} \
    CONFIG.xdma_axilite_slave {true} \
  ] $xdma_0
 
@@ -448,8 +450,8 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net axi_ethernet_0_mdio [get_bd_intf_ports mdio_mdc] [get_bd_intf_pins axi_ethernet_0/mdio]
   connect_bd_intf_net -intf_net axi_ethernet_0_sgmii [get_bd_intf_ports sgmii_lvds] [get_bd_intf_pins axi_ethernet_0/sgmii]
   connect_bd_intf_net -intf_net carfield_xilinx_ip_0_dram_axi [get_bd_intf_pins carfield_xilinx_ip_0/dram_axi] [get_bd_intf_pins xbar_dram/S00_AXI]
-  connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram] [get_bd_intf_pins ddr4_0/C0_DDR4]
-  connect_bd_intf_net -intf_net diff_clock_rtl_1 [get_bd_intf_ports sys_clk] [get_bd_intf_pins util_ds_buf_0/CLK_IN_D]
+  connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c1_062] [get_bd_intf_pins ddr4_0/C0_DDR4]
+  connect_bd_intf_net -intf_net default_250mhz_clk1_1 [get_bd_intf_ports default_250mhz_clk1] [get_bd_intf_pins util_ds_buf_0/CLK_IN_D]
   connect_bd_intf_net -intf_net pcie_refclk_1 [get_bd_intf_ports pcie_refclk] [get_bd_intf_pins util_ds_buf_1/CLK_IN_D]
   connect_bd_intf_net -intf_net sgmii_phyclk_1 [get_bd_intf_ports sgmii_phyclk] [get_bd_intf_pins axi_ethernet_0/lvds_clk]
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI] [get_bd_intf_pins xbar_dram/M00_AXI]
@@ -458,11 +460,16 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net xbar_periph_out_M01_AXI [get_bd_intf_pins axi_dma_0/S_AXI_LITE] [get_bd_intf_pins xbar_periph_out/M01_AXI]
   connect_bd_intf_net -intf_net xbar_periph_out_M02_AXI [get_bd_intf_pins xbar_periph_out/M02_AXI] [get_bd_intf_pins xdma_0/S_AXI_B]
   connect_bd_intf_net -intf_net xbar_periph_out_M03_AXI [get_bd_intf_pins xbar_periph_out/M03_AXI] [get_bd_intf_pins xdma_0/S_AXI_LITE]
-  connect_bd_intf_net -intf_net xbar_periph_out_M04_AXI [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI_CTRL] [get_bd_intf_pins xbar_periph_out/M04_AXI]
   connect_bd_intf_net -intf_net xdma_0_M_AXI_B [get_bd_intf_pins xbar_periph_in/S03_AXI] [get_bd_intf_pins xdma_0/M_AXI_B]
-  connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pci_express_x1] [get_bd_intf_pins xdma_0/pcie_mgt]
+  connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pci_express_x4] [get_bd_intf_pins xdma_0/pcie_mgt]
 
   # Create port connections
+  connect_bd_net -net Net [get_bd_pins carfield_xilinx_ip_0/pad_hyper_csn]
+  connect_bd_net -net Net1 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_ck]
+  connect_bd_net -net Net2 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_ckn]
+  connect_bd_net -net Net3 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_rwds]
+  connect_bd_net -net Net4 [get_bd_pins carfield_xilinx_ip_0/pad_hyper_dq]
+  connect_bd_net -net aux_reset [get_bd_pins psr_10/aux_reset_in] [get_bd_pins psr_300/aux_reset_in] [get_bd_pins vio_0/probe_out2]
   connect_bd_net -net axi_dma_0_mm2s_cntrl_reset_out_n [get_bd_pins axi_dma_0/mm2s_cntrl_reset_out_n] [get_bd_pins axi_ethernet_0/axi_txc_arstn]
   connect_bd_net -net axi_dma_0_mm2s_introut [get_bd_pins axi_dma_0/mm2s_introut] [get_bd_pins concat_irq/In2]
   connect_bd_net -net axi_dma_0_mm2s_prmry_reset_out_n [get_bd_pins axi_dma_0/mm2s_prmry_reset_out_n] [get_bd_pins axi_ethernet_0/axi_txd_arstn]
@@ -474,30 +481,28 @@ proc create_root_design { parentCell } {
   connect_bd_net -net carfield_xilinx_ip_0_dram_axi_m_aclk [get_bd_pins carfield_xilinx_ip_0/dram_axi_m_aclk] [get_bd_pins xbar_dram/aclk]
   connect_bd_net -net carfield_xilinx_ip_0_periph_axi_m_aclk [get_bd_pins carfield_xilinx_ip_0/periph_axi_m_aclk] [get_bd_pins xbar_periph_out/aclk]
   connect_bd_net -net carfield_xilinx_ip_0_uart_tx_o [get_bd_ports uart_tx_o] [get_bd_pins carfield_xilinx_ip_0/uart_tx_o]
+  connect_bd_net -net cheshire_bootmode [get_bd_pins carfield_xilinx_ip_0/boot_mode_i] [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net clk_wiz_0_clk_10 [get_bd_pins carfield_xilinx_ip_0/clk_10] [get_bd_pins clk_wiz_0/clk_10] [get_bd_pins psr_10/slowest_sync_clk]
   connect_bd_net -net clk_wiz_0_clk_20 [get_bd_pins carfield_xilinx_ip_0/clk_20] [get_bd_pins clk_wiz_0/clk_20]
   connect_bd_net -net clk_wiz_0_clk_50 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/m_axi_sg_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_ethernet_0/axis_clk] [get_bd_pins axi_ethernet_0/s_axi_lite_clk] [get_bd_pins carfield_xilinx_ip_0/clk_50] [get_bd_pins clk_wiz_0/clk_50] [get_bd_pins vio_0/clk] [get_bd_pins xbar_periph_in/aclk] [get_bd_pins xbar_periph_out/aclk1]
   connect_bd_net -net clk_wiz_0_clk_100 [get_bd_pins carfield_xilinx_ip_0/clk_100] [get_bd_pins clk_wiz_0/clk_100]
   connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins psr_10/dcm_locked]
   connect_bd_net -net concat_irq_dout [get_bd_pins carfield_xilinx_ip_0/gpio_i] [get_bd_pins concat_irq/dout]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins psr_333/slowest_sync_clk] [get_bd_pins xbar_dram/aclk1] [get_bd_pins xbar_periph_out/aclk3]
-  connect_bd_net -net dummy_port_in_1 [get_bd_ports dummy_port_in] [get_bd_pins axi_ethernet_0/dummy_port_in]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins psr_300/slowest_sync_clk] [get_bd_pins xbar_dram/aclk1] [get_bd_pins xbar_periph_out/aclk3]
   connect_bd_net -net high_dout [get_bd_pins carfield_xilinx_ip_0/jtag_trst_ni] [get_bd_pins high/dout]
   connect_bd_net -net low_dout [get_bd_pins carfield_xilinx_ip_0/testmode_i] [get_bd_pins low/dout]
   connect_bd_net -net pcie_perstn_1 [get_bd_ports pcie_perstn] [get_bd_pins xdma_0/sys_rst_n]
   connect_bd_net -net psr_10_interconnect_aresetn [get_bd_pins psr_10/interconnect_aresetn] [get_bd_pins xbar_dram/aresetn] [get_bd_pins xbar_periph_in/aresetn] [get_bd_pins xbar_periph_out/aresetn]
   connect_bd_net -net psr_10_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_ethernet_0/s_axi_lite_resetn] [get_bd_pins psr_10/peripheral_aresetn]
-  connect_bd_net -net psr_333_peripheral_aresetn [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins psr_333/peripheral_aresetn]
-  connect_bd_net -net psr_333_peripheral_reset [get_bd_pins ddr4_0/sys_rst] [get_bd_pins psr_333/peripheral_reset]
+  connect_bd_net -net psr_300_peripheral_aresetn [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins psr_300/peripheral_aresetn]
+  connect_bd_net -net psr_300_peripheral_reset [get_bd_pins ddr4_0/sys_rst] [get_bd_pins psr_300/peripheral_reset]
   connect_bd_net -net psr_50_mb_reset [get_bd_pins carfield_xilinx_ip_0/cpu_reset] [get_bd_pins psr_10/mb_reset]
-  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins psr_10/ext_reset_in] [get_bd_pins psr_333/ext_reset_in]
+  connect_bd_net -net reset_1 [get_bd_ports cpu_reset] [get_bd_pins psr_10/ext_reset_in] [get_bd_pins psr_300/ext_reset_in]
+  connect_bd_net -net safety_bootmode [get_bd_pins carfield_xilinx_ip_0/boot_mode_safety_i] [get_bd_pins vio_0/probe_out1]
   connect_bd_net -net uart_rx_i_1 [get_bd_ports uart_rx_i] [get_bd_pins carfield_xilinx_ip_0/uart_rx_i]
   connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins ddr4_0/c0_sys_clk_i] [get_bd_pins util_ds_buf_0/IBUF_OUT]
   connect_bd_net -net util_ds_buf_1_IBUF_DS_ODIV2 [get_bd_pins util_ds_buf_1/IBUF_DS_ODIV2] [get_bd_pins xdma_0/sys_clk]
   connect_bd_net -net util_ds_buf_1_IBUF_OUT [get_bd_pins util_ds_buf_1/IBUF_OUT] [get_bd_pins xdma_0/sys_clk_gt]
-  connect_bd_net -net vio_0_probe_out0 [get_bd_pins carfield_xilinx_ip_0/boot_mode_i] [get_bd_pins vio_0/probe_out0]
-  connect_bd_net -net vio_0_probe_out1 [get_bd_pins carfield_xilinx_ip_0/boot_mode_safety_i] [get_bd_pins vio_0/probe_out1]
-  connect_bd_net -net vio_0_probe_out2 [get_bd_pins psr_10/aux_reset_in] [get_bd_pins psr_333/aux_reset_in] [get_bd_pins vio_0/probe_out2]
   connect_bd_net -net xdma_0_axi_aclk [get_bd_pins xbar_periph_in/aclk1] [get_bd_pins xbar_periph_out/aclk2] [get_bd_pins xdma_0/axi_aclk]
 
   # Create address segments
@@ -511,14 +516,12 @@ proc create_root_design { parentCell } {
   assign_bd_address -offset 0x00000000 -range 0x0001000000000000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_B] [get_bd_addr_segs carfield_xilinx_ip_0/periph_axi_s/reg0] -force
 
   # Exclude Address Segments
-  exclude_bd_addr_seg -offset 0x78000000 -range 0x00100000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP_CTRL/C0_REG]
   exclude_bd_addr_seg -offset 0x00000000 -range 0x20000000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs xdma_0/S_AXI_LITE/CTL0]
 
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
-  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
@@ -530,4 +533,6 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
+
+common::send_gid_msg -ssname BD::TCL -id 2053 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 

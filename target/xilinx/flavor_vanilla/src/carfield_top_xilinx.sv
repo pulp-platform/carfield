@@ -121,7 +121,7 @@ module carfield_top_xilinx
   `elsif USE_RESETN
   logic cpu_reset;
   assign cpu_reset  = ~cpu_resetn;
-  `endif
+  `endif // USE_RESET
   logic sys_rst;
 
   wire clk_100, clk_50, clk_20;
@@ -140,17 +140,26 @@ module carfield_top_xilinx
   assign testmode_i  = '0;
   assign boot_mode_i = 2'b00;
   assign boot_mode_safety_i = 2'b00;
-`endif
+`endif // USE_SWITCHES
 
   // Give VDD and GND to JTAG
 `ifdef USE_JTAG_VDDGND
   assign jtag_vdd_o  = '1;
   assign jtag_gnd_o  = '0;
-`endif
+`endif // USE_JTAG_VDDGND
 `ifndef USE_JTAG_TRSTN
   logic jtag_trst_ni;
   assign jtag_trst_ni = '1;
-`endif
+`endif // USE_JTAG_TRSTN
+`ifndef USE_JTAG
+  logic jtag_tck_i;
+  logic jtag_tms_i;
+  logic jtag_tdi_i;
+  logic jtag_tdo_o;
+  assign jtag_tck_i = '0;
+  assign jtag_tms_i = '0;
+  assign jtag_tdi_i = '0;
+`endif // USE_JTAG
 
   //////////////////
   // Clock Wizard //
@@ -218,11 +227,11 @@ module carfield_top_xilinx
   assign sys_rst = cpu_reset | vio_reset;
   assign boot_mode = boot_mode_i | vio_boot_mode;
   assign boot_mode_safety = boot_mode_safety_i | vio_boot_mode_safety;
-`else
+`else // USE_VIO
   assign sys_rst = cpu_reset;
   assign boot_mode = boot_mode_i;
   assign boot_mode_safety = boot_mode_safety_i;
-`endif
+`endif // USE_VIO
 
   //////////////////
   // I2C Adaption //
@@ -266,7 +275,7 @@ module carfield_top_xilinx
     .I  ( i2c_sda_soc_out     ),
     .T  ( ~i2c_sda_en         )
   );
-`endif
+`endif // USE_I2C
 
 
   //////////////////
@@ -394,7 +403,7 @@ module carfield_top_xilinx
     .pwm_setting_i ( fan_sw     ),
     .fan_pwm_o     ( fan_pwm    )
   );
-`endif
+`endif // USE_FAN
 
   //////////////////
   // Carfield Cfg //
@@ -408,6 +417,7 @@ module carfield_top_xilinx
   ///////////////////
 
 `ifdef GEN_NO_HYPERBUS // bender-xilinx.mk
+
   localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
   localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth+$clog2(AxiIn.num_in)+Cfg.LlcNotBypass;
   localparam int unsigned LlcArWidth = (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth,LlcIdWidth,Cfg.AxiUserWidth);
@@ -468,6 +478,82 @@ module carfield_top_xilinx
 );
 `endif // GEN_NO_HYPERBUS
 
+  ///////////////////
+  // Hyperram PADS //
+  ///////////////////
+
+`ifndef GEN_NO_HYPERBUS
+
+logic [`HypNumPhys-1:0][`HypNumChips-1:0] hyper_cs_no;
+logic [`HypNumPhys-1:0]                   hyper_ck_o;
+logic [`HypNumPhys-1:0]                   hyper_ck_no;
+logic [`HypNumPhys-1:0]                   hyper_rwds_o;
+logic [`HypNumPhys-1:0]                   hyper_rwds_i;
+logic [`HypNumPhys-1:0]                   hyper_rwds_oe_o;
+logic [`HypNumPhys-1:0][7:0]              hyper_dq_i;
+logic [`HypNumPhys-1:0][7:0]              hyper_dq_o;
+logic [`HypNumPhys-1:0]                   hyper_dq_oe_o;
+logic [`HypNumPhys-1:0]                   hyper_reset_no;
+
+for (genvar i = 0 ; i < `HypNumPhys; i++) begin : gen_hyper_phy
+
+  for (genvar j = 0; j < `HypNumChips; j++) begin : gen_hyper_cs
+    pad_functional_pd padinst_hyper_csno (
+        .OEN ( 1'b0                ),
+        .I   ( hyper_cs_no[i][j]   ),
+        .O   (                     ),
+        .PEN (                     ),
+        .PAD ( pad_hyper_csn[i][j] )
+      );
+  end // gen_hyper_cs
+
+  pad_functional_pd padinst_hyper_ck (
+    .OEN ( 1'b0            ),
+    .I   ( hyper_ck_o[i]   ),
+    .O   (                 ),
+    .PEN (                 ),
+    .PAD ( pad_hyper_ck[i] )
+  );
+  pad_functional_pd padinst_hyper_ckno   (
+    .OEN ( 1'b0               ),
+    .I   ( hyper_ck_no[i]     ),
+    .O   (                    ),
+    .PEN (                    ),
+    .PAD ( pad_hyper_ckn[i]   )
+  );
+  pad_functional_pd padinst_hyper_rwds0  (
+    .OEN ( ~hyper_rwds_oe_o[i] ),
+    .I   ( hyper_rwds_o[i]     ),
+    .O   ( hyper_rwds_i[i]     ),
+    .PEN (                     ),
+    .PAD ( pad_hyper_rwds[i]   )
+  );
+
+  for (genvar j = 0; j < 8; j++) begin : gen_hyper_dq
+    pad_functional_pd padinst_hyper_dqio0  (
+      .OEN ( ~hyper_dq_oe_o[i]  ),
+      .I   ( hyper_dq_o[i][j]   ),
+      .O   ( hyper_dq_i[i][j]   ),
+      .PEN (                    ),
+      .PAD ( pad_hyper_dq[i][j] )
+    );
+  end // gen_hyper_dq
+
+end // gen_hyper_phy
+
+  `ila(ila_hyper_cs_n      , hyper_cs_no       )
+  `ila(ila_hyper_ck        , hyper_ck_o        )
+  `ila(ila_hyper_ck_n      , hyper_ck_no       )
+  `ila(ila_hyper_rwds_o    , hyper_rwds_o      )
+  `ila(ila_hyper_rwds_i    , hyper_rwds_i      )
+  `ila(ila_hyper_rwds_oe_o , hyper_rwds_oe_o   )
+  `ila(ila_hyper_dq_i      , hyper_dq_i        )
+  `ila(ila_hyper_dq_o      , hyper_dq_o        )
+  `ila(ila_hyper_dq_oe     , hyper_dq_oe_o     )
+  `ila(ila_hyper_reset_n   , hyper_reset_no    )
+
+`endif // GEN_NO_HYPERBUS
+
   //////////////////
   // Carfield SoC //
   //////////////////
@@ -485,7 +571,7 @@ module carfield_top_xilinx
       .LlcBWidth    ( LlcBWidth  ),
       .LlcRWidth    ( LlcRWidth  ),
       .LlcWWidth    ( LlcWWidth  ),
-`endif
+`endif // GEN_NO_HYPERBUS
       .HypNumPhys   (`HypNumPhys),
       .HypNumChips  (`HypNumChips)
   ) i_carfield (
@@ -567,7 +653,18 @@ module carfield_top_xilinx
       .llc_w_data,
       .llc_w_wptr,
       .llc_w_rptr,
-`endif
+`else  // GEN_NO_HYPERBUS
+      .hyper_cs_no,
+      .hyper_ck_o,
+      .hyper_ck_no,
+      .hyper_rwds_o,
+      .hyper_rwds_i,
+      .hyper_rwds_oe_o,
+      .hyper_dq_i,
+      .hyper_dq_o,
+      .hyper_dq_oe_o,
+      .hyper_reset_no,
+`endif // GEN_NO_HYPERBUS
       // Serial link interface
       .slink_rcv_clk_i           (),
       .slink_rcv_clk_o           (),
@@ -601,6 +698,6 @@ module carfield_top_xilinx
     // Phy
     .*
   );
-`endif
+`endif // USE_DDR
 
 endmodule

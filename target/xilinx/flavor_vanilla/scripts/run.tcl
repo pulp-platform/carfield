@@ -15,7 +15,13 @@ set_param general.maxThreads 8
 # Contraints files selection
 switch $::env(XILINX_BOARD) {
   "vcu128" {
+    # Board specific
     import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
+    if {[info exists ::env(GEN_EXT_JTAG)] && ($::env(GEN_EXT_JTAG)==1)} {
+      import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD)_ext_jtag.xdc
+    }
+
+    # Vanilla specific
     import_files -fileset constrs_1 -norecurse constraints/carfield_top_xilinx.xdc
     # General constraints
     import_files -fileset constrs_1 -norecurse ../constraints/carfield_islands.tcl

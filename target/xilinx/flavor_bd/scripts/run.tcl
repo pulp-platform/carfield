@@ -28,15 +28,8 @@ source scripts/carfield_bd_$::env(XILINX_BOARD).tcl
 
 # Add the ext_jtag pins to block design
 if {[info exists ::env(GEN_EXT_JTAG)] && ($::env(GEN_EXT_JTAG)==1)} {
-  source scripts/carfield_bd_ext_jtag.tcl
+  source scripts/carfield_bd_ext_jtag_$::env(XILINX_BOARD).tcl
   import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD)_ext_jtag.xdc
-}
-
-# Add the hyperbus pins to block design
-if {![info exists ::env(GEN_NO_HYPERBUS)] || ($::env(GEN_NO_HYPERBUS)==0)} {
-  import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD)_hyperbus.xdc
-} else {
-  delete_bd_objs [get_bd_ports pad_hyper*]
 }
 
 make_wrapper -files [get_files $project/$project.srcs/sources_1/bd/design_1/design_1.bd] -top

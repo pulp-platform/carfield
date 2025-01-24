@@ -15,7 +15,7 @@ VIVADO   ?= vitis-2020.2 vivado
 XILINX_PROJECT ?= carfield
 # XILINX_FLAVOR in {vanilla,bd} see carfield_bd.mk
 XILINX_FLAVOR  ?= bd
-# Board in {vcu128}
+# Board in {vcu128, vcu118}
 XILINX_BOARD   ?= vcu128
 
 XILINX_PORT       ?= 3121
@@ -26,6 +26,11 @@ XILINX_BOOT_ETH   ?= 0
 ifeq ($(XILINX_BOARD),vcu128)
 	xilinx_part       := xcvu37p-fsvh2892-2L-e
 	xilinx_board_long := xilinx.com:vcu128:part0:1.0
+endif
+
+ifeq ($(XILINX_BOARD),vcu118)
+	xilinx_part       := xcvu9p-flga2104-2L-e
+	xilinx_board_long := xilinx.com:vcu118:part0:2.4
 endif
 
 XILINX_USE_ARTIFACTS ?= 0

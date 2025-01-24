@@ -46,6 +46,7 @@ $(CAR_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl: Bender.yml
 
 # Compile bitstream
 $(CAR_XIL_DIR)/flavor_vanilla/out/%.bit: $(xilinx_ips_paths_vanilla) $(CAR_XIL_DIR)/flavor_vanilla/scripts/add_sources.tcl
+	@if [ "$(GEN_NO_HYPERBUS)" != "1" ] && [ "$(XILINX_ELABORATION_ONLY)" != "1" ]; then echo "Support for the Hyperbus FMC card is not yet available."; fi;
 	@mkdir -p $(CAR_XIL_DIR)/flavor_vanilla/out
 	cd $(CAR_XIL_DIR)/flavor_vanilla && $(vivado_env) $(VIVADO) $(VIVADO_FLAGS) -source scripts/run.tcl
 	find $(CAR_XIL_DIR)/flavor_vanilla/carfield* -name "*.ltx" -o -name "*.bit" -o -name "*routed.rpt" | xargs -I {} cp {} $(CAR_XIL_DIR)/flavor_vanilla/out

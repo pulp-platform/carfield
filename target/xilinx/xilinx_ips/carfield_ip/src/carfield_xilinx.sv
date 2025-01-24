@@ -576,11 +576,11 @@ module carfield_xilinx
      .SIM_CCLK_FREQ(0.0)
   )
   STARTUPE3_inst (
-     .CFGCLK    (),
-     .CFGMCLK   (),
+     .CFGCLK    ( /* Output */ ),
+     .CFGMCLK   ( /* Output */ ),
      .DI        (qspi_dqi),
-     .EOS       (),
-     .PREQ      (),
+     .EOS       ( /* Output */ ),
+     .PREQ      ( /* Output */ ),
      .DO        (qspi_dqo),
      .DTS       (qspi_dqo_ts),
      .FCSBO     (qspi_cs_b[1]),
@@ -594,6 +594,7 @@ module carfield_xilinx
      .USRDONEO  (1'b1),
      .USRDONETS (1'b1)
   );
+
 
   ///////////////////
   // Hyperram PADS //
