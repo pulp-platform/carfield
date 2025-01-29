@@ -40,11 +40,11 @@ int main(void)
     uint64_t magic = 0xcafebeef;
 
     // Write a pattern to safety island boot addr
-    writew(magic, CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(car_safety_island) +
+    writew(magic, (uintptr_t)CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(car_safety_island) +
 		      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET);
 
     // Double check
-    if (readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(car_safety_island) +
+    if (readw((uintptr_t)CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(car_safety_island) +
 	      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) != magic)
 	return ESAFEDNOACCES;
 
@@ -52,32 +52,32 @@ int main(void)
     car_reset_domain(CAR_SAFETY_RST);
 
     // After the reset we should only see zeros
-    if (readw(CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(car_safety_island) +
+    if (readw((uintptr_t)CAR_SAFETY_ISLAND_PERIPHS_BASE_ADDR(car_safety_island) +
 	      SAFETY_SOC_CTRL_BOOTADDR_REG_OFFSET) !=
 	SAFETY_ISLAND_BOOT_ADDR_RSVAL)
 	return ESAFEDNOACCES;
 
     // Spatz
-    writew(magic, CAR_FP_CLUSTER_PERIPHS_BASE_ADDR(car_spatz_cluster) +
+    writew(magic, (uintptr_t)CAR_FP_CLUSTER_PERIPHS_BASE_ADDR(car_spatz_cluster) +
 		      SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET);
-    if (readw(CAR_FP_CLUSTER_PERIPHS_BASE_ADDR(car_spatz_cluster) +
+    if (readw((uintptr_t)CAR_FP_CLUSTER_PERIPHS_BASE_ADDR(car_spatz_cluster) +
 	      SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET) !=
 	magic)
 	return EFPCLNOACCES;
 
     car_reset_domain(CAR_SPATZ_RST);
-    if (readw(CAR_FP_CLUSTER_PERIPHS_BASE_ADDR(car_spatz_cluster) +
+    if (readw((uintptr_t)CAR_FP_CLUSTER_PERIPHS_BASE_ADDR(car_spatz_cluster) +
 	      SPATZ_CLUSTER_PERIPHERAL_CLUSTER_BOOT_CONTROL_REG_OFFSET) != 0)
 	return EFPCLNOACCES;
 
     // PULP Reset
-    writew(magic, CAR_INT_CLUSTER_BOOT_ADDR_REG(car_integer_cluster));
-    if (readw(CAR_INT_CLUSTER_BOOT_ADDR_REG(car_integer_cluster)) != magic)
+    writew(magic, (uintptr_t)CAR_INT_CLUSTER_BOOT_ADDR_REG(car_integer_cluster));
+    if (readw((uintptr_t)CAR_INT_CLUSTER_BOOT_ADDR_REG(car_integer_cluster)) != magic)
 	return EINTCLNOACCES;
 
     volatile uint32_t pulp_boot_addr_rst_value = 0x78008080;
     car_reset_domain(CAR_PULP_RST);
-    if (readw(CAR_INT_CLUSTER_BOOT_ADDR_REG(car_integer_cluster)) != pulp_boot_addr_rst_value)
+    if (readw((uintptr_t)CAR_INT_CLUSTER_BOOT_ADDR_REG(car_integer_cluster)) != pulp_boot_addr_rst_value)
 	return EINTCLNOACCES;
 
     // L2 Reset
