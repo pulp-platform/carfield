@@ -56,8 +56,8 @@ int main(void) {
     volatile uint32_t write_budget = *reg32(&__base_axirt, AXI_RT_WRITE_BUDGET_LEFT_2_REG_OFFSET);
 
     // check
-    volatile uint8_t difference = (TOTAL_SIZE - read_budget) + (TOTAL_SIZE - write_budget);
-    volatile uint8_t mismatch = read_budget != write_budget;
+    volatile uint32_t difference = (TOTAL_SIZE - read_budget) + (TOTAL_SIZE - write_budget);
+    volatile uint32_t mismatch = read_budget != write_budget;
 
     return mismatch | (difference << 1);
 }
