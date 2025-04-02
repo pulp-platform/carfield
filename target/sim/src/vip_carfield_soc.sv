@@ -88,7 +88,7 @@ module vip_carfield_soc
         .UserPreload   ( HypUserPreload ),
         .mem_file_name ( HypUserPreloadMemFiles[i] ),
         .TimingModel ( "S27KS0641DPBHI020" )
-      ) dut (
+      ) i_hyper (
         .DQ7      ( pad_hyper_dq[i][7]  ),
         .DQ6      ( pad_hyper_dq[i][6]  ),
         .DQ5      ( pad_hyper_dq[i][5]  ),
@@ -114,7 +114,7 @@ module vip_carfield_soc
 `else
            automatic string sdf_file_path = `PATH_TO_HYP_SDF;
 `endif
-           $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].dut);
+           $sdf_annotate(sdf_file_path, hyperrams[p].chips[l].i_hyper);
            $display("Mem (%d,%d)",p,l);
         end
     end
