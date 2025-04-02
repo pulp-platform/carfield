@@ -9,3 +9,4 @@
 sim_targs += -t sim
 sim_targs += -t test
 sim_targs += -t simulation
+sim_targs += -t hyper_test
