@@ -10,21 +10,21 @@ QUESTA ?= questa-2023.4
 TBENCH ?= tb_carfield_soc
 
 ## Get HyperRAM verification IP (VIP) for simulation
-$(CAR_TGT_DIR)/sim/src/hyp_vip:
-	rm -rf $@
-	mkdir $@
-	rm -rf model_tmp && mkdir model_tmp
-	cd model_tmp; wget https://www.infineon.com/dgdl/Infineon-S27KL0641_S27KS0641_VERILOG-SimulationModels-v05_00-EN.zip?fileId=8ac78c8c7d0d8da4017d0f6349a14f68
-	cd model_tmp; mv 'Infineon-S27KL0641_S27KS0641_VERILOG-SimulationModels-v05_00-EN.zip?fileId=8ac78c8c7d0d8da4017d0f6349a14f68' model.zip
-	cd model_tmp; unzip model.zip
-	cd model_tmp; mv 'S27KL0641 S27KS0641' exe_folder
-	cd model_tmp/exe_folder; unzip S27ks0641.exe
-	cp model_tmp/exe_folder/S27ks0641/model/s27ks0641.v model_tmp/exe_folder/S27ks0641/model/s27ks0641_verilog.sdf $@
-	rm -rf model_tmp
+# Forward relevant Hyperbus targets
+$(HYP_ROOT)/models/s27ks0641/s27ks0641.v:
+	@echo "[PULP] Fetch Hyperbus model"
+	@$(MAKE) -C $(HYP_ROOT) models/s27ks0641 > /dev/null
+
+$(CAR_TGT_DIR)/sim/models/s27ks0641.sdf: $(HYP_ROOT)/models/s27ks0641/s27ks0641.v
+	mkdir -p $(dir $@)
+	cp $(HYP_ROOT)/models/s27ks0641/s27ks0641.sdf $@
+	sed -i "s|(INSTANCE dut)|(INSTANCE i_hyper)|g" $@
+	sed -i "s|(INSTANCE dut/|(INSTANCE |g" $@
 
 CAR_SIM_ALL += $(CHS_ROOT)/target/sim/models/s25fs512s.v
 CAR_SIM_ALL += $(CHS_ROOT)/target/sim/models/24FC1025.v
-CAR_SIM_ALL += $(CAR_TGT_DIR)/sim/src/hyp_vip
+CAR_SIM_ALL += $(HYP_ROOT)/models/s27ks0641/s27ks0641.v
+CAR_SIM_ALL += $(CAR_TGT_DIR)/sim/models/s27ks0641.sdf
 
 # Defines for hyperram model preload at time 0
 HYP_USER_PRELOAD      ?= 0
