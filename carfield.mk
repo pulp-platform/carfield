@@ -13,6 +13,19 @@
 # Note: this makefrag uses autodocumentation, hence it follows rules for the comment style. See
 # `utils/help.mk` for more information.
 
+##########################################
+# Virtual environment for python scripts #
+##########################################
+
+VENVDIR?=$(WORKDIR)/.venv
+REQUIREMENTS_TXT?=$(wildcard requirements.txt)
+include $(CAR_ROOT)/utils/venv.mk
+
+export PYTHON=
+export PYTHON3=
+override PYTHON := $(CAR_ROOT)/$(VENV)/python3
+override PYTHON3 := $(CAR_ROOT)/$(VENV)/python3
+
 ###################################
 # Generic variable initialization #
 ###################################
@@ -30,8 +43,6 @@ CAR_VSIM_DIR := $(CAR_TGT_DIR)/sim/vsim
 BENDER      ?= bender
 BENDER_ROOT ?= $(CAR_ROOT)/.bender
 BENDER_PATH ?= $(shell which $(BENDER))
-
-PYTHON      ?= python3
 
 # Include mandatory bender targets and defines for multiple targets (sim, fpga, synth)
 include $(CAR_ROOT)/bender-common.mk
@@ -116,14 +127,6 @@ SERIAL_LINK_NUM_BITS := 16
 # AXI Real-Time unit configuration in Carfield
 AXIRT_NUM_MGRS := 10
 AXIRT_NUM_SUBS := 2
-
-##########################################
-# Virtual environment for python scripts #
-##########################################
-
-VENVDIR?=$(WORKDIR)/.venv
-REQUIREMENTS_TXT?=$(wildcard requirements.txt)
-include $(CAR_ROOT)/utils/venv.mk
 
 ##########################
 # Dependency maintenance #
@@ -257,7 +260,7 @@ update_serial_link: $(CHS_ROOT)/hw/serial_link.hjson
 ## Generate Spatz HW starting from a configuration file. This includes register file, memory map,
 ## interconnect parametrization.
 .PHONY: spatzd-hw-init
-spatzd-hw-init:
+spatzd-hw-init: | venv
 	$(MAKE) -C $(SPATZD_ROOT) hw/ip/snitch/src/riscv_instr.sv
 	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson bootrom
 	cp  $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h  $(CAR_SW_DIR)/include/regs/
@@ -265,7 +268,7 @@ spatzd-hw-init:
 ## Generate Cheshire HW. This target has a prerequisite, i.e. the PLIC and serial link
 ## configurations must be chosen before generating the hardware.
 .PHONY: chs-hw-init
-chs-hw-init: update_plic update_serial_link
+chs-hw-init: update_plic update_serial_link | venv
 	$(MAKE) -B chs-hw-all
 
 ##############
