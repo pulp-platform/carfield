@@ -1,0 +1,3910 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../sw/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+    
+    
+      
+        <title>Architecture - Carfield</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Carfield" class="md-header__button md-logo" aria-label="Carfield" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Carfield
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pulp-platform/carfield" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pulp-platform/carfield
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Carfield" class="md-nav__button md-logo" aria-label="Carfield" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Carfield
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pulp-platform/carfield" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pulp-platform/carfield
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../.." class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Home
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../tg/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Targets
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Targets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tg/sim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Simulation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tg/synth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Synthesis and physical implementation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tg/xilinx/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Xilinx FPGAs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tg/integr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    User Manual
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Manual
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#memory-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Memory Map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupt-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interrupt map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      Domains
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Domains">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#host-domain-cheshire" class="md-nav__link">
+    <span class="md-ellipsis">
+      Host domain (Cheshire)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#safe-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Safe domain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secure-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secure domain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accelerator-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accelerator domain
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Accelerator domain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hmr-integer-pmca" class="md-nav__link">
+    <span class="md-ellipsis">
+      HMR integer PMCA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vectorial-pmca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vectorial PMCA
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#on-chip-and-off-chip-memory-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      On-chip and off-chip memory endpoints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="On-chip and off-chip memory endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-scratchpad-memory-spm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dynamic scratchpad memory (SPM)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partitionable-hybrid-llcspm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Partitionable hybrid LLC/SPM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hyperbus-off-chip-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      HyperBus off-chip link
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system-bus-interconnect" class="md-nav__link">
+    <span class="md-ellipsis">
+      System bus interconnect
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mailbox-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mailbox unit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform-control-registers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform control registers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peripherals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Peripherals
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Peripherals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generic-and-advanced-timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generic and advanced timer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watchdog-timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Watchdog timer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can" class="md-nav__link">
+    <span class="md-ellipsis">
+      CAN
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ethernet" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ethernet
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clock-and-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clock and reset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Clock and reset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clock-distribution-scheme-clock-gating-and-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clock distribution scheme, clock gating and isolation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#startup-behavior-after-power-on-reset-por" class="md-nav__link">
+    <span class="md-ellipsis">
+      Startup behavior after Power-on reset (POR)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-distribution-scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reset distribution scheme
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sw/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Software Stack
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#memory-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Memory Map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupt-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interrupt map
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#domains" class="md-nav__link">
+    <span class="md-ellipsis">
+      Domains
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Domains">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#host-domain-cheshire" class="md-nav__link">
+    <span class="md-ellipsis">
+      Host domain (Cheshire)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#safe-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Safe domain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secure-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secure domain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#accelerator-domain" class="md-nav__link">
+    <span class="md-ellipsis">
+      Accelerator domain
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Accelerator domain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hmr-integer-pmca" class="md-nav__link">
+    <span class="md-ellipsis">
+      HMR integer PMCA
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vectorial-pmca" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vectorial PMCA
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#on-chip-and-off-chip-memory-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      On-chip and off-chip memory endpoints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="On-chip and off-chip memory endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-scratchpad-memory-spm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dynamic scratchpad memory (SPM)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partitionable-hybrid-llcspm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Partitionable hybrid LLC/SPM
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hyperbus-off-chip-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      HyperBus off-chip link
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#system-bus-interconnect" class="md-nav__link">
+    <span class="md-ellipsis">
+      System bus interconnect
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mailbox-unit" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mailbox unit
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform-control-registers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Platform control registers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#peripherals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Peripherals
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Peripherals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generic-and-advanced-timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generic and advanced timer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#watchdog-timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Watchdog timer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can" class="md-nav__link">
+    <span class="md-ellipsis">
+      CAN
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ethernet" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ethernet
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clock-and-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clock and reset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Clock and reset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clock-distribution-scheme-clock-gating-and-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Clock distribution scheme, clock gating and isolation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#startup-behavior-after-power-on-reset-por" class="md-nav__link">
+    <span class="md-ellipsis">
+      Startup behavior after Power-on reset (POR)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-distribution-scheme" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reset distribution scheme
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="architecture">Architecture</h1>
+<p><a class="glightbox" href="../../img/arch.svg" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Carfield Block Diagram" src="../../img/arch.svg" /></a></p>
+<p>Carfield is organized in <em>domains</em>. As a mixed-criticality system (MCS), each domain serves
+different purposes in terms of functional safety and reliability, security, and computation
+capabilities.</p>
+<p>Carfield relies on Cheshire as its host domain, and extends its minimal SoC with additional
+interconnect ports and interrupts.</p>
+<p>The above block diagram depicts a fully-featured Carfield SoC, which currently provides:</p>
+<ul>
+<li>
+<p><strong>Domains</strong>:</p>
+<ul>
+<li><em>Host domain</em> (Cheshire), a Linux-capable RV64 system based on dual-core CVA6 processors with
+  self-invalidation coherency mechanism</li>
+<li><em>Safe domain</em>, a Triple-Core-Lockstep (TCLS) RV32 microcontroller system based on CV32E40P,
+  with fast interrupt handling through the RISC-V CLIC</li>
+<li><em>Secure domain</em>, a Dual-Core-Lockstep (DCLS) RV32 Hardware Root of Trust (HW RoT) systems that
+  ensures the secure boot for the whole platform, serves as secure monitor for the entire
+  system, and provides crypto acceleration services through various crypto-accelerators</li>
+<li><em>Accelerator domain</em>, comprises two programmable multi-core accelerators (PMCAs), an 12-cores
+  integer cluster with Hybrid Modular Redundancy (HMR) capabilities oriented to compute
+  intensive integer workloads such as AI, and a vectorial cluster with floating point vector
+  processing capabilities to accelerate intensive control tasks</li>
+</ul>
+</li>
+<li>
+<p><strong>On-chip and off-chip memory endpoints</strong>:</p>
+<ul>
+<li><em>Dynamic SPM</em>: dynamically configurable scratchpad memory (SPM) for <em>interleaved</em> or
+  <em>contiguous</em> accesses aiming at reducing systematic bus conflicts to improve the
+  time-predictability of the on-chip communication</li>
+<li><em>Partitionable hybrid LLC SPM</em>: the last-level cache (<em>host domain</em>) can be configured as SPM
+  at runtime, as described in Cheshire's
+  <a href="https://pulp-platform.github.io/cheshire/um/arch/">Architecture</a></li>
+<li><em>External DRAM</em>: off-chip HyperRAM (Infineon) interfaced with in-house, open-source AXI4
+  Hyberbus memory controller and digital PHY connected to Cheshire's LLC</li>
+</ul>
+</li>
+<li>
+<p><strong>Mailbox unit</strong></p>
+<ul>
+<li>Main communication vehicle among domains, based on an interrupt notification mechanism</li>
+</ul>
+</li>
+<li>
+<p><strong>Platform control registers (PCRs)</strong></p>
+<ul>
+<li>Management and control registers for the entire platform, control clock sources assignments,
+  clock gating, isolation.</li>
+</ul>
+</li>
+<li>
+<p><strong>Interconnect</strong> (as in Cheshire):</p>
+<ul>
+<li>A last level cache (LLC) configurable as a scratchpad memory (SPM) per-way</li>
+<li>Up to 16 external AXI4 manager ports and 16 AXI and Regbus subordinate ports</li>
+<li>Per-manager AXI4 traffic regulators for real-time applications</li>
+<li>Per-manager AXI4 bus error units (UNBENT) for interconnect error handling</li>
+</ul>
+</li>
+<li>
+<p><strong>Interrupts</strong> (as in Cheshire):</p>
+<ul>
+<li>Core-local (CLINT <em>and</em> CLIC) and platform (PLIC) interrupt controllers</li>
+<li>Dynamic interrupt routing from and to internal and external targets.</li>
+</ul>
+</li>
+<li>
+<p><strong>Peripherals</strong>:</p>
+<ul>
+<li>Generic timers</li>
+<li>PWM timers</li>
+<li>Watchdog timer</li>
+<li>Ethernet</li>
+<li>CAN</li>
+</ul>
+</li>
+</ul>
+<h2 id="memory-map">Memory Map</h2>
+<p>This section shows Carfield's memory map. The group <code>Internal to Cheshire</code> in the table below only
+recalls the memory map described in the dedicatd <a href="https://pulp-platform.github.io/cheshire/um/arch/">documentation for
+Cheshire</a> and is explicitely shown here for
+clarity.</p>
+<table>
+<thead>
+<tr>
+<th><strong>Start Address</strong></th>
+<th><strong>End Address (excl.)</strong></th>
+<th><strong>Length</strong></th>
+<th><strong>Size</strong></th>
+<th><strong>Permissions</strong></th>
+<th><strong>Cacheable</strong></th>
+<th><strong>Atomics</strong></th>
+<th><strong>Region</strong></th>
+<th><strong>Device</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Internal to Cheshire</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x0000_0000</code></td>
+<td><code>0x0004_0000</code></td>
+<td><code>0x04_0000</code></td>
+<td>256 KiB</td>
+<td>(debug)</td>
+<td></td>
+<td></td>
+<td>Debug</td>
+<td>Debug CVA6</td>
+</tr>
+<tr>
+<td><code>0x0004_0000</code></td>
+<td><code>0x0100_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x0100_0000</code></td>
+<td><code>0x0100_1000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Config</td>
+<td>AXI DMA Config</td>
+</tr>
+<tr>
+<td><code>0x0100_1000</code></td>
+<td><code>0x0200_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x0200_0000</code></td>
+<td><code>0x0204_0000</code></td>
+<td><code>0x04_0000</code></td>
+<td>256 KiB</td>
+<td>rx</td>
+<td></td>
+<td></td>
+<td>Memory</td>
+<td>Boot ROM</td>
+</tr>
+<tr>
+<td><code>0x0204_0000</code></td>
+<td><code>0x0208_0000</code></td>
+<td><code>0x04_0000</code></td>
+<td>256 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Irq</td>
+<td>CLINT</td>
+</tr>
+<tr>
+<td><code>0x0208_0000</code></td>
+<td><code>0x020c_0000</code></td>
+<td><code>0x04_0000</code></td>
+<td>256 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Irq</td>
+<td>IRQ Routing</td>
+</tr>
+<tr>
+<td><code>0x020c_0000</code></td>
+<td><code>0x0210_0000</code></td>
+<td><code>0x04_0000</code></td>
+<td>256 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Irq</td>
+<td>AXI-REALM unit</td>
+</tr>
+<tr>
+<td><code>0x020c_0000</code></td>
+<td><code>0x0300_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x0300_0000</code></td>
+<td><code>0x0300_1000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Config</td>
+<td>Cheshire PCRs</td>
+</tr>
+<tr>
+<td><code>0x0300_1000</code></td>
+<td><code>0x0300_2000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Config</td>
+<td>LLC</td>
+</tr>
+<tr>
+<td><code>0x0300_2000</code></td>
+<td><code>0x0300_3000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td><a href="https://opentitan.org/book/hw/ip/uart/doc/registers.html">UART</a></td>
+</tr>
+<tr>
+<td><code>0x0300_3000</code></td>
+<td><code>0x0300_4000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td><a href="https://opentitan.org/book/hw/ip/i2c/doc/registers.html">I2C</a></td>
+</tr>
+<tr>
+<td><code>0x0300_4000</code></td>
+<td><code>0x0300_5000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td><a href="https://opentitan.org/book/hw/ip/spi_host/doc/registers.html">SPIM</a></td>
+</tr>
+<tr>
+<td><code>0x0300_5000</code></td>
+<td><code>0x0300_6000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td><a href="https://opentitan.org/book/hw/ip/gpio/doc/registers.html">GPIO</a></td>
+</tr>
+<tr>
+<td><code>0x0300_6000</code></td>
+<td><code>0x0300_7000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Config</td>
+<td>Serial Link</td>
+</tr>
+<tr>
+<td><code>0x0300_7000</code></td>
+<td><code>0x0300_8000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Config</td>
+<td>VGA</td>
+</tr>
+<tr>
+<td><code>0x0300_8000</code></td>
+<td><code>0x0300_A000</code></td>
+<td><code>0x00_1000</code></td>
+<td>8 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Config</td>
+<td>UNBENT (bus error unit)</td>
+</tr>
+<tr>
+<td><code>0x0300_A000</code></td>
+<td><code>0x0300_B000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Config</td>
+<td>Tagger (LLC partitioning)</td>
+</tr>
+<tr>
+<td><code>0x0300_8000</code></td>
+<td><code>0x0400_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x0400_0000</code></td>
+<td><code>0x1000_0000</code></td>
+<td><code>0x40_0000</code></td>
+<td>64 MiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Irq</td>
+<td>PLIC</td>
+</tr>
+<tr>
+<td><code>0x0800_0000</code></td>
+<td><code>0x0C00_0000</code></td>
+<td><code>0x40_0000</code></td>
+<td>64 MiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Irq</td>
+<td>CLICs</td>
+</tr>
+<tr>
+<td><code>0x1000_0000</code></td>
+<td><code>0x1400_0000</code></td>
+<td><code>0x40_0000</code></td>
+<td>64 MiB</td>
+<td>rwx</td>
+<td>yes</td>
+<td>yes</td>
+<td>Memory</td>
+<td>LLC Scratchpad</td>
+</tr>
+<tr>
+<td><code>0x1400_0000</code></td>
+<td><code>0x1800_0000</code></td>
+<td><code>0x40_0000</code></td>
+<td>64 MiB</td>
+<td>rwx</td>
+<td></td>
+<td>yes</td>
+<td>Memory</td>
+<td>LLC Scratchpad</td>
+</tr>
+<tr>
+<td><code>0x1800_0000</code></td>
+<td><code>0x2000_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>External to Cheshire</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x2000_0000</code></td>
+<td><code>0x2000_1000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>Ethernet</td>
+</tr>
+<tr>
+<td><code>0x2000_1000</code></td>
+<td><code>0x2000_2000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>CAN BUS</td>
+</tr>
+<tr>
+<td><code>0x2000_2000</code></td>
+<td><code>0x2000_3000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>(empty)</td>
+</tr>
+<tr>
+<td><code>0x2000_3000</code></td>
+<td><code>0x2000_4000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>(empty)</td>
+</tr>
+<tr>
+<td><code>0x2000_4000</code></td>
+<td><code>0x2000_5000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>GP timer 1 (System timer)</td>
+</tr>
+<tr>
+<td><code>0x2000_5000</code></td>
+<td><code>0x2000_6000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>GP timer 2 (Advanced timer)</td>
+</tr>
+<tr>
+<td><code>0x2000_6000</code></td>
+<td><code>0x2000_7000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>GP timer 3</td>
+</tr>
+<tr>
+<td><code>0x2000_7000</code></td>
+<td><code>0x2000_8000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>Watchdog timer</td>
+</tr>
+<tr>
+<td><code>0x2000_8000</code></td>
+<td><code>0x2000_9000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>(empty)</td>
+</tr>
+<tr>
+<td><code>0x2000_9000</code></td>
+<td><code>0x2000_a000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>HyperBUS</td>
+</tr>
+<tr>
+<td><code>0x2000_a000</code></td>
+<td><code>0x2000_b000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>Pad Config</td>
+</tr>
+<tr>
+<td><code>0x2000_b000</code></td>
+<td><code>0x2000_c000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>L2 ECC Config</td>
+</tr>
+<tr>
+<td><code>0x2001_0000</code></td>
+<td><code>0x2001_1000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>Carfield Control and Status</td>
+</tr>
+<tr>
+<td><code>0x2002_0000</code></td>
+<td><code>0x2002_1000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>I/O</td>
+<td>(if any) PLL/CLOCK</td>
+</tr>
+<tr>
+<td><code>0x2800_1000</code></td>
+<td><code>0x4000_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x4000_0000</code></td>
+<td><code>0x4000_1000</code></td>
+<td><code>0x00_1000</code></td>
+<td>4 KiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Irq</td>
+<td>Mailboxes</td>
+</tr>
+<tr>
+<td><code>0x4000_1000</code></td>
+<td><code>0x5000_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x5000_0000</code></td>
+<td><code>0x5080_0000</code></td>
+<td><code>0x80_0000</code></td>
+<td>8 MiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Accelerators</td>
+<td>Integer Cluster</td>
+</tr>
+<tr>
+<td><code>0x5080_0000</code></td>
+<td><code>0x5100_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x5100_0000</code></td>
+<td><code>0x5180_0000</code></td>
+<td><code>0x80_0000</code></td>
+<td>8 MiB</td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Accelerators</td>
+<td>FP Cluster</td>
+</tr>
+<tr>
+<td><code>0x5100_0000</code></td>
+<td><code>0x6000_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x6000_0000</code></td>
+<td><code>0x6002_0000</code></td>
+<td><code>0x02_0000</code></td>
+<td>128 KiB</td>
+<td>rw</td>
+<td></td>
+<td>yes</td>
+<td>Safe domain</td>
+<td>Safety Island Memory</td>
+</tr>
+<tr>
+<td><code>0x6002_0000</code></td>
+<td><code>0x6020_0000</code></td>
+<td><code>0x1e_0000</code></td>
+<td></td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Safe domain</td>
+<td>reserved</td>
+</tr>
+<tr>
+<td><code>0x6020_0000</code></td>
+<td><code>0x6030_0000</code></td>
+<td><code>0x10_0000</code></td>
+<td>1 MiB</td>
+<td>rw</td>
+<td></td>
+<td>yes</td>
+<td>Safe domain</td>
+<td>Safety Island Peripherals</td>
+</tr>
+<tr>
+<td><code>0x6030_0000</code></td>
+<td><code>0x6080_0000</code></td>
+<td><code>0x50_0000</code></td>
+<td></td>
+<td>rw</td>
+<td></td>
+<td></td>
+<td>Safe domain</td>
+<td>reserved</td>
+</tr>
+<tr>
+<td><code>0x6080_0000</code></td>
+<td><code>0x7000_0000</code></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td><em>Reserved</em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>0x7000_0000</code></td>
+<td><code>0x7002_0000</code></td>
+<td><code>0x02_0000</code></td>
+<td>128 KiB</td>
+<td>rwx</td>
+<td>yes</td>
+<td>yes</td>
+<td>Memory</td>
+<td>LLC Scratchpad</td>
+</tr>
+<tr>
+<td><code>0x7800_0000</code></td>
+<td><code>0x7810_0000</code></td>
+<td><code>0x10_0000</code></td>
+<td>1 MiB</td>
+<td>rwx</td>
+<td>yes</td>
+<td>yes</td>
+<td>Memory</td>
+<td>L2 Scratchpad (Port 1, interleaved)</td>
+</tr>
+<tr>
+<td><code>0x7810_0000</code></td>
+<td><code>0x7820_0000</code></td>
+<td><code>0x10_0000</code></td>
+<td>1 MiB</td>
+<td>rwx</td>
+<td>yes</td>
+<td>yes</td>
+<td>Memory</td>
+<td>L2 Scratchpad (Port 1, non-interleaved)</td>
+</tr>
+<tr>
+<td><code>0x7820_0000</code></td>
+<td><code>0x7830_0000</code></td>
+<td><code>0x10_0000</code></td>
+<td>1 MiB</td>
+<td>rwx</td>
+<td>yes</td>
+<td>yes</td>
+<td>Memory</td>
+<td>L2 Scratchpad (Port 2, interleaved)</td>
+</tr>
+<tr>
+<td><code>0x7830_0000</code></td>
+<td><code>0x7840_0000</code></td>
+<td><code>0x10_0000</code></td>
+<td>1 MiB</td>
+<td>rwx</td>
+<td>yes</td>
+<td>yes</td>
+<td>Memory</td>
+<td>L2 Scratchpad (Port 2, non-interleaved)</td>
+</tr>
+<tr>
+<td><code>0x8000_0000</code></td>
+<td><code>0x20_8000_0000</code></td>
+<td><code>0x20_0000_0000</code></td>
+<td>128 GiB</td>
+<td>rwx</td>
+<td>yes</td>
+<td>yes</td>
+<td>Memory</td>
+<td>LLC/DRAM</td>
+</tr>
+</tbody>
+</table>
+<h2 id="interrupt-map">Interrupt map</h2>
+<p>Carfield's interrupt components are exhaustivly described in
+the dedicated section of the <a href="https://pulp-platform.github.io/cheshire/um/arch/">documentation for
+Cheshire</a>. This section describes Carfield's interrupt map.</p>
+<table>
+<thead>
+<tr>
+<th><strong>Interrupt Source</strong></th>
+<th><strong>Interrupt sink</strong></th>
+<th><strong>Bitwidth</strong></th>
+<th><strong>Connection</strong></th>
+<th><strong>Type</strong></th>
+<th><strong>Comment</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Carfield peripherals</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>intr_wkup_timer_expired_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_wdt_intrs[0]</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>intr_wdog_timer_bark_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_wdt_intrs[1]</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>nmi_wdog_timer_bark_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_wdt_intrs[2]</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>wkup_req_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_wdt_intrs[3]</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>aon_timer_rst_req_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_wdt_intrs[4]</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>irq</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_can_intr</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ch_0_o[0]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_ch0</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ch_0_o[1]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_ch1</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ch_0_o[2]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_ch2</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ch_0_o[3]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_ch3</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>events_o[0]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_events[0]</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>events_o[1]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_events[1]</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>events_o[2]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_events[2]</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>events_o[3]</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_adv_timer_events[3]</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>irq_lo_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_sys_timer_lo</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>irq_hi_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>car_sys_timer_hi</code></td>
+<td>edge-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Cheshire peripherals</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>zero</code></td>
+<td></td>
+<td>1</td>
+<td><code>zero</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>uart</code></td>
+<td></td>
+<td>1</td>
+<td><code>uart</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_fmt_threshold</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_fmt_threshold</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_rx_threshold</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_rx_threshold</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_fmt_overflow</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_fmt_overflow</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_rx_overflow</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_rx_overflow</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_nak</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_nak</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_scl_interference</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_scl_interference</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_sda_interference</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_sda_interference</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_stretch_timeout</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_stretch_timeout</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_sda_unstable</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_sda_unstable</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_cmd_complete</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_cmd_complete</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_tx_stretch</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_tx_stretch</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_tx_overflow</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_tx_overflow</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_acq_full</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_acq_full</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_unexp_stop</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_unexp_stop</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>i2c_host_timeout</code></td>
+<td></td>
+<td>1</td>
+<td><code>i2c_host_timeout</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>spih_error</code></td>
+<td></td>
+<td>1</td>
+<td><code>spih_error</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>spih_spi_event</code></td>
+<td></td>
+<td>1</td>
+<td><code>spih_spi_event</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><code>gpio</code></td>
+<td></td>
+<td>32</td>
+<td><code>gpio</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Spatz cluster</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td><code>msip_i[0]</code></td>
+<td>1</td>
+<td><code>(hostd_spatzcl_mb_intr_ored[0] \| safed_spatzcl_intr_mb[0])</code></td>
+<td>level-sensitive</td>
+<td>Snitch core #0</td>
+</tr>
+<tr>
+<td></td>
+<td><code>msip_i[1]</code></td>
+<td>1</td>
+<td><code>(hostd_spatzcl_mb_intr_ored[1] \| safed_spatzcl_intr_mb[1])</code></td>
+<td>level-sensitive</td>
+<td>Snitch core #1</td>
+</tr>
+<tr>
+<td></td>
+<td><code>mtip_i[0]</code></td>
+<td>1</td>
+<td><code>chs_mti[0]</code></td>
+<td>level-sensitive</td>
+<td>Snitch core #0</td>
+</tr>
+<tr>
+<td></td>
+<td><code>mtip_i[1]</code></td>
+<td>1</td>
+<td><code>chs_mti[1]</code></td>
+<td>level-sensitive</td>
+<td>Snitch core #1</td>
+</tr>
+<tr>
+<td></td>
+<td><code>meip_i</code></td>
+<td>2</td>
+<td><code>\-</code></td>
+<td></td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td></td>
+<td><code>seip_i</code></td>
+<td>2</td>
+<td><code>\-</code></td>
+<td></td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><strong>HRM integer cluster</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>eoc_o</code></td>
+<td></td>
+<td>1</td>
+<td><code>pulpcl_eoc</code></td>
+<td>level-sensitive</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td><code>mbox_irq_i</code></td>
+<td>1</td>
+<td><code>(hostd_pulpcl_mb_intr_ored \| safed_pulpcl_intr_mb)</code></td>
+<td>level-sensitive</td>
+<td>to offload binaries</td>
+</tr>
+<tr>
+<td><strong>Secure domain</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td><code>irq_ibex_i</code></td>
+<td>1</td>
+<td><code>(hostd_secd_mb_intr_ored \| safed_secd_intr_mb)</code></td>
+<td>level-sensitive</td>
+<td>to wake-up Ibex core</td>
+</tr>
+<tr>
+<td><strong>Safe domain</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[0]</code></td>
+<td>1</td>
+<td><code>hostd_safed_mbox_intr[0]</code></td>
+<td>level-sensitive</td>
+<td>from host domain CVA6#0</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[1]</code></td>
+<td>1</td>
+<td><code>hostd_safed_mbox_intr[1]</code></td>
+<td>level-sensitive</td>
+<td>from host domain CVA6#1</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[2]</code></td>
+<td>1</td>
+<td><code>secd_safed_mbox_intr</code></td>
+<td>level-sensitive</td>
+<td>from secure domain</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[3]</code></td>
+<td>1</td>
+<td><code>pulpcl_safed_mbox_intr</code></td>
+<td>level-sensitive</td>
+<td>from HMR custer</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[4]</code></td>
+<td>1</td>
+<td><code>spatzcl_safed_mbox_intr</code></td>
+<td>level-sensitive</td>
+<td>from vectorial cluster</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[5]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_249</code></td>
+<td>level-sensitive</td>
+<td>tied to 0</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[6]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_250</code></td>
+<td>level-sensitive</td>
+<td>host domain UART</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[7]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_251</code></td>
+<td>level-sensitive</td>
+<td>i2c_fmt_threshold</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[8]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_252</code></td>
+<td>level-sensitive</td>
+<td>i2c_rx_threshold</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[9]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_253</code></td>
+<td>level-sensitive</td>
+<td>i2c_fmt_overview</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[10]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_254</code></td>
+<td>level-sensitive</td>
+<td>i2c_rx_overflow</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[11]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_255</code></td>
+<td>level-sensitive</td>
+<td>i2c_nak</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[12]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_256</code></td>
+<td>level-sensitive</td>
+<td>i2c_scl_interference</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[13]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_257</code></td>
+<td>level-sensitive</td>
+<td>i2c_sda_interference</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[14]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_258</code></td>
+<td>level-sensitive</td>
+<td>i2c_stret h_timeout</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[15]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_259</code></td>
+<td>level-sensitive</td>
+<td>i2c_sda_unstable</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[16]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_260</code></td>
+<td>level-sensitive</td>
+<td>i2c_cmd_complete</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[17]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_261</code></td>
+<td>level-sensitive</td>
+<td>i2c_tx_stretch</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[18]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_262</code></td>
+<td>level-sensitive</td>
+<td>i2c_tx_overflow</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[19]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_263</code></td>
+<td>level-sensitive</td>
+<td>i2c_acq_full</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[20]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_264</code></td>
+<td>level-sensitive</td>
+<td>i2c_unexp_stop</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[21]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_265</code></td>
+<td>level-sensitive</td>
+<td>i2c_host_timeout</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[22]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_266</code></td>
+<td>level-sensitive</td>
+<td>spih_error</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[23]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_267</code></td>
+<td>level-sensitive</td>
+<td>spih_spi_event</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs[55:24]</code></td>
+<td>32</td>
+<td><code>irqs_distributed_299:268</code></td>
+<td>level-sensitive</td>
+<td>gpio</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[56]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_300</code></td>
+<td>level-sensitive</td>
+<td>pulpcl_eoc</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[57]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_309</code></td>
+<td>level-sensitive</td>
+<td>car_wdt_intrs[0]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[58]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_310</code></td>
+<td>level-sensitive</td>
+<td>car_wdt_intrs[1]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[59]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_311</code></td>
+<td>level-sensitive</td>
+<td>car_wdt_intrs[2]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[60]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_312</code></td>
+<td>level-sensitive</td>
+<td>car_wdt_intrs[3]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[61]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_313</code></td>
+<td>level-sensitive</td>
+<td>car_wdt_intrs[4]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[62]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_314</code></td>
+<td>level-sensitive</td>
+<td>car_can_intr</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[63]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_315</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_ch0</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[64]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_316</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_ch1</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[65]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_317</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_ch2</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[66]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_318</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_ch3</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[67]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_319</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_events[0]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[68]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_320</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_events[1]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[69]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_321</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_events[2]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[70]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_322</code></td>
+<td>edge-sensitive</td>
+<td>car_adv_timer_events[0]</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[71]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_323</code></td>
+<td>edge-sensitive</td>
+<td>car_sys_timer_lo</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[72]</code></td>
+<td>1</td>
+<td><code>irqs_distributed_324</code></td>
+<td>edge-sensitive</td>
+<td>car_sys_timer_hi</td>
+</tr>
+<tr>
+<td></td>
+<td><code>irqs_i[127:73]</code></td>
+<td>54</td>
+<td><code>irqs_distributed_331:325</code></td>
+<td>-</td>
+<td>tied to 0</td>
+</tr>
+<tr>
+<td><strong>Cheshire</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[0]</code></td>
+<td>1</td>
+<td><code>pulpcl_eoc</code></td>
+<td>level-sensitive</td>
+<td>from HMR cluster</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[2:1]</code></td>
+<td>2</td>
+<td><code>pulpcl_hostd_mbox_intr</code></td>
+<td>level-sensitive</td>
+<td>from HMR cluster</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[4:3]</code></td>
+<td>2</td>
+<td><code>spatzcl_hostd_mbox_intr</code></td>
+<td>level-sensitive</td>
+<td>from vectorial cluster</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[6:5]</code></td>
+<td>2</td>
+<td><code>safed_hostd_mbox_intr</code></td>
+<td>level-sensitive</td>
+<td>from safe domain</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[8:7]</code></td>
+<td>2</td>
+<td><code>secd_hostd_mbox_intr</code></td>
+<td>level-sensitive</td>
+<td>from secure domain</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[9]</code></td>
+<td>1</td>
+<td><code>car_wdt_intrs[0]</code></td>
+<td>level-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[10]</code></td>
+<td>1</td>
+<td><code>car_wdt_intrs[1]</code></td>
+<td>level-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[11]</code></td>
+<td>1</td>
+<td><code>car_wdt_intrs[2]</code></td>
+<td>level-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[12]</code></td>
+<td>1</td>
+<td><code>car_wdt_intrs[3]</code></td>
+<td>level-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[13]</code></td>
+<td>1</td>
+<td><code>car_wdt_intrs[4]</code></td>
+<td>level-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[14]</code></td>
+<td>1</td>
+<td><code>car_can_intr</code></td>
+<td>level-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[15]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_ch0</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[16]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_ch1</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[17]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_ch2</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[18]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_ch3</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[19]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_events[0]</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[20]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_events[1]</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[21]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_events[2]</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[22]</code></td>
+<td>1</td>
+<td><code>car_adv_timer_events[3]</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[23]</code></td>
+<td>1</td>
+<td><code>car_sys_timer_lo</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[24]</code></td>
+<td>1</td>
+<td><code>car_sys_timer_hi</code></td>
+<td>edge-sensitive</td>
+<td>from carfield peripherals</td>
+</tr>
+<tr>
+<td></td>
+<td><code>intr_ext_i[31:25]</code></td>
+<td>7</td>
+<td><code>0</code></td>
+<td></td>
+<td>tied to 0</td>
+</tr>
+<tr>
+<td><code>meip_ext_o[0]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>meip_ext_o[1]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>meip_ext_o[2]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>seip_ext_o[0]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>seip_ext_o[1]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>seip_ext_o[2]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>msip_ext_o[0]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>msip_ext_o[1]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>msip_ext_o[2]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+<tr>
+<td><code>mtip_ext_o[0]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>Snitch core #0</td>
+</tr>
+<tr>
+<td><code>mtip_ext_o[1]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>Snitch core #1</td>
+</tr>
+<tr>
+<td><code>mtip_ext_o[2]</code></td>
+<td></td>
+<td>-</td>
+<td></td>
+<td>level-sensitive</td>
+<td>unconnected</td>
+</tr>
+</tbody>
+</table>
+<h2 id="domains">Domains</h2>
+<p>The total number of domains is 7: <em>host domain</em>, <em>safe domain</em>, <em>secure domain</em>, <em>integer PMCA
+domain</em>, <em>vectorial PMCA domain</em>, <em>peripheral domain</em>, <em>dynamic SPM</em>.</p>
+<p>Carfield's domains live in dedicated repositories. We therefore invite the reader to consult the
+documentation of each domain.</p>
+<p>For more information about domains' memory requirements, visit <a href="../../tg/synth/">Synthesis and physical
+implementation</a>.</p>
+<p>Below, we focus on domains' parameterization within Carfield.</p>
+<h3 id="host-domain-cheshire"><a href="https://github.com/pulp-platform/cheshire">Host domain (Cheshire)</a></h3>
+<p>The <em>host domain</em> (Cheshire) embeds all the necessary components required to run OSs such as
+embedded Linux. It has two orthogonal <em>operation modes</em>.</p>
+<ol>
+<li>
+<p><em>Untrusted mode</em>: in this operation mode, the host domain is tasked to run untrusted services,
+i.e. non time- and non safety-critical applications. For example, this could be the case of infotainment
+on a modern car. In this mode, as in traditional automotive platforms, safety and resiliency
+features are deferred to a dedicated 32-bit microcontroller-like system, called <code>safe domain</code> in
+Carfield.</p>
+</li>
+<li>
+<p><em>Hybrid trusted/untrusted mode</em>: in this operation mode, the host domain is in charge of both
+critical and non-critical applications. Key features supported to achieve this are:</p>
+</li>
+<li>A virtualization layer, which allows the system to accommodate the execution of multiple OSs,
+including rich, Unix-like OSs and Real-Time OSs (RTOS), coexisting on the same HW.</li>
+<li>Spatial and temporal partitioning of resources: AXI matrix crossbar
+    (<a href="https://arxiv.org/abs/2311.09662">AXI-REALM</a>), LLC, TLB, and a <code>physical tagger</code> in front of
+    the cores to mark partitions by acting directly on the physical address space</li>
+<li>Runtime configurable data/instruction cache and SPM</li>
+<li>Fast interrupt handling, with optional interrupt routing through the RISC-V fast interrupt
+controller CLIC,</li>
+<li>Configurable dual core setup between <em>lockstep</em> or <em>SMP</em> mode.</li>
+</ol>
+<p>Hybrid operation mode is currently experimental, and mostly for research purposes. We advise of
+  relying on a combination of host ad safe domain for a more traditional approach.</p>
+<p>Cheshire is configured as follows:</p>
+<ul>
+<li>Two 64-bit, RISC-V CVA6 cores, with lightweight self-invalidation cache coherency, fast interrupt
+and virtualization support.</li>
+<li>8 external AXI manager ports (<code>AxiNumExtSlv</code>) added to the matrix crossbar:</li>
+<li>Dynamic SPM port 0</li>
+<li>Dynamic SPM port 1</li>
+<li>Safe domain</li>
+<li>HMR cluster</li>
+<li>Vectorial cluster</li>
+<li>Mailbox unit</li>
+<li>Ethernet</li>
+<li>Peripherals</li>
+<li>4 external AXI subordinate ports (<code>AxiNumExtMst</code>) added to the matrix crossbar:</li>
+<li>Safe domain</li>
+<li>Secure domain</li>
+<li>HMR cluster</li>
+<li>Vectorial cluster</li>
+<li>4 external regbus subordinate ports (<code>NumTotalRegSlv</code>):</li>
+<li>PCRs: control domains enable, clock gate, isolation</li>
+<li>PLL control registers: for ASIC top-levels, leave unconnected otherwise</li>
+<li>Padmux control registers: for ASIC top-levels, leave unconnected otherwise</li>
+<li>Dynamic SPM ECC control registers</li>
+<li><a href="https://arxiv.org/abs/2311.09662">AXI-REALM</a> unit for bandwidth regulation and monitoring
+  integrated in front of each AXI matrix crossbar manager</li>
+<li>Last-level cache (LLC) with HW spatial partitioning</li>
+<li>32 <em>external</em> input interrupts (<code>CarfieldNumExtIntrs</code>), see <a href="#interrupt-map">Interrupt map</a> in
+  addition to Cheshire's own internal interrupts. Unused are tied to 0 (currently 9/32)</li>
+<li>2 external interruptible harts (<code>CarfieldNumInterruptibleHarts</code>). The interruptible harts are
+  Snitch core #0 and #1 in the vectorial cluster.</li>
+<li>An interrupt router with 1 external target (<code>CarfieldNUmRouterTargets</code>), tasked to distribute N
+  input interrupts to M targets. In Carfield, the external target is the <code>safe domain</code>.</li>
+<li>All Cheshire peripherals, except for VGA</li>
+</ul>
+<p>By default, Cheshire hosts 128KiB of hybrid LLC/SPM, user-configurable.</p>
+<h3 id="safe-domain"><a href="https://github.com/pulp-platform/safety_island">Safe domain</a></h3>
+<p>The <em>safe domain</em> is a simple MCU-like domain that comprises three 32-bit real-time CV32E40P
+(CV32RT) RISC-V cores operating in triple-core-lockstep mode (TCLS).</p>
+<p>These cores, enhanced with the RISC-V CLIC controller and optimized for fast interrupt handling and
+context switch, run RTOSs and safety-critical applications, embodying a core tenet of the platform
+reliability.</p>
+<p>The <em>safe domain</em> is essential when the <em>host domain</em> is operated in <em>untrusted</em> mode.</p>
+<p>The <em>safe domain</em> is configured as follows:</p>
+<ul>
+<li>1 RISC-V debug module prividing indipendent JTAG interface off-Carfield</li>
+<li>1 AXI manager and 1 AXI subordinate ports, 32-bit data and 32-bit address wide, to and from the
+  <em>host domain</em>, respectively. AXI datawidth conversion with the host domain is handled internally
+  to the safe domain.</li>
+<li>1 generic timer, essential for periodic ticks common in RTOSs. The generic timer in the <em>safe
+  domain</em> is the same integrated in <a href="#peripheral-domain">Carfield's <em>peripheral domain</em></a>.</li>
+<li>CLIC RISC-V interrupt controller; as opposed to Cheshire, currently the CLIC is configured to run
+  run in M-mode.</li>
+<li>128 <em>external</em> input interrupts. Unused are tied to 0.</li>
+<li>Fast interrupt extension that extends CV32 with additional logic to accelerate context switching.
+  From here, the name <a href="https://arxiv.org/abs/2311.08320">CV32RT</a></li>
+<li>1 32-bit per-core FPU with down to float-16 precision, totaling 3 FPUs</li>
+</ul>
+<p>By default, the processing elements share access to 128KiB of SPM for instructions and data,
+user-configurable.</p>
+<h3 id="secure-domain"><a href="https://github.com/pulp-platform/opentitan/tree/carfield-soc">Secure domain</a></h3>
+<p>The secure domain, based on the <a href="https://opentitan.org/book/doc/introduction.html">OpenTitan
+project</a>, serves as the Hardware Root-of-Trust
+(HWRoT) of the platform. It handles <em>secure boot</em> and system integrity monitoring fully in HW
+through cryptographic acceleration services.</p>
+<p>Compared to vanilla OpenTitan, the secure domain integrated in Carfield is modified/configured as follows:</p>
+<ul>
+<li>
+<p>1 AXI4 manager interface to Carfield, with a bridge between AXI4 and TileLink Uncached Lightweight
+  (TL-UL) internally used by OpenTitan. By only exposing a manager port, unwanted access to the
+  secure domain is prevented.</p>
+</li>
+<li>
+<p>Embedded flash memory replaced with an SRAM preloaded before secure boot procedure from an
+  external SPI flash through OpenTitan private SPI peripheral. Once preload is over, the OpenTitan
+  secure boot framework is unchanged compared to the vanilla version.</p>
+</li>
+<li>
+<p>Finally, a <em>boot manager</em> module has been designed and integrated to manage the <a href="../sw/">two available
+  bootmodes</a>. In <strong>Secure</strong> mode, the systems executes the secure boot framework as soon as
+  the reset is asserted, loading code from the external SPI and performing the signature check on
+  its content. Otherwise, in <strong>Non-secure</strong> mode, the <em>secure domain</em> is clock gated and must be
+  clocked and woken-up by an external entity (e.g., <em>host domain</em>)</p>
+</li>
+</ul>
+<p>By default, the secure domain hosts 512KiB of main SPM, and 16KiB of OTP memory, user-configurable.</p>
+<h3 id="accelerator-domain">Accelerator domain</h3>
+<p>To augment computational capabilities, Carfield incorporates two PMCAs, described below. Both PMCAs
+integrate DMA engines to independently fetch data from the on-chip SPM or external DRAM.</p>
+<h4 id="hmr-integer-pmca"><a href="https://github.com/pulp-platform/pulp_cluster/tree/yt/rapidrecovery">HMR integer PMCA</a></h4>
+<p>The <a href="https://arxiv.org/abs/2303.08706">hybrid modular redundancy (HMR) <em>integer PMCA</em></a> is
+specialized in accelerating the inference of Deep Learning and Machine Learning models. The
+multicore accelerator is built around 12 32-bit RISC-V cores empowered with ISA extensions, enabling
+integer arithmetic from 32-bit down to 2-bit precision.</p>
+<p>The integer PMCA does not integrate a fully-fledged FPU co-processor. Nevertheless, it features a
+highly specialized domain specific accelerator (DSA),
+<a href="https://www.sciencedirect.com/science/article/pii/S0167739X23002546">RedMulE</a>, which enables fast
+and energy-efficient floating-point GEMM on 16-bit and 8-bit data formats. This makes the PMCA
+capable of on-chip training of generalized Deep Learning models.</p>
+<p>As part of a MCS, the integer PMCA's general-purpose cores can be reconfigured for <em>redundant
+execution</em>. A <a href="https://doi.org/10.1145/3635161">Hybrid Modular Redundancy (HMR)</a> unit allows the
+split/lock of the available cores in different redundant configurations during runtime, trading off
+the computing performance and the fault resilience capability according to the criticality of the
+application.</p>
+<p>The PMCA can be configured in multiple redundant modes:
+* <strong>Independent:</strong> All cores act independently with no redundancy mechanism. This configuration allows
+  higher performance but has no reliability.
+* <strong>Dual Modular Redundancy (DMR)</strong>: The cores are grouped in lock-stepped pairs and rely on a
+  specialized hardware extension for fast fault recovery in less than 30 clock cycles in case of
+  fault detection. The PMCA provides the best trade-off between performance and fault recovery in
+  this configuration.
+* <strong>Triple Modular Redundancy (TMR)</strong>: The cores are grouped in lock-stepped triplets and rely on
+  either hardware extension or software mechanisms to recover from incurring faults. The PMCA
+  provides the highest fault resilience in this configuration, at the cost of reduced performance.</p>
+<p>By default, the integer PMCA's processing elements and tensor accelerator share access to 256KiB of
+L1 SPM, user-configurable.</p>
+<h4 id="vectorial-pmca"><a href="https://github.com/pulp-platform/spatz">Vectorial PMCA</a></h4>
+<p>The <a href="https://dl.acm.org/doi/abs/10.1145/3508352.3549367"><em>vectorial PMCA</em>, or Spatz PMCA</a> handles
+vectorizable multi-format floating-point workloads.</p>
+<p>A Spatz vector unit acts as a coprocessor of the <a href="https://github.com/pulp-platform/snitch_cluster">Snitch
+core</a>, a tiny RV32IMA core which decodes and
+forwards vector instructions to the vector unit.</p>
+<p>A Snitch core and a Spatz vector unit are together referred to as <em>Core Complex (CC)</em>. The vectorial
+PMCA is composed by two CCs, each with the following configuration:</p>
+<ul>
+<li>2 KiB of latch-based VRF</li>
+<li>4 transprecision FPUs</li>
+<li>1 integer processing unit (IPU)</li>
+</ul>
+<p>Each FPU supports <em>FP8</em>, <em>FP16</em>, <em>FP32</em>, and <em>FP64</em> computation, while the IPU supports 8, 16, 32,
+and 64-bit integer computation.</p>
+<p>By default, the CCs share access to 128KiB of L1 SPM, user-configurable.</p>
+<h2 id="on-chip-and-off-chip-memory-endpoints">On-chip and off-chip memory endpoints</h2>
+<h3 id="dynamic-scratchpad-memory-spm"><a href="https://github.com/pulp-platform/dyn_spm">Dynamic scratchpad memory (SPM)</a></h3>
+<p>The dynamic SPM features dynamically switching address mapping policy. It manages the following
+features:</p>
+<ul>
+<li>Two AXI subordinate ports</li>
+<li>Two address mapping modes: <em>interleaved</em> and <em>contiguous</em></li>
+<li>4 address spaces, 2 for each port. The address space is used to select the AXI port to use, and
+  the mapping mode</li>
+<li>Every address space points to the same physical SRAM through a low-latency matrix crossbar</li>
+<li>ECC-equipped memory banks</li>
+</ul>
+<p>By default, Carfield hosts 1MiB of dynamic SPM, user-configurable.</p>
+<h3 id="partitionable-hybrid-llcspm"><a href="https://github.com/pulp-platform/axi_llc">Partitionable hybrid LLC/SPM</a></h3>
+<p>Carfield hosts a LLC optionaly reconfigurable as SPM during runtime. In addition, the LLC supports
+HW-based partitioning to exploit intra-process or inter-processes isolation, improving the system's
+predictability. The LLC is described in detail in Cheshire's
+<a href="https://pulp-platform.github.io/cheshire/um/arch">Architecture</a>.</p>
+<h3 id="hyperbus-off-chip-link"><a href="https://github.com/pulp-platform/hyperbus">HyperBus off-chip link</a></h3>
+<p>Carfield integrates a in-house, open-source implementation of Infineon' HyperBus off-chip controller
+to connect to external HyperRAM modules.</p>
+<p>It manages the following features:</p>
+<ul>
+<li>An AXI interface that attaches to Cheshire's <a href="#partitionable-hybrid-llc-spm">partitionable hybrid
+  LLC/SPM</a></li>
+<li>A configurable number of physical HyperRAM chips it can be attached to; by default, support for 2
+  physical chips is provided</li>
+<li>Support for HyperRAM chips with different densities (from 8MiB to 64MiB per chip aligned with
+  specs).</li>
+</ul>
+<h2 id="system-bus-interconnect">System bus interconnect</h2>
+<p>The interconnect is composed of a main <a href="https://github.com/pulp-platform/axi">AXI4</a> matrix (or
+crossbar) with AXI5 atomic operations (ATOPs) support. The crossbar extends Cheshire's with
+additional external AXI manager and subordinate ports.</p>
+<p>Cheshire's auxiliary <a href="https://github.com/pulp-platform/register_interface">Regbus</a> demultiplexer is
+extended with additional peripheral configuration ports for external PLL/FLL and padmux
+configuration, which are specific of ASIC wrappers.</p>
+<p>An additional peripheral subsystem based on APB hosts Carfield-specific peripherals.</p>
+<h2 id="mailbox-unit"><a href="https://github.com/pulp-platform/mailbox_unit">Mailbox unit</a></h2>
+<p>The mailbox unit consists in a number of configurable mailboxes. Each mailbox is the preferred
+communication vehicle between <em>domains</em>. It can be used to wake-up certain domains, notify an
+<em>offloader</em> (e.g., Cheshire) that a <em>target device</em> (e.g., the integer PMCA) has reached execution
+completion, dispatch <em>entry points</em> to a <em>target device</em> to jump-start its execution, and many
+others.</p>
+<p>It manages the following features:</p>
+<ul>
+<li>Interrupt based signaling receiver and sender</li>
+<li>A shared memory space common to all the mailboxes, implemented as a single register file.
+  Currently, Carfield implements 25 mailboxes.</li>
+<li>Support for 32-bit word aligned read/write access.</li>
+<li>A convenience AXI-Lite wrapper for the configuration port.</li>
+</ul>
+<hr />
+<p>Assuming each mailbox is identified with id <code>i</code>, the register file map reads:</p>
+<table>
+<thead>
+<tr>
+<th><strong>Offset</strong></th>
+<th><strong>Register</strong></th>
+<th><strong>Width (bit)</strong></th>
+<th><strong>Note</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0x00 + i * 0x100</code></td>
+<td><code>INT_SND_STAT</code></td>
+<td><code>1</code></td>
+<td>current irq status</td>
+</tr>
+<tr>
+<td><code>0x04 + i * 0x100</code></td>
+<td><code>INT_SND_SET</code></td>
+<td><code>1</code></td>
+<td>set irq</td>
+</tr>
+<tr>
+<td><code>0x08 + i * 0x100</code></td>
+<td><code>INT_SND_CLR</code></td>
+<td><code>1</code></td>
+<td>clear irq</td>
+</tr>
+<tr>
+<td><code>0x0C + i * 0x100</code></td>
+<td><code>INT_SND_EN</code></td>
+<td><code>1</code></td>
+<td>enable irq</td>
+</tr>
+<tr>
+<td><code>0x40 + i * 0x100</code></td>
+<td><code>INT_RCV_STAT</code></td>
+<td><code>1</code></td>
+<td>current irq status</td>
+</tr>
+<tr>
+<td><code>0x44 + i * 0x100</code></td>
+<td><code>INT_RCV_SET</code></td>
+<td><code>1</code></td>
+<td>set irq</td>
+</tr>
+<tr>
+<td><code>0x48 + i * 0x100</code></td>
+<td><code>INT_RCV_CLR</code></td>
+<td><code>1</code></td>
+<td>clear irq</td>
+</tr>
+<tr>
+<td><code>0x4C + i * 0x100</code></td>
+<td><code>INT_RCV_EN</code></td>
+<td><code>1</code></td>
+<td>enable irq</td>
+</tr>
+<tr>
+<td><code>0x80 + i * 0x100</code></td>
+<td><code>LETTER0</code></td>
+<td><code>32</code></td>
+<td>message</td>
+</tr>
+<tr>
+<td><code>0x8C + i * 0x100</code></td>
+<td><code>LETTER1</code></td>
+<td><code>32</code></td>
+<td>message</td>
+</tr>
+</tbody>
+</table>
+<p>The above register map can be found in the dedicated
+<a href="https://github.com/pulp-platform/mailbox_uni">repository</a> and is reported here for convenience.</p>
+<h2 id="platform-control-registers">Platform control registers</h2>
+<p>PCRs provide basic system information, and control clock, reset and other functionalities of
+Carfield's <em>domains</em>.</p>
+<p>A more detailed overview of each PCR (register subfields and description) can be found
+<a href="../../hw/regs/pcr.md">here</a>. PCR base address is listed in the <a href="#memory-map">Memory Map</a> as for the
+other devices.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><strong>Name</strong></th>
+<th style="text-align: left;"><strong>Offset</strong></th>
+<th style="text-align: right;"><strong>Length</strong></th>
+<th style="text-align: left;"><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>VERSION0</code></td>
+<td style="text-align: left;"><code>0x0</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Cheshire sha256 commit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>VERSION1</code></td>
+<td style="text-align: left;"><code>0x4</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island sha256 commit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>VERSION2</code></td>
+<td style="text-align: left;"><code>0x8</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island sha256 commit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>VERSION3</code></td>
+<td style="text-align: left;"><code>0xc</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster sha256 commit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>VERSION4</code></td>
+<td style="text-align: left;"><code>0x10</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz CLuster sha256 commit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>JEDEC_IDCODE</code></td>
+<td style="text-align: left;"><code>0x14</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">JEDEC ID CODE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GENERIC_SCRATCH0</code></td>
+<td style="text-align: left;"><code>0x18</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Scratch</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>GENERIC_SCRATCH1</code></td>
+<td style="text-align: left;"><code>0x1c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Scratch</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>HOST_RST</code></td>
+<td style="text-align: left;"><code>0x20</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Host Domain reset -active high, inverted in HW-</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERIPH_RST</code></td>
+<td style="text-align: left;"><code>0x24</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Periph Domain reset -active high, inverted in HW-</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_RST</code></td>
+<td style="text-align: left;"><code>0x28</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island reset -active high, inverted in HW-</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_RST</code></td>
+<td style="text-align: left;"><code>0x2c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island reset -active high, inverted in HW-</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_RST</code></td>
+<td style="text-align: left;"><code>0x30</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster reset -active high, inverted in HW-</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_RST</code></td>
+<td style="text-align: left;"><code>0x34</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster reset -active high, inverted in HW-</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>L2_RST</code></td>
+<td style="text-align: left;"><code>0x38</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">L2 reset -active high, inverted in HW-</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERIPH_ISOLATE</code></td>
+<td style="text-align: left;"><code>0x3c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Periph Domain  AXI isolate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_ISOLATE</code></td>
+<td style="text-align: left;"><code>0x40</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island AXI isolate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_ISOLATE</code></td>
+<td style="text-align: left;"><code>0x44</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island AXI isolate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_ISOLATE</code></td>
+<td style="text-align: left;"><code>0x48</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster AXI isolate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_ISOLATE</code></td>
+<td style="text-align: left;"><code>0x4c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster AXI isolate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>L2_ISOLATE</code></td>
+<td style="text-align: left;"><code>0x50</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">L2 AXI isolate</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERIPH_ISOLATE_STATUS</code></td>
+<td style="text-align: left;"><code>0x54</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Periph Domain AXI isolate status</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_ISOLATE_STATUS</code></td>
+<td style="text-align: left;"><code>0x58</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island AXI isolate status</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_ISOLATE_STATUS</code></td>
+<td style="text-align: left;"><code>0x5c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island AXI isolate status</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_ISOLATE_STATUS</code></td>
+<td style="text-align: left;"><code>0x60</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster AXI isolate status</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_ISOLATE_STATUS</code></td>
+<td style="text-align: left;"><code>0x64</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster AXI isolate status</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>L2_ISOLATE_STATUS</code></td>
+<td style="text-align: left;"><code>0x68</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">L2 AXI isolate status</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERIPH_CLK_EN</code></td>
+<td style="text-align: left;"><code>0x6c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Periph Domain clk gate enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_CLK_EN</code></td>
+<td style="text-align: left;"><code>0x70</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island clk gate enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_CLK_EN</code></td>
+<td style="text-align: left;"><code>0x74</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island clk gate enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_CLK_EN</code></td>
+<td style="text-align: left;"><code>0x78</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster clk gate enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_CLK_EN</code></td>
+<td style="text-align: left;"><code>0x7c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster clk gate enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>L2_CLK_EN</code></td>
+<td style="text-align: left;"><code>0x80</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Shared L2 memory clk gate enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERIPH_CLK_SEL</code></td>
+<td style="text-align: left;"><code>0x84</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Periph Domain pll select (0 -&gt; host pll, 1 -&gt; alt PLL, 2 -&gt; per pll)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_CLK_SEL</code></td>
+<td style="text-align: left;"><code>0x88</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island pll select (0 -&gt; host pll, 1 -&gt; alt PLL, 2 -&gt; per pll)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_CLK_SEL</code></td>
+<td style="text-align: left;"><code>0x8c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island pll select (0 -&gt; host pll, 1 -&gt; alt PLL, 2 -&gt; per pll)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_CLK_SEL</code></td>
+<td style="text-align: left;"><code>0x90</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster pll select (0 -&gt; host pll, 1 -&gt; alt PLL, 2 -&gt; per pll)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_CLK_SEL</code></td>
+<td style="text-align: left;"><code>0x94</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster pll select (0 -&gt; host pll, 1 -&gt; alt PLL, 2 -&gt; per pll)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>L2_CLK_SEL</code></td>
+<td style="text-align: left;"><code>0x98</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">L2 Memory pll select (0 -&gt; host pll, 1 -&gt; alt PLL, 2 -&gt; per pll)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PERIPH_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0x9c</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Periph Domain clk divider value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0xa0</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island clk divider value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0xa4</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island clk divider value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0xa8</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster clk divider value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0xac</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster clk divider value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>L2_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0xb0</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">L2 Memory clk divider value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>HOST_FETCH_ENABLE</code></td>
+<td style="text-align: left;"><code>0xb4</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Host Domain fetch enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_FETCH_ENABLE</code></td>
+<td style="text-align: left;"><code>0xb8</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island fetch enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_FETCH_ENABLE</code></td>
+<td style="text-align: left;"><code>0xbc</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island fetch enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_FETCH_ENABLE</code></td>
+<td style="text-align: left;"><code>0xc0</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster fetch enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_DEBUG_REQ</code></td>
+<td style="text-align: left;"><code>0xc4</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster debug req</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>HOST_BOOT_ADDR</code></td>
+<td style="text-align: left;"><code>0xc8</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Host boot address</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SAFETY_ISLAND_BOOT_ADDR</code></td>
+<td style="text-align: left;"><code>0xcc</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Safety Island boot address</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SECURITY_ISLAND_BOOT_ADDR</code></td>
+<td style="text-align: left;"><code>0xd0</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Security Island boot address</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_BOOT_ADDR</code></td>
+<td style="text-align: left;"><code>0xd4</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster boot address</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_BOOT_ADDR</code></td>
+<td style="text-align: left;"><code>0xd8</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster boot address</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_BOOT_ENABLE</code></td>
+<td style="text-align: left;"><code>0xdc</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster boot enable</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>SPATZ_CLUSTER_BUSY</code></td>
+<td style="text-align: left;"><code>0xe0</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Spatz Cluster busy</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_BUSY</code></td>
+<td style="text-align: left;"><code>0xe4</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster busy</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>PULP_CLUSTER_EOC</code></td>
+<td style="text-align: left;"><code>0xe8</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">PULP Cluster end of computation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ETH_RGMII_PHY_CLK_DIV_EN</code></td>
+<td style="text-align: left;"><code>0xec</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Ethernet RGMII PHY clock divider enable bit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ETH_RGMII_PHY_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0xf0</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Ethernet RGMII PHY clock divider value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ETH_MDIO_CLK_DIV_EN</code></td>
+<td style="text-align: left;"><code>0xf4</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Ethernet MDIO clock divider enable bit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ETH_MDIO_CLK_DIV_VALUE</code></td>
+<td style="text-align: left;"><code>0xf8</code></td>
+<td style="text-align: right;"><code>4</code></td>
+<td style="text-align: left;">Ethernet MDIO clock divider value</td>
+</tr>
+</tbody>
+</table>
+<h2 id="peripherals">Peripherals</h2>
+<p>Carfield enhances Cheshire's peripheral subsystem with additional capabilities.</p>
+<p>An external AXI manager port is attached to the matrix crossbar. The 64-bit data, 48-bit address AXI
+protocol is converted to the slower, 32-bit data and address APB protocol. An APB demultiplexer
+allows attaching several peripherals, described below.</p>
+<h3 id="generic-and-advanced-timer">Generic and advanced timer</h3>
+<p>Carfield integrates a generic timer and an advanced timer.</p>
+<p>The <a href="https://github.com/pulp-platform/timer_unit"><em>generic timer</em></a> manages the following features:</p>
+<ul>
+<li>2 general purpose 32-bit up counter timers</li>
+<li>Input trigger sources:<ul>
+<li>FLL/PLL clock</li>
+<li>FLL/PLL clock + Prescaler</li>
+<li>Real-time clock (RTC) at crystal frequency (32kHz) or higher</li>
+<li>External event</li>
+</ul>
+</li>
+<li>8-bit programmable prescaler to FLL/PLL clock</li>
+<li>Counting modes:<ul>
+<li>One shot mode: timer is stopped after first comparison match</li>
+<li>Continuous mode: timer continues counting after comparison match</li>
+<li>Cycle mode: timer resets to 0 after comparison match and continues counting</li>
+<li>64 bit cascaded mode</li>
+</ul>
+</li>
+<li>Interrupt request generation on comparison match</li>
+</ul>
+<p>For more information, read the dedicated
+<a href="https://github.com/pulp-platform/timer_unit/blob/master/doc/TIMER_UNIT_reference.xlsx">documentation</a>.</p>
+<p>The <a href="https://github.com/pulp-platform/apb_adv_timer"><em>advanced timer</em></a> manages the following
+features:</p>
+<ul>
+<li>4 timers with 4 output signal channels each</li>
+<li>PWM generation functionality</li>
+<li>Multiple trigger input sources:</li>
+<li>output signal channels of all timers</li>
+<li>32 GPIOs</li>
+<li>Real-time clock (RTC) at crystal frequency (32kHz) or higher</li>
+<li>FLL/PLL clock
+  In Carfield, we rely on a RTC.</li>
+<li>Configurable input trigger modes</li>
+<li>Configurable prescaler for each timer</li>
+<li>Configurable counting mode for each timer</li>
+<li>Configurable channel threshold action for each timer</li>
+<li>4 configurable output events</li>
+<li>Configurable clock gating of each timer</li>
+</ul>
+<p>For more information, read the dedicated
+<a href="https://github.com/pulp-platform/apb_adv_timer/blob/master/doc/APB_ADV_TIMER_reference.xlsx">documentation</a>.</p>
+<h3 id="watchdog-timer">Watchdog timer</h3>
+<p>We employ the watchdog timer developed by the <a href="https://opentitan.org/book/doc/introduction.html">OpenTitan
+project</a> project. It manages the following
+features:</p>
+<ul>
+<li>Two 32-bit upcounting timers: one timer functions as a wakeup timer, one as a watchdog timer</li>
+<li>2 thresholds: <em>bark</em> (generates an interrupt) and <em>bite</em> (resets core)</li>
+<li>A 12 bit pre-scaler for the wakeup timer to enable very long timeouts</li>
+</ul>
+<p>For more information, read the dedicated
+<a href="https://opentitan.org/book/hw/ip/aon_timer/">documentation</a>.</p>
+<h3 id="can">CAN</h3>
+<p>We employ a CAN device developed by the <a href="https://github.com/AlSaqr-platform/can_bus/tree/pulp">Czech Technical
+University</a> in Prague. It manages the
+following features:</p>
+<ul>
+<li>CAN 2.0, CAN FD 1.0 and ISO CAN FD</li>
+<li>Avalon memory bus</li>
+<li>Timestamping and transmission at given time</li>
+<li>Optional event and error logging</li>
+<li>Fault confinement state manipulation</li>
+<li>Transceiver delay measurement</li>
+<li>Variety of interrupt sources</li>
+<li>Filtering of received frame</li>
+<li>Listen-only mode, Self-test mode, Acknowledge forbidden mode</li>
+<li>Up to 14 Mbit in “Data” bit-rate (with 100 Mhz Core clock)</li>
+</ul>
+<p>For more information, read the dedicated
+<a href="https://github.com/AlSaqr-platform/can_bus/tree/pulp/doc">documentation</a></p>
+<h3 id="ethernet">Ethernet</h3>
+<p>We employ Ethernet IPs developed by <a href="https://github.com/alexforencich/verilog-ethernet">Alex
+Forencich</a> and assemble them with a
+high-performant DMA, the same used in Cheshire.</p>
+<p>We use Reduced gigabit media-independent interface (RGMII) that supports speed up to 1000Mbit/s
+(1GHz).</p>
+<p>For more information, read the dedicated
+<a href="http://alexforencich.com/wiki/en/verilog/ethernet/start">documentation</a> of Ethernet components from
+its original repository.</p>
+<h2 id="clock-and-reset">Clock and reset</h2>
+<p><a class="glightbox" href="../../img/clk_rst.svg" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Reset and Clock Distribution for a domain *X*" src="../../img/clk_rst.svg" /></a></p>
+<p><a class="glightbox" href="../../img/isolation.svg" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Isolation for a domain *X*" src="../../img/isolation.svg" /></a></p>
+<p>The two figures above show the clock, reset and isolation distribution for a <em>domain</em> <code>X</code> in
+Carfield, and their relationship. A more detailed description is provided below.</p>
+<h3 id="clock-distribution-scheme-clock-gating-and-isolation">Clock distribution scheme, clock gating and isolation</h3>
+<p>Carfield is provided with 3 clocks sources. They can be fully asynchronous and not bound to any
+phase relationship, since dual-clock FIFOs are placed between domains to allow clock domain crossing
+(CDC):</p>
+<ul>
+<li><code>host_clk_i</code>: preferably, clock of the <em>host domain</em></li>
+<li><code>alt_clk_i</code>: preferably, clock of <em>alternate</em> domains, namely <em>safe domain</em>, <em>secure domain</em>,
+  <em>accelerator domain</em></li>
+<li><code>per_clk_i</code>: preferably, clock of <em>peripheral domain</em></li>
+</ul>
+<p>In addition, a real-time clock (RTC, <code>rt_clk_i</code>) is provided externally, at crystal frequency
+(32kHz) or higher.</p>
+<p>These clocks are supplied externally, by a dedicated PLL per clock source or by a single PLL that
+supplies all three clock sources. The configuration of the clock source can be handled by the
+external PLL wrapper configuration registers, e.g. in a ASIC top level</p>
+<p>Regardless of the specific name used for the clock signals in HW, Carfield has a flexible clock
+distribution that allows each of the 3 clock sources to be assigned to a <em>domain</em>, as explained
+below.</p>
+<hr />
+<p>As the top figure shows, out of the 7 <em>domains</em> described in <a href="#domains">Domains</a>, 6 can be clock
+gated and <em>isolated</em>: <em>safe domain</em>, <em>secure domain</em>, <em>accelerator domain</em>, <em>peripheral domain</em>,
+<em>dynamic SPM</em>.</p>
+<p>When <em>isolation</em> for a domain <code>X</code> is enabled, data transfers towards a domain are terminated and
+never reach it. To achieve this, an AXI4 compliant <em>isolation</em> module is placed in front of each
+domain. The bottom figure shows in detail the architecture of the isolation scheme between the <em>host
+domain</em> and a generic <code>X</code> domain, highlighting its relationship with the domain's reset and cloc
+signals.</p>
+<p>For each of the 6 clock gateable domains, the following clock distribution scheme applies:</p>
+<ol>
+<li>The user selects one of the 3 different clock sources</li>
+<li>The selected clock source for the domain is fed into a default-bypassed arbitrary integer clock
+   divider with 50% duty cycle. This allows to use different integer clock divisions for every
+   target domain to use different clock frequencies</li>
+<li>The internal clock gate of the clock divider is used to provide clock gating for the domain.</li>
+</ol>
+<p>HW resources for the clock distribution (steps 1., 2., and 3.) and isolation of a domain <code>X</code>, are
+SW-controlled via dedicated PCRs. Refer to <a href="#platform-control-registers">Platform Control Registers</a>
+in this page for more information.</p>
+<p>The only domain that is always-on and de-isolated is the <em>host domain</em> (Cheshire). If required,
+clock gating and/or isolation of it can be handled at higher levels of hierarchy, e.g. in a
+dedicated ASIC wrapper.</p>
+<h3 id="startup-behavior-after-power-on-reset-por">Startup behavior after Power-on reset (POR)</h3>
+<p>The user can decide whether <em>secure boot</em> must be performed on the executing code before runtime. If
+so, the <em>secure domain</em> must be active after POR, i.e., clocked and de-isolated. This behavior is
+regulated by the input pin <code>secure_boot_i</code> according to the following table:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"><code>secure_boot_i</code></th>
+<th style="text-align: right;"><strong>Secure Boot</strong></th>
+<th style="text-align: left;"><strong>System status after POR</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>0</code></td>
+<td style="text-align: right;"><code>OFF</code></td>
+<td style="text-align: left;"><em>secure domain</em> gated and isolated as the other 5 domains, <em>host domain</em> always-on and idle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>1</code></td>
+<td style="text-align: right;"><code>ON</code></td>
+<td style="text-align: left;"><em>host domain</em> always-on and idle, <em>secure domain</em> active, takes over <em>secure boot</em> and can't be warm reset-ed; other 5 domains gated and isolated</td>
+</tr>
+</tbody>
+</table>
+<p>Regardless of the value of <code>secure_boot_i</code>, since by default some domains are clock gated and
+isolated after POR, SW or external physical interfaces (JTAG/Serial Link) must handle their wake-up
+process. Routines are provided in the <a href="../../sw/include/car_util.h">Software Stack</a>.</p>
+<h3 id="reset-distribution-scheme">Reset distribution scheme</h3>
+<p>Carfield is provided with one POR (active-low), <code>pwr_on_rst_ni</code>, responsible for the platform's
+<em>cold reset</em>.</p>
+<p>The POR is synchronized with the clock of each domain, user-selected as explained above, and
+propagated to the domain.</p>
+<p>In addition, a <em>warm reset</em> can be initiated from SW through the PCRs for each domain. Exceptions to
+this are the <em>host domain</em> (always-on), and the <em>secure domain</em> when <code>secure_boot_i</code> is asserted.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: User Manual">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                User Manual
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../sw/" class="md-footer__link md-footer__link--next" aria-label="Next: Software Stack">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Software Stack
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand", "navigation.tracking", "navigation.sections", "navigation.indexes", "navigation.footer"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

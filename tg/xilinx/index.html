@@ -1,0 +1,1805 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../synth/">
+      
+      
+        <link rel="next" href="../integr/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+    
+    
+      
+        <title>Xilinx FPGAs - Carfield</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#xilinx-fgpas" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Carfield" class="md-header__button md-logo" aria-label="Carfield" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Carfield
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Xilinx FPGAs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pulp-platform/carfield" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pulp-platform/carfield
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Carfield" class="md-nav__button md-logo" aria-label="Carfield" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Carfield
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pulp-platform/carfield" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    pulp-platform/carfield
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../.." class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Home
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../gs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    Targets
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Targets
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sim/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Simulation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../synth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Synthesis and physical implementation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Xilinx FPGAs
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Xilinx FPGAs
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Start
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-vanilla-bistream-vcu128-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building the vanilla bistream (VCU128 only)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-bd-block-design-bistream" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building the bd (block design) bistream
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#board-specificities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Board specificities
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Board specificities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#all" class="md-nav__link">
+    <span class="md-ellipsis">
+      All
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="All">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ethernet" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ethernet
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xilinx-vcu128" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xilinx VCU128
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Xilinx VCU128">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bootmodes-and-vios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bootmodes and VIOs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-jtag-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      External JTAG chain
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xilinx-vcu118" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xilinx VCU118
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Xilinx VCU118">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bootmodes-and-vios_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bootmodes and VIOs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-jtag-chain_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      External JTAG chain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#block-design-and-xilinx-ethernet-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      Block design and Xilinx Ethernet IP
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bare-metal-bringup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bare-metal bringup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bare-metal bringup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#programming-the-fpga" class="md-nav__link">
+    <span class="md-ellipsis">
+      Programming the FPGA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Programming the FPGA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-vivado-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Vivado GUI
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using command line
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-binary-and-debugging-with-openocd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading binary and debugging with OpenOCD
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-baremetal-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running Baremetal Code
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#booting-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      Booting Linux
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Booting Linux">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#via-spi-flash" class="md-nav__link">
+    <span class="md-ellipsis">
+      Via SPI flash
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#via-ethernet-vcu128-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Via Ethernet (VCU128 only)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-your-own-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add your own board
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Add your own board">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#makefile" class="md-nav__link">
+    <span class="md-ellipsis">
+      Makefile
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vanilla-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vanilla flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Vanilla flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#re-arametrize-existing-ips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Re-arametrize existing IPs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-new-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add a new IP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instantiate-your-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instantiate your IP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-new-device-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add a new device tree
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      Debug
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Integration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../um/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    User Manual
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            User Manual
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../um/arch/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Architecture
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../um/sw/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Software Stack
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Start
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-vanilla-bistream-vcu128-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building the vanilla bistream (VCU128 only)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-the-bd-block-design-bistream" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building the bd (block design) bistream
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#board-specificities" class="md-nav__link">
+    <span class="md-ellipsis">
+      Board specificities
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Board specificities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#all" class="md-nav__link">
+    <span class="md-ellipsis">
+      All
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="All">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ethernet" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ethernet
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xilinx-vcu128" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xilinx VCU128
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Xilinx VCU128">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bootmodes-and-vios" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bootmodes and VIOs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-jtag-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      External JTAG chain
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#xilinx-vcu118" class="md-nav__link">
+    <span class="md-ellipsis">
+      Xilinx VCU118
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Xilinx VCU118">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bootmodes-and-vios_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bootmodes and VIOs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-jtag-chain_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      External JTAG chain
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#block-design-and-xilinx-ethernet-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      Block design and Xilinx Ethernet IP
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bare-metal-bringup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bare-metal bringup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Bare-metal bringup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#programming-the-fpga" class="md-nav__link">
+    <span class="md-ellipsis">
+      Programming the FPGA
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Programming the FPGA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-vivado-gui" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using Vivado GUI
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using command line
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-binary-and-debugging-with-openocd" class="md-nav__link">
+    <span class="md-ellipsis">
+      Loading binary and debugging with OpenOCD
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-baremetal-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running Baremetal Code
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#booting-linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      Booting Linux
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Booting Linux">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#via-spi-flash" class="md-nav__link">
+    <span class="md-ellipsis">
+      Via SPI flash
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#via-ethernet-vcu128-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Via Ethernet (VCU128 only)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#add-your-own-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add your own board
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Add your own board">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#makefile" class="md-nav__link">
+    <span class="md-ellipsis">
+      Makefile
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vanilla-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vanilla flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Vanilla flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#re-arametrize-existing-ips" class="md-nav__link">
+    <span class="md-ellipsis">
+      Re-arametrize existing IPs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-new-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add a new IP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instantiate-your-ip" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instantiate your IP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-a-new-device-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      Add a new device tree
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      Debug
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="xilinx-fgpas">Xilinx FGPAs</h1>
+<p>This page describes how to map Carfield on Xilinx FPGAs to <em>execute baremetal programs</em> or <em>boot
+CVA6 Linux</em>. Please first read <a href="../../gs/">Getting Started</a> to make sure have all dependencies.
+Additionally, for on-chip debugging you need:</p>
+<ul>
+<li>OpenOCD <code>&gt;= 0.10.0</code></li>
+</ul>
+<p>We currently provide working setups for:</p>
+<ul>
+<li>Xilinx VCU128 with Vivado <code>== 2020.2</code></li>
+<li>Xilinx VCU118 with Vivado <code>== 2020.2</code></li>
+</ul>
+<p>:warning: At the moment it is required to use the Vivado version above</p>
+<p><strong>Note: Certain version of Vivado might cause issue, until these issues are resolved it is safer to use 2020.2</strong></p>
+<p>We are working on support for more boards in the future.</p>
+<p>The Carfield bitstreams are divided in two flavors at the moment. The <code>flavor_vanilla</code> and the
+<code>flavor_bd</code>.</p>
+<ul>
+<li>
+<p><code>flavor_vanilla</code> - The hardware to be mapped on the FPGA is fully described in System Verilog.
+This flow is lightweight, easily reproducible, and self contained. As each IP is integrated by hand
+in the RTL, only the Xilinx DDR, Xilinx VIO and Xilinx clock wizard are available (at the moment).</p>
+</li>
+<li>
+<p><code>flavor_bd</code> - In order to allow for more complex top level, this flow relies on the Vivado block
+design flow to link Carfield with external IPs. This flow is less human readable but allows
+integrating more complex IPs as Xilinx Ethernet. <em>Note that this may require you to own the
+respective licenses.</em></p>
+</li>
+</ul>
+<h2 id="quick-start">Quick Start</h2>
+<p>The recommended command to build a bitstream (for VCU128) is</p>
+<pre><code class="language-bash">make car-xil-all XILINX_FLAVOR=bd VIVADO=&quot;vitis-2020.2 vivado&quot; VIVADO_MODE=gui XILINX_BOARD=vcu128 GEN_NO_HYPERBUS=1 GEN_EXT_JTAG=1 CARFIELD_CONFIG=carfield_l2dual_spatz_periph
+</code></pre>
+<p>Please find below more explanations.</p>
+<h2 id="building-the-vanilla-bistream-vcu128-only">Building the vanilla bistream (VCU128 only)</h2>
+<p>Due to the structure of the Makefile flow. All the following commands are to be executed at the root
+of the Carfield repository. If you want to see the Makefiles that you will be using, you can find
+the generic FPGA rules in <code>target/xilinx/xilinx.mk</code> and the vanilla specific rules in
+<code>target/xilinx/flavor_vanilla/flavor_vanilla.mk</code>.</p>
+<p>First, make sure that you have fetch and generated all the RTL:</p>
+<pre><code class="language-bash">make car-init
+</code></pre>
+<p>Generate the bitstream in <code>target/xilinx/out/</code> by running:</p>
+<pre><code class="language-bash">make car-xil-all XILINX_FLAVOR=vanilla [VIVADO=version]
+[VIVADO_MODE={batch,gui}] [XILINX_BOARD={vcu128}] [GEN_NO_HYPERBUS={0,1}]
+[GEN_EXT_JTAG={0,1}] [CARFIELD_CONFIG=carfield_l2dual_{safe,spatz}_periph]
+</code></pre>
+<p>See the argument list below:</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Relevance</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VIVADO</td>
+<td>all</td>
+<td>Vivado command to use</td>
+</tr>
+<tr>
+<td>XILINX_BOARD</td>
+<td>all</td>
+<td><code>vcu128</code></td>
+</tr>
+<tr>
+<td>GEN_NO_HYPERBUS</td>
+<td>all</td>
+<td><code>0</code> Use the hyperram controller inside <code>carfield.sv</code><br><code>1</code> Use the Xilinx DDR controller</td>
+</tr>
+<tr>
+<td>GEN_EXT_JTAG</td>
+<td>vcu128</td>
+<td><code>0</code> Connect the JTAG debugger to the board's JTAG (see <a href="#xilinx-vcu128">vcu128</a>) <br><code>1</code> Connect the JTAG debugger to an external JTAG chain</td>
+</tr>
+<tr>
+<td>CARFIELD_CONFIG</td>
+<td>all</td>
+<td>Select the Carfield configuration to implement. See below for supported configs.</td>
+</tr>
+<tr>
+<td>VIVADO_MODE</td>
+<td>all</td>
+<td><code>batch</code> Compile in Vivado shell<br><code>gui</code> Compile in Vivado gui</td>
+</tr>
+</tbody>
+</table>
+<p>See below some typical building time for reference:</p>
+<table>
+<thead>
+<tr>
+<th>Config</th>
+<th>Board</th>
+<th>Duration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>carfield_l2dual_pulp_periph</td>
+<td>vcu128</td>
+<td>~5h</td>
+</tr>
+<tr>
+<td>carfield_l2dual_safe_periph</td>
+<td>vcu128</td>
+<td>~5h</td>
+</tr>
+<tr>
+<td>carfield_l2dual_spatz_periph</td>
+<td>vcu128</td>
+<td>~5h</td>
+</tr>
+<tr>
+<td>carfield_l2dual_secure_periph</td>
+<td>vcu128</td>
+<td><strong>ISSUE</strong></td>
+</tr>
+</tbody>
+</table>
+<p>You can find which sources are used by looking at <code>Bender.yml</code> (target <code>all(xilinx, fpga,
+xilinx_vanilla)</code>). This file is used by bender to generate
+<code>target/xilinx/flavor_vanilla/scripts/add_sources.tcl</code>. You can open this file to see all the file
+list of the project. (Note that even if you disable an IP, its files will still needed by Vivado and
+added to the <code>add_sources.tcl</code>).</p>
+<p>Note that the <code>make</code> command above will first compile the Xilinx ips located in
+<code>target/xilinx/xilinx_ips</code> before compiling the bitstream.</p>
+<h2 id="building-the-bd-block-design-bistream">Building the bd (block design) bistream</h2>
+<p>Please read and try to compile a vanilla bitstream first to identify potential issues.</p>
+<p>You can find the bd specific rules in <code>target/xilinx/flavor_vanilla/flavor_bd.mk</code>.</p>
+<p>Again, make sure that you have fetched and generated all the RTL:</p>
+<pre><code class="language-bash">make car-init
+</code></pre>
+<p>Generate the bitstream in <code>target/xilinx/out/</code> by running:</p>
+<pre><code class="language-bash">make car-xil-all XILINX_FLAVOR=bd [VIVADO=version] [VIVADO_MODE={batch,gui}]
+[XILINX_BOARD={vcu128, vcu118}] [GEN_NO_HYPERBUS={0,1}] [GEN_EXT_JTAG={0,1}]
+[CARFIELD_CONFIG=carfield_l2dual_{safe,spatz}_periph]
+</code></pre>
+<p>See the argument list below:</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Relevance</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VIVADO</td>
+<td>all</td>
+<td>Vivado command to use</td>
+</tr>
+<tr>
+<td>XILINX_BOARD</td>
+<td>all</td>
+<td><code>vcu128</code> <code>vcu118</code></td>
+</tr>
+<tr>
+<td>GEN_NO_HYPERBUS</td>
+<td>all</td>
+<td><code>0</code> Use the hyperram controller inside <code>carfield.sv</code><br><code>1</code> Use the Xilinx DDR controller</td>
+</tr>
+<tr>
+<td>GEN_EXT_JTAG</td>
+<td>all</td>
+<td><code>0</code> Connect the JTAG debugger to the board's JTAG (see <a href="#xilinx-vcu128">vcu128</a>) <br><code>1</code> Connect the JTAG debugger to an external JTAG chain</td>
+</tr>
+<tr>
+<td>CARFIELD_CONFIG</td>
+<td>all</td>
+<td>Select the Carfield configuration to implement. See below for supported configs.</td>
+</tr>
+<tr>
+<td>VIVADO_MODE</td>
+<td>all</td>
+<td><code>batch</code> Compile in Vivado shell<br><code>gui</code> Compile in Vivado gui</td>
+</tr>
+<tr>
+<td>XILINX_BOOT_ETH</td>
+<td>vcu128</td>
+<td><code>0</code> Boot via SPI flash only (see <a href="#booting_linux">booting Linux</a>) <br><code>1</code> Boot via SPI flash and Ethernet</td>
+</tr>
+</tbody>
+</table>
+<p>See below some typical building time for reference:</p>
+<table>
+<thead>
+<tr>
+<th>Config</th>
+<th>Board</th>
+<th>Duration</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>carfield_l2dual_pulp_periph</td>
+<td>vcu128</td>
+<td>~5h</td>
+</tr>
+<tr>
+<td>carfield_l2dual_safe_periph</td>
+<td>vcu128</td>
+<td>~5h</td>
+</tr>
+<tr>
+<td>carfield_l2dual_spatz_periph</td>
+<td>vcu128</td>
+<td>~5h</td>
+</tr>
+<tr>
+<td>carfield_l2dual_secure_periph</td>
+<td>vcu128</td>
+<td><strong>ISSUE</strong></td>
+</tr>
+</tbody>
+</table>
+<p>You can find which sources are used by looking at <code>Bender.yml</code> (target <code>all(xilinx, fpga,
+xilinx_bd)</code>). This file is used by bender to generate
+<code>target/xilinx/flavor_bd/scripts/add_sources.tcl</code>. You can open this file to see all the file list
+of the project. (Note that even if you disable an IP, its files will still needed by Vivado and
+added to the <code>add_sources.tcl</code>).</p>
+<p>Note that the <code>make</code> command above will first package a Carfield ip before compiling the bitstream.</p>
+<h2 id="board-specificities">Board specificities</h2>
+<h3 id="all">All</h3>
+<blockquote>
+<h4 id="ethernet">Ethernet</h4>
+<p>As the MAC address of each FPGA is unique (but reconfigurable), if you wish to use the Ethernet
+IP (<code>bd</code> flavor) you will need to add the MAC address of your board in <code>sw/boot/mac_address.dtsi</code>.</p>
+</blockquote>
+<h3 id="xilinx-vcu128">Xilinx VCU128</h3>
+<blockquote>
+<h4 id="bootmodes-and-vios">Bootmodes and VIOs</h4>
+<p>As there are no switches on this board, the CVA6 bootmode (see <a href="https://pulp-platform.github.io/cheshire/um/sw/#boot-rom">Cheshire
+bootrom</a>) is selected by Xilinx VIOs that
+can be set in the Vivado GUI (see <a href="#bringup_vivado_gui">Using Vivado GUI</a>).</p>
+<h4 id="external-jtag-chain">External JTAG chain</h4>
+<p>The VCU128 development board only provides one JTAG chain, used by Vivado to program the
+bitstream, and interact with certain Xilinx IPs (ILAs, VIOs, ...). The RV64 requires access to a
+JTAG chain to connect GDB to the debug-module in the bitstream.
+When using <code>EXT_JTAG=0</code> it is possible to connect the debug module to the internal FPGA's JTAG by
+using the Xilinx BSCANE macro. With this, you will only need the normal Xilinx USB cable to interact
+with CVA6. Note that it means that
+Vivado and OpenOCD can not use the same cable at the same time.
+:warning: This setup (with <code>EXT_JTAG=0</code>) will only work for designs containing the host only** as
+it is not possible to chain multiple devices on the BSCANE macro. If you need to use <code>EXT_JTAG=0</code>
+consider modifying the RTL to remove the debug modules of the IPs.
+When using <code>EXT_JTAG=1</code> we add an external JTAG chain for the RV64 host and other island through
+the FPGA's GPIOs. Since the VCU128 does not have GPIOs we use we use a Digilent JTAG-HS2 cable
+connected to the Xilinx XM105 FMC debug card. See the connections in <code>vcu128.xdc</code>.</p>
+</blockquote>
+<h3 id="xilinx-vcu118">Xilinx VCU118</h3>
+<blockquote>
+<h4 id="bootmodes-and-vios_1">Bootmodes and VIOs</h4>
+<p>We currently do not use the switches on this board, the CVA6 bootmode (see <a href="https://pulp-platform.github.io/cheshire/um/sw/#boot-rom">Cheshire
+bootrom</a>) is selected by Xilinx VIOs that
+can be set in the Vivado GUI (see <a href="#bringup_vivado_gui">Using Vivado GUI</a>).</p>
+<h4 id="external-jtag-chain_1">External JTAG chain</h4>
+<p>Similarly to the VCU128 we use GPIOs to connect an external JTAG-USB dongle (Digilent HS2). Unlike the VCU128, the availability of GPIOs directly on the board allow us to connect the HS2 without an FMC debug board (see constraints for related pins).
+<strong>WARNING: this setup (with <code>EXT_JTAG=0</code>) will only work for designs containing the host only</strong> as
+it is not possible to chain multiple devices on the BSCANE macro. If you need to use <code>EXT_JTAG=0</code>
+consider modifying the RTL to remove the debug modules of the IPs.</p>
+<h4 id="block-design-and-xilinx-ethernet-ip">Block design and Xilinx Ethernet IP</h4>
+<p>The Xilinx Ethernet IP integration is still under debug and does not work out of the box in Linux or U-boot at the moment.</p>
+</blockquote>
+<h2 id="bare-metal-bringup">Bare-metal bringup</h2>
+<h3 id="programming-the-fpga">Programming the FPGA</h3>
+<h4 id="using-vivado-gui">Using Vivado GUI</h4>
+<p>If you have closed Vivado, or compiled in batch mode, you can open the Vivado GUI:</p>
+<pre><code class="language-bash"># Find your project
+find . -name &quot;*.xpr&quot;
+# Open it in gui
+vitis-2020.2 vivado project.xpr
+</code></pre>
+<p>You can now open the Hardware Manager and program the FPGA. Once done, Vivado will give you access
+the to Virtual Inputs Outputs (VIOs). You can now assert the following signals (on Cheshire top
+level).</p>
+<table>
+<thead>
+<tr>
+<th>VIO</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vio_reset</td>
+<td>Positive edge-sensitive reset for the whole system</td>
+</tr>
+<tr>
+<td>vio_boot_mode</td>
+<td>Override the boot-mode switches described above</td>
+</tr>
+<tr>
+<td>vio_boot_mode_sel</td>
+<td>Select between 0: using boot mode switches 1: use boot mode VIO</td>
+</tr>
+</tbody>
+</table>
+<h4 id="using-command-line">Using command line <a name="bringup_vivado_cli"></a></h4>
+<p>A script <code>program.tcl</code> is available to flash the bitstream without opening Vivado GUI. You will need
+to give the following variable to access your board (see <code>target/xilinx/xilinx.mk</code>).</p>
+<ul>
+<li><code>XILINX_PORT</code> - Vivado opened port (default <strong>3121</strong>)</li>
+<li><code>FPGA_PATH</code> - Vivado path to your FPGA (default <strong>xilinx_tcf/Xilinx/[serial_id]</strong>)</li>
+<li><code>XILINX_HOST</code> - Path to your Vivado server (default <strong>localhost</strong>)</li>
+</ul>
+<p>Change the values to the appropriate ones (they be found in the Hardware Manager in Vivado GUI) and
+program the board:</p>
+<pre><code class="language-bash">make chs-xil-program VIVADO_MODE=batch XILINX_BOARD=vcu128 XILINX_FLAVOR=flavor
+</code></pre>
+<h3 id="loading-binary-and-debugging-with-openocd">Loading binary and debugging with OpenOCD</h3>
+<p>Tbd</p>
+<h2 id="running-baremetal-code">Running Baremetal Code</h2>
+<p>Tbd</p>
+<h2 id="booting-linux">Booting Linux</h2>
+<p>To boot Linux, we must load the <em>OpenSBI</em> firmware, which takes over M mode and launches the U-boot
+bootloader. U-boot then loads Linux. For more details, see <a href="../../um/sw/#boot-flow">Boot Flow</a>.</p>
+<p>Clone the <code>carfield</code> branch of CVA6 SDK at the root of this repository and build the firmware
+(OpenSBI + U-boot) and Linux images (<em>this will take about 30 minutes</em>):</p>
+<pre><code class="language-bash">git submodule update --init --recursive sw/deps/cva6-sdk
+make -C sw/deps/cva6-sdk images
+</code></pre>
+<p>In principle, we can boot Linux through JTAG by loading all images into memory, launching OpenSBI,
+and instructing U-boot to load the kernel directly from memory. Here, we focus on autonomous boot
+from SD card or SPI flash.</p>
+<p>In this case, OpenSBI is loaded by a regular baremetal program called the Zero-Stage Loader (ZSL).
+The boot ROM loads the ZSL from SD card, which then loads the device tree and firmware from other SD
+card partitions into memory and launches OpenSBI.</p>
+<p>To create a full Linux disk image from the ZSL, device tree, firmware, and Linux, run:</p>
+<pre><code class="language-bash"># Place the cva6-sdk where they are expected:
+ln -s sw/deps/cva6-sdk/install64 sw/boot/install64
+# Optional: Pre-build explicitely the image
+make CAR_ROOT=. sw/boot/linux_carfield_bd_vcu128.gpt.bin
+</code></pre>
+<h3 id="via-spi-flash">Via SPI flash</h3>
+<blockquote>
+<p>Boards like VCU128 does not offer a SD card reader. We need to load the image in the
+integrated flash:</p>
+<p><code>make chs-xil-flash VIVADO_MODE=batch XILINX_BOARD=vcu128 XILINX_FLAVOR=flavor</code></p>
+<p>Use the parameters defined in <a href="#bringup_vivado_cli">Using command line</a>
+(defaults are in <code>target/xilinx/xilinx.mk</code>) to select your board:</p>
+<p>This script will erase your bitstream, once the flash has been written (c.a.
+10min) you will need to re-program the bitstream on the board.
+You can attach the UART port of the FPGA to minicom and see the boot process! </p>
+</blockquote>
+<h3 id="via-ethernet-vcu128-only">Via Ethernet (VCU128 only)</h3>
+<blockquote>
+<p>As flashing and reading the kernel from SPI can take a few minutes, a faster way is to
+<a href="https://www.emcraft.com/som/using-dhcp">ask U-Boot to fetch the image from the network</a>.
+This feature can be enabled in the Carfield <code>bd</code> flavor. You will need to add the MAC
+address of your FPGA in <code>sw/boot/mac_address.dtsi</code> and the path to your Linux image (on a FTP server)
+in <code>sw/boot/remote_boot.dtsi</code>.
+You will still need to flash u-boot but it will be now faster:
+<code>make chs-xil-flash VIVADO_MODE=batch XILINX_BOARD=vcu128 XILINX_FLAVOR=bd XILINX_BOOT_ETH=1</code></p>
+</blockquote>
+<h2 id="add-your-own-board">Add your own board</h2>
+<p>If you wish to add a flow for a new FPGA board, please do the following steps:
+<em>Please consider opening a pull request containing the necessary changes to integrate your new board
+(:</em></p>
+<h3 id="makefile">Makefile</h3>
+<p>Add your board on top of <code>target/xilinx/xilinx.mk</code>, in particular <code>xilinx_part</code> and
+<code>xilinx_board_long</code> are identifying the FPGA chip and board (can be found in VIvado GUI). The
+parameters identifying your personal device <code>XILINX_PORT</code>, <code>XILINX_FPGA_PATH</code>, <code>XILINX_HOST</code> can be
+left empty for now.</p>
+<h3 id="vanilla-flow">Vanilla flow</h3>
+<blockquote>
+<h4 id="re-arametrize-existing-ips">Re-arametrize existing IPs</h4>
+<p>Carfield's emulation requires a few Vivado IPs to work properly. They are
+defined and pre-compiled in <code>target/xilinx/xilinx_ips/*</code>.
+If you add a new board, you will need to reconfigure your IPs for this board. For instance, to use
+the <em>Vivado MIG DDR4 controller</em>, modify <code>target/xilinx/xilinx_ips/xlnx_mig_ddr4/run.tcl</code>. There,
+add the relevant
+<code>$::env(XILINX_BOARD)</code> entry with your configuration.
+To know which configuration to use your board, you can open a blank project in Vivado GUI, create
+a blank block design, and instanciate the MIG DDR4 IP there. The Vivado TCL console should write the
+default parameters for your FPGA. You can later re-configure the IP in the block design and Vivado
+will print to the tcl console the modified parameters. Then you can copy these tcl lines to the
+<code>run.tcl</code> file. Make sure that you added your ip to <code>target/xilinx/flavor_vanilla/flavor_vanilla.mk</code>
+under "xilinx_ips_names_vanilla_<strong>your_board</strong>".</p>
+<h4 id="add-a-new-ip">Add a new IP</h4>
+<p>If your board require a new IP that has not been integrated already do the
+following :</p>
+<ul>
+<li>Add a new folder <code>target/xilinx/xilinx_ips/[your_ip]</code> taking the example of the <code>xlnx_mig_ddr4</code>.</li>
+<li>Modify <code>target/xilinx/xilinx_ips/[your_ip]/tcl/run.tcl</code> and
+<code>target/xilinx/xilinx_ips/[your_ip]/Makefile</code> accordingly. &gt; - Add your IP to
+<code>target/flavor_vanilla/flavor_vanilla.mk</code> under "xilinx_ips_names_vanilla_<strong>your_board</strong>".</li>
+</ul>
+<h4 id="instantiate-your-ip">Instantiate your IP</h4>
+<p>Connect it's top module in the top-level:
+<code>target/xilinx/flavor_vanilla/src/cheshire_top_xilinx.sv</code>. If your IP is a DDR controller, please
+add it to <code>target/xilinx/src/dram_wrapper_xilinx.sv</code>. Note that this file contains a pipeline to
+resize AXI transactions from Cheshire to your controller.</p>
+<p>Add the relevant macro parameters to <code>target/xilinx/flavor_vanilla/src/phy_definitions.sv</code> in
+order to disable your IP for non-relevant boards.</p>
+<h4 id="add-a-new-device-tree">Add a new device tree</h4>
+<p>Each board is defined by a device-tree, when adding a new board, please add a device tree in
+<code>sw/boot</code> for each supported flavors.</p>
+<h4 id="debug">Debug</h4>
+<p>It is possible to use ILA (Integrated Logic Analyzers) in order to debug some signals on the
+running FPGA. Add the following before declaring your signals:
+</p>
+</blockquote>
+<pre><code class="language-verilog">// Indicate that you need to debug a signal
+(* dont_touch = &quot;yes&quot; *) (* mark_debug = &quot;true&quot; *) logic signal_d0;
+// You can also use the following macro from phy_definitions.svh
+`ila(ila_signal_d0, signal_d0)
+</code></pre>
+<blockquote>
+<p>Then, re-build your bitstream.</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../synth/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Synthesis and physical implementation">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Synthesis and physical implementation
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../integr/" class="md-footer__link md-footer__link--next" aria-label="Next: Integration">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Integration
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.expand", "navigation.tracking", "navigation.sections", "navigation.indexes", "navigation.footer"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
