@@ -62,9 +62,11 @@ CAR_ELFLOAD_BLOCKING_PULPD_SRC_C := $(CAR_SW_DIR)/tests/bare-metal/hostd/pulpd_o
 CAR_ELFLOAD_BLOCKING_PULPD_PATH := $(basename $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C))
 CAR_ELFLOAD_PULPD_INTF_SRC_C := $(CAR_SW_DIR)/tests/bare-metal/hostd/pulp-offload-intf.c
 CAR_ELFLOAD_PULPD_INTF_PATH := $(basename $(CAR_ELFLOAD_PULPD_INTF_SRC_C))
+CAR_ELFLOAD_BLOCKING_SNITCHD_SRC_C := $(CAR_SW_DIR)/tests/bare-metal/hostd/snitchd_offloader_blocking.c
+CAR_ELFLOAD_BLOCKING_SNITCHD_PATH := $(basename $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C))
 
 CAR_SW_TEST_SRCS_S	= $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.S)
-CAR_SW_TEST_SRCS_C	= $(filter-out $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C), $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.c))
+CAR_SW_TEST_SRCS_C	= $(filter-out $(CAR_ELFLOAD_BLOCKING_SNITCHD_SRC_C) $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C), $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.c))
 
 CAR_SW_TEST_SRC_EXCLUDE_DRAM =
 CAR_SW_TEST_SRC_EXCLUDE_SPM = llc_test.c
@@ -97,6 +99,12 @@ define offload_tests_template
 		$(RM) $(4).$(basename $(notdir $(header))).car.o; \
 	)
 endef
+
+# Snitch offload tests
+include $(CAR_SW_DIR)/tests/bare-metal/snitchd/sw.mk
+
+car-snitchd-sw-offload-tests: $(SNITCHD_HEADER_TARGETS)
+	$(call offload_tests_template,$(SNITCHD_HEADER_TARGETS),safed,$(CAR_ELFLOAD_BLOCKING_SNITCHD_SRC_C),$(CAR_ELFLOAD_BLOCKING_SNITCHD_PATH))
 
 # Safety Island offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk

@@ -1,3 +1,4 @@
+# Use me only fot HeroSDK (Linux + OpenMP offload)
 
 RISCV_PREFIX  ?=
 RISCV_CC      ?= clang
@@ -13,7 +14,7 @@ RISCV_CCFLAGS  ?= $(RISCV_FLAGS) -DPRINTF_DISABLE_SUPPORT_EXPONENTIAL -Iruntime
 all: bin/libomptarget_device.a
 
 bin:
-	mkdir $@
+	mkdir -p $@
 
 bin/libomptarget_device.a: runtime/link.ld runtime/crt0.S omptarget.c runtime/printf.c runtime/sw_mailbox.c | bin
 	$(RISCV_CC) -c $(RISCV_CCFLAGS) $(DEFINES_$*) runtime/crt0.S -o bin/crt0.o
