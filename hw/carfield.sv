@@ -1500,11 +1500,9 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
     .AxiUserWidth             ( Cfg.AxiUserWidth        ),
     .AxiInIdWidth             ( AxiSlvIdWidth           ),
     .AxiOutIdWidth            ( Cfg.AxiMstIdWidth       ),
-    .IwcAxiIdOutWidth         ( FpClustIwcAxiIdOutWidth ),
     .LogDepth                 ( LogDepth                ),
     .CdcSyncStages            ( SyncStages              ),
     .SyncStages               ( SyncStages              ),
-    .AxiMaxOutTrans           ( FpClustAxiMaxOutTrans   ),
     // AXI type IN
     .axi_in_resp_t            ( carfield_axi_slv_rsp_t     ),
     .axi_in_req_t             ( carfield_axi_slv_req_t     ),
