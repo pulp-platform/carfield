@@ -21,6 +21,7 @@ VENVDIR?=$(WORKDIR)/.venv
 REQUIREMENTS_TXT?=$(wildcard requirements.txt)
 include $(CAR_ROOT)/utils/venv.mk
 
+export PATH := $(VENVDIR)/bin:$(PATH)
 export PYTHON=
 export PYTHON3=
 override PYTHON := $(CAR_ROOT)/$(VENV)/python3
