@@ -169,7 +169,7 @@ chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build spatzd-sw-build car-sw-all
+car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build spatzd-sw-build car-sw-all | venv
 
 .PHONY: safed-sw-init pulpd-sw-init
 ## Clone safe domain's SW stack in the dedicated repository.
