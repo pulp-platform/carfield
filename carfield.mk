@@ -107,6 +107,7 @@ PULPD_BOOTMODE  ?=
 # Spatz cluster, efficient vector co-processor
 SPATZD_ROOT     ?= $(shell $(BENDER) path spatz)
 SPATZD_MAKEDIR  := $(SPATZD_ROOT)/hw/system/spatz_cluster
+SPATZD_CFG      ?= spatz_cluster.carfield.l2.hjson
 SPATZD_BINARY   ?=
 SPATZD_BOOTMODE ?= 0 # default jtag bootmode
 
@@ -168,7 +169,7 @@ chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
+car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build spatzd-sw-build car-sw-all
 
 .PHONY: safed-sw-init pulpd-sw-init
 ## Clone safe domain's SW stack in the dedicated repository.
@@ -200,12 +201,10 @@ pulpd-sw-build: pulpd-sw-init
 	$(MAKE) pulpd-sw-all
 
 ## Build vectorial PMCA domain SW
-# TODO: properly compile spatz tests from carfield. For now, we symlink to existing tests. If you
-#are a user external to ETH, the symlink will not work. We will integrate the compilation flow ASAP.
 
-#.PHONY: spatzd-sw-build spatzd-sw-build: $(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(BENDER_PATH)
-#LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) −B
-#SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson HTIF_SERVER=NO sw.vsim
+.PHONY: spatzd-sw-build
+spatzd-sw-build: $(LLVM_SPATZD_DIR) $(GCC_SPATZD_DIR)
+	$(MAKE) spatzd-sw-all
 
 ###############
 # Generate HW #
