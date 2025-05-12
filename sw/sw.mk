@@ -99,12 +99,14 @@ endef
 # Safety Island offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk
 
+.PHONY: car-safed-sw-offload-tests
 car-safed-sw-offload-tests:
 	$(call offload_tests_template,$(SAFED_HEADER_TARGETS),safed,$(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C),$(CAR_ELFLOAD_BLOCKING_SAFED_PATH))
 
 # Integer Cluster offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/pulpd/sw.mk
 
+.PHONY: car-pulpd-sw-offload-tests
 car-pulpd-sw-offload-tests:
 	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C),$(CAR_ELFLOAD_BLOCKING_PULPD_PATH))
 	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_PULPD_INTF_SRC_C),$(CAR_ELFLOAD_PULPD_INTF_PATH))
