@@ -84,16 +84,19 @@ car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_
 # Generate ELFs for blocking offload from cheshire. We execute from L2 or dram.
 # Template function for offload tests
 define offload_tests_template
-	$(foreach header,$(1), \
-		cp $(header) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c $(3) -o $(4).$(basename $(notdir $(header))).car.o; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CAR_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.l2.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.l2.elf > $(4).$(basename $(notdir $(header))).car.l2.dump; \
-		$(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CAR_SW_LDFLAGS) -o $(4).$(basename $(notdir $(header))).car.dram.elf  $(4).$(basename $(notdir $(header))).car.o $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-		$(CHS_SW_OBJDUMP) -d -S $(4).$(basename $(notdir $(header))).car.dram.elf > $(4).$(basename $(notdir $(header))).car.dram.dump; \
-		$(RM) $(CAR_SW_DIR)/tests/bare-metal/$(2)/payload.h; \
-		$(RM) $(4).$(basename $(notdir $(header))).car.o; \
-	)
+	@d=$$(printf '%s' '$(2)' | xargs); \
+	dr=$$(printf '%s' '$(3)' | xargs); \
+	pf=$$(printf '%s' '$(4)' | xargs); \
+	find "$(CAR_SW_DIR)/tests/bare-metal/$$d" -maxdepth 1 -name '*.h' -print0 \
+	| while IFS= read -r -d '' header; do \
+	    name=$$(basename "$$header" .h); \
+	    cp "$$header" "$(CAR_SW_DIR)/tests/bare-metal/$$d/payload.h"; \
+	    $(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c "$$dr" -o "$$pf.$$name.car.o"; \
+	    $(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CAR_SW_LDFLAGS) -o "$$pf.$$name.car.l2.elf" "$$pf.$$name.car.o" $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+	    $(CHS_SW_OBJDUMP) -d -S "$$pf.$$name.car.l2.elf" > "$$pf.$$name.car.l2.dump"; $(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CAR_SW_LDFLAGS) -o "$$pf.$$name.car.dram.elf" "$$pf.$$name.car.o" $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
+	    $(CHS_SW_OBJDUMP) -d -S "$$pf.$$name.car.dram.elf" > "$$pf.$$name.car.dram.dump"; \
+	    rm -f "$(CAR_SW_DIR)/tests/bare-metal/$$d/payload.h" "$$pf.$$name.car.o"; \
+	done
 endef
 
 # Safety Island offload tests
