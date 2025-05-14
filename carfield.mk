@@ -170,6 +170,14 @@ chs-sw-build: chs-sw-all
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
 car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build spatzd-sw-build car-sw-all | venv
+.PHONY: car-sw-clean
+## Clean all carfield SW, including generated headers, binaries, dumps for all sub-domains
+car-sw-clean: safed-sw-clean pulpd-sw-clean spatzd-sw-clean
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.elf
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.dump
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.memh
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.gpt
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.slm
 
 .PHONY: safed-sw-init pulpd-sw-init
 ## Clone safe domain's SW stack in the dedicated repository.
