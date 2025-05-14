@@ -162,14 +162,21 @@ car-checkout: car-checkout-deps
 include $(CAR_SW_DIR)/sw.mk
 
 ## @section Carfield platform SW build
-.PHONY: chs-sw-build
+#.PHONY: chs-sw-build
 ## Build the host domain (Cheshire) SW libraries and generates an archive (`libcheshire.a`)
 ## available for Carfield as static library at link time.
-chs-sw-build: chs-sw-all
+#chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build spatzd-sw-build car-sw-all | venv
+car-sw-build: | venv
+	$(MAKE) -j8 $(CHS_SW_LIBS)
+	$(MAKE) -j8 $(CHS_SW_GEN_HDRS)
+	$(MAKE) -j8 safed-sw-build
+	$(MAKE) pulpd-sw-build
+	$(MAKE) -j8 spatzd-sw-build
+	$(MAKE) car-sw-all
+
 .PHONY: car-sw-clean
 ## Clean all carfield SW, including generated headers, binaries, dumps for all sub-domains
 car-sw-clean: safed-sw-clean pulpd-sw-clean spatzd-sw-clean
@@ -200,19 +207,19 @@ $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
 .PHONY: safed-sw-build
 safed-sw-build: safed-sw-init
 	. $(CAR_ROOT)/env/safed-env.sh; \
-	$(MAKE) safed-sw-all -j8
+	$(MAKE) safed-sw-all
 
 ## Build integer PMCA domain SW
 .PHONY: pulpd-sw-build
 pulpd-sw-build: pulpd-sw-init
 	. $(CAR_ROOT)/env/pulpd-env.sh; \
-	$(MAKE) pulpd-sw-all -j8
+	$(MAKE) pulpd-sw-all
 
 ## Build vectorial PMCA domain SW
 
 .PHONY: spatzd-sw-build
 spatzd-sw-build: $(LLVM_SPATZD_DIR) $(GCC_SPATZD_DIR)
-	$(MAKE) spatzd-sw-all -j8
+	$(MAKE) spatzd-sw-all
 
 ###############
 # Generate HW #

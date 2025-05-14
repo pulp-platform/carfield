@@ -14,10 +14,13 @@
 CAR_LD_DIR     ?= $(CAR_SW_DIR)/link
 CAR_SW_LDFLAGS ?= $(CHS_SW_LDFLAGS) -L$(CAR_LD_DIR)
 
-car-sw-all: car-sw-libs car-sw-tests
+car-sw-all:
+	$(MAKE) -j8 car-sw-libs
+	$(MAKE) -j8 car-sw-host-tests
+	$(MAKE) -j8 car-sw-offload-tests
 
 .PRECIOUS: %.elf %.dtb
-.PHONY: car-sw-all car-sw-libs car-sw-headers car-sw-tests
+.PHONY: car-sw-all car-sw-libs car-sw-host-tests
 
 # Libraries
 CAR_PULPD_BARE    ?= $(CAR_SW_DIR)/tests/bare-metal/pulpd
@@ -75,10 +78,11 @@ CAR_SW_TEST_L2_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.l2.dump)   $(CAR_SW_TEST_SRCS
 CAR_SW_TEST_SPM_ROMH	= $(CAR_SW_TEST_SRCS_S:.S=.car.rom.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.rom.memh)
 CAR_SW_TEST_SPM_GPTH	= $(CAR_SW_TEST_SRCS_S:.S=.car.gpt.memh)  $(CAR_SW_TEST_SRCS_C:.c=.car.gpt.memh)
 
-car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_DRAM_SLM) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH) car-spatzd-sw-offload-tests car-pulpd-sw-offload-tests car-safed-sw-offload-tests mibench-automotive
+car-sw-host-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_DRAM_SLM) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH)
+car-sw-offload-tests: car-safed-sw-offload-tests car-pulpd-sw-offload-tests car-spatzd-sw-offload-tests mibench-automotive
 
 # Generate .slm files from elf binaries. Only used when linking against external dram
-%.offload.car.dram.slm: %.offload.car.dram.elf
+%.car.dram.slm: %.car.dram.elf
 	$(VENV)/python $(CAR_ROOT)/scripts/elf2slm.py --binary=$< --vectors=$*.car.hyperram
 
 # Generate ELFs for blocking offload from cheshire. We execute from L2 or dram.
@@ -93,7 +97,7 @@ SAFED_NAMES  := $(basename $(notdir $(SAFED_HEADER_TARGETS)))
 PULPD_NAMES  := $(basename $(notdir $(PULPD_HEADER_TARGETS)))
 SPATZD_NAMES := $(basename $(notdir $(SPATZD_HEADER_TARGETS)))
 
-.PHONY: car-safed-sw-offload-tests car-pulpd-sw-offload-tests car-spatzd-sw-offload-tests
+.PHONY: car-safed-sw-offload-tests car-pulpd-sw-offload-tests car-spatzd-sw-offload-tests car-sw-offload-tests
 
 car-safed-sw-offload-tests: \
     $(addsuffix .offload.car.dram.dump,$(addprefix $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).,  $(SAFED_NAMES)))
