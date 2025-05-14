@@ -14,6 +14,7 @@ site/
 # sw auto-generated
 sw/tests/bare-metal/safed/*.h
 sw/tests/bare-metal/pulpd/*.h
+sw/tests/bare-metal/spatzd/*.h
 
 # ctags, etags ...
 TAGS
