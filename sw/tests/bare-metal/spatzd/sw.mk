@@ -28,7 +28,6 @@ spatzd-sw-all: spatzd-copy-binaries
 	@find $(CAR_SPATZD_SW) -maxdepth 1 -type f ! -name '*.mk' ! -name '*.h' \
 	  -exec $(VENV)/python $(CAR_ROOT)/scripts/elf2header.py \
 	           --binary {} --vectors {}.h \; \
-	  -exec rm {} \;
 
 SPATZD_HEADER_TARGETS := $(wildcard $(CAR_SPATZD_SW)/*.h)
 
