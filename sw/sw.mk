@@ -78,48 +78,74 @@ CAR_SW_TEST_SPM_GPTH	= $(CAR_SW_TEST_SRCS_S:.S=.car.gpt.memh)  $(CAR_SW_TEST_SRC
 car-sw-tests: $(CAR_SW_TEST_DRAM_DUMP) $(CAR_SW_TEST_SPM_DUMP) $(CAR_SW_TEST_L2_DUMP) $(CAR_SW_TEST_DRAM_SLM) $(CAR_SW_TEST_SPM_ROMH) $(CAR_SW_TEST_SPM_GPTH) car-spatzd-sw-offload-tests car-pulpd-sw-offload-tests car-safed-sw-offload-tests mibench-automotive
 
 # Generate .slm files from elf binaries. Only used when linking against external dram
-%.car.dram.slm: %.car.dram.elf
+%.offload.car.dram.slm: %.offload.car.dram.elf
 	$(VENV)/python $(CAR_ROOT)/scripts/elf2slm.py --binary=$< --vectors=$*.car.hyperram
 
 # Generate ELFs for blocking offload from cheshire. We execute from L2 or dram.
 # Template function for offload tests
-define offload_tests_template
-	@d=$$(printf '%s' '$(2)' | xargs); \
-	dr=$$(printf '%s' '$(3)' | xargs); \
-	pf=$$(printf '%s' '$(4)' | xargs); \
-	find "$(CAR_SW_DIR)/tests/bare-metal/$$d" -maxdepth 1 -name '*.h' -print0 \
-	| while IFS= read -r -d '' header; do \
-	    name=$$(basename "$$header" .h); \
-	    cp "$$header" "$(CAR_SW_DIR)/tests/bare-metal/$$d/payload.h"; \
-	    $(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) -c "$$dr" -o "$$pf.$$name.car.o"; \
-	    $(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CAR_LD_DIR)/l2.ld $(CAR_SW_LDFLAGS) -o "$$pf.$$name.car.l2.elf" "$$pf.$$name.car.o" $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-	    $(CHS_SW_OBJDUMP) -d -S "$$pf.$$name.car.l2.elf" > "$$pf.$$name.car.l2.dump"; $(CHS_SW_CC) $(CAR_SW_INCLUDES) -T$(CHS_LD_DIR)/dram.ld $(CAR_SW_LDFLAGS) -o "$$pf.$$name.car.dram.elf" "$$pf.$$name.car.o" $(CHS_SW_LIBS) $(CAR_SW_LIBS); \
-	    $(CHS_SW_OBJDUMP) -d -S "$$pf.$$name.car.dram.elf" > "$$pf.$$name.car.dram.dump"; \
-	    rm -f "$(CAR_SW_DIR)/tests/bare-metal/$$d/payload.h" "$$pf.$$name.car.o"; \
-	done
-endef
-
-# Safety Island offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/safed/sw.mk
-
-.PHONY: car-safed-sw-offload-tests
-car-safed-sw-offload-tests:
-	$(call offload_tests_template,$(SAFED_HEADER_TARGETS),safed,$(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C),$(CAR_ELFLOAD_BLOCKING_SAFED_PATH))
-
-# Integer Cluster offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/pulpd/sw.mk
-
-.PHONY: car-pulpd-sw-offload-tests
-car-pulpd-sw-offload-tests:
-	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C),$(CAR_ELFLOAD_BLOCKING_PULPD_PATH))
-	$(call offload_tests_template,$(PULPD_HEADER_TARGETS),pulpd,$(CAR_ELFLOAD_PULPD_INTF_SRC_C),$(CAR_ELFLOAD_PULPD_INTF_PATH))
-
-# FP Cluster offload tests
 include $(CAR_SW_DIR)/tests/bare-metal/spatzd/sw.mk
 
-.PHONY: car-spatzd-sw-offload-tests
-car-spatzd-sw-offload-tests:
-	$(call offload_tests_template,$(SPATZD_HEADER_TARGETS),spatzd,$(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C),$(CAR_ELFLOAD_BLOCKING_SPATZD_PATH))
+.PRECIOUS: %.offload.car.dram.elf
+
+SAFED_NAMES  := $(basename $(notdir $(SAFED_HEADER_TARGETS)))
+PULPD_NAMES  := $(basename $(notdir $(PULPD_HEADER_TARGETS)))
+SPATZD_NAMES := $(basename $(notdir $(SPATZD_HEADER_TARGETS)))
+
+.PHONY: car-safed-sw-offload-tests car-pulpd-sw-offload-tests car-spatzd-sw-offload-tests
+
+car-safed-sw-offload-tests: \
+    $(addsuffix .offload.car.dram.dump,$(addprefix $(CAR_ELFLOAD_BLOCKING_SAFED_PATH).,  $(SAFED_NAMES)))
+
+car-pulpd-sw-offload-tests: \
+    $(addsuffix .offload.car.dram.dump,$(addprefix $(CAR_ELFLOAD_BLOCKING_PULPD_PATH).,  $(PULPD_NAMES))) \
+    $(addsuffix .offload.car.dram.dump,$(addprefix $(CAR_ELFLOAD_PULPD_INTF_PATH).,  $(PULPD_NAMES)))
+
+car-spatzd-sw-offload-tests: \
+    $(addsuffix .offload.car.dram.dump,$(addprefix $(CAR_ELFLOAD_BLOCKING_SPATZD_PATH)., $(SPATZD_NAMES)))
+
+$(CAR_ELFLOAD_BLOCKING_SAFED_PATH).%.offload.car.o: \
+    $(CAR_SW_DIR)/tests/bare-metal/safed/%.h \
+    $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C)
+	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
+	  -include $< \
+	  -c $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) \
+	  -o $@
+
+$(CAR_ELFLOAD_BLOCKING_PULPD_PATH).%.offload.car.o: \
+    $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.h \
+    $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) \
+    $(CAR_ELFLOAD_PULPD_INTF_SRC_C)
+	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
+	  -include $< \
+	  -c $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) \
+	  -o $@
+
+$(CAR_ELFLOAD_PULPD_INTF_PATH).%.offload.car.o: \
+    $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.h \
+    $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) \
+    $(CAR_ELFLOAD_PULPD_INTF_SRC_C)
+	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
+	  -include $< \
+	  -c $(CAR_ELFLOAD_PULPD_INTF_SRC_C) \
+	  -o $@
+
+$(CAR_ELFLOAD_BLOCKING_SPATZD_PATH).%.offload.car.o: \
+    $(CAR_SW_DIR)/tests/bare-metal/spatzd/%.h \
+    $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C)
+	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
+	  -include $< \
+	  -c $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C) \
+	  -o $@
+
+%.offload.car.dram.elf: %.offload.car.o
+	$(CHS_SW_CC) $(CAR_SW_INCLUDES) \
+	  -T$(CHS_LD_DIR)/dram.ld $(CAR_SW_LDFLAGS) \
+	  -o $@ $< $(CHS_SW_LIBS) $(CAR_SW_LIBS)
+
+%.offload.car.dram.dump: %.offload.car.dram.elf
+	$(CHS_SW_OBJDUMP) -d -S $< > $@
 
 # Litmus tests
 LITMUS_REPO := https://github.com/pulp-platform/CHERI-Litmus.git

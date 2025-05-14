@@ -16,7 +16,6 @@
 #include "params.h"
 #include "regs/cheshire.h"
 #include "util.h"
-#include "payload.h"
 
 int main(void)
 {
