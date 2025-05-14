@@ -17,7 +17,6 @@
 #include "car_util.h"
 #include "car_params.h"
 #include "printf.h"
-#include "payload.h"
 
 #define CAR_FP_CLUSTER_MBOX_CORE0_ID 0
 #define CAR_FP_CLUSTER_MBOX_CORE1_ID 1
