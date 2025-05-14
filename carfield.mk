@@ -192,19 +192,19 @@ $(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
 .PHONY: safed-sw-build
 safed-sw-build: safed-sw-init
 	. $(CAR_ROOT)/env/safed-env.sh; \
-	$(MAKE) safed-sw-all
+	$(MAKE) safed-sw-all -j8
 
 ## Build integer PMCA domain SW
 .PHONY: pulpd-sw-build
 pulpd-sw-build: pulpd-sw-init
 	. $(CAR_ROOT)/env/pulpd-env.sh; \
-	$(MAKE) pulpd-sw-all
+	$(MAKE) pulpd-sw-all -j8
 
 ## Build vectorial PMCA domain SW
 
 .PHONY: spatzd-sw-build
 spatzd-sw-build: $(LLVM_SPATZD_DIR) $(GCC_SPATZD_DIR)
-	$(MAKE) spatzd-sw-all
+	$(MAKE) spatzd-sw-all -j8
 
 ###############
 # Generate HW #
