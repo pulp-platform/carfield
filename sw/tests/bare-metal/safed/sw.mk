@@ -44,3 +44,4 @@ safed-sw-clean:
 	# Clean all the directories in 'tests'
 	$(foreach dir, $(SAFED_TEST_DIRS), $(MAKE) -C $(dir) clean;)
 	$(RM) $(CAR_SW_DIR)/tests/bare-metal/safed/*.h
+	$(RM) $(CAR_SW_DIR)/tests/bare-metal/safed/*.slm
