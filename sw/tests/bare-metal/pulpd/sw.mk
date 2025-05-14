@@ -51,3 +51,5 @@ pulpd-sw-clean:
 	# Clean all the directories in 'tests'
 	$(foreach dir, $(PULPD_TEST_DIRS), $(MAKE) -C $(dir) clean;)
 	$(RM) $(CAR_SW_DIR)/tests/bare-metal/pulpd/*.h
+	$(RM) $(CAR_SW_DIR)/tests/bare-metal/pulpd/*.elf
+	$(RM) $(CAR_SW_DIR)/tests/bare-metal/pulpd/*.slm
