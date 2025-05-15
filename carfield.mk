@@ -279,6 +279,7 @@ spatzd-hw-init: | venv
 	$(MAKE) -C $(SPATZD_ROOT) init
 	$(MAKE) -C $(SPATZD_MAKEDIR) SPATZ_CLUSTER_CFG_PATH=$(SPATZD_MAKEDIR)/cfg/$(SPATZD_CFG) bootrom
 	cp $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h $(CAR_SW_DIR)/include/regs/
+	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_CFG) generate
 
 ## Generate Cheshire HW. This target has a prerequisite, i.e. the PLIC and serial link
 ## configurations must be chosen before generating the hardware.
