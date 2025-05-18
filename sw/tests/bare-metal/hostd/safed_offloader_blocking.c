@@ -15,7 +15,6 @@
 #include "params.h"
 #include "regs/cheshire.h"
 #include "util.h"
-#include "payload.h"
 #include "car_util.h"
 
 extern int load_safed_payload ();

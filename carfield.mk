@@ -57,7 +57,7 @@ include $(CAR_ROOT)/bender-safed.mk
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= 8a065c72
+CAR_NONFREE_COMMIT ?= 7b0917b
 
 ## @section Carfield platform nonfree components
 ## Clone the non-free verification IP for Carfield. Some components such as CI scripts and ASIC
@@ -107,6 +107,7 @@ PULPD_BOOTMODE  ?=
 # Spatz cluster, efficient vector co-processor
 SPATZD_ROOT     ?= $(shell $(BENDER) path spatz)
 SPATZD_MAKEDIR  := $(SPATZD_ROOT)/hw/system/spatz_cluster
+SPATZD_CFG      ?= spatz_cluster.carfield.l2.hjson
 SPATZD_BINARY   ?=
 SPATZD_BOOTMODE ?= 0 # default jtag bootmode
 
@@ -161,14 +162,29 @@ car-checkout: car-checkout-deps
 include $(CAR_SW_DIR)/sw.mk
 
 ## @section Carfield platform SW build
-.PHONY: chs-sw-build
+#.PHONY: chs-sw-build
 ## Build the host domain (Cheshire) SW libraries and generates an archive (`libcheshire.a`)
 ## available for Carfield as static library at link time.
-chs-sw-build: chs-sw-all
+#chs-sw-build: chs-sw-all
 
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
-car-sw-build: chs-sw-build safed-sw-build pulpd-sw-build car-sw-all
+car-sw-build: | venv
+	$(MAKE) -j8 $(CHS_SW_LIBS)
+	$(MAKE) -j8 $(CHS_SW_GEN_HDRS)
+	$(MAKE) -j8 safed-sw-build
+	$(MAKE) pulpd-sw-build
+	$(MAKE) -j8 spatzd-sw-build
+	$(MAKE) car-sw-all
+
+.PHONY: car-sw-clean
+## Clean all carfield SW, including generated headers, binaries, dumps for all sub-domains
+car-sw-clean: safed-sw-clean pulpd-sw-clean spatzd-sw-clean
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.elf
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.dump
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.memh
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.gpt
+	rm -rf $(CAR_SW_DIR)/tests/bare-metal/hostd/*.slm
 
 .PHONY: safed-sw-init pulpd-sw-init
 ## Clone safe domain's SW stack in the dedicated repository.
@@ -180,12 +196,8 @@ $(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
 	$(MAKE) -C $(SAFED_ROOT) pulp-freertos BENDER="$(BENDER)"
 
 ## Clone integer PMCA domain's SW stack in the dedicated repository.
-pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
-
-$(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
-	$(MAKE) -C $(PULPD_ROOT) pulp-runtime
-$(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
-	$(MAKE) -C $(PULPD_ROOT) regression-tests
+pulpd-sw-init:
+	$(MAKE) -C $(PULPD_ROOT) sw-init
 
 ## Build safe domain SW
 .PHONY: safed-sw-build
@@ -200,12 +212,10 @@ pulpd-sw-build: pulpd-sw-init
 	$(MAKE) pulpd-sw-all
 
 ## Build vectorial PMCA domain SW
-# TODO: properly compile spatz tests from carfield. For now, we symlink to existing tests. If you
-#are a user external to ETH, the symlink will not work. We will integrate the compilation flow ASAP.
 
-#.PHONY: spatzd-sw-build spatzd-sw-build: $(MAKE) -C $(SPATZD_MAKEDIR) BENDER=$(BENDER_PATH)
-#LLVM_INSTALL_DIR=$(LLVM_SPATZ_DIR) GCC_INSTALL_DIR=$(GCC_SPATZ_DIR) −B
-#SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson HTIF_SERVER=NO sw.vsim
+.PHONY: spatzd-sw-build
+spatzd-sw-build: $(LLVM_SPATZD_DIR) $(GCC_SPATZD_DIR)
+	$(MAKE) spatzd-sw-all
 
 ###############
 # Generate HW #
@@ -262,9 +272,10 @@ update_serial_link: $(CHS_ROOT)/hw/serial_link.hjson
 ## interconnect parametrization.
 .PHONY: spatzd-hw-init
 spatzd-hw-init: | venv
-	$(MAKE) -C $(SPATZD_ROOT) hw/ip/snitch/src/riscv_instr.sv
-	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_MAKEDIR)/cfg/carfield.hjson bootrom
-	cp  $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h  $(CAR_SW_DIR)/include/regs/
+	$(MAKE) -C $(SPATZD_ROOT) init
+	$(MAKE) -C $(SPATZD_MAKEDIR) SPATZ_CLUSTER_CFG_PATH=$(SPATZD_MAKEDIR)/cfg/$(SPATZD_CFG) bootrom
+	cp $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h $(CAR_SW_DIR)/include/regs/
+	$(MAKE) -C $(SPATZD_MAKEDIR) -B SPATZ_CLUSTER_CFG=$(SPATZD_CFG) generate
 
 ## Generate Cheshire HW. This target has a prerequisite, i.e. the PLIC and serial link
 ## configurations must be chosen before generating the hardware.

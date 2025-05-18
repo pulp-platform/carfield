@@ -476,38 +476,118 @@ endfunction
 localparam dm::hartinfo_t [MaxHartId:0] SafetyIslandExtHartinfo =
   pulp_hart_info(SafetyIslandExtHarts);
 
-// Safety island configuration
-localparam safety_island_pkg::safety_island_cfg_t SafetyIslandCfg = '{
-    HartId:             SafetyIslHartIdOffs,
-    BankNumBytes:       32'h0001_0000,
-    NumBanks:           2,
-    // JTAG ID code:
-    // LSB                        [0]:     1'h1
-    // PULP Platform Manufacturer [11:1]:  11'h6d9
-    // Part Number                [27:12]: 16'hca71
-    // Version                    [31:28]: 4'h1
-    PulpJtagIdCode:     32'h1_ca71_db3,
-    NumTimers:          1,
-    UseClic:            1,
-    ClicIntCtlBits:     8,
-    UseSSClic:          0,
-    UseUSClic:          0,
-    UseVSClic:          0,
-    UseVSPrio:          0,
-    NVsCtxts:           0,
-    UseFastIrq:         1,
-    UseFpu:             1,
-    UseIntegerCluster:  1,
-    UseXPulp:           1,
-    UseZfinx:           1,
-    UseTCLS:            1,
-    NumInterrupts:      128,
-    NumMhpmCounters:    1,
-    // All non-set values should be zero
-    default: '0
+// CDC FIFO parameters (FIFO depth).
+localparam int unsigned LogDepth   = 3;
+
+/*****************/
+/* L2 Parameters */
+/*****************/
+localparam int unsigned NumL2Ports = (CarfieldIslandsCfg.l2_port1.enable) ? 2 : 1;
+localparam int unsigned L2MemSize = CarfieldIslandsCfg.l2_port0.size/2;
+localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
+                                        // (interleaved, non-interleaved)
+localparam doub_bt L2Port0InterlBase = CarfieldIslandsCfg.l2_port0.base;
+localparam doub_bt L2Port1InterlBase = CarfieldIslandsCfg.l2_port1.base;
+localparam doub_bt L2Port0NonInterlBase = CarfieldIslandsCfg.l2_port0.base + L2MemSize;
+localparam doub_bt L2Port1NonInterlBase = CarfieldIslandsCfg.l2_port1.base + L2MemSize;
+
+/****************************/
+/* Safety Island Parameters */
+/****************************/
+localparam int unsigned SafetyIslandMemOffset = 'h0000_0000;
+localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
+
+/******************************/
+/* Integer Cluster Parameters */
+/******************************/
+localparam int unsigned IntClusterDbgStart = CarfieldIslandsCfg.safed.base+
+                                             SafetyIslandPerOffset+
+                                             safety_island_pkg::DebugAddrOffset;
+localparam int unsigned IntClusterBootAddrDefaultOffs = 'h8080;
+localparam int unsigned IntClusterBootAddr = CarfieldIslandsCfg.l2_port0.base +
+                                             IntClusterBootAddrDefaultOffs;
+localparam int unsigned IntClusterNumEoc = 1;
+localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
+
+/*************************************/
+/* Floating Point Cluster Parameters */
+/*************************************/
+localparam int unsigned FpClustAxiMaxOutTrans   = 4;
+localparam int unsigned FpClustIwcAxiIdOutWidth = 3;
+
+/*******************************/
+/* Narrow Parameters: A32, D32 */
+/*******************************/
+localparam int unsigned AxiNarrowAddrWidth = 32;
+localparam int unsigned AxiNarrowDataWidth = 32;
+localparam int unsigned AxiNarrowStrobe    = AxiNarrowDataWidth/8;
+
+// Narrow AXI types
+typedef logic [     AxiNarrowAddrWidth-1:0] car_nar_addrw_t;
+typedef logic [     AxiNarrowDataWidth-1:0] car_nar_dataw_t;
+typedef logic [        AxiNarrowStrobe-1:0] car_nar_strb_t;
+
+// APB Mapping
+localparam int unsigned NumApbMst = 5;
+
+typedef enum int {
+  SystemTimerIdx   = 'd0,
+  AdvancedTimerIdx = 'd1,
+  SystemWdtIdx     = 'd2,
+  CanIdx           = 'd3,
+  HyperBusIdx      = 'd4
+} carfield_peripherals_e;
+
+// Address map of peripheral system
+typedef struct packed {
+  logic [31:0] idx;
+  car_nar_addrw_t start_addr;
+  car_nar_addrw_t end_addr;
+} carfield_addr_map_rule_t;
+
+localparam carfield_addr_map_rule_t [NumApbMst-1:0] PeriphApbAddrMapRule = '{
+   // 0: System Timer
+  '{ idx: SystemTimerIdx,   start_addr: SystemTimerBase,
+                            end_addr: SystemTimerBase + SystemTimerSize  },
+  // 1: Advanced Timer
+  '{ idx: AdvancedTimerIdx, start_addr: SystemAdvancedTimerBase,
+                            end_addr: SystemAdvancedTimerBase + SystemAdvancedTimerSize },
+  // 2: WDT
+  '{ idx: SystemWdtIdx,     start_addr: SystemWatchdogBase,
+                            end_addr: SystemWatchdogBase + SystemWatchdogSize },
+  // 3: Can
+  '{ idx: CanIdx,           start_addr: CanBase,
+                            end_addr: CanBase + CanSize },
+  // 4: Hyperbus
+  '{ idx: HyperBusIdx,      start_addr: HyperBusBase,
+                            end_addr: HyperBusBase + HyperBusSize }
 };
 
+// Narrow reg types
+`REG_BUS_TYPEDEF_ALL(carfield_a32_d32_reg, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
+
+
+//////////////////////////////
+// Debug Signal Port Struct //
+//////////////////////////////
+
+
+// 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz &
+// pulp_cluster, L2 shared memory
+localparam int unsigned NumDomains = CarfieldNumDomains;
+
+typedef struct packed {
+  logic [NumDomains-1:0] domain_clk;
+  logic [NumDomains-1:0] domain_rsts_n;
+  logic                  host_pwr_on_rst_n;
+} carfield_debug_sigs_t;
+
+///////////////////////////
+// Islands configuration //
+///////////////////////////
+
 // verilog_lint: waive-start line-length
+
 // Cheshire configuration
 localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // CVA6 parameters
@@ -645,139 +725,37 @@ localparam cheshire_cfg_t CarfieldCfgDefault = '{
   // All non-set values should be zero
   default: '0
 };
-// verilog_lint: waive-stop line-length
 
-// CDC FIFO parameters (FIFO depth).
-localparam int unsigned LogDepth   = 3;
-
-/*****************/
-/* L2 Parameters */
-/*****************/
-localparam int unsigned NumL2Ports = (CarfieldIslandsCfg.l2_port1.enable) ? 2 : 1;
-localparam int unsigned L2MemSize = CarfieldIslandsCfg.l2_port0.size/2;
-localparam int unsigned L2NumRules = 4; // 2 rules per each access mode
-                                        // (interleaved, non-interleaved)
-localparam doub_bt L2Port0InterlBase = CarfieldIslandsCfg.l2_port0.base;
-localparam doub_bt L2Port1InterlBase = CarfieldIslandsCfg.l2_port1.base;
-localparam doub_bt L2Port0NonInterlBase = CarfieldIslandsCfg.l2_port0.base + L2MemSize;
-localparam doub_bt L2Port1NonInterlBase = CarfieldIslandsCfg.l2_port1.base + L2MemSize;
-
-/****************************/
-/* Safety Island Parameters */
-/****************************/
-localparam int unsigned SafetyIslandMemOffset = 'h0000_0000;
-localparam int unsigned SafetyIslandPerOffset = 'h0020_0000;
-
-/******************************/
-/* Integer Cluster Parameters */
-/******************************/
-localparam int unsigned IntClusterNumHwpePorts = 9;
-localparam int unsigned IntClusterNumDmas = 4;
-localparam int unsigned IntClusterNumMstPer = 1;
-localparam int unsigned IntClusterNumSlvPer = 10;
-localparam int unsigned IntClusterTcdmSize = 256*1024;
-localparam int unsigned IntClusterTcdmBanks = 16;
-localparam int unsigned IntClusterHwpePresent = 1;
-localparam int unsigned IntClusterUseHci = 1;
-localparam int unsigned IntClusterSetAssociative = 4;
-localparam int unsigned IntClusterNumCacheBanks = 2;
-localparam int unsigned IntClusterNumCacheLines = 1;
-localparam int unsigned IntClusterCacheSize = 4*1024;
-localparam int unsigned IntClusterDbgStart = CarfieldIslandsCfg.safed.base+
-                                             SafetyIslandPerOffset+
-                                             safety_island_pkg::DebugAddrOffset;
-localparam int unsigned IntClusterBootAddrDefaultOffs = 'h8080;
-localparam int unsigned IntClusterBootAddr = CarfieldIslandsCfg.l2_port0.base +
-                                             IntClusterBootAddrDefaultOffs;
-localparam int unsigned IntClusterInstrRdataWidth = 32;
-localparam int unsigned IntClusterFpu = 0;
-localparam int unsigned IntClusterFpuDivSqrt = 0;
-localparam int unsigned IntClusterSharedFpu = 0;
-localparam int unsigned IntClusterSharedFpuDivSqrt = 0;
-localparam int unsigned IntClusterNumAxiMst = 3;
-localparam int unsigned IntClusterNumAxiSlv = 4;
-// IntClusterAxiIdInWidth is fixed from PULP Cluster
-localparam int unsigned IntClusterAxiIdInWidth = $clog2(IntClusterNumCacheBanks) + 3;
-localparam int unsigned IntClusterAxiIdOutWidth = IntClusterAxiIdInWidth     +
-                                                  $clog2(IntClusterNumAxiSlv);
-localparam int unsigned IntClusterMaxUniqId = 1;
-localparam int unsigned IntClusterNumEoc = 1;
-localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
-localparam logic [CarfieldCfgDefault.AddrWidth-1:0] IntClusterInternalSize = 'h0040_0000;
-
-/*************************************/
-/* Floating Point Cluster Parameters */
-/*************************************/
-localparam int unsigned FpClustAxiMaxOutTrans   = 4;
-localparam int unsigned FpClustIwcAxiIdOutWidth = 3;
-
-/*******************************/
-/* Narrow Parameters: A32, D32 */
-/*******************************/
-localparam int unsigned AxiNarrowAddrWidth = 32;
-localparam int unsigned AxiNarrowDataWidth = 32;
-localparam int unsigned AxiNarrowStrobe    = AxiNarrowDataWidth/8;
-
-// Narrow AXI types
-typedef logic [     AxiNarrowAddrWidth-1:0] car_nar_addrw_t;
-typedef logic [     AxiNarrowDataWidth-1:0] car_nar_dataw_t;
-typedef logic [        AxiNarrowStrobe-1:0] car_nar_strb_t;
-typedef logic [ IntClusterAxiIdInWidth-1:0] intclust_idin_t;
-typedef logic [IntClusterAxiIdOutWidth-1:0] intclust_idout_t;
-
-// APB Mapping
-localparam int unsigned NumApbMst = 5;
-
-typedef enum int {
-  SystemTimerIdx   = 'd0,
-  AdvancedTimerIdx = 'd1,
-  SystemWdtIdx     = 'd2,
-  CanIdx           = 'd3,
-  HyperBusIdx      = 'd4
-} carfield_peripherals_e;
-
-// Address map of peripheral system
-typedef struct packed {
-  logic [31:0] idx;
-  car_nar_addrw_t start_addr;
-  car_nar_addrw_t end_addr;
-} carfield_addr_map_rule_t;
-
-localparam carfield_addr_map_rule_t [NumApbMst-1:0] PeriphApbAddrMapRule = '{
-   // 0: System Timer
-  '{ idx: SystemTimerIdx,   start_addr: SystemTimerBase,
-                            end_addr: SystemTimerBase + SystemTimerSize  },
-  // 1: Advanced Timer
-  '{ idx: AdvancedTimerIdx, start_addr: SystemAdvancedTimerBase,
-                            end_addr: SystemAdvancedTimerBase + SystemAdvancedTimerSize },
-  // 2: WDT
-  '{ idx: SystemWdtIdx,     start_addr: SystemWatchdogBase,
-                            end_addr: SystemWatchdogBase + SystemWatchdogSize },
-  // 3: Can
-  '{ idx: CanIdx,           start_addr: CanBase,
-                            end_addr: CanBase + CanSize },
-  // 4: Hyperbus
-  '{ idx: HyperBusIdx,      start_addr: HyperBusBase,
-                            end_addr: HyperBusBase + HyperBusSize }
+// Safety island configuration
+localparam safety_island_pkg::safety_island_cfg_t SafetyIslandCfg = '{
+    HartId:             SafetyIslHartIdOffs,
+    BankNumBytes:       32'h0001_0000,
+    NumBanks:           2,
+    // JTAG ID code:
+    // LSB                        [0]:     1'h1
+    // PULP Platform Manufacturer [11:1]:  11'h6d9
+    // Part Number                [27:12]: 16'hca71
+    // Version                    [31:28]: 4'h1
+    PulpJtagIdCode:     32'h1_ca71_db3,
+    NumTimers:          1,
+    UseClic:            1,
+    ClicIntCtlBits:     8,
+    UseSSClic:          0,
+    UseUSClic:          0,
+    UseVSClic:          0,
+    UseVSPrio:          0,
+    NVsCtxts:           0,
+    UseFastIrq:         1,
+    UseFpu:             1,
+    UseIntegerCluster:  1,
+    UseXPulp:           1,
+    UseZfinx:           1,
+    UseTCLS:            1,
+    NumInterrupts:      128,
+    NumMhpmCounters:    1,
+    // All non-set values should be zero
+    default: '0
 };
-
-// Narrow reg types
-`REG_BUS_TYPEDEF_ALL(carfield_a32_d32_reg, car_nar_addrw_t, car_nar_dataw_t, car_nar_strb_t)
-
-
-//////////////////////////////
-// Debug Signal Port Struct //
-//////////////////////////////
-
-
-// 6 clock gateable Subdomains in Carfield: periph_domain, safety_island, security_isalnd, spatz &
-// pulp_cluster, L2 shared memory
-localparam int unsigned NumDomains = CarfieldNumDomains;
-
-typedef struct packed {
-  logic [NumDomains-1:0] domain_clk;
-  logic [NumDomains-1:0] domain_rsts_n;
-  logic                  host_pwr_on_rst_n;
-} carfield_debug_sigs_t;
+// verilog_lint: waive-stop line-length
 
 endpackage

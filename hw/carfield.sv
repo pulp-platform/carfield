@@ -173,10 +173,15 @@ module carfield
   output carfield_debug_sigs_t                        debug_signals_o
 );
 
+`CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
+// Generate indices and get maps for all ports
+localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
+localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
+localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+
 /*********************************
 * General parameters and defines *
 **********************************/
-`CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
 
 // Clocking and reset strategy
 logic    periph_rst_n;
@@ -324,15 +329,9 @@ logic [IntClusterNumCores-1:0] pulpcl_dbg_reqs;
 logic [MaxHartId:0] safed_dbg_reqs;
 assign pulpcl_dbg_reqs = safed_dbg_reqs[PulpHartIdOffs+:IntClusterNumCores];
 
-// Generate indices and get maps for all ports
-localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
-localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
-
 ///////////////////////////////
 // Wide Parameters: A48, D32 //
 ///////////////////////////////
-
-localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
 // Wide AXI types
 typedef logic [       Cfg.AddrWidth-1:0] car_addrw_t;
@@ -1320,52 +1319,80 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
   assign slave_isolated[IntClusterSlvIdx] = slave_isolated_rsp[IntClusterSlvIdx] &
                                             master_isolated_rsp[IntClusterMstIdx];
 
+  // PULP cluster configuration
+  localparam pulp_cluster_package::pulp_cluster_cfg_t IntegerClusterCfg = '{
+    CoreType: pulp_cluster_package::RI5CY,
+    NumCores: 12,
+    DmaNumPlugs: 4,
+    DmaNumOutstandingBursts: 8,
+    DmaBurstLength: 256,
+    NumMstPeriphs: 1,
+    NumSlvPeriphs: 12,
+    ClusterAlias: 1,
+    ClusterAliasBase: 'h0,
+    NumSyncStages: SyncStages,
+    UseHci: 1,
+    TcdmSize: 256*1024,
+    TcdmNumBank: 16,
+    HwpePresent: 1,
+    HwpeCfg: '{NumHwpes: 3,
+               HwpeList: {pulp_cluster_package::SOFTEX,
+                          pulp_cluster_package::NEUREKA,
+                          pulp_cluster_package::REDMULE}
+              },
+    HwpeNumPorts: 9,
+    HMRPresent: 1,
+    HMRDmrEnabled: 1,
+    HMRTmrEnabled: 1,
+    HMRDmrFIxed: 0,
+    HMRTmrFIxed: 0,
+    HMRInterleaveGrps: 1,
+    HMREnableRapidRecovery: 1,
+    HMRSeparateDataVoters: 1,
+    HMRSeparateAxiBus: 0,
+    HMRNumBusVoters: 1,
+    EnableECC: 1,
+    ECCInterco: 1,
+    iCacheNumBanks: 2,
+    iCacheNumLines: 1,
+    iCacheNumWays: 4,
+    iCacheSharedSize: 4*1024,
+    iCachePrivateSize: 512,
+    iCachePrivateDataWidth: 32,
+    EnableReducedTag: 1,
+    L2Size: L2MemSize,
+    DmBaseAddr: carfield_pkg::IntClusterDbgStart,
+    BootRomBaseAddr: carfield_pkg::CarfieldIslandsCfg.l2_port0.base + 'h8080,
+    BootAddr: carfield_pkg::CarfieldIslandsCfg.l2_port0.base + 'h8080,
+    EnablePrivateFpu: 1,
+    EnablePrivateFpDivSqrt: 0,
+    NumAxiIn: 4,
+    NumAxiOut: 3,
+    AxiIdInWidth: AxiSlvIdWidth,
+    AxiIdOutWidth: Cfg.AxiMstIdWidth,
+    AxiAddrWidth: Cfg.AddrWidth,
+    AxiDataInWidth: Cfg.AxiDataWidth,
+    AxiDataOutWidth: Cfg.AxiDataWidth,
+    AxiUserWidth: Cfg.AxiUserWidth,
+    AxiMaxInTrans: Cfg.AxiMaxSlvTrans,
+    AxiMaxOutTrans: Cfg.AxiMaxSlvTrans,
+    AxiCdcLogDepth: LogDepth,
+    AxiCdcSyncStages: SyncStages,
+    SyncStages: SyncStages,
+    ClusterBaseAddr: carfield_pkg::CarfieldAxiMap.AxiStart[CarfieldAxiSlvIdx.pulp],
+    ClusterPeriphOffs: 'h00200000,
+    ClusterExternalOffs: 'h00400000,
+    EnableRemapAddress: 0,
+    SnitchICache: 0,
+    default: '0
+  };
+
 `ifndef INT_CLUSTER_NETLIST
   pulp_cluster #(
-    .NB_CORES                       ( IntClusterNumCores           ),
-    .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts       ),
-    .NB_DMAS                        ( IntClusterNumDmas            ),
-    .NB_MPERIPHS                    ( IntClusterNumMstPer          ),
-    .NB_SPERIPHS                    ( IntClusterNumSlvPer          ),
-    .SynchStages                    ( SyncStages                   ),
-    .TCDM_SIZE                      ( IntClusterTcdmSize           ),
-    .NB_TCDM_BANKS                  ( IntClusterTcdmBanks          ),
-    .HWPE_PRESENT                   ( IntClusterHwpePresent        ),
-    .USE_HETEROGENEOUS_INTERCONNECT ( IntClusterUseHci             ),
-    .SET_ASSOCIATIVE                ( IntClusterSetAssociative     ),
-    .NB_CACHE_BANKS                 ( IntClusterNumCacheBanks      ),
-    .CACHE_LINE                     ( IntClusterNumCacheLines      ),
-    .CACHE_SIZE                     ( IntClusterCacheSize          ),
-    .L0_BUFFER_FEATURE              ( "DISABLED"                   ),
-    .MULTICAST_FEATURE              ( "DISABLED"                   ),
-    .SHARED_ICACHE                  ( "ENABLED"                    ),
-    .DIRECT_MAPPED_FEATURE          ( "DISABLED"                   ),
-    .L2_SIZE                        ( L2MemSize                    ),
-    .USE_REDUCED_TAG                ( "TRUE"                       ),
-    .DEBUG_START_ADDR               ( IntClusterDbgStart           ),
-    .ROM_BOOT_ADDR                  ( IntClusterBootAddr           ),
-    .BOOT_ADDR                      ( IntClusterBootAddr           ),
-    .INSTR_RDATA_WIDTH              ( IntClusterInstrRdataWidth    ),
-    .CLUST_FPU                      ( IntClusterFpu                ),
-    .CLUST_FP_DIVSQRT               ( IntClusterFpuDivSqrt         ),
-    .CLUST_SHARED_FP                ( IntClusterFpu                ),
-    .CLUST_SHARED_FP_DIVSQRT        ( IntClusterFpuDivSqrt         ),
-    .NumAxiMst                      ( IntClusterNumAxiMst          ),
-    .NumAxiSlv                      ( IntClusterNumAxiSlv          ),
-    .AXI_ADDR_WIDTH                 ( Cfg.AddrWidth                ),
-    .AXI_DATA_C2S_WIDTH             ( Cfg.AxiDataWidth             ),
-    .AXI_DATA_S2C_WIDTH             ( Cfg.AxiDataWidth             ),
-    .AXI_USER_WIDTH                 ( Cfg.AxiUserWidth             ),
-    .AXI_ID_IN_WIDTH                ( AxiSlvIdWidth                ),
-    .AXI_ID_OUT_WIDTH               ( Cfg.AxiMstIdWidth            ),
-    .AXI_MAX_IN_TRANS               ( Cfg.AxiMaxSlvTrans           ),
-    .AXI_MAX_OUT_TRANS              ( Cfg.AxiMaxSlvTrans           ),
-    .LOG_DEPTH                      ( LogDepth                     ),
-    .BaseAddr                       ( CarfieldIslandsCfg.pulp.base ),
-    .CdcSynchStages                 ( SyncStages                   )
-  ) i_integer_cluster               (
+    .Cfg                         ( IntegerClusterCfg )
+  ) i_integer_cluster (
 `else
-  int_cluster i_integer_cluster     (
+  int_cluster i_integer_cluster  (
 `endif
     .clk_i                       ( pulp_clk                                  ),
     .rst_ni                      ( pulp_rst_n                                ),
@@ -1374,7 +1401,8 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     .pmu_mem_pwdn_i              ( '0                                        ),
     .base_addr_i                 ( CarfieldIslandsCfg.pulp.base[31:28]       ),
     .test_mode_i                 ( test_mode_i                               ),
-    .cluster_id_i                ( IntClusterIndex                           ),
+    // TODO: check this!
+    .cluster_id_i                ( '0/*carfield_pkg::IntClusterIndex*/       ),
     .en_sa_boot_i                ( car_regs_reg2hw.pulp_cluster_boot_enable  ),
     .fetch_en_i                  ( car_regs_reg2hw.pulp_cluster_fetch_enable ),
     .eoc_o                       ( car_regs_hw2reg.pulp_cluster_eoc.d        ),
