@@ -132,7 +132,7 @@ module carfield_synth_wrap
   output carfield_debug_sigs_t                        debug_signals_o
 );
 
-  localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
+  localparam cheshire_cfg_t DutCfg = carfield_pkg::CheshireCfg;
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
   carfield      #(

@@ -11,7 +11,7 @@ module l2_wrap
   import axi_pkg::*;
   import dyn_mem_pkg::*;
 #(
-  parameter cheshire_pkg::cheshire_cfg_t Cfg = CarfieldCfgDefault,
+  parameter cheshire_pkg::cheshire_cfg_t Cfg = carfield_pkg::CheshireCfg,
   /// AXI Ports settings
   parameter int unsigned NumPort      = 2,
   parameter int unsigned AxiAddrWidth = 48,

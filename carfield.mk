@@ -57,7 +57,7 @@ include $(CAR_ROOT)/bender-safed.mk
 ######################
 
 CAR_NONFREE_REMOTE ?= git@iis-git.ee.ethz.ch:carfield/carfield-nonfree.git
-CAR_NONFREE_COMMIT ?= f21a428
+CAR_NONFREE_COMMIT ?= e7cfa03
 
 ## @section Carfield platform nonfree components
 ## Clone the non-free verification IP for Carfield. Some components such as CI scripts and ASIC
@@ -191,12 +191,8 @@ $(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
 	$(MAKE) -C $(SAFED_ROOT) pulp-freertos BENDER="$(BENDER)"
 
 ## Clone integer PMCA domain's SW stack in the dedicated repository.
-pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
-
-$(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
-	$(MAKE) -C $(PULPD_ROOT) pulp-runtime
-$(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
-	$(MAKE) -C $(PULPD_ROOT) regression-tests
+pulpd-sw-init:
+	$(MAKE) -C $(PULPD_ROOT) sw-init
 
 ## Build safe domain SW
 .PHONY: safed-sw-build
