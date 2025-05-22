@@ -1,0 +1,273 @@
+// Copyright 2020 ETH Zurich and University of Bologna.
+// Licensed under the Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+// Part of the PULP platform project: https://pulp-platform.org
+// This file defines the register map for the HyperBus memory interface.
+
+// Register layout of hyperbus
+
+{
+  name: "hyperbus"
+  human_name: "HyperBus Controller"
+  one_line_desc: "HyperBus controller for interfacing with HyperRAM/Flash devices",
+  one_paragraph_desc: '''The HyperBus controller IP provides a flexible and programmable interface for communicating with external HyperRAM and HyperFlash memory devices. It supports AXI access, fine-grained
+                      clock and delay configuration, and physical interface control to meet timing closure and integration requirements.
+                      '''
+  cip_id: "36",
+  version: "0.0.0", //null
+
+  clocking: [
+    { clock: "clk_i", reset: "rst_ni", primary: true },
+    { clock: "clk_sys_i", reset: "rst_sys_ni" },
+    { clock: "clk_phy_i", reset: "rst_phy_ni" }
+  ],
+
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+   
+  regwidth: "32",
+  registers: [
+    {
+      name: "T_LATENCY_ACCESS"
+      desc: "Initial latency"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0:3"
+          name: "T_LATENCY_ACCESS"
+          resval: 0x6
+          desc: "Initial latency"
+        }
+      ]
+    },
+    {
+      name: "EN_LATENCY_ADDITIONAL"
+      desc: "Force 2x Latency count"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0:0"
+          name: "EN_LATENCY_ADDITIONAL"
+          resval: 0x0
+          desc: "Force 2x Latency count"
+        }
+      ]
+    },
+    {
+      name: "T_BURST_MAX"
+      desc: "Max burst Length between two memory refresh"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+       { bits: "0:15"
+          name: "T_BURST_MAX"
+          resval: 0x15E
+          desc: "Max burst Length between two memory refresh"
+        }
+      ]
+    },
+    {
+      name: "T_READ_WRITE_RECOVERY"
+      desc: "Idle time between transactions"
+      swaccess: "rw"
+      hwaccess:	"hrw"
+      fields: [
+       { bits: "0:3"
+          name: "T_READ_WRITE_RECOVERY"
+          resval: 0x6
+          desc: "Idle time between transactions"
+        }
+      ]
+    },
+    {
+      name: "T_RX_CLOCK_DELAY"
+      desc: "RX Delay Line"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0:3"
+          name: "T_RX_CLOCK_DELAY"
+          resval: 0x8
+          desc: "RX Delay Line"
+	}
+      ]
+    },
+    {
+      name: "T_TX_CLOCK_DELAY"
+      desc: "TX Delay Line"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0:3"
+          name: "T_TX_CLOCK_DELAY"
+          resval: 0x8
+          desc: "TX Delay Line"
+	}
+      ]
+    },
+    {
+      name: "ADDRESS_MASK_MSB"
+      desc: "Address Mask MSB"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0:18"
+          name: "ADDRESS_MASK_MSB"
+          resval: 0x19
+          desc: "Address Mask MSB"
+        }
+      ]
+    },
+    {
+      name: "ADDRESS_SPACE"
+      desc: "L2 sleep configuration register"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0:0"
+          name: "ADDRESS_SPACE"
+          resval: 0x0
+          desc: "L2 sleep configuration register"
+        }
+      ]
+    },
+    {
+      name: "PHYS_IN_USE"
+      desc: "Number of PHYs on use"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:0"
+          name: "PHYS_IN_USE"
+          resval: 0x1
+          desc: '''Number of PHYs on use:
+                - 1'b0: Uses 1 PHY
+                - 1'b1: Uses 2 PHYs
+                '''
+        }
+      ]
+    },
+    {
+      name: "WHICH_PHY"
+      desc: "PHY used in single PHY mode"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:0"
+          name: "WHICH_PHY"
+          resval: 0x1
+          desc:	'''PHY used in single PHY mode:
+                - 1'b0: PHY 0 is used
+                - 1'b1: PHY 1 is used
+      	      	'''
+        }
+      ]
+    },
+    {
+      name: "CS0_BASE"
+      desc: "CS0 Base address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0:31"
+          name: "CS0_BASE"
+          resval: 0x80000000
+          desc: "CS0 Base address range"
+        }
+      ]
+    },
+    {
+      name: "CS0_END"
+      desc: "CS0 End address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:31"
+          name: "CS0_END"
+          resval: 0x81000000
+          desc:	"CS0 End address range"
+        }
+      ]
+    },
+    {
+      name: "CS1_BASE"
+      desc: "CS1 Base address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:31"
+          name: "CS1_BASE"
+          resval: 0x81000000
+          desc:	"CS1 Base address range"
+        }
+      ]
+    },
+    {
+      name: "CS1_END"
+      desc: "CS1 End address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:31"
+          name: "CS1_END"
+          resval: 0x82000000
+          desc: "CS1 End address range"
+        }
+      ]
+    },
+    {
+      name: "CS2_BASE"
+      desc: "CS2 Base address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:31"
+          name: "CS2_BASE"
+          resval: 0x82000000
+          desc:	"CS2 Base address range"
+        }
+      ]
+    },
+    {
+      name: "CS2_END"
+      desc: "CS2 End address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:31"
+          name: "CS2_END"
+          resval: 0x83000000
+          desc: "CS2 End address range"
+        }
+      ]
+    },
+    {
+      name: "CS3_BASE"
+      desc: "CS3 Base address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:31"
+          name: "CS3_BASE"
+          resval: 0x83000000
+          desc:	"CS3 Base address range"
+        }
+      ]
+    },
+    {
+      name: "CS3_END"
+      desc: "CS3 End address range"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+	{ bits: "0:31"
+          name: "CS3_END"
+          resval: 0x84000000
+          desc: "CS3 End address range"
+        }
+      ]
+    }
+  ]
+}

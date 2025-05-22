@@ -1,0 +1,1138 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name:               "i2c",
+  human_name:         "I2C Interface",
+  one_line_desc:      "I2C interface for host and device mode, supporting up to 1 Mbaud data rates",
+  one_paragraph_desc: '''
+  I2C Interface implements the I2C serial communication protocol.
+  It can be configured in host (master) or device (slave) mode and supports standard data rate (100 kbaud), fast data rate (400 kbaud), and fast plus data rate (1 Mbaud).
+  In addition to supporting all mandatory I2C features, this block supports clock stretching in host mode and automatic clock stretching in device mode.
+  I2C Interface uses a 7-bit address space and is compatible with any device covered by I2C specification operating at speeds up to 1 Mbaud.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "11",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_i2c",
+  revisions: [
+    {
+      version:            "2.1.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      notes:              "Verification Stage is V2S qualified by the given exceptions in PR#22108. This broadly excludes verif. of multi-controller features."
+    }
+  ]
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", racl_support: true }
+  ],
+  // INPUT pins
+  available_inout_list: [
+    { name: "sda", desc: "Serial input data bit" }
+    { name: "scl", desc: "Serial input clock bit" }
+  ]
+  // INTERRUPT pins
+  interrupt_list: [
+    { name: "fmt_threshold"
+      desc: "host mode interrupt: asserted whilst the FMT FIFO level is below the low threshold. This is a level status interrupt."
+      type: "status"
+    }
+    { name: "rx_threshold"
+      desc: "host mode interrupt: asserted whilst the RX FIFO level is above the high threshold. This is a level status interrupt."
+      type: "status"
+    }
+    { name: "acq_threshold"
+      desc: "target mode interrupt: asserted whilst the ACQ FIFO level is above the high threshold. This is a level status interrupt."
+      type: "status"
+    }
+    { name: "rx_overflow"
+      desc: "host mode interrupt: raised if the RX FIFO has overflowed."
+    }
+    { name: "controller_halt"
+      desc: '''
+            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK or lost arbitration.
+            Check !!CONTROLLER_EVENTS for the reason.
+            The interrupt will be released when the bits in !!CONTROLLER_EVENTS are cleared.
+            '''
+      type: "status"
+    }
+    { name: "scl_interference"
+      desc: "host mode interrupt: raised if the SCL line drops early (not supported without clock synchronization)."
+    }
+    { name: "sda_interference"
+      desc: "host mode interrupt: raised if the SDA line goes low when host is trying to assert high"
+    }
+    { name: "stretch_timeout"
+      desc: "host mode interrupt: raised if target stretches the clock beyond the allowed timeout period"
+    }
+    { name: "sda_unstable"
+      desc: "host mode interrupt: raised if the target does not assert a constant value of SDA during transmission."
+    }
+    { name: "cmd_complete"
+      desc: '''
+        host and target mode interrupt.
+        In host mode, raised if the host issues a repeated START or terminates the transaction by issuing STOP.
+        In target mode, raised if the external host issues a STOP or repeated START.
+      '''
+    }
+    { name: "tx_stretch"
+      desc: "target mode interrupt: raised if the target is stretching clocks for a read command. This is a level status interrupt."
+      type: "status"
+    }
+    { name: "tx_threshold"
+      desc: "target mode interrupt: asserted whilst the TX FIFO level is below the low threshold. This is a level status interrupt."
+      type: "status"
+    }
+    { name: "acq_stretch"
+      desc: "target mode interrupt: raised if the target is stretching clocks due to full ACQ FIFO or zero count in !!TARGET_ACK_CTRL.NBYTES (if enabled). This is a level status interrupt."
+      type: "status"
+    }
+    { name: "unexp_stop"
+      desc: "target mode interrupt: raised if STOP is received without a preceding NACK during an external host read."
+    }
+    { name: "host_timeout"
+      desc: "target mode interrupt: raised if the host stops sending the clock during an ongoing transaction."
+    }
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
+  inter_signal_list: [
+    // RAM configuration
+    { struct:  "ram_1p_cfg"
+      package: "prim_ram_1p_pkg"
+      type:    "uni"
+      name:    "ram_cfg"
+      act:     "rcv"
+    }
+    { struct:  "ram_1p_cfg_rsp"
+      package: "prim_ram_1p_pkg"
+      type:    "uni"
+      name:    "ram_cfg_rsp"
+      act:     "req"
+    }
+    { struct: "logic"
+      type:   "uni"
+      name:   "lsio_trigger"
+      desc: '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+      '''
+      act:    "req"
+    }
+    { struct:  "racl_policy_vec",
+      type:    "uni",
+      name:    "racl_policies",
+      act:     "rcv",
+      package: "top_racl_pkg",
+      desc:    '''
+        Incoming RACL policy vector from a racl_ctrl instance.
+        The policy selection vector (parameter) selects the policy for each register.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error",
+      act:     "req",
+      width:   "1"
+      package: "top_racl_pkg",
+      desc:    '''
+        RACL error log information of this module.
+      '''
+    }
+  ]
+  param_list: [
+    { name: "FifoDepth",
+      desc: '''
+            Depth of FMT, RX, and TX FIFOs.
+            The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
+            ''',
+      type: "int",
+      default: "64",
+    }
+    { name: "AcqFifoDepth",
+      desc: '''
+            Depth of ACQ FIFO.
+            The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
+            ''',
+      type: int
+      default: "268",
+    }
+    { name:    "InputDelayCycles",
+      type:    "int",
+      default: "0",
+      desc:    '''
+               Maximum number of cycles of propagation delay between a change on the cio_scl_en_o or cio_sda_en_o pins and sensing the new values on the corresponding input pins, not including the rise/fall times.
+               For the purposes of this calculation, an input delay of 0 cycles means an output pin changing at the beginning of clock edge N will be sampled and observed on the input pins at clock edge N+1.
+               '''
+      local:   "false",
+      expose:  "true"
+    }
+  ],
+  features: [
+    { name: "I2C.MODE.HOST",
+      desc: '''
+            The I2C block can be configued in host mode.
+            '''
+    },
+    { name: "I2C.MODE.TARGET",
+      desc: '''
+            The I2C block can be configured in target mode.
+            '''
+    },
+    { name: "I2C.MODE.ACKCONTROL",
+      desc: '''
+            The I2C Target module can be configured to support N-byte ACK Control Mode.
+            With ACK Control Mode off, software provides no protocol-level control of deciding whether to ACK or NACK bytes.
+            With ACK Control Mode on, software may choose whether to ACK Write data bytes.
+            Software may program the Target module to ACK up to N bytes without software intervention.
+            The configuration resets to 0 for the next transfer.
+            '''
+    },
+    { name: "I2C.SPEED.STANDARD",
+      desc: '''
+            Standard-mode of 100 kbaud is supported.
+            '''
+    },
+    { name: "I2C.SPEED.FAST",
+      desc: '''
+            Fast-mode of 400 kbaud is supported.
+            '''
+    },
+    { name: "I2C.SPEED.FASTPLUS",
+      desc: '''
+            Fast-mode Plus of 1 Mbaud is supported.
+            '''
+    },
+    { name: "I2C.OVERRIDE",
+      desc: '''
+            Software can override the values of SCL and SDA.
+            '''
+    },
+    { name: "I2C.OPERATION.READ",
+      desc: '''
+            Hosts can read from targets.
+            '''
+    },
+    { name: "I2C.OPERATION.WRITE",
+      desc: '''
+            Hosts can write to targets.
+            '''
+    },
+    { name: "I2C.PROTOCOL.CLOCKSTRETCHING",
+      desc: '''
+            Clock stretching is a way for a target to buy time.
+            There are three scenarios when clock stretching occurs:
+            - After an address read.
+            - During a write.
+            - During a read.
+            '''
+    },
+    { name: "I2C.PROTOCOL.NACK",
+      desc: '''
+            Whenever a byte is sent, it must be accompanied by an acknowledgement (ack), unless NAKOK is high.
+            When no ack is received, this is a nack.
+            '''
+    },
+    { name: "I2C.PROTOCOL.REPEATEDSTART",
+      desc: '''
+            Instead of doing a stop and then a start to start the next transaction, a host can choose to perform a repeated start to begin a new transaction without stopping the previous one.
+            '''
+    },
+  ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+
+  // REGISTER definition
+  regwidth: "32"
+  registers: [
+    // CTRL register
+    { name: "CTRL"
+      desc: "I2C Control Register"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0"
+          resval: "0"
+          name: "ENABLEHOST"
+          desc: '''
+                Enable Host I2C functionality
+                '''
+        }
+        { bits: "1"
+          resval: "0"
+          name: "ENABLETARGET"
+          desc: '''
+                Enable Target I2C functionality
+                '''
+        }
+        { bits: "2"
+          resval: "0"
+          name: "LLPBK"
+          desc: '''
+                Enable I2C line loopback test
+                If line loopback is enabled, the internal design sees ACQ and RX data as "1"
+                '''
+          tags: [// Exclude from write-checks: writing 1'b1 to this bit causes interrupts unexpectedly asserted
+                "excl:CsrAllTests:CsrExclWrite"]
+        }
+        { bits: "3"
+          resval: "0"
+          name: "NACK_ADDR_AFTER_TIMEOUT"
+          desc: '''
+                Enable NACKing the address on a stretch timeout.
+
+                This is a Target mode feature.
+                If enabled (1), a stretch timeout will cause the device to NACK the address byte.
+                If disabled (0), a stretch timeout will cause the device to ACK the address byte.
+                SMBus requires that devices always ACK their address, even for read commands.
+                However, non-SMBus protocols may have a different approach and can choose to NACK instead.
+
+                Note that both cases handle data bytes the same way.
+                For writes, the Target module will NACK all subsequent data bytes until it receives a Stop.
+                For reads, the Target module will release SDA, causing 0xff to be returned for all data bytes until it receives a Stop.
+                '''
+        }
+        { bits: "4"
+          resval: "0"
+          name: "ACK_CTRL_EN"
+          desc: '''
+                Enable I2C Target ACK Control Mode.
+
+                ACK Control Mode works together with !!TARGET_ACK_CTRL.NBYTES to allow software to control upper-layer protocol (N)ACKing (e.g. as in SMBus).
+                This bit enables the mode when 1, and !!TARGET_ACK_CTRL.NBYTES limits how many bytes may be automatically ACK'd while the ACQ FIFO has space.
+                If it is 0, the decision to ACK or NACK is made only from stretching timeouts and !!CTRL.NACK_ADDR_AFTER_TIMEOUT.
+                '''
+        }
+        { bits: "5"
+          resval: "0"
+          name: "MULTI_CONTROLLER_MONITOR_EN"
+          desc: '''
+                Enable the bus monitor in multi-controller mode.
+
+                If a 0->1 transition happens while !!CTRL.ENABLEHOST and !!CTRL.ENABLETARGET are both 0, the bus monitor will enable and begin in the "bus busy" state.
+                To transition to a bus free state, !!HOST_TIMEOUT_CTRL must be nonzero, so the bus monitor may count out idle cycles to confirm the freedom to transmit.
+                In addition, the bus monitor will track whether the bus is free based on the enabled timeouts and detected Stop symbols.
+                For multi-controller mode, ensure !!CTRL.MULTI_CONTROLLER_MONITOR_EN becomes 1 no later than !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET.
+                This bit can be set at the same time as either or both of the other two, though.
+
+                Note that if !!CTRL.MULTI_CONTROLLER_MONITOR_EN is set after !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET, the bus monitor will begin in the "bus free" state instead.
+                This would violate the proper protocol for a controller to join a multi-controller environment.
+                However, if this controller is known to be the first to join, this ordering will enable skipping the idle wait.
+
+                When 0, the bus monitor will report that the bus is always free, so the controller FSM is never blocked from transmitting.
+                '''
+        }
+        { bits: "6"
+          resval: "0"
+          name: "TX_STRETCH_CTRL_EN"
+          desc: '''
+                If set to 1, this bit causes a read transfer addressed to this target to set the corresponding bit in !!TARGET_EVENTS.
+
+                While !!TARGET_EVENTS.TX_PENDING is 1, subsequent read transactions will stretch the clock, even if there is data in the TX FIFO.
+
+                If enabled, this function allows software to confirm the data in the TX FIFO should be released for the current read.
+                This may be useful for cases where the TX FIFO has data that does not apply to the current transfer.
+                For example, the transaction could've targeted an alternate function via another address.
+                '''
+        }
+      ]
+    }
+    { name:     "STATUS"
+      desc:     "I2C Live Status Register for Host and Target modes"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext:    "true"
+      fields: [
+        { bits: "0"
+          name: "FMTFULL"
+          desc: "Host mode FMT FIFO is full"
+        }
+        { bits: "1"
+          name: "RXFULL"
+          desc: "Host mode RX FIFO is full"
+        }
+        { bits: "2"
+          name: "FMTEMPTY"
+          desc: "Host mode FMT FIFO is empty"
+          resval: "1"
+        }
+        { bits: "5"
+          name: "RXEMPTY"
+          desc: "Host mode RX FIFO is empty"
+          resval: "1"
+        }
+        { bits: "3"
+          name: "HOSTIDLE"
+          desc: "Host functionality is idle. No Host transaction is in progress"
+          resval: "1"
+        }
+        { bits: "4"
+          name: "TARGETIDLE"
+          desc: "Target functionality is idle. No Target transaction is in progress"
+          resval: "1"
+        }
+        { bits: "6"
+          name: "TXFULL"
+          desc: "Target mode TX FIFO is full"
+        }
+        { bits: "7"
+          name: "ACQFULL"
+          desc: "Target mode receive FIFO is full"
+        }
+        { bits: "8"
+          name: "TXEMPTY"
+          desc: "Target mode TX FIFO is empty"
+          resval: "1"
+        }
+        { bits: "9"
+          name: "ACQEMPTY"
+          desc: "Target mode receive FIFO is empty"
+          resval: "1"
+        }
+        { bits: "10"
+          name: "ACK_CTRL_STRETCH"
+          desc: "Target mode stretching at (N)ACK phase due to zero count in !!TARGET_ACK_CTRL.NBYTES"
+        }
+      ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    }
+    { name: "RDATA"
+      desc: "I2C Read Data"
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwext: "true"
+      hwre: "true"
+      fields: [
+        {bits: "7:0"}
+      ]
+      tags: [// Updated by the hw. Exclude from init and write-checks.
+             "excl:CsrAllTests:CsrExclCheck"]
+    }
+    { name: "FDATA"
+      desc: '''I2C Host Format Data
+
+            Writes to this register are used to define and drive Controller-Mode transactions.
+            '''
+      swaccess: "wo"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "7:0"
+          name: "FBYTE"
+          desc: '''Format Byte.
+
+                If no flags are set, hardware will transmit this byte directly.
+
+                If READB is set, this field becomes the number of bytes hardware will automatically
+                read from the bus.
+                '''
+        }
+        { bits: "8"
+          name: "START"
+          desc: "Issue a START condition before transmitting FBYTE."
+        }
+        { bits: "9"
+          name: "STOP"
+          desc: "Issue a STOP condition after transmitting FBYTE."
+        }
+        { bits: "10"
+          name: "READB"
+          desc: '''Transfer Direction Indicator.
+
+                If unset, this write to FDATA defines a controller-transmitter operation (WRITE).
+                A single byte of data (FBYTE) is written to the bus.
+
+                If set, this write to FDATA defines a controller-receiver operation (READ).
+                The value of FBYTE defines the number of bytes read from the bus. (256 if FBYTE==0)"
+                After this number of bytes are read, the final byte will be NACKed to end the transfer
+                unless RCONT is also set.
+                '''
+        }
+        { bits: "11"
+          name: "RCONT"
+          desc: "Do not NACK the last byte read, let the read operation continue."
+        }
+        { bits: "12"
+          name: "NAKOK"
+          desc: '''
+                For the currrent controller-transmitter byte (WRITE), do not halt via CONTROLLER_EVENTS
+                or assert the 'controller_halt' interrupt if the current byte is not ACK'd.
+                '''
+        }
+      ]
+      tags: [// FIFO can fill up due to write check accesses, and then fail an assertion upon timeout on full.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    }
+    { name: "FIFO_CTRL"
+      desc: "I2C FIFO control register"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "0"
+          swaccess: "wo"
+          name: "RXRST"
+          desc: "RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0"
+        }
+        { bits: "1"
+          swaccess: "wo"
+          name: "FMTRST"
+          desc: "FMT fifo reset. Write 1 to the register resets FMT_FIFO. Read returns 0"
+        }
+        { bits: "7"
+          swaccess: "wo"
+          name: "ACQRST"
+          desc: "ACQ FIFO reset. Write 1 to the register resets it. Read returns 0"
+        }
+        { bits: "8"
+          swaccess: "wo"
+          name: "TXRST"
+          desc: "TX FIFO reset. Write 1 to the register resets it. Read returns 0"
+        }
+      ]
+    }
+    {
+      name: "HOST_FIFO_CONFIG"
+      desc: "Host mode FIFO configuration"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "11:0"
+          name: "RX_THRESH"
+          desc: '''Threshold level for RX interrupts. Whilst the level of data in the RX FIFO
+                is above this setting, the rx_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+        { bits: "27:16"
+          name: "FMT_THRESH"
+          desc: '''Threshold level for FMT interrupts. Whilst the number of used entries in the
+                FMT FIFO is below this setting, the fmt_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+      ]
+    }
+    {
+      name: "TARGET_FIFO_CONFIG"
+      desc: "Target mode FIFO configuration"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "11:0"
+          name: "TX_THRESH"
+          desc: '''Threshold level for TX interrupts. Whilst the number of used entries in the
+                TX FIFO is below this setting, the tx_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+        { bits: "27:16"
+          name: "ACQ_THRESH"
+          desc: '''Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO
+                is above this setting, the acq_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+      ]
+    }
+    { name: "HOST_FIFO_STATUS"
+      desc: "Host mode FIFO status register"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "11:0"
+          name: "FMTLVL"
+          desc: "Current fill level of FMT fifo"
+        }
+        { bits: "27:16"
+          name: "RXLVL"
+          desc: "Current fill level of RX fifo"
+        }
+      ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    }
+    { name: "TARGET_FIFO_STATUS"
+      desc: "Target mode FIFO status register"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "11:0"
+          name: "TXLVL"
+          desc: "Current fill level of TX fifo"
+        }
+        { bits: "27:16"
+          name: "ACQLVL"
+          desc: "Current fill level of ACQ fifo"
+        }
+      ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    }
+    { name: "OVRD"
+      desc: "I2C Override Control Register"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0",
+          name: "TXOVRDEN",
+          desc: "Override the SDA and SCL TX signals."
+        }
+        { bits: "1",
+          name: "SCLVAL",
+          desc: "Value for SCL Override. Set to 0 to drive TX Low, and set to 1 for high-Z"
+        }
+        { bits: "2",
+          name: "SDAVAL",
+          desc: "Value for SDA Override. Set to 0 to drive TX Low, and set to 1 for high-Z"
+        }
+      ]
+      tags: [// Overriding can cause sda/scl_interference interrupts to trigger continously.
+             // These then become unclearable interrupts at the end of csr_tests (clear_all_interrupts() fails).
+             "excl:CsrRwTest:CsrExclWriteCheck"]
+    }
+    { name: "VAL"
+      desc: "Oversampled RX values"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext:    "true"
+      fields: [
+        { bits: "15:0"
+          name: "SCL_RX"
+          desc: '''
+                Last 16 oversampled values of SCL. Most recent bit is bit 0, oldest 15.
+                '''
+        }
+        { bits: "31:16"
+          name: "SDA_RX"
+          desc: '''
+                Last 16 oversampled values of SDA. Most recent bit is bit 16, oldest 31.
+                '''
+        }
+      ]
+      tags: [// Affected by IO pins - exclude from init and write checks.
+             "excl:CsrAllTests:CsrExclCheck"]
+    }
+
+    { name: "TIMING0"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            These must be greater than 2 in order for the change in SCL to propagate to the input of the FSM so that acknowledgements are detected correctly.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "12:0"
+          name: "THIGH"
+          desc: '''
+                The actual time to hold SCL high in a given pulse.
+                This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.
+                '''
+        }
+        { bits: "28:16"
+          name: "TLOW"
+          desc: '''
+                The actual time to hold SCL low between any two SCL pulses.
+                This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz.
+                '''
+        }
+      ]
+    }
+    { name: "TIMING1",
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "9:0"
+          name: "T_R"
+          desc: '''
+                The nominal rise time to anticipate for the bus (depends on capacitance).
+                This field is sized to have a range of at least Standard Mode's 1000 ns max with a core clock at 1 GHz.
+                '''
+        }
+        { bits: "24:16"
+          name: "T_F"
+          desc: '''
+                The nominal fall time to anticipate for the bus (influences SDA hold times).
+                This field is sized to have a range of at least Standard Mode's 300 ns max with a core clock at 1 GHz.
+                '''
+        }
+      ]
+    }
+    { name: "TIMING2"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "12:0"
+          name: "TSU_STA"
+          desc: '''
+                Actual setup time for repeated start signals.
+                This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz.
+                '''
+        }
+        { bits: "28:16"
+          name: "THD_STA"
+          desc: '''
+                Actual hold time for start signals.
+                This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.
+                '''
+        }
+      ]
+    }
+    { name: "TIMING3"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "8:0"
+          name: "TSU_DAT"
+          desc: '''
+                Actual setup time for data (or ack) bits.
+                This field is sized to have a range of at least Standard Mode's 250 ns max with a core clock at 1 GHz.
+                '''
+        }
+        { bits: "28:16"
+          name: "THD_DAT"
+          desc: '''
+                Actual hold time for data (or ack) bits.
+                (Note, where required, the parameters TVD_DAT is taken to be THD_DAT+T_F)
+                This field is sized to have a range that accommodates Standard Mode's 3.45 us max for TVD_DAT with a core clock at 1 GHz.
+                However, this field is generally expected to represent a time substantially shorter than that.
+                It should be long enough to cover the maximum round-trip latency from output pins, through pads and voltage transitions on the board, and back to the input pins, but it should not be substantially greater.
+                '''
+        }
+      ]
+    }
+    { name: "TIMING4"
+      desc: '''
+            Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
+            All values are expressed in units of the input clock period.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "12:0"
+          name: "TSU_STO"
+          desc: '''
+                Actual setup time for stop signals.
+                This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.
+                '''
+        }
+        { bits: "28:16"
+          name: "T_BUF"
+          desc: '''
+                Actual time between each STOP signal and the following START signal.
+                This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz.
+                '''
+        }
+      ]
+    }
+    { name: "TIMEOUT_CTRL"
+      desc: '''
+            I2C clock stretching and bus timeout control.
+
+            This timeout must be enabled by setting !!TIMEOUT_CTRL.EN to 1, and the behavior of this feature depends on the value of !!TIMEOUT_CTRL.MODE.
+
+            If the mode is "STRETCH_TIMEOUT", this is used in I2C controller mode to detect whether a connected target is stretching a single low time beyond the timeout value.
+            Configured as such, this timeout is more informative and doesn't do more than assert the "stretch_timeout" interrupt.
+
+            If the mode is "BUS_TIMEOUT", it is used to detect whether the clock has been held low for too long instead, inclusive of the controller's clock low time.
+            This is useful for an SMBus context, where the VAL programmed should be tTIMEOUT:MIN.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "29:0"
+          name: "VAL"
+          desc: "Clock stretching timeout value (in units of input clock frequency)"
+        }
+        { bits: "30"
+          name: "MODE"
+          desc: '''
+                Selects the timeout mode, between a stretch timeout and a bus timeout.
+
+                Between the two modes, the primary difference is how much of the clock low period is counted.
+                For a stretch timeout, only the time that another device holds the clock low will be counted.
+                For a bus timeout, the entire clock low time is counted, consistent with the SMBus tTIMEOUT type.
+
+                !!TIMEOUT_CTRL.EN must be 1 for either of these features to be enabled.
+                '''
+          enum: [
+            { value: "0",
+              name: "STRETCH_TIMEOUT",
+              desc: '''
+                    The timeout is a target stretch timeout.
+                    The counter will track how long the clock has been stretched by another device while the controller is active.
+                    '''
+            },
+            { value: "1",
+              name: "BUS_TIMEOUT",
+              desc: '''
+                    The timeout is a clock low timeout.
+                    The counter will track how long the clock low period is, inclusive of the controller's ordinary low count.
+                    A timeout will set !!CONTROLLER_EVENTS.BUS_TIMEOUT and cause a "controller_halt" interrupt.
+                    '''
+            },
+          ],
+        }
+        { bits: "31"
+          name: "EN"
+          desc: "Enable stretch timeout or bus timeout feature"
+        }
+      ]
+    }
+    { name: "TARGET_ID"
+      desc: "I2C target address and mask pairs"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "6:0"
+          name: "ADDRESS0"
+          desc: "I2C target address number 0"
+        }
+        { bits: "13:7"
+          name: "MASK0"
+          desc: '''
+                I2C target mask number 0.
+                At least one bit in MASK0 must be set to 1 for ADDRESS0 to be used.
+                '''
+        }
+        { bits: "20:14"
+          name: "ADDRESS1"
+          desc: "I2C target address number 1"
+        }
+        { bits: "27:21"
+          name: "MASK1"
+          desc: '''
+                I2C target mask number 1.
+                At least one bit in MASK1 must be set to 1 for ADDRESS1 to be used.
+                '''
+        }
+      ]
+    }
+    { name: "ACQDATA"
+      desc: "I2C target acquired data"
+      swaccess: "ro"
+      hwaccess: "hrw"
+      hwext: "true"
+      hwre: "true"
+      fields: [
+        { bits: "7:0"
+          name: "ABYTE"
+          desc: "Address for accepted transaction or acquired byte"
+        }
+        { bits: "10:8"
+          name: "SIGNAL"
+          desc: '''
+                Indicates any control symbols associated with the ABYTE.
+
+                For the STOP symbol, a stretch timeout or other unexpected events will cause a NACK_STOP to appear in the ACQ FIFO.
+                If the ACQ FIFO doesn't have enough space to record a START and a STOP, the transaction will be dropped entirely on a stretch timeout.
+                In that case, the START byte will not appear (neither as START nor NACK_START), but a standalone NACK_STOP may, if there was space.
+                Software can discard any standalone NACK_STOP that appears.
+
+                See the associated values for more information about the contents.
+                '''
+          enum: [
+            { value: "0",
+              name: "NONE",
+              desc: "ABYTE contains an ordinary data byte that was received and ACK'd."
+            },
+            { value: "1",
+              name: "START",
+              desc: '''
+                    A START condition preceded the ABYTE to start a new transaction.
+                    ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.
+                    '''
+            },
+            { value: "2",
+              name: "STOP",
+              desc: '''
+                    A STOP condition was received for a transaction including a transfer that addressed this Target.
+                    No transfers addressing this Target in that transaction were NACK'd.
+                    ABYTE contains no data.
+                    '''
+            },
+            { value: "3",
+              name: "RESTART",
+              desc: '''
+                    A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer.
+                    ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.
+                    '''
+            },
+            { value: "4",
+              name: "NACK",
+              desc: '''ABYTE contains an ordinary data byte that was received and NACK'd.'''
+            },
+            { value: "5",
+              name: "NACK_START",
+              desc: '''
+                    A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transfer.
+                    The ABYTE contains the matching I2C address and command bit.
+                    The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.
+                    '''
+            },
+            { value: "6",
+              name: "NACK_STOP",
+              desc: '''
+                    A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd.
+                    The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled).
+                    ABYTE contains no data.
+
+                    NACKing can occur for multiple reasons, including a stretch timeout, a SW-directed NACK, or lost arbitration.
+                    This signal is a bucket for all these error-type terminations.
+                    '''
+            },
+          ]
+        }
+      ]
+      tags: [// Updated by the hw. Exclude from init and write-checks.
+             // Without actual I2C traffic, read from this FIFO returns Xs.
+             "excl:CsrAllTests:CsrExclCheck"]
+    }
+    { name: "TXDATA"
+      desc: "I2C target transmit data"
+      swaccess: "wo"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "7:0" }
+      ]
+      tags: [// FIFO can fill up due to write check accesses, and then fail an assertion upon timeout on full.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    }
+    { name: "HOST_TIMEOUT_CTRL"
+      desc: '''
+            I2C host clock generation timeout value (in units of input clock frequency).
+
+            In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
+            for this number of cycles then the "host_timeout" interrupt will be asserted.
+
+            In multi-controller monitoring mode, !!HOST_TIMEOUT_CTRL is required to be nonzero to transition out of the initial busy state.
+            Set this CSR to 0 to disable this behaviour.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "19:0" }
+      ]
+    }
+    { name: "TARGET_TIMEOUT_CTRL"
+      desc: '''
+            I2C target internal stretching timeout control.
+            When the target has stretched beyond this time it will send a NACK for incoming data bytes or release SDA for outgoing data bytes.
+            The behavior for the address byte is configurable via !!CTRL.ACK_ADDR_AFTER_TIMEOUT.
+            Note that the count accumulates stretching time over the course of a transaction.
+            In other words, this is equivalent to the SMBus cumulative target clock extension time.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "30:0"
+          name: "VAL"
+          desc: "Clock stretching timeout value (in units of input clock frequency)"
+        }
+        { bits: "31"
+          name: "EN"
+          desc: "Enable timeout feature and send NACK once the timeout has been reached"
+        }
+      ]
+    }
+    { name: "TARGET_NACK_COUNT"
+      desc: '''
+            Number of times the I2C target has NACK'ed a new transaction since the last read of this register.
+            Reading this register clears it.
+            This is useful because when the ACQ FIFO is full the software know that a NACK has occurred, but without this register would not know how many transactions it missed.
+            When it reaches its maximum value it will stay at that value.
+            '''
+      swaccess: "rc"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "7:0" }
+      ]
+    }
+    { name: "TARGET_ACK_CTRL"
+      desc: "Controls for mid-transfer (N)ACK phase handling"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: true
+      hwext: true
+      fields: [
+        { bits: "8:0"
+          name: "NBYTES"
+          desc: '''
+                Remaining number of bytes the Target module may ACK automatically.
+
+                If !!CTRL.ACK_CTRL_EN is set to 1, the Target module will stretch the clock at the (N)ACK phase of a byte if this CSR is 0, awaiting software's instructions.
+
+                At the beginning of each Write transfer, this byte count is reset to 0.
+                Writes to this CSR also are only accepted while the Target module is stretching the clock.
+                The Target module will always ACK its address if the ACQ FIFO has space.
+                For data bytes afterwards, it will stop at the (N)ACK phase and stretch the clock when this CSR is 0.
+                For each data byte that is ACK'd in a transaction, the byte count will decrease by 1.
+
+                Note that a full ACQ FIFO can still cause the Target module to halt at the beginning of a new byte.
+                The ACK Control Mode provides an additional synchronization point, during the (N)ACK phase instead of after.
+                For both cases, !!TARGET_TIMEOUT_CTRL applies, and stretching past the timeout will produce an automatic NACK.
+
+                This mode can be used to implement the mid-transfer (N)ACK responses required by various SMBus protocols.
+                '''
+          tags: [// Writes only succeed in a specific stretching state. Exclude from write-checks.
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
+        }
+        { bits: "31"
+          name: "NACK"
+          swaccess: "wo"
+          hwaccess: "hro"
+          desc: '''
+                When the Target module stretches on the (N)ACK phase of a Write due to !!TARGET_ACK_CTRL.NBYTES being 0, writing a 1 here will cause it to send a NACK.
+
+                If software chooses to NACK, note that the NACKing behavior is the same as if a stretch timeout occurred.
+                The rest of the transaction will be NACK'd, including subsequent transfers.
+                For the address byte, the (N)ACK phase of subsequent transfers will follow the behavior specified by !!CTRL.NACK_ADDR_AFTER_TIMEOUT.
+
+                Automatically clears to 0.
+                '''
+        }
+      ]
+    }
+    { name: "ACQ_FIFO_NEXT_DATA"
+      desc: '''
+            The data byte pending to be written to the ACQ FIFO.
+
+            This CSR is only valid while the Target module is stretching in the (N)ACK phase, indicated by !!STATUS.ACK_CTRL_STRETCH .
+            It is intended to be used with ACK Control Mode, so software may check the current byte.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: true
+      fields: [
+        { bits: "7:0" }
+      ]
+      tags: [// Updated by the hw. Exclude from init and write-checks.
+             // Without actual I2C traffic, read from this CSR returns Xs.
+             "excl:CsrAllTests:CsrExclCheck"]
+    }
+    { name: "HOST_NACK_HANDLER_TIMEOUT"
+      desc: '''
+            Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.
+            (in units of input clock frequency)
+
+            If an active Controller-Transmitter transfer receives a NACK from the Target, the !!CONTROLLER_EVENTS.NACK bit is set.
+            In turn, this causes the Controller FSM to halt awaiting software intervention, and the 'controller_halt' interrupt may assert.
+            Software must clear the !!CONTROLLER_EVENTS.NACK bit to allow the state machine to continue, typically after clearing out the FMTFIFO to start a new transfer.
+            While halted, the active transaction is not ended (no STOP (P) condition is created), and the block asserts SCL and leaves SDA released.
+
+            This timeout can be used to automatically produce a STOP condition, whether as a backstop for slow software responses (longer timeout) or as a convenience (short timeout).
+            If the timeout expires, the Controller FSM will issue a STOP (P) condition on the bus to end the active transaction.
+            Additionally, the !!CONTROLLER_EVENTS.UNHANDLED_NACK_TIMEOUT bit is set to alert software, and the FSM will return to the idle state and halt until the bit is cleared.
+
+            The enable bit must be set for this feature to operate.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "30:0"
+          name: "VAL"
+          desc: "Unhandled NAK timeout value (in units of input clock frequency)"
+        }
+        { bits: "31"
+          name: "EN"
+          desc: "Timeout enable"
+        }
+      ]
+    }
+    { name: "CONTROLLER_EVENTS"
+      desc: '''
+            Latched events that explain why the controller halted.
+
+            Any bits that are set must be written (with a 1) to clear the CONTROLLER_HALT interrupt.
+            '''
+      swaccess: "rw1c"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "NACK"
+          desc: "Received an unexpected NACK"
+        }
+        { bits: "1"
+          name: "UNHANDLED_NACK_TIMEOUT"
+          desc: "A Host-Mode active transaction has been ended by the !!HOST_NACK_HANDLER_TIMEOUT mechanism."
+        }
+        { bits: "2"
+          name: "BUS_TIMEOUT"
+          desc: "A Host-Mode active transaction has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
+        }
+        { bits: "3"
+          name: "ARBITRATION_LOST"
+          desc: "A Host-Mode active transaction has terminated due to lost arbitration."
+        }
+      ]
+      tags: ["excl:CsrAllTests:CsrExclCheck"]
+    }
+    { name: "TARGET_EVENTS"
+      desc: '''
+            Latched events that can cause the target module to stretch the clock at the beginning of a read transfer.
+
+            These events cause TX FIFO-related stretching even when the TX FIFO has data available.
+            Any bits that are set must be written (with a 1) to clear the tx_stretch interrupt.
+
+            This CSR serves as a gate to prevent the Target module from responding to a read command with unrelated, leftover data.
+            '''
+      swaccess: "rw1c"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "TX_PENDING"
+          desc: '''
+                A new Target-Mode read transfer has arrived that addressed this target.
+
+                This bit is used by software to confirm the release of the contents in the TX FIFO.
+                If the contents do not apply, software should first reset the TX FIFO, then load it with the correct data, then clear this bit.
+
+                Optionally enabled by !!CTRL.TX_STRETCH_CTRL_EN.
+                '''
+        }
+        { bits: "1"
+          name: "BUS_TIMEOUT"
+          desc: "A Target-Mode read transfer has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
+        }
+        { bits: "2"
+          name: "ARBITRATION_LOST"
+          desc: "A Target-Mode read transfer has terminated due to lost arbitration."
+        }
+      ]
+      tags: ["excl:CsrAllTests:CsrExclCheck"]
+    }
+  ]
+}

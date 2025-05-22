@@ -1,0 +1,251 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Nicole Narr <narrn@student.ethz.ch>
+// Christopher Reinwardt <creinwar@student.ethz.ch>
+{
+  name: "axi_vga"
+  cip_id: "36",
+  version: "0.1.1",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: 32
+  registers: [
+    { name: "CONTROL",
+      desc: "Control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0"
+          resval: "0"
+          name: "enable"
+          desc: '''
+                Enables FSM.
+                '''
+        }
+        {
+          bits: "1"
+          resval: "1"
+          name: "hsync_pol"
+          desc: '''
+                Sets polarity for HSYNC
+                0 - Active Low
+                1 - Active High
+                '''
+        }
+        {
+          bits: "2"
+          resval: "1"
+          name: "vsync_pol"
+          desc: '''
+                Sets polarity for VSYNC
+                0 - Active Low
+                1 - Active High
+                '''
+        }
+      ]
+    }
+    { name: "CLK_DIV"
+      desc: "Clock divider"
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        {
+          bits: "7:0"
+          resval: "1"
+          name: "clk_div"
+          desc: '''
+                Clock divider.
+                '''
+        }
+      ]
+    }
+    { name: "HORI_VISIBLE_SIZE",
+      desc: "Size of horizontal visible area",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "hori_visible_size"
+          desc: '''
+                Size of horizontal visible area.
+                '''
+        }
+      ]
+    }
+    { name: "HORI_FRONT_PORCH_SIZE",
+      desc: "Size of horizontal front porch",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "hori_front_porch_size"
+          desc: '''
+                Size of horizontal front porch.
+                '''
+        }
+      ]
+    }
+    { name: "HORI_SYNC_SIZE",
+      desc: "Size of horizontal sync area",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "hori_sync_size"
+          desc: '''
+                Size of horizontal sync area.
+                '''
+        }
+      ]
+    }
+    { name: "HORI_BACK_PORCH_SIZE",
+      desc: "Size of horizontal back porch",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "hori_back_porch_size"
+          desc: '''
+                Size of horizontal back porch.
+                '''
+        }
+      ]
+    }
+    { name: "VERT_VISIBLE_SIZE",
+      desc: "Size of vertical visible area",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "vert_visible_size"
+          desc: '''
+                Size of vertical visible area.
+                '''
+        }
+      ]
+    }
+    { name: "VERT_FRONT_PORCH_SIZE",
+      desc: "Size of vertical front porch",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "vert_front_porch_size"
+          desc: '''
+                Size of vertical front porch.
+                '''
+        }
+      ]
+    }
+    { name: "VERT_SYNC_SIZE",
+      desc: "Size of vertical sync area",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "vert_sync_size"
+          desc: '''
+                Size of vertical sync area.
+                '''
+        }
+      ]
+    }
+    { name: "VERT_BACK_PORCH_SIZE",
+      desc: "Size of vertical back porch",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "1"
+          name: "vert_back_porch_size"
+          desc: '''
+                Size of vertical back porch.
+                '''
+        }
+      ]
+    }
+    { name: "START_ADDR_LOW",
+      desc: "Low end of start address of frame buffer",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "0x00000000"
+          name: "start_addr_low"
+          desc: '''
+                Low end of start address of frame buffer.
+                '''
+        }
+      ]
+    }
+    { name: "START_ADDR_HIGH",
+      desc: "High end of start address of frame buffer",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "0"
+          name: "start_addr_high"
+          desc: '''
+                High end of start address of frame buffer.
+                '''
+        }
+      ]
+    }
+    { name: "FRAME_SIZE",
+      desc: "Size of whole frame",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "31:0"
+          resval: "0"
+          name: "frame_size"
+          desc: '''
+                Size of whole frame.
+                '''
+        }
+      ]
+    }
+    { name: "BURST_LEN",
+      desc: "Number of beats in a burst",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "7:0"
+          resval: "0"
+          name: "burst_len"
+          desc: '''
+                Number of beats in a burst.
+                '''
+        }
+      ]
+    }
+  ]
+}

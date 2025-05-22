@@ -1,0 +1,40 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+
+// SPDX-License-Identifier: Apache-2.0
+
+// CLIC interrupt register
+{
+  name: "CLICINT",
+  clock_primary: "clk_i",
+  bus_interfaces: [
+    { protocol: "reg_iface", direction: "device" }
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "CLICINT",
+      desc: "CLIC interrupt pending, enable, attribute and control",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:24", name: "CTL", desc: "interrupt control for interrupt" },
+        { bits: "23:22", name: "ATTR_MODE", desc: "privilege mode of this interrupt", resval: 3},
+        //{ bits: "21:19", name: "reserved" },
+        { bits: "18:17", name: "ATTR_TRIG", desc: "specify trigger type for this interrupt" },
+        { bits: "16", name: "ATTR_SHV", desc: "enable hardware vectoring for this interrupt" },
+
+        { bits: "8", name: "IE", desc: "interrupt enable for interrupt" },
+
+        { bits: "0", name: "IP", desc: "interrupt pending for interrupt", hwaccess: "hrw" },
+      ],
+    }
+  ]
+}
