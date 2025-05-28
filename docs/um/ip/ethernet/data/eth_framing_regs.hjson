@@ -1,0 +1,65 @@
+{
+    name: "eth_framing",
+    clock_primary: "msoc_clk",
+    reset_primary: "rst_int",
+    bus_interfaces: [
+        { protocol: "reg_iface", direction: "device"}
+    ]
+    regwidth: "32",
+    registers: [
+        { name: "CONFIG0",
+          desc: "Configures the lower 4 bytes of the devices MAC address",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+              { bits: "31:0", name: "lower_mac_address",
+                desc: "Lower 32 bit of the devices MAC address"
+                resval: "8980226"
+              }
+          ]
+        },
+        { name: "CONFIG1",
+          desc: "Configures the: upper 2 bytes of the devices MAC address, promiscuous flag, MDIO interface",
+          swaccess: "rw",
+          hwaccess: "hro",
+          fields: [
+              { bits: "15:0", name: "upper_mac_address",
+                desc: "Upper 16 bit of the devices MAC address"
+                resval: "8961"
+              },
+              { bits: "16", name: "promiscuous",
+                desc: "promiscuous flag"
+              },
+              { bits: "17", name: "phy_mdclk",
+                desc: "MDIO clock"
+              },
+              { bits: "18", name: "phy_mdio_o",
+                desc: "MDIO output"
+              },
+              { bits: "19", name: "phy_mdio_oe",
+                desc: "MDIO output enable"
+              }
+          ]
+        },
+        { name: "CONFIG2",
+          desc: "The FCS TX status",
+          swaccess: "ro",
+          hwaccess: "hwo",
+          fields: [
+              { bits: "31:0", name: "tx_fcs_reg",
+                desc: "FCS TX status"
+              }
+          ]
+        },
+        { name: "CONFIG3",
+          desc: "The FCS RX status",
+          swaccess: "ro",
+          hwaccess: "hwo",
+          fields: [
+              { bits: "31:0", name: "rx_fcs_reg",
+                desc: "FCS RX status"
+              }
+          ]
+        }
+    ]
+}

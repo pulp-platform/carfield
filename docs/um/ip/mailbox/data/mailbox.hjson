@@ -1,0 +1,146 @@
+// Copyright lowRISC contributors.
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Maicol Ciani <maicol.ciani@unibo.it>
+// Robert Balas <balasr@iis.ee.ethz.ch>
+
+// Register layout of one mailbox
+
+{
+  name: "mailbox",
+  clock_primary: "clk_i",
+  bus_interfaces: [
+    { protocol: "reg_iface", direction: "device"}
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "IRQ_SND_STAT",
+      desc: "Sender interrupt status register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "stat",
+          desc: "Sender side interrupt status. Receiver confirms letter. Reflects interrupt line logic level."
+        }
+      ],
+    },
+    { name: "IRQ_SND_SET",
+      desc: "Sender interrupt set register",
+      swaccess: "wo",  // w1s
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "set",
+          desc: "Sender side interrupt set. Receiver confirms letter."
+        }
+      ],
+    },
+    { name: "IRQ_SND_CLR",
+      desc: "Sender interrupt clear register",
+      swaccess: "wo",  // w1c
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "clr",
+          desc: "Sender side interrupt clear. Receiver confirms letter."
+        }
+      ],
+    },
+    { name: "IRQ_SND_EN",
+      desc: "Sender interrupt enable register",
+      swaccess: "rw",  // rw
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "en",
+          desc: "Sender side interrupt enable. Receiver confirms letter."
+        }
+      ],
+    },
+    { reserved: "12" },
+    { name: "IRQ_RCV_STAT",
+      desc: "Receiver interrupt status register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "stat",
+          desc: "Receiver side interrupt status. Sender notifies receiver of a new letter arriving. Reflects interrupt line logic level."
+        }
+      ],
+    },
+    { name: "IRQ_RCV_SET",
+      desc: "Receiver interrupt set register",
+      swaccess: "wo",  // w1s
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "set",
+          desc: "Receiver side interrupt set. Sender notifies receiver of a new letter arriving."
+        }
+      ],
+    },
+
+    { name: "IRQ_RCV_CLR",
+      desc: "Receiver interrupt clear register",
+      swaccess: "wo",  // w1c
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "clr",
+          desc: "Receiver side interrupt clear. Sender notifies receiver of a new letter arriving."
+        }
+      ],
+    },
+    { name: "IRQ_RCV_EN",
+      desc: "Receiver interrupt enable register",
+      swaccess: "rw",  // rw
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:1", name: "reserved", desc: "reserved", swaccess: "ro", hwaccess: "none"},
+        { bits: "0",
+          name: "en",
+          desc: "Receiver side interrupt enable. Sender notifies receiver of a new letter arriving."
+        }
+      ],
+    },
+    { reserved: "12" },
+    { name: "LETTER0",
+      desc: "Memory region 0 to put a message or pointer",
+      swaccess: "rw",
+      hwaccess: "none",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "LETTER1",
+      desc: "Memory region 1 to put a message or pointer",
+      swaccess: "rw",
+      hwaccess: "none",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+  ],
+}

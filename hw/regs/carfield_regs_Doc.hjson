@@ -1,0 +1,713 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Robert Balas <balasr@iis.ee.ethz.ch>
+// Luca Valente <luca.valente@unibo.it>
+{
+  name: "carfield",
+  cip_id: "2",
+  version: "1.0.1",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: "32",
+  registers :[
+
+    { name: "VERSION0",
+      desc: "Cheshire sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION1",
+      desc: "Safety Island sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION2",
+      desc: "Security Island sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION3",
+      desc: "PULP Cluster sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "VERSION4",
+      desc: "Spatz CLuster sha256 commit",
+      swaccess: "ro",
+      hwaccess: "none",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "JEDEC_IDCODE",
+      desc: "JEDEC ID CODE -TODO assign-",
+      swaccess: "rw",
+      hwaccess: "none",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "GENERIC_SCRATCH0",
+      desc: "Scratch",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "GENERIC_SCRATCH1",
+      desc: "Scratch",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "HOST_RST",
+      desc: "Host Domain reset -active high, inverted in HW-",
+      swaccess: "ro",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_RST",
+      desc: "Periph Domain reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_RST",
+      desc: "Safety Island reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_RST",
+      desc: "Security Island reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_RST",
+      desc: "PULP Cluster reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_RST",
+      desc: "Spatz Cluster reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "L2_RST",
+      desc: "L2 reset -active high, inverted in HW-",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_ISOLATE",
+      desc: "Periph Domain  AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_ISOLATE",
+      desc: "Safety Island AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_ISOLATE",
+      desc: "Security Island AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_ISOLATE",
+      desc: "PULP Cluster AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_ISOLATE",
+      desc: "Spatz Cluster AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "L2_ISOLATE",
+      desc: "L2 AXI isolate",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_ISOLATE_STATUS",
+      desc: "Periph Domain AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_ISOLATE_STATUS",
+      desc: "Safety Island AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_ISOLATE_STATUS",
+      desc: "Security Island AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_ISOLATE_STATUS",
+      desc: "PULP Cluster AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_ISOLATE_STATUS",
+      desc: "Spatz Cluster AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "L2_ISOLATE_STATUS",
+      desc: "L2 AXI isolate status",
+      swaccess: "rw",
+      hwaccess: "hwo",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_CLK_EN",
+      desc: "Periph Domain clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_CLK_EN",
+      desc: "Safety Island clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_CLK_EN",
+      desc: "Security Island clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_CLK_EN",
+      desc: "PULP Cluster clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_CLK_EN",
+      desc: "Spatz Cluster clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "L2_CLK_EN",
+      desc: "Shared L2 memory clk gate enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PERIPH_CLK_SEL",
+      desc: "Periph Domain pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "2",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_CLK_SEL",
+      desc: "Safety Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_CLK_SEL",
+      desc: "Security Island pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_CLK_SEL",
+      desc: "PULP Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_CLK_SEL",
+      desc: "Spatz Cluster pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "L2_CLK_SEL",
+      desc: "L2 Memory pll select (0 -> host pll, 1 -> alt PLL, 2 -> per pll)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "PERIPH_CLK_DIV_VALUE",
+      desc: "Periph Domain clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_CLK_DIV_VALUE",
+      desc: "Safety Island clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_CLK_DIV_VALUE",
+      desc: "Security Island clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_CLK_DIV_VALUE",
+      desc: "PULP Cluster clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_CLK_DIV_VALUE",
+      desc: "Spatz Cluster clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "L2_CLK_DIV_VALUE",
+      desc: "L2 Memory clk divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "23:0" }
+      ],
+    }
+
+    { name: "HOST_FETCH_ENABLE",
+      desc: "Host Domain fetch enable",
+      swaccess: "ro",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_FETCH_ENABLE",
+      desc: "Safety Island fetch enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_FETCH_ENABLE",
+      desc: "Security Island fetch enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_FETCH_ENABLE",
+      desc: "PULP Cluster fetch enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_DEBUG_REQ",
+      desc: "Spatz Cluster debug req",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+
+    { name: "HOST_BOOT_ADDR",
+      desc: "Host boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x1000",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "SAFETY_ISLAND_BOOT_ADDR",
+      desc: "Safety Island boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "SECURITY_ISLAND_BOOT_ADDR",
+      desc: "Security Island boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_BOOT_ADDR",
+      desc: "PULP Cluster boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_BOOT_ADDR",
+      desc: "Spatz Cluster boot address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0x70000000",
+      hwqe: "0",
+      fields: [
+        { bits: "31:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_BOOT_ENABLE",
+      desc: "PULP Cluster boot enable",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "SPATZ_CLUSTER_BUSY",
+      desc: "Spatz Cluster busy",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_BUSY",
+      desc: "PULP Cluster busy",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "PULP_CLUSTER_EOC",
+      desc: "PULP Cluster end of computation",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      resval: "0",
+      hwqe: "0",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "ETH_RGMII_PHY_CLK_DIV_EN",
+      desc: "Ethernet RGMII PHY clock divider enable bit",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "ETH_RGMII_PHY_CLK_DIV_VALUE",
+      desc: "Ethernet RGMII PHY clock divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "100",
+      hwqe: "1",
+      fields: [
+        { bits: "19:0" }
+      ],
+    }
+
+    { name: "ETH_MDIO_CLK_DIV_EN",
+      desc: "Ethernet MDIO clock divider enable bit",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "1",
+      hwqe: "1",
+      fields: [
+        { bits: "0:0" }
+      ],
+    }
+
+    { name: "ETH_MDIO_CLK_DIV_VALUE",
+      desc: "Ethernet MDIO clock divider value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      resval: "100",
+      hwqe: "1",
+      fields: [
+        { bits: "19:0" }
+      ],
+    }
+  ],
+}
