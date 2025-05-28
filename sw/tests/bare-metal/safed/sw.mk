@@ -20,7 +20,9 @@ SAFED_BUILD_TARGETS := $(addsuffix /build,$(SAFED_TEST_DIRS))
 # file format, if any is required.
 $(SAFED_SW_DIR)/tests/%/build: $(SAFED_ROOT) | venv
 	# Compile
-	$(MAKE) -C $(SAFED_SW_DIR)/tests/$* all
+	$(MAKE) -C $(SAFED_SW_DIR)/tests/$* all || true
+	# Make sure we don't have intermediate files in case of errors
+	@if [ ! -f $@/$*/$* ]; then echo "Error: Did you source env/safed-env.sh?"; $(RM) -r $@; exit 1; fi
 
 # Convert compiled binaries to header files
 SAFED_HEADER_TARGETS := $(patsubst $(SAFED_SW_DIR)/tests/%, $(CAR_SW_DIR)/tests/bare-metal/safed/%.h, $(SAFED_TEST_DIRS))
