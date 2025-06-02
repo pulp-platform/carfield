@@ -341,7 +341,7 @@ packages:
     dependencies:
     - common_cells
   neureka:
-    revision: f23d22a2d630cf8e4d524c919bfd943ab9e4998d
+    revision: f6b9a014c7ff4c536865c8ad376b383d4026f286
     version: null
     source:
       Git: https://github.com/pulp-platform/neureka.git
@@ -508,7 +508,7 @@ packages:
     - common_cells
     - register_interface
   softex:
-    revision: 11dd29e85d40e29fea0481b471f1c0cc967df1a4
+    revision: a93ddff106ca3596660584ce6c7f77fb2a8475e3
     version: null
     source:
       Git: https://github.com/belanoa/softex.git
