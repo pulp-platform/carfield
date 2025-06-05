@@ -1,0 +1,83 @@
+// Copyright 2018-2021 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Authors: 
+// Diyou Shen <dishen@student.ethz.ch>
+
+
+
+{
+    name: "tagger_reg",
+    cip_id: "36",
+    version: "0.0.0", //null, commit  b288376
+    clocking: [
+    {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true}
+    ],
+    bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+    ],
+    regwidth: "32",
+    registers: [{
+	multireg: {
+	    name: "PAT_COMMIT",
+	    desc: "Partition configuration commit register",
+	    count: "1",
+	    cname: "TAGGER",
+	    swaccess: "rw",
+	    hwaccess: "hrw",
+	    fields: [{
+		bits: "0",
+		name: "commit",
+		desc: "commit changes of partition configuration",
+		resval: "0"
+	    }]
+	}},
+
+	{
+	multireg: {
+	    name: "PAT_ADDR",
+	    desc: "Partition address",
+	    count: "16",
+	    cname: "TAGGER",
+	    swaccess: "rw",
+	    hwaccess: "hrw",
+	    fields: [{
+		bits: "31:0",
+		name: "PAT_ADDR",
+		desc: "Single partition configurations: address",
+		resval: "0"
+	    }]
+	}},
+	{
+	multireg: {
+	    name: "PATID",
+	    desc: "Partition ID",
+	    count: "3",
+	    cname: "TAGGER",
+	    swaccess: "rw",
+	    hwaccess: "hrw",
+	    fields: [{
+		bits: "31:0",
+		name: "PATID",
+		desc: "Partition ID (PatID) for each partition, length determined by params",
+		resval: "0"
+	    }]
+	}},
+	{
+	multireg: {
+	    name: "ADDR_CONF",
+	    desc: "Address encoding mode switch register",
+	    count: "1",
+	    cname: "TAGGER",
+	    swaccess: "rw",
+	    hwaccess: "hrw",
+	    fields: [{
+		bits: "31:0",
+		name: "addr_conf",
+		desc: "2 bits configuration for each partition. 2'b00: OFF, 2'b01: TOR, 2'b10: NA4",
+		resval: "0"
+	    }]
+	}}  ]
+}

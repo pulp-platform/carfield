@@ -1,0 +1,70 @@
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Author: Michael Rogenmoser <michaero@iis.ee.ethz.ch>
+
+{
+  name: "bus_err_unit",
+  cip_id: "36",
+  version: "0.1.6",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "err_addr",
+      desc: "Address of the bus error",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "err_addr",
+          desc: "Address of the bus error"
+        }
+      ]
+    },
+    { name: "err_addr_top",
+      desc: "Top of the address of the bus error",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "err_addr",
+          desc: "Address of the bus error"
+        }
+      ]
+    },
+    { name: "err_code",
+      desc: "Error code of the bus error",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwre: "true",
+      fields: [
+        { bits: "31:0",
+          name: "err_code",
+          desc: "Error code of the bus error"
+        }
+      ]
+    },
+    { name: "meta",
+      desc: "Meta information of the bus error",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "31:0",
+          name: "meta",
+          desc: "Meta information of the bus error"
+        }
+      ]
+    }
+  ]
+}

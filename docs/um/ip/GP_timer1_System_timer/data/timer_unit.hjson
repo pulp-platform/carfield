@@ -1,0 +1,282 @@
+// Copyright 2018-2021 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Author: Florent Rotenberg <florent.rotenberg@greenwaves-technologies.com>
+# timer unit(system timer) register
+
+{
+  name: "timer_unit"
+  one_paragraph_desc: '''
+  BASIC TIMER component manages the following features:
+  - 2 general purpose 32bits up counter timers
+  - Input trigger sources:
+       - FLL clock
+       - FLL clock + Prescaler
+       - Reference clock at 32kHz
+       - External event
+  - 8bit programmable prescaler to FLL clock
+  - Counting modes:
+       - One shot mode: timer is stopped after first comparison match
+       - Continuous mode: timer continues counting after comparison match
+       - Cycle mode: timer resets to 0 after comparison match and continues counting
+       - 64 bit cascaded mode
+  - Interrupt request generation on comparison match
+  '''
+  cip_id:  "36",
+  version: "1.0.3"
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: "32"
+  registers: [
+    { name: "CFG_LO"
+      desc: "Timer Low Configuration register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "ENABLE"
+          resval: 0x0
+          desc: '''Timer low enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+		'''
+        }
+        { bits: "1"
+          name: "RESET"
+          resval: 0x0
+          desc: "Timer low counter reset command bitfield. Cleared after Timer Low reset execution."
+        }
+        { bits: "2"
+          name: "IRQEN"
+          resval: 0x0
+          desc: '''Timer low compare match interrupt enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+        { bits: "3"
+          name: "IEM"
+          resval: 0x0
+          desc: '''Timer low input event mask configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+        { bits: "4"
+          name: "MODE"
+          resval: 0x0
+          desc: '''Timer low continuous mode configuration bitfield:
+                - 1'b0: Continue mode - continue incrementing Timer low counter when compare match with CMP_LO occurs.
+                - 1'b1: Cycle mode - reset Timer low counter when compare match with CMP_LO occurs.
+                '''
+        }
+        { bits: "5"
+          name: "ONE_S"
+          resval: 0x0
+          desc: '''Timer low one shot configuration bitfield:
+                - 1'b0: let Timer low enabled counting when compare match with CMP_LO occurs.
+                - 1'b1: disable Timer low when compare match with CMP_LO occurs.
+                '''
+        }
+        { bits: "6"
+          name: "PEN"
+          resval: 0x0
+          desc: '''Timer low prescaler enable configuration bitfield:
+	        - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+        { bits: "7"
+          name: "CCFG"
+          resval: 0x0
+          desc: '''Timer low clock source configuration bitfield:
+                - 1'b0: FLL or FLL+Prescaler
+                - 1'b1: Reference clock at 32kHz
+                '''
+        }
+	{ bits: "15:8"
+          name: "PVAL"
+          resval: 0x0
+          desc: "Timer low prescaler value bitfield. Ftimer = Fclk / (1 + PRESC_VAL)"
+        }
+	{ bits: "31"
+          name: "CASC"
+          resval: 0x0
+          desc: "Timer low  + Timer high 64bit cascaded mode configuration bitfield."
+        }
+      ]
+    }
+    { name: "CFG_HI"
+      desc: "Timer HIGH Configuration register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "ENABLE"
+          resval: 0x0
+          desc: '''Timer high enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+        { bits: "1"
+          name: "RESET"
+	  swaccess: "wo"
+          hwaccess: "hro"
+          resval: 0x0
+          desc: "Timer high counter reset command bitfield. Cleared after Timer high reset execution."
+        }
+        { bits: "2"
+          name: "IRQEN"
+          resval: 0x0
+          desc: '''Timer high compare match interrupt enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+        { bits: "3"
+          name: "IEM"
+          resval: 0x0
+          desc: '''Timer high input event mask configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled	
+                '''
+        }
+        { bits: "4"
+          name: "MODE"
+          resval: 0x0
+          desc: '''Timer high continuous mode configuration bitfield:
+                - 1'b0: Continue mode - continue incrementing Timer high counter when compare match with CMP_HI occurs.
+                - 1'b1: Cycle mode - reset Timer high counter when compare match with CMP_HI occurs.
+                '''
+        }
+        { bits: "5"
+          name: "ONE_S"
+          resval: 0x0
+          desc: '''Timer high one shot configuration bitfield:
+                - 1'b0: let Timer high enabled counting when compare match with CMP_HI occurs.
+                - 1'b1: disable Timer high when compare match with CMP_HI occurs.
+                '''
+        }
+        { bits: "6"
+          name: "PEN"
+          resval: 0x0
+          desc: '''Timer high prescaler enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+        { bits: "7"
+          name: "CLKCFG"
+          resval: 0x0
+          desc: '''Timer high clock source configuration bitfield:
+                - 1'b0: FLL or FLL+Prescaler
+                - 1'b1: Reference clock at 32kHz
+                '''
+	}	
+      ]
+    }
+    { name: "CNT_LO"
+      desc: "Timer Low counter value register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "31:0"
+          name: "cnt_lo"
+          resval: 0x0
+          desc: "Timer Low counter value bitfield."
+        }
+      ]
+    }
+    { name: "CNT_HI"
+      desc: "Timer High counter value register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "31:0"
+          name: "cnt_hi"
+          resval: 0x0
+          desc: "Timer High counter value bitfield."
+        }
+      ]
+    }
+    { name: "CMP_LO"
+      desc: "Timer Low comparator value register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "31:0"
+          name: "cmp_lo"
+          resval: 0x0
+          desc: "Timer Low comparator value bitfield."
+        }
+      ]
+    }
+    { name: "CMP_HI"
+      desc: "Timer High comparator value register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "31:0"
+          name: "cmp_hi"
+          resval: 0x0
+          desc: "Timer High comparator value bitfield."
+        }
+      ]
+    }
+    { name: "START_LO"
+      desc: "Start Timer Low counting register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0"
+          name: "strt_lo"
+          resval: 0x0
+          desc: "Timer Low start command bitfield. When executed, CFG_LO.ENABLE is set."
+        }
+      ]
+    }
+    { name: "START_HI"
+      desc: "Start Timer High counting register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0"
+          name: "strt_hi"
+          resval: 0x0
+          desc: "Timer High start command bitfield. When executed, CFG_HI.ENABLE is set."
+        }
+      ]
+    }
+    { name: "RESET_LO"
+      desc: "Reset Timer Low counter register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0"
+          name: "rst_lo"
+          resval: 0x0
+          desc: "Timer Low counter reset command bitfield. When executed, CFG_LO.RESET is set."
+        }
+      ]
+    }
+    { name: "RESET_HI"
+      desc: "Reset Timer High counter register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0"
+          name: "rst_hi"
+          resval: 0x0
+          desc: "Timer High counter reset command bitfield. When executed, CFG_HI.RESET is set."
+        }
+      ]
+    }
+  ]
+}

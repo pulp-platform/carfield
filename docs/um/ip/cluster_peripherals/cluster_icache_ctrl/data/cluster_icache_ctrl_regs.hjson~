@@ -1,0 +1,150 @@
+// Copyright 2014-2018 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Author: Michael Gautschi  <gautschi@iis.ee.ethz.ch>
+
+
+{
+  name: "cluster_icache_ctrl"
+  one_paragraph_desc: '''CL_ICACHE_CTRL component manages the following features:
+                      - Bypassable Cluster instruction cache controller
+                      - Flush and selective flush commands   
+                      '''
+  cip_id:  "36",
+  version: "0.0.0" // null, commit c015839
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: "32"
+  registers: [
+    { name: "ENABLE" // Address : 0x0
+      desc: "Cluster instruction cache unit enable configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0"
+          name: "EN"
+          resval: 0x0
+          desc: '''Cluster instruction cache enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+		'''
+        }
+      ]
+    }
+    { name: "FLUSH" // Address : 0x4
+      desc: "Cluster instruction cache unit flush command register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0"
+          name: "FL"
+          resval: 0x0
+          desc: "Cluster instruction cache full flush command."
+        }
+      ]
+    }
+    { name: "L0_FLUSH" // Address : 0x8
+      desc: "Cluster level 0 instruction cache unit flush command register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0:0"
+          name: "L0_FL"
+          resval: 0x0
+          desc:	"Cluster level 0 instruction cache full flush command."
+        }
+      ]
+    }
+    { name: "SEL_FLUSH" // Address : 0xC
+      desc: "Cluster instruction cache unit selective flush command register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "ADDR"
+          resval: 0x0
+          desc: "Cluster instruction cache selective flush address configuration bitfield."
+        }
+      ]
+    }
+
+
+    { name: "L1_L15_PREFETCH" // Address : 0x1C
+      desc: "Enable L1 and L1.5 prefetch register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "0"
+          name: "CORE0"
+          resval: 0x0
+          desc: '''Core 0 icache prefetch enable configuration bitfield:
+                 - 1'b0: disabled
+                 - 1'b1: enabled
+                '''
+        }
+        { bits: "1"
+          name: "CORE1"
+          resval: 0x0
+          desc: '''Core 1 icache prefetch enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+	{ bits: "2"
+          name: "CORE2"
+          resval: 0x0
+          desc: '''Core 2 icache prefetch enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+	{ bits: "3"
+          name: "CORE3"
+          resval: 0x0
+          desc: '''Core 3 icache prefetch enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+	{ bits: "4"
+          name: "CORE4"
+          resval: 0x0
+          desc: '''Core 4 icache prefetch enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+	{ bits: "5"
+          name: "CORE5"
+          resval: 0x0
+          desc: '''Core 5 icache prefetch enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+	{ bits: "6"
+          name: "CORE6"
+          resval: 0x0
+          desc: '''Core 6 icache prefetch enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+	{ bits: "7"
+          name: "CORE7"
+          resval: 0x0
+          desc: '''Core 7 icache prefetch enable configuration bitfield:
+                - 1'b0: disabled
+                - 1'b1: enabled
+                '''
+        }
+      ]
+    }
+  ]
+}
