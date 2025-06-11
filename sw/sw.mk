@@ -26,7 +26,7 @@ CAR_SW_LIB_SRCS_S  = $(wildcard $(CAR_SW_DIR)/lib/*.S $(CAR_SW_DIR)/lib/**/*.S)
 CAR_SW_LIB_SRCS_C  = $(wildcard $(CAR_SW_DIR)/lib/*.c $(CAR_SW_DIR)/lib/**/*.c)
 CAR_SW_LIB_SRCS_O  = $(CAR_SW_DEPS_SRCS:.c=.o) $(CAR_SW_LIB_SRCS_S:.S=.o) $(CAR_SW_LIB_SRCS_C:.c=.o)
 
-CAR_SW_LIBS = $(CAR_SW_DIR)/lib/libcarfield.a
+CAR_SW_LIBS += $(CAR_SW_DIR)/lib/libcarfield.a
 
 $(CAR_SW_DIR)/lib/libcarfield.a: $(CAR_SW_LIB_SRCS_O)
 	$(CHS_SW_AR) $(CHS_SW_ARFLAGS) -rcsv $@ $^
