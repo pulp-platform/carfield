@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors.
+// Copyright 2023 ETH Zurich and University of Bologna.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Alessandro Ottaviano <aottaviano@iis.ee.ethz.ch.it>
+
+// Register layout for one interrupt line
+
+{
+  name: "irq_router",
+  cip_id: "36",
+  version: "0.0.1-beta.1",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device"}
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "IRQ_TARGET_MASK",
+      desc: "Target selection bitmask control register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+	{ bits: "31:0",
+	  resval: 1,
+	  name: "mask",
+	  desc: "Target selection bitmask control register for single interrupt line. Reflects interrupt line logic level."
+	}
+      ],
+    }
+  ],
+}

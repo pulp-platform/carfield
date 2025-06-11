@@ -1,0 +1,1588 @@
+// Copyright 2014-2018 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+// Licensed under Solderpad Hardware License, Version 0.51, see LICENSE for details.
+//
+// Author: Michael Gautschi  <gautschi@iis.ee.ethz.ch>
+
+{
+  name: "cluster_event_unit"
+  one_paragraph_desc: '''
+  Cluster event unit component manages the following features:
+   - Cluster software events generation
+   - Cluster cores clock gate control
+   - Wait for event functionality
+   - Input event mask configuration
+   - Cluster cores IRQ generation
+   - 2 hardware mutex
+   - 8 hardware barriers
+   - 1 message dispatcher
+  Events managed by Cluster event unit are:
+   - 1 SoC peripheral event: when this event occurs, the SoC peripheral events fifo must be read to get the SoC event ID.
+   - 1 message dispatcher event
+   - 1 barrier event
+   - up to 4 hardware accelerator events
+   - 2 Cluster timer events
+   - 2 DMA events
+   - 8 software events that can come from cluster cores directly or external triggering.
+  '''
+  cip_id:  "36",
+  version: "0.0.0" // null, commit c015839
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: "32"
+  registers: [
+    { name: "EVT_MASK" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x0
+      desc: "Input event mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "29:0"
+          name: "EMCL"
+          resval: 0x0
+          desc: '''Cluster internal input event mask configuration bitfield:
+                - EMCL[i]=1'b0: Input event request i is masked
+                - EMCL[i]=1'b1: Input event request i is not masked
+                '''
+        }
+	{ bits: "30:30"
+          name: "EMINTCL"
+          resval: 0x0
+          desc: '''Inter-cluster input event mask configuration bitfield:
+                - EMINTCL[i]=1'b0: Input event request i is masked
+                - EMINTCL[i]=1'b1: Input event request i is not masked
+                '''
+        }
+        { bits: "31:31"
+          name: "EMSOC"
+          resval: 0x0
+          desc: '''Soc peripheral input event mask configuration bitfield:
+                - EMSOC[i]=1'b0: Input event request i is masked
+                - EMSOC[i]=1'b1: Input event request i is not masked
+                '''
+        }
+      ]
+    }
+    { name: "EVT_MASK_AND" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x4
+      desc: "Input event mask update command register with bitwise AND operation."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "EMA"
+          resval: 0x0
+          desc: '''Input event mask configuration bitfield update with bitwise AND operation.
+	        It allows clearing EMCL[i], EMINTCL[i] or EMSOC[i] if EMA[i]=1'b1.
+                '''
+        }
+      ]
+    }
+    { name: "EVT_MASK_OR" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x8
+      desc: "Input event mask update command register with bitwise OR operation."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "EMO"
+          resval: 0x0
+          desc: '''Input event mask configuration bitfield update with bitwise OR operation.
+	        It allows setting EMCL[i], EMINTCL[i] or EMSOC[i] if EMO[i]=1'b1.
+                '''
+        }
+      ]
+    }
+    { name: "IRQ_MASK" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset	: 0x0, Address : 0xC
+      desc: "Interrupt request mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "29:0"
+          name: "IMCL"
+          resval: 0x0
+          desc: '''Cluster internal interrupt request mask configuration bitfield:
+                - bit[i]=1'b0: Interrupt request i is masked
+                - bit[i]=1'b1: Interrupt request i is not masked
+                '''
+        }
+        { bits: "30:30"
+          name: "IMINTCL"
+          resval: 0x0
+          desc: '''Inter-cluster interrupt request mask configuration bitfield:
+                - bit[i]=1'b0: Interrupt request i is masked
+                - bit[i]=1'b1: Interrupt request i is not masked
+                '''
+        }
+        { bits: "31:31"
+          name: "IMSOC"
+          resval: 0x0
+          desc: '''Soc peripheral interrupt request mask configuration bitfield:
+                - bit[i]=1'b0: Interrupt request i is masked
+                - bit[i]=1'b1: Interrupt request i is not masked
+                '''
+        }
+      ]	
+    }
+    { name: "IRQ_MASK_AND" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x10
+      desc: "Interrupt request mask update command register with bitwise AND operation."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "IMA"
+          resval: 0x0
+          desc: '''Interrupt request mask configuration bitfield update with bitwise AND operation.
+	        It allows clearing IMCL[i], IMINTCL[i] or IMSOC[i] if IMA[i]=1'b1.
+                '''
+        }
+      ]
+    }
+    { name: "IRQ_MASK_OR" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x14
+      desc: "Interrupt request mask update command register with bitwise OR operation."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "IMO"
+          resval: 0x0
+          desc: '''Interrupt request mask configuration bitfield update with bitwise OR operation.
+	        It allows setting IMCL[i], IMINTCL[i] or IMSOC[i] if IMO[i]=1'b1.
+                '''
+        }
+      ]
+    }
+    { name: "CLOCK_STATUS" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x18
+      desc: "Cluster cores clock status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "0:0"
+          name: "CS"
+          resval: 0x0
+          desc: '''Cluster core clock status bitfield:
+                - 1'b0: Cluster core clocked is gated
+                - 1'b1: Cluster core clocked is running
+                '''
+        }
+      ]
+    }
+    { name: "EVENT_BUFFER" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x1C
+      desc: "Pending input events status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EB"
+          resval: 0x0
+          desc: '''Pending input events status bitfield.
+                EB[i]=1'b1: one or more input event i request are pending.
+                '''
+        }
+      ]
+    }
+    { name: "EVENT_BUFFER_MASKED" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x20
+      desc: "Pending input events status register with EVT_MASK applied."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Pending input events status bitfield with EVT_MASK applied.
+                EBM[i]=1'b1: one or more input event i request are pending.
+                '''
+        }
+      ]
+    }
+    { name: "EVENT_BUFFER_IRQ_MASKED" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x24
+      desc: "Pending input events status register with IRQ_MASK applied."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "IBM"
+          resval: 0x0
+          desc: '''Pending input events status bitfield with IRQ_MASK applied.
+                IBM[i]=1'b1:  one or more input events i are pending.
+                '''
+        }
+      ]
+    }
+    { name: "EVENT_BUFFER_CLEAR" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x28
+      desc: "Pending input events status clear command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "31:0"
+          name: "EBC"
+          resval: 0x0
+          desc: '''Pending input events status clear command bitfield.
+                It allows clearing EB[i] if EBC[i]=1'b1.
+                '''
+        }
+      ]
+    }
+    { name: "SW_EVENT_MASK" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x2C
+      desc: "Software events cluster cores destination mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SWEM"
+          resval: 0x0
+          desc: '''Software events mask configuration bitfield:
+                - bit[i]=1'b0: software events are masked for CL_CORE[i]
+                - bit[i]=1'b1: software events are not masked for CL_CORE[i]
+                '''
+        }
+      ]
+    }
+    { name: "SW_EVENT_MASK_AND" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x30
+      desc: "Software events cluster cores destination mask update command register with bitwise AND operation."
+      swaccess: "wo"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "7:0"
+          name: "SWEMA"
+          resval: 0x0
+          desc: '''Software event mask configuration bitfield update with bitwise AND operation.
+	        It allows clearing SWEM[i] if SWEMA[i]=1'b1.
+                '''
+        }
+      ]
+    }
+    { name: "SW_EVENT_MASK_OR" // periph base address core id offset : 0x40, periph base address offset : 0x0, demux base address offset : 0x0, Address : 0x34
+      desc: "Software events cluster cores destination mask update command register with bitwise OR operation."
+      swaccess: "wo"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "7:0"
+          name: "SWEMO"
+          resval: 0x0
+          desc: '''Software event mask configuration bitfield update with bitwise OR operation.
+	        It allows setting SWEM[i] if SWEMO[i]=1'b1.
+                '''
+        }
+      ]
+    }
+    { name: "EVENT_WAIT" // demux base address offset : 0x0, Address : 0x38
+      desc: "Input event wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Reading this register will gate the Cluster core clock until at least one unmasked event occurs.
+	        The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+	}
+      ]
+    }
+    { name: "EVENT_WAIT_CLEAR" // demux base address offset : 0x0, Address : 0x3C 
+      desc: "Input event wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Reading this register has the same effect as reading EVENT_WAIT.EBM.
+	        In addition, EVENT_BUFFER.EB[i] bits are cleared if EVT_MASK[i]=1'b1.
+		The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+	}
+      ]
+    }
+    { name: "HW_DISPATCH_PUSH_TASK" // demux base address offset : 0x80, Address : 0x0
+      desc: "Hardware task dispatcher push command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "MSG"
+          resval: 0x0
+          desc: "Message to dispatch to all cluster cores selected in HW_DISPATCH_PUSH_TEAM_CONFIG.CT configuration bitfield."
+        }
+      ]
+    }
+    { name: "HW_DISPATCH_POP_TASK" // demux base address offset : 0x80, Address : 0x0
+      desc: "Hardware task dispatcher pop command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "MSG"
+          resval: 0x0
+          desc: "Message dispatched using HW_DISPATCH_PUSH_TASK command and popped by cluster core who issued HW_DISPATCH_POP_TASK command."
+        }
+      ]
+    }
+    { name: "HW_DISPATCH_PUSH_TEAM_CONFIG" // demux base address offset : 0x80, Address : 0x4
+      desc: "Hardware task dispatcher cluster core team configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "CT"
+          resval: 0x0
+          desc: '''Cluster cores team selection configuration bitfield.
+	        It allows to transmit HW_DISPATCH_PUSH_TASK.MSG to cluster core i if CT[i]=1'b1.
+		'''
+        }
+      ]
+    }
+    { name: "HW_MUTEX_0_MSG_PUT" // demux base address offset : 0xC0, Address : 0x0
+      desc: "Hardware mutex 0 non-blocking put command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "MSG"
+          resval: 0x0
+          desc: "Message pushed when releasing hardware mutex 0 configuration bitfiled. It is a non-blocking access."
+        }
+      ]
+    }
+    { name: "HW_MUTEX_0_MSG_GET" // demux base address offset : 0xC0, Address : 0x0
+      desc: "Hardware mutex 0 blocking get command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "MSG"
+          resval: 0x0
+          desc:	"Message popped when taking hardware mutex 0 data bitfiled. It is a blocking access."
+        }
+      ]
+    }
+    { name: "HW_MUTEX_1_MSG_PUT" // demux base address offset : 0xC0, Address : 0x4
+      desc: "Hardware mutex 1 non-blocking put command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "MSG"
+          resval: 0x0
+          desc:	"Message pushed when releasing hardware mutex 1 configuration bitfiled. It is a non-blocking access."
+        }
+      ]
+    }
+    { name: "HW_MUTEX_1_MSG_GET" // demux base address offset : 0xC0, Address : 0x4
+      desc: "Hardware mutex 1 blocking get command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "MSG"
+          resval: 0x0
+          desc: "Message popped when taking hardware mutex 1 data bitfiled. It is a blocking access."
+        }
+      ]
+    }
+    { name: "SW_EVENT_0_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0x0
+      desc: "Cluster Software event 0 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW0T"
+          resval: 0x0
+          desc: "Triggers software event 0 for cluster core i if SW0T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_1_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0x4
+      desc: "Cluster Software event 1 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW1T"
+          resval: 0x0
+          desc: "Triggers software event 1 for cluster core i if SW1T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_2_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0x8
+      desc: "Cluster Software event 2 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW2T"
+          resval: 0x0
+          desc: "Triggers software event 2 for cluster core i if SW2T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_3_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0xC
+      desc: "Cluster Software event 3 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW3T"
+          resval: 0x0
+          desc: "Triggers software event 3 for cluster core i if SW3T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_4_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0x10
+      desc: "Cluster Software event 4 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW4T"
+          resval: 0x0
+          desc: "Triggers software event 4 for cluster core i if SW4T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_5_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0x14
+      desc: "Cluster Software event 5 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW5T"
+          resval: 0x0
+          desc: "Triggers software event 5 for cluster core i if SW5T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_6_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0x18
+      desc: "Cluster Software event 6 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW6T"
+          resval: 0x0
+          desc: "Triggers software event 6 for cluster core i if SW6T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_7_TRIG" // periph base address offset : 0x600, demux base address offset : 0x100, Address : 0x1C
+      desc: "Cluster Software event 7 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "SW7T"
+          resval: 0x0
+          desc: "Triggers software event 7 for cluster core i if SW7T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "SW_EVENT_0_TRIG_WAIT" // demux base address offset : 0x140, Address : 0x0
+      desc: "Cluster Software event 0 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 0 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+	        The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "SW_EVENT_1_TRIG_WAIT" // demux base address offset : 0x140, Address : 0x4
+      desc: "Cluster Software event 1 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 1 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]	
+    }
+    { name: "SW_EVENT_2_TRIG_WAIT" // demux base address offset : 0x140, Address : 0x8
+      desc: "Cluster Software event 2 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 2 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]	
+    }
+    { name: "SW_EVENT_3_TRIG_WAIT" // demux base address offset : 0x140, Address : 0xC
+      desc: "Cluster Software event 3 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 3 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]	
+    }
+    { name: "SW_EVENT_4_TRIG_WAIT" // demux base address offset : 0x140, Address : 0x10
+      desc: "Cluster Software event 4 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 4 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]	
+    }
+    { name: "SW_EVENT_5_TRIG_WAIT" // demux base address offset : 0x140, Address : 0x14
+      desc: "Cluster Software event 5 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 5 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]	
+    }
+    { name: "SW_EVENT_6_TRIG_WAIT" // demux base address offset : 0x140, Address : 0x18
+      desc: "Cluster Software event 6 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 6 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]	
+    }
+    { name: "SW_EVENT_7_TRIG_WAIT" // demux base address offset : 0x140, Address : 0x1C
+      desc: "Cluster Software event 7 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 7 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]	
+    }
+    { name: "SW_EVENT_0_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0x0
+      desc: "Cluster Software event 0 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 0 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+	        In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "SW_EVENT_1_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0x4
+      desc: "Cluster Software event 1 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 1 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+        }
+      ]
+    }
+    { name: "SW_EVENT_2_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0x8
+      desc: "Cluster Software event 2 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 2 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+        }
+      ]
+    }
+    { name: "SW_EVENT_3_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0xC
+      desc: "Cluster Software event 3 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 3 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+        }
+      ]
+    }
+    { name: "SW_EVENT_4_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0x10
+      desc: "Cluster Software event 4 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 4 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+        }
+      ]
+    }
+    { name: "SW_EVENT_5_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0x14
+      desc: "Cluster Software event 5 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 5 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+        }
+      ]
+    }
+    { name: "SW_EVENT_6_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0x18
+      desc: "Cluster Software event 6 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 6 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+        }
+      ]
+    }
+    { name: "SW_EVENT_7_TRIG_WAIT_CLEAR" // demux base address offset : 0x180, Address : 0x1C
+      desc: "Cluster Software event 7 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Triggers software event 7 to all cluster cores targeted in SW_EVENT_MASK and gate the issuing cluster core clock until at least one unmasked event occurs.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+		'''
+        }
+      ]
+    }
+    { name: "SOC_PERIPH_EVENT_ID" // periph base address offset: 0x700, Address : 0x0
+      desc: "Cluster SoC peripheral event ID status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "7:0"
+          name: "ID"
+          resval: 0x0
+          desc: "Oldest SoC peripheral event ID status bitfield."
+        }
+	{ bits: "31:31"
+          name: "VALID"
+          resval: 0x0
+          desc:	"Validity bit of SOC_PERIPH_EVENT_ID.ID bitfield."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_0_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x0
+      desc: "Cluster hardware barrier 0 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB0TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 0 bitfield.
+	        Hardware barrier 0 will be triggered only if for all HB0TM[i] = 1'b1,  HW_BARRIER_0_STATUS.HB0S[i]=1'b1.
+		HB0TM=0 means that hardware barrier 0 is disabled.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_1_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x20
+      desc: "Cluster hardware barrier 1 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB1TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 1 bitfield.
+                Hardware barrier 1 will be triggered only if for all HB1TM[i] = 1'b1,  HW_BARRIER_1_STATUS.HB1S[i]=1'b1.
+		HB1TM=0 means that hardware barrier 1 is disabled.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_2_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x40
+      desc: "Cluster hardware barrier 2 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB2TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 2 bitfield.
+                Hardware barrier 2 will be triggered only if for all HB2TM[i] = 1'b1,  HW_BARRIER_2_STATUS.HB2S[i]=1'b1.
+		HB2TM=0 means that hardware barrier 2 is disabled.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_3_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x60
+      desc: "Cluster hardware barrier 3 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB3TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 3 bitfield.
+                Hardware barrier 3 will be triggered only if for all HB3TM[i] = 1'b1,  HW_BARRIER_3_STATUS.HB3S[i]=1'b1.
+		HB3TM=0 means that hardware barrier 3 is disabled.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_4_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x80
+      desc: "Cluster hardware barrier 4 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB4TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 4 bitfield.
+                Hardware barrier 4 will be triggered only if for all HB4TM[i] = 1'b1,  HW_BARRIER_4_STATUS.HB4S[i]=1'b1.
+		HB4TM=0 means that hardware barrier 4 is disabled.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_5_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xA0
+      desc: "Cluster hardware barrier 5 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB5TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 5 bitfield.
+                Hardware barrier 5 will be triggered only if for all HB5TM[i] = 1'b1,  HW_BARRIER_5_STATUS.HB5S[i]=1'b1.
+		HB5TM=0 means that hardware barrier 5 is disabled.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_6_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xC0
+      desc: "Cluster hardware barrier 6 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB6TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 6 bitfield.
+                Hardware barrier 6 will be triggered only if for all HB6TM[i] = 1'b1,  HW_BARRIER_6_STATUS.HB6S[i]=1'b1.
+		HB6TM=0 means that hardware barrier 6 is disabled.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_7_TRIG_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xE0
+      desc: "Cluster hardware barrier 7 trigger mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HB7TM"
+          resval: 0x0
+          desc: '''Trigger mask for hardware barrier 7 bitfield.
+                Hardware barrier 7 will be triggered only if for all HB7TM[i] = 1'b1,  HW_BARRIER_7_STATUS.HB7S[i]=1'b1.
+		HB7TM=0 means that hardware barrier 7 is disabled.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_0_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x4
+      desc: "Cluster hardware barrier 0 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 0 bitfield.
+	        HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 0.
+		It is cleared when HBS matches HW_BARRIER_0_TRIG_MASK.HB0TM.
+		'''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_1_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x24
+      desc: "Cluster hardware barrier 1 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 1 bitfield.
+                HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 1.
+	        It is cleared when HBS matches HW_BARRIER_1_TRIG_MASK.HB1TM.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_2_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x44
+      desc: "Cluster hardware barrier 2 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 2 bitfield.
+                HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 2.
+	        It is cleared when HBS matches HW_BARRIER_2_TRIG_MASK.HB2TM.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_3_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x64
+      desc: "Cluster hardware barrier 3 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 3 bitfield.
+                HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 3.
+	        It is cleared when HBS matches HW_BARRIER_3_TRIG_MASK.HB3TM.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_4_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x84
+      desc: "Cluster hardware barrier 4 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 4 bitfield.
+                HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 4.
+	        It is cleared when HBS matches HW_BARRIER_4_TRIG_MASK.HB4TM.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_5_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xA4
+      desc: "Cluster hardware barrier 5 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 5 bitfield.
+                HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 5.
+	        It is cleared when HBS matches HW_BARRIER_5_TRIG_MASK.HB5TM.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_6_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xC4
+      desc: "Cluster hardware barrier 6 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 6 bitfield.
+                HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 6.
+	        It is cleared when HBS matches HW_BARRIER_6_TRIG_MASK.HB6TM.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_7_STATUS" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xE4
+      desc: "Cluster hardware barrier 7 status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBS"
+          resval: 0x0
+          desc: '''Current status of hardware barrier 7 bitfield.
+                HBS[i]=1'b1 means that cluster core i has triggered hardware barrier 7.
+	        It is cleared when HBS matches HW_BARRIER_7_TRIG_MASK.HB7TM.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_0_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x8
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 0. HBSS[i] represents a summary of the barrier status for core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_1_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x28
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 1. HBSS[i] represents a summary of the barrier status for core i."
+	}	
+      ]
+    }
+    { name: "HW_BARRIER_2_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x48
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 2. HBSS[i] represents a summary of the barrier status for core i."
+	}	
+      ]
+    }
+    { name: "HW_BARRIER_3_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x68
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 3. HBSS[i] represents a summary of the barrier status for core i."
+	}	
+      ]
+    }
+    { name: "HW_BARRIER_4_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x88
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 4. HBSS[i] represents a summary of the barrier status for core i."
+	}	
+      ]
+    }
+    { name: "HW_BARRIER_5_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xA8
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 5. HBSS[i] represents a summary of the barrier status for core i."
+	}	
+      ]
+    }
+    { name: "HW_BARRIER_6_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xC8
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 6. HBSS[i] represents a summary of the barrier status for core i."
+	}	
+      ]
+    }
+    { name: "HW_BARRIER_7_STATUS_SUM" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xE8
+      desc: "Cluster hardware barrier summary status register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "7:0"
+          name: "HBSS"
+          resval: 0x0
+          desc: "Current status of hardware barrier 7. HBSS[i] represents a summary of the barrier status for core i."
+	}	
+      ]
+    }
+    { name: "HW_BARRIER_0_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xC
+      desc: "Cluster hardware barrier 0 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc: '''Cluster hardware barrier 0 target mask configuration bitfield.
+	        HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 0 event when HW_BARRIER_0_STATUS will match HW_BARRIER_0_TRIG_MASK.
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_1_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x2C
+      desc: "Cluster hardware barrier 1 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc:	'''Cluster hardware barrier 1 target mask configuration bitfield.
+                HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 1 event when HW_BARRIER_1_STATUS will match HW_BARRIER_1_TRIG_MASK.
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_2_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x4C
+      desc: "Cluster hardware barrier 2 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc:	'''Cluster hardware barrier 2 target mask configuration bitfield.
+                HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 2 event when HW_BARRIER_2_STATUS will match HW_BARRIER_2_TRIG_MASK.
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_3_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x6C
+      desc: "Cluster hardware barrier 3 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc:	'''Cluster hardware barrier 3 target mask configuration bitfield.
+                HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 3 event when HW_BARRIER_3_STATUS will match HW_BARRIER_3_TRIG_MASK.
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_4_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x8C
+      desc: "Cluster hardware barrier 4 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc:	'''Cluster hardware barrier 4 target mask configuration bitfield.
+                HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 4 event when HW_BARRIER_4_STATUS will match HW_BARRIER_4_TRIG_MASK.
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_5_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xAC
+      desc: "Cluster hardware barrier 5 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc:	'''Cluster hardware barrier 5 target mask configuration bitfield.
+                HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 5 event when HW_BARRIER_5_STATUS will match HW_BARRIER_5_TRIG_MASK.
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_6_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xCC
+      desc: "Cluster hardware barrier 6 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc:	'''Cluster hardware barrier 6 target mask configuration bitfield.
+                HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 6 event when HW_BARRIER_6_STATUS will match HW_BARRIER_6_TRIG_MASK.
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_7_TARGET_MASK" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xEC
+      desc: "Cluster hardware barrier 7 target mask configuration register."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "HBTAM"
+          resval: 0x0
+          desc:	'''Cluster hardware barrier 7 target mask configuration bitfield.
+                HBATM[i]=1'b1 means that cluster core i will receive hardware barrier 7 event when HW_BARRIER_7_STATUS will match HW_BARRIER_7_TRIG_MASK.
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_0_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x10
+      desc: "Cluster hardware barrier 0 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_0_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_1_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x30
+      desc: "Cluster hardware barrier 1 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_1_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_2_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x50
+      desc: "Cluster hardware barrier 2 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_2_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_3_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x70
+      desc: "Cluster hardware barrier 3 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_3_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_4_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0x90
+      desc: "Cluster hardware barrier 4 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_4_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_5_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xB0
+      desc: "Cluster hardware barrier 5 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_5_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_6_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xD0
+      desc: "Cluster hardware barrier 6 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_6_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_7_TRIG" // periph base address offset : 0x400, demux base address offset : 0x200, Address : 0xF0
+      desc: "Cluster hardware barrier 7 trigger command register."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+	{ bits: "7:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_7_STATUS.HBS[i] to 1'b1 when T[i]=1'b1."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_0_SELF_TRIG" // demux base address offset : 0x200, Address : 0x14
+      desc: "Cluster hardware barrier 0 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_0_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_1_SELF_TRIG" // demux base address offset : 0x200, Address : 0x34
+      desc: "Cluster hardware barrier 1 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_1_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_2_SELF_TRIG" // demux base address offset : 0x200, Address : 0x54
+      desc: "Cluster hardware barrier 2 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_2_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_3_SELF_TRIG" // demux base address offset : 0x200, Address : 0x74
+      desc: "Cluster hardware barrier 3 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_3_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_4_SELF_TRIG" // demux base address offset : 0x200, Address : 0x94
+      desc: "Cluster hardware barrier 4 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_4_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_5_SELF_TRIG" // demux base address offset : 0x200, Address : 0xB4
+      desc: "Cluster hardware barrier 5 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_5_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_6_SELF_TRIG" // demux base address offset : 0x200, Address : 0xD4
+      desc: "Cluster hardware barrier 6 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_6_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_7_SELF_TRIG" // demux base address offset : 0x200, Address : 0xF4
+      desc: "Cluster hardware barrier 7 self trigger command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "T"
+          resval: 0x0
+          desc:	"Sets HW_BARRIER_7_STATUS.HBS[i] to 1'b1 when issued by cluster core i."
+        }
+      ]
+    }
+    { name: "HW_BARRIER_0_TRIG_WAIT" // demux base address offset : 0x200, Address : 0x18
+      desc: "Cluster hardware barrier 0 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_0[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_0 is released.
+	        The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+	}
+      ]
+    }
+    { name: "HW_BARRIER_1_TRIG_WAIT" // demux base address offset : 0x200, Address : 0x38
+      desc: "Cluster hardware barrier 1 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_1[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_1 is released.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_2_TRIG_WAIT" // demux base address offset : 0x200, Address : 0x58
+      desc: "Cluster hardware barrier 2 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_2[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_2 is released.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_3_TRIG_WAIT" // demux base address offset : 0x200, Address : 0x78
+      desc: "Cluster hardware barrier 3 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_3[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_3 is released.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_4_TRIG_WAIT" // demux base address offset : 0x200, Address : 0x98
+      desc: "Cluster hardware barrier 4 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_4[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_4 is released.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_5_TRIG_WAIT" // demux base address offset : 0x200, Address : 0xB8
+      desc: "Cluster hardware barrier 5 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_5[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_5 is released.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_6_TRIG_WAIT" // demux base address offset : 0x200, Address : 0xD8
+      desc: "Cluster hardware barrier 6 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_6[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_6 is released.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_7_TRIG_WAIT" // demux base address offset : 0x200, Address : 0xF8
+      desc: "Cluster hardware barrier 7 trigger and wait command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_7[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_7 is released.
+                The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_0_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0x1C
+      desc: "Cluster hardware barrier 0 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc:	'''Set HW_BARRIER_0[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_0 is released.
+	        In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+      	      	'''
+        }
+      ]	
+    }
+    { name: "HW_BARRIER_1_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0x3C
+      desc: "Cluster hardware barrier 1 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_1[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_1 is released.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_2_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0x5C
+      desc: "Cluster hardware barrier 2 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_2[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_2 is released.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_3_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0x7C
+      desc: "Cluster hardware barrier 3 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_3[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_3 is released.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_4_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0x9C
+      desc: "Cluster hardware barrier 4 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_4[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_4 is released.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_5_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0xBC
+      desc: "Cluster hardware barrier 5 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_5[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_5 is released.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_6_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0xDC
+      desc: "Cluster hardware barrier 6 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_6[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_6 is released.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+    { name: "HW_BARRIER_7_TRIG_WAIT_CLEAR" // demux base address offset : 0x200, Address : 0xFC
+      desc: "Cluster hardware barrier 7 trigger, wait and clear command register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+	{ bits: "31:0"
+          name: "EBM"
+          resval: 0x0
+          desc: '''Set HW_BARRIER_7[i] when issued by cluster core i and gate the issuing cluster core i clock until HW_BARRIER_7 is released.
+                In addition, EVENT_BUFFER.EB[i] bits are cleared after the read if EVT_MASK[i]=1'b1. The read content of this bitfield is equivalent to EVENT_BUFFER_MASKED.EBM
+                '''
+        }
+      ]
+    }
+  ]
+}
