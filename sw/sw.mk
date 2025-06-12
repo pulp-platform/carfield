@@ -68,8 +68,8 @@ CAR_ELFLOAD_PULPD_INTF_PATH := $(basename $(CAR_ELFLOAD_PULPD_INTF_SRC_C))
 CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C := $(CAR_SW_DIR)/tests/bare-metal/hostd/spatzd_offloader_blocking.c
 CAR_ELFLOAD_BLOCKING_SPATZD_PATH := $(basename $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C))
 
-CAR_SW_TEST_SRCS_S	= $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.S)
-CAR_SW_TEST_SRCS_C	= $(filter-out $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C) $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C), $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.c))
+CAR_SW_TEST_SRCS_S     = $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.S)
+CAR_SW_TEST_SRCS_C     = $(filter-out $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C) $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C), $(wildcard $(CAR_SW_DIR)/tests/bare-metal/hostd/*.c))
 
 CAR_SW_TEST_DRAM_DUMP	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.dump) $(CAR_SW_TEST_SRCS_C:.c=.car.dram.dump)
 CAR_SW_TEST_DRAM_SLM	= $(CAR_SW_TEST_SRCS_S:.S=.car.dram.slm)  $(CAR_SW_TEST_SRCS_C:.c=.car.dram.slm)
@@ -109,39 +109,19 @@ car-pulpd-sw-offload-tests: \
 car-spatzd-sw-offload-tests: \
     $(addsuffix .offload.car.dram.dump,$(addprefix $(CAR_ELFLOAD_BLOCKING_SPATZD_PATH)., $(SPATZD_NAMES)))
 
-$(CAR_ELFLOAD_BLOCKING_SAFED_PATH).%.offload.car.o: \
-    $(CAR_SW_DIR)/tests/bare-metal/safed/%.h \
-    $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C)
-	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
-	  -include $< \
-	  -c $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C) \
-	  -o $@
+CC_OFFLOAD := $(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS)
 
-$(CAR_ELFLOAD_BLOCKING_PULPD_PATH).%.offload.car.o: \
-    $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.h \
-    $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) \
-    $(CAR_ELFLOAD_PULPD_INTF_SRC_C)
-	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
-	  -include $< \
-	  -c $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) \
-	  -o $@
+# $1 = path-prefix var, $2 = subdir, $3 = space-sep .c prereqs
+define OFFLOAD_RULE
+$(1).%.offload.car.o: $(CAR_SW_DIR)/tests/bare-metal/$(2)/%.h $3
+	$(CC_OFFLOAD) -include $$< -c $(firstword $3) -o $$@
+endef
 
-$(CAR_ELFLOAD_PULPD_INTF_PATH).%.offload.car.o: \
-    $(CAR_SW_DIR)/tests/bare-metal/pulpd/%.h \
-    $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) \
-    $(CAR_ELFLOAD_PULPD_INTF_SRC_C)
-	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
-	  -include $< \
-	  -c $(CAR_ELFLOAD_PULPD_INTF_SRC_C) \
-	  -o $@
-
-$(CAR_ELFLOAD_BLOCKING_SPATZD_PATH).%.offload.car.o: \
-    $(CAR_SW_DIR)/tests/bare-metal/spatzd/%.h \
-    $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C)
-	$(CHS_SW_CC) $(CAR_SW_INCLUDES) $(CHS_SW_CCFLAGS) \
-	  -include $< \
-	  -c $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C) \
-	  -o $@
+# four instantiations (prereqs list’s first word is what gets -c’d)
+$(eval $(call OFFLOAD_RULE,$(CAR_ELFLOAD_BLOCKING_SAFED_PATH),safed,       $(CAR_ELFLOAD_BLOCKING_SAFED_SRC_C)))
+$(eval $(call OFFLOAD_RULE,$(CAR_ELFLOAD_BLOCKING_PULPD_PATH),pulpd,       $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C)))
+$(eval $(call OFFLOAD_RULE,$(CAR_ELFLOAD_PULPD_INTF_PATH),pulpd,          $(CAR_ELFLOAD_BLOCKING_PULPD_SRC_C) $(CAR_ELFLOAD_PULPD_INTF_SRC_C)))
+$(eval $(call OFFLOAD_RULE,$(CAR_ELFLOAD_BLOCKING_SPATZD_PATH),spatzd,     $(CAR_ELFLOAD_BLOCKING_SPATZD_SRC_C)))
 
 %.offload.car.dram.elf: %.offload.car.o
 	$(CHS_SW_CC) $(CAR_SW_INCLUDES) \
