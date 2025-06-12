@@ -162,11 +162,6 @@ car-checkout: car-checkout-deps
 include $(CAR_SW_DIR)/sw.mk
 
 ## @section Carfield platform SW build
-#.PHONY: chs-sw-build
-## Build the host domain (Cheshire) SW libraries and generates an archive (`libcheshire.a`)
-## available for Carfield as static library at link time.
-#chs-sw-build: chs-sw-all
-
 .PHONY: car-sw-build
 ## Builds carfield application SW and specific libraries. It links against `libcheshire.a`.
 car-sw-build: | venv
