@@ -18,3 +18,4 @@ flatdict
 peakrdl
 peakrdl-rawheader
 setuptools<81
+json5

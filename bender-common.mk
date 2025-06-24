@@ -11,7 +11,8 @@ CARFIELD_CONFIG ?= carfield_l2dual_spatz_periph
 # bender targets
 common_targs += -t cva6
 common_targs += -t mchan
-common_targs += -t spatz
+common_targs += -t snitch_cluster
+common_targs += -t snitch_cluster_wrapper
 common_targs += -t integer_cluster
 common_targs += -t cv32e40p_use_ff_regfile
 common_targs += -t scm_use_fpga_scm

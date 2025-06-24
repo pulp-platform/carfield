@@ -57,7 +57,7 @@
     };
     ctrl-regs@3000000 {
       compatible = "eth,control-regs";
-      reg = <0x0 0x3000000 0x0 0x1000>;
+      reg = <0x0 0x300r 0x0 0x1000>;
     };
     axi_llc@3001000 {
       compatible = "eth,axi-llc";
@@ -168,11 +168,11 @@
       // Link to the buffer for this device
       //memory-region = <&reserved_dev_buffer>;
     };
-    spatz-cluster@51000000 {
-      compatible = "spatz-cluster,carfield";
+    snitch-cluster@51000000 {
+    //spatz-cluster@51000000 {
+      //compatible = "spatz-cluster,carfield";
+      compatible = "snitch-cluster,carfield";
       reg = <0x0 0x51000000 0x0 0x800000>;
-      // Link to the buffer for this device
-     // memory-region = <&reserved_dev_buffer>;
       iommus = <&riscv_iommu>;
     };
     riscv_iommu: iommu@2000a000 {

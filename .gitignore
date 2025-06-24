@@ -1,6 +1,4 @@
 .bender
-cheshire
-spatz
 *.log
 *.wlf
 /.venv/
@@ -26,6 +24,12 @@ TAGS
 /pulp_cluster
 /safety_island
 /spatz
+/snitch
+
+# snitch bootrom
+hw/snitch_cluster_carfield/bootrom/*.bin
+hw/snitch_cluster_carfield/bootrom/*.dump
+hw/snitch_cluster_carfield/bootrom/*.elf
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

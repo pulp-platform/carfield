@@ -1,3 +1,6 @@
 [submodule "sw/deps/cva6-sdk"]
 	path = sw/deps/cva6-sdk
 	url = https://github.com/pulp-platform/cva6-sdk.git
+[submodule "sw/deps/riscv-iommu-tests"]
+	path = sw/deps/riscv-iommu-tests
+	url = https://github.com/CyrilKoe/riscv-iommu-tests.git
