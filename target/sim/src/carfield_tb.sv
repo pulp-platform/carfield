@@ -453,6 +453,7 @@ module tb_carfield_soc;
       // set secure boot mode
       fix.set_secure_boot(secure_boot);
 
+/*
       if (spatzd_preload_elf != "") begin
 
         // Wait for reset
@@ -542,6 +543,7 @@ module tb_carfield_soc;
 
         $finish;
       end
+*/
     end
   end
 
