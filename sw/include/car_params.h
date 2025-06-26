@@ -10,7 +10,7 @@
 #pragma once
 
 #ifndef LINUX_APP // Hardcoded const pointers
-const void* car_soc_ctrl = 0x20010000;
+const void* car_soc_ctrl = 0x21002000;
 const void* car_safety_island = 0x60000000;
 const void* car_integer_cluster = 0x50000000;
 const void* car_spatz_cluster = 0x51000000;
