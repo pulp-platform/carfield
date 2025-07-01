@@ -29,6 +29,8 @@ c_header = """\
 #include "hyperbus_test.h"
 #endif
 
+#include <stdint.h>
+
 extern int __cluster_code_start;
 extern int __cluster_code_end;
 

@@ -13,3 +13,4 @@ mkdocs
 mkdocs-material
 mkdocs-glightbox
 dataclasses
+jstyleson

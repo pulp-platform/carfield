@@ -17,7 +17,6 @@
 #include "regs/cheshire.h"
 #include "csr.h"
 #include "util.h"
-#include "payload.h"
 #include "printf.h"
 
 #define LCL

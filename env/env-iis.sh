@@ -9,3 +9,5 @@ export PATH=/usr/pack/riscv-1.0-kgf/riscv64-gcc-11.2.0/bin:$PATH # RV64 GCC tool
 export SAFED_RISCV=/usr/pack/riscv-1.0-kgf/pulp-gcc-2.6.0/bin/riscv32-unknown-elf
 export PULPD_RISCV=/usr/pack/pulpsdk-1.0-kgf/artifactory/pulp-sdk-release/pkg/pulp_riscv_gcc/1.0.16/bin/riscv32-unknown-elf
 export QUESTA=questa-2023.4
+export LLVM_INSTALL_DIR=/usr/pack/riscv-1.0-kgf/spatz-llvm-2023.08.10
+export GCC_INSTALL_DIR=/usr/pack/riscv-1.0-kgf/spatz-gcc-7.1.1
