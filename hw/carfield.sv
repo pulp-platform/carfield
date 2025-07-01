@@ -1322,7 +1322,7 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
   // PULP cluster configuration
   localparam pulp_cluster_package::pulp_cluster_cfg_t IntegerClusterCfg = '{
     CoreType: pulp_cluster_package::RI5CY,
-    NumCores: 12,
+    NumCores: 8,
     DmaNumPlugs: 4,
     DmaNumOutstandingBursts: 8,
     DmaBurstLength: 256,
