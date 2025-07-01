@@ -223,6 +223,14 @@ packages:
       Git: https://github.com/pulp-platform/event_unit_flex.git
     dependencies:
     - common_cells
+  flex-v:
+    revision: e9355c2f6ec4c105abdff39489e5d1be93bc4374
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/flex-v.git
+    dependencies:
+    - fpnew
+    - tech_cells_generic
   fpnew:
     revision: a8e0cba6dd50f357ece73c2c955d96efc3c6c315
     version: null
@@ -391,7 +399,7 @@ packages:
     - axi
     - common_verification
   pulp_cluster:
-    revision: 91c67fe61c398f53354f0ec9e80490fa4b2cba90
+    revision: cd206be254b7965d6923ad5b884987bf67c9d5de
     version: null
     source:
       Git: https://github.com/pulp-platform/pulp_cluster.git
@@ -405,6 +413,7 @@ packages:
     - common_cells
     - cv32e40p
     - event_unit_flex
+    - flex-v
     - hci
     - hier-icache
     - ibex
@@ -415,7 +424,6 @@ packages:
     - redmule
     - redundancy_cells
     - register_interface
-    - riscv
     - scm
     - softex
     - tech_cells_generic
@@ -454,14 +462,6 @@ packages:
     - axi
     - common_cells
     - common_verification
-  riscv:
-    revision: c760db14dbd6cc3ec3b8ae8274df2eac7225bcac
-    version: null
-    source:
-      Git: https://github.com/AlSaqr-platform/riscv_nn.git
-    dependencies:
-    - fpnew
-    - tech_cells_generic
   riscv-dbg:
     revision: 138d74bcaa90c70180c12215db3776813d2a95f2
     version: 0.8.0
