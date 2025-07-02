@@ -451,7 +451,7 @@ typedef enum hartid_t {
 
 
 localparam int unsigned MaxHartId = 63;
-localparam int unsigned IntClusterNumCores = 12;
+localparam int unsigned IntClusterNumCores = 8;
 localparam bit [MaxHartId:0] SafetyIslandExtHarts =
   {MaxHartId+1{1'b0}} | (((1<<IntClusterNumCores) - 1) << PulpHartIdOffs);
 
