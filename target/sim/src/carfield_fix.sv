@@ -130,7 +130,7 @@ module carfield_soc_fixture;
   wire [NumPhys-1:0][7:0]           pad_hyper_dq;
 
   carfield      #(
-    .CheshireCfg ( DutCheshireCfg ),
+    .Cfg         ( DutCheshireCfg ),
     .HypNumPhys  ( NumPhys   ),
     .HypNumChips ( NumChips  ),
     .reg_req_t   ( reg_req_t ),
