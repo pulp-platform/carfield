@@ -31,13 +31,13 @@ module carfield_soc_fixture;
   // DUT //
   /////////
 
-  localparam cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault;
-  `CHESHIRE_TYPEDEF_ALL(, DutCfg)
+  localparam cheshire_cfg_t DutCheshireCfg = carfield_pkg::CheshireCfg;
+  `CHESHIRE_TYPEDEF_ALL(, DutCheshireCfg)
 
   localparam time         ClkPeriodSys  = 10ns;
   localparam time         ClkPeriodJtag = 40ns;
   localparam time         ClkPeriodRtc  = 1000ns; // 1MHz RTC clock. Note: needs to equal
-                                                  // `DutCfg.RTCFreq` for successful autonomous boot
+                                                  // `DutCheshireCfg.RTCFreq` for successful autonomous boot
                                                   // (e.g., SPI)
   localparam int unsigned RstCycles     = 5;
   localparam real         TAppl         = 0.1;
@@ -130,7 +130,7 @@ module carfield_soc_fixture;
   wire [NumPhys-1:0][7:0]           pad_hyper_dq;
 
   carfield      #(
-    .Cfg         ( DutCfg    ),
+    .CheshireCfg ( DutCheshireCfg ),
     .HypNumPhys  ( NumPhys   ),
     .HypNumChips ( NumChips  ),
     .reg_req_t   ( reg_req_t ),
@@ -243,7 +243,7 @@ module carfield_soc_fixture;
 
   // Verification IPs for carfield
   vip_carfield_soc #(
-    .DutCfg         ( DutCfg ),
+    .DutCfg         ( DutCheshireCfg ),
     // Determine whether we preload the hyperram model or not User preload. If 0, the memory model
     // is not preloaded at time 0.
     .HypUserPreload ( `HYP_USER_PRELOAD ),
@@ -292,7 +292,7 @@ module carfield_soc_fixture;
 
   // VIP
   vip_cheshire_soc #(
-    .DutCfg            ( DutCfg ),
+    .DutCfg            ( DutCheshireCfg ),
     .axi_ext_llc_req_t ( axi_llc_req_t ),
     .axi_ext_llc_rsp_t ( axi_llc_rsp_t ),
     .axi_ext_mst_req_t ( axi_mst_req_t ),
@@ -330,8 +330,8 @@ module carfield_soc_fixture;
   if (CarfieldIslandsCfg.safed.enable) begin : gen_safed_vip
     localparam time ClkPeriodSafedJtag = 20ns;
 
-    localparam axi_in_t AxiIn = gen_axi_in(DutCfg);
-    localparam int unsigned AxiSlvIdWidth = DutCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+    localparam axi_in_t AxiIn = gen_axi_in(DutCheshireCfg);
+    localparam int unsigned AxiSlvIdWidth = DutCheshireCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
 
     vip_safety_island_soc #(
       .DutCfg            ( SafetyIslandCfg ),
@@ -348,11 +348,11 @@ module carfield_soc_fixture;
       .ClkPeriodJtag     ( ClkPeriodSafedJtag    ),
       .ClkPeriodRtc      ( ClkPeriodRtc          ),
       .RstCycles         ( RstCycles             ),
-      .AxiDataWidth      ( DutCfg.AxiDataWidth   ),
-      .AxiAddrWidth      ( DutCfg.AddrWidth      ),
+      .AxiDataWidth      ( DutCheshireCfg.AxiDataWidth   ),
+      .AxiAddrWidth      ( DutCheshireCfg.AddrWidth      ),
       .AxiInputIdWidth   ( AxiSlvIdWidth         ),
-      .AxiOutputIdWidth  ( DutCfg.AxiMstIdWidth  ),
-      .AxiUserWidth      ( DutCfg.AxiUserWidth   ),
+      .AxiOutputIdWidth  ( DutCheshireCfg.AxiMstIdWidth  ),
+      .AxiUserWidth      ( DutCheshireCfg.AxiUserWidth   ),
       .AxiDebug          ( 0     ),
       .ApplFrac          ( TAppl ),
       .TestFrac          ( TTest )

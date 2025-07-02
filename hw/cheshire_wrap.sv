@@ -183,8 +183,9 @@ module cheshire_wrap
   output logic                  [NumAsyncRegSlv-1:0] ext_reg_async_slv_ack_o,
   input  cheshire_reg_ext_rsp_t [NumAsyncRegSlv-1:0] ext_reg_async_slv_data_i,
   // Interrupts from external devices
-  input  logic [cheshire_pkg::iomsb(Cfg.NumExtInIntrs):0]                                  intr_ext_i,
-  output logic [cheshire_pkg::iomsb(Cfg.NumExtOutIntrTgts):0][cheshire_pkg::iomsb(Cfg.NumExtOutIntrs):0] intr_ext_o,
+  input  logic [cheshire_pkg::iomsb(Cfg.NumExtInIntrs):0]  intr_ext_i,
+  output logic [cheshire_pkg::iomsb(Cfg.NumExtOutIntrTgts):0]
+               [cheshire_pkg::iomsb(Cfg.NumExtOutIntrs):0] intr_ext_o,
   // Interrupts to external harts
   output logic [cheshire_pkg::iomsb(NumIrqCtxts*Cfg.NumExtIrqHarts):0] xeip_ext_o,
   output logic [cheshire_pkg::iomsb(Cfg.NumExtIrqHarts):0]             mtip_ext_o,

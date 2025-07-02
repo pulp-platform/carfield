@@ -589,7 +589,7 @@ typedef struct packed {
 // verilog_lint: waive-start line-length
 
 // Cheshire configuration
-localparam cheshire_cfg_t CarfieldCfgDefault = '{
+localparam cheshire_cfg_t CheshireCfg = '{
   // CVA6 parameters
   Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
   Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
