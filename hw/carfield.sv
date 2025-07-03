@@ -1387,6 +1387,8 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     default: '0
   };
 
+  localparam logic [5:0] IntClusterIndex = (carfield_pkg::PulpHartIdOffs >> 5);
+
 `ifndef INT_CLUSTER_NETLIST
   pulp_cluster #(
     .Cfg                         ( IntegerClusterCfg )
@@ -1401,8 +1403,7 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     .pmu_mem_pwdn_i              ( '0                                        ),
     .base_addr_i                 ( CarfieldIslandsCfg.pulp.base[31:28]       ),
     .test_mode_i                 ( test_mode_i                               ),
-    // TODO: check this!
-    .cluster_id_i                ( '0/*carfield_pkg::IntClusterIndex*/       ),
+    .cluster_id_i                ( IntClusterIndex                           ),
     .en_sa_boot_i                ( car_regs_reg2hw.pulp_cluster_boot_enable  ),
     .fetch_en_i                  ( car_regs_reg2hw.pulp_cluster_fetch_enable ),
     .eoc_o                       ( car_regs_hw2reg.pulp_cluster_eoc.d        ),

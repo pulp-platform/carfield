@@ -507,7 +507,6 @@ localparam int unsigned IntClusterBootAddrDefaultOffs = 'h8080;
 localparam int unsigned IntClusterBootAddr = CarfieldIslandsCfg.l2_port0.base +
                                              IntClusterBootAddrDefaultOffs;
 localparam int unsigned IntClusterNumEoc = 1;
-localparam logic [ 5:0] IntClusterIndex = (PulpHartIdOffs >> 5);
 
 /*************************************/
 /* Floating Point Cluster Parameters */
