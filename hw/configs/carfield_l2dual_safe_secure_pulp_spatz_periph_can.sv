@@ -45,7 +45,7 @@ localparam doub_bt SecurityIslandSize = 'h0;
 // Mailbox
 localparam bit     MailboxEnable = 1;
 localparam doub_bt MailboxBase = 'h40000000;
-localparam doub_bt MailboxSize = 'h00001000;
+localparam doub_bt MailboxSize = 'h00003000;
 /*********************
  * APB Configuration *
  ********************/
