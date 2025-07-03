@@ -1387,7 +1387,7 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
     default: '0
   };
 
-  localparam logic [5:0] IntClusterIndex = (carfield_pkg::PulpHartIdOffs >> 5);
+  localparam logic [5:0] IntClusterIndex = (carfield_pkg::PulpHartIdOffs >> 6);
 
 `ifndef INT_CLUSTER_NETLIST
   pulp_cluster #(
