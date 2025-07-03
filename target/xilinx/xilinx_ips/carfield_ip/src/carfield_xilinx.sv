@@ -278,7 +278,7 @@ module carfield_xilinx
   // Carfield Cfg //
   //////////////////
 
-  localparam cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault;
+  localparam cheshire_cfg_t Cfg = carfield_pkg::CheshireCfg;
   `CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
 
   ///////////////////
@@ -691,7 +691,7 @@ module carfield_xilinx
   logic jtag_host_to_safety, jtag_safety_to_ot;
 
   carfield #(
-      .Cfg (carfield_pkg::CarfieldCfgDefault),
+      .Cfg (carfield_pkg::CheshireCfg),
       .reg_req_t(carfield_reg_req_t),
       .reg_rsp_t(carfield_reg_rsp_t),
 `ifdef GEN_NO_HYPERBUS // bender-xilinx.mk

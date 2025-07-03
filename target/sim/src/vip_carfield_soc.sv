@@ -11,7 +11,7 @@ module vip_carfield_soc
   import cheshire_pkg::*;
 #(
   // DUT
-  parameter cheshire_cfg_t DutCfg = carfield_pkg::CarfieldCfgDefault,
+  parameter cheshire_cfg_t DutCfg = carfield_pkg::CheshireCfg,
   parameter type         axi_slv_ext_req_t = logic,
   parameter type         axi_slv_ext_rsp_t = logic,
   parameter int unsigned HypNumPhys     = 2,

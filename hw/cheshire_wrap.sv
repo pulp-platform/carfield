@@ -16,7 +16,7 @@ module cheshire_wrap
   import cheshire_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = '0,
-  parameter dm::hartinfo_t [iomsb(Cfg.NumExtDbgHarts)-1:0] ExtHartinfo = '0,
+  parameter dm::hartinfo_t [cheshire_pkg::iomsb(Cfg.NumExtDbgHarts)-1:0] ExtHartinfo = '0,
   parameter int unsigned NumExtIntrs            = 32,
   parameter type cheshire_axi_ext_llc_ar_chan_t = logic,
   parameter type cheshire_axi_ext_llc_aw_chan_t = logic,
@@ -134,46 +134,46 @@ module cheshire_wrap
   output logic [    LogDepth:0] llc_mst_w_wptr_o ,
   input  logic [    LogDepth:0] llc_mst_w_rptr_i ,
   // External AXI isolate slave Ports (except the Mailbox)
-  input  logic [iomsb(Cfg.AxiExtNumSlv):0]                    axi_ext_slv_isolate_i,
-  output logic [iomsb(Cfg.AxiExtNumSlv):0]                    axi_ext_slv_isolated_o,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumSlv):0]                    axi_ext_slv_isolate_i,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumSlv):0]                    axi_ext_slv_isolated_o,
   // External async AXI slave Ports (except the Mailbox)
-  output logic [iomsb(NumSlaveCDCs):0][ExtSlvArWidth-1:0] axi_ext_slv_ar_data_o,
-  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_wptr_o,
-  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_rptr_i,
-  output logic [iomsb(NumSlaveCDCs):0][ExtSlvAwWidth-1:0] axi_ext_slv_aw_data_o,
-  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_aw_wptr_o,
-  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_aw_rptr_i,
-  input  logic [iomsb(NumSlaveCDCs):0][ ExtSlvBWidth-1:0] axi_ext_slv_b_data_i ,
-  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_b_wptr_i ,
-  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_b_rptr_o ,
-  input  logic [iomsb(NumSlaveCDCs):0][ ExtSlvRWidth-1:0] axi_ext_slv_r_data_i ,
-  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_r_wptr_i ,
-  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_r_rptr_o ,
-  output logic [iomsb(NumSlaveCDCs):0][ ExtSlvWWidth-1:0] axi_ext_slv_w_data_o ,
-  output logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_wptr_o ,
-  input  logic [iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_rptr_i ,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][ExtSlvArWidth-1:0] axi_ext_slv_ar_data_o,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_wptr_o,
+  input  logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_ar_rptr_i,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][ExtSlvAwWidth-1:0] axi_ext_slv_aw_data_o,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_aw_wptr_o,
+  input  logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_aw_rptr_i,
+  input  logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][ ExtSlvBWidth-1:0] axi_ext_slv_b_data_i ,
+  input  logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_b_wptr_i ,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_b_rptr_o ,
+  input  logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][ ExtSlvRWidth-1:0] axi_ext_slv_r_data_i ,
+  input  logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_r_wptr_i ,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_r_rptr_o ,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][ ExtSlvWWidth-1:0] axi_ext_slv_w_data_o ,
+  output logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_wptr_o ,
+  input  logic [cheshire_pkg::iomsb(NumSlaveCDCs):0][       LogDepth:0] axi_ext_slv_w_rptr_i ,
   // External async AXI master Ports
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][ExtMstArWidth-1:0] axi_ext_mst_ar_data_i,
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_ar_wptr_i,
-  output logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_ar_rptr_o,
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][ExtMstAwWidth-1:0] axi_ext_mst_aw_data_i,
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_aw_wptr_i,
-  output logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_aw_rptr_o,
-  output logic [iomsb(Cfg.AxiExtNumMst):0][ ExtMstBWidth-1:0] axi_ext_mst_b_data_o ,
-  output logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_b_wptr_o ,
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_b_rptr_i ,
-  output logic [iomsb(Cfg.AxiExtNumMst):0][ ExtMstRWidth-1:0] axi_ext_mst_r_data_o ,
-  output logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_r_wptr_o ,
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_r_rptr_i ,
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][ ExtMstWWidth-1:0] axi_ext_mst_w_data_i ,
-  input  logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_w_wptr_i ,
-  output logic [iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_w_rptr_o ,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][ExtMstArWidth-1:0] axi_ext_mst_ar_data_i,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_ar_wptr_i,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_ar_rptr_o,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][ExtMstAwWidth-1:0] axi_ext_mst_aw_data_i,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_aw_wptr_i,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_aw_rptr_o,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][ ExtMstBWidth-1:0] axi_ext_mst_b_data_o ,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_b_wptr_o ,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_b_rptr_i ,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][ ExtMstRWidth-1:0] axi_ext_mst_r_data_o ,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_r_wptr_o ,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_r_rptr_i ,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][ ExtMstWWidth-1:0] axi_ext_mst_w_data_i ,
+  input  logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_w_wptr_i ,
+  output logic [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0][       LogDepth:0] axi_ext_mst_w_rptr_o ,
   // Mailboxes
   output cheshire_axi_ext_slv_req_t axi_mbox_slv_req_o,
   input  cheshire_axi_ext_slv_rsp_t axi_mbox_slv_rsp_i,
   // External reg demux slaves Cheshire's clock domain (sync)
-  output cheshire_reg_ext_req_t [iomsb(NumSyncRegSlv):0] reg_ext_slv_req_o,
-  input  cheshire_reg_ext_rsp_t [iomsb(NumSyncRegSlv):0] reg_ext_slv_rsp_i,
+  output cheshire_reg_ext_req_t [cheshire_pkg::iomsb(NumSyncRegSlv):0] reg_ext_slv_req_o,
+  input  cheshire_reg_ext_rsp_t [cheshire_pkg::iomsb(NumSyncRegSlv):0] reg_ext_slv_rsp_i,
   // External reg demux slaves other clock domains (async)
   // Padframe and PLL
   output logic                  [NumAsyncRegSlv-1:0] ext_reg_async_slv_req_o,
@@ -183,16 +183,17 @@ module cheshire_wrap
   output logic                  [NumAsyncRegSlv-1:0] ext_reg_async_slv_ack_o,
   input  cheshire_reg_ext_rsp_t [NumAsyncRegSlv-1:0] ext_reg_async_slv_data_i,
   // Interrupts from external devices
-  input  logic [iomsb(Cfg.NumExtInIntrs):0]                                  intr_ext_i,
-  output logic [iomsb(Cfg.NumExtOutIntrTgts):0][iomsb(Cfg.NumExtOutIntrs):0] intr_ext_o,
+  input  logic [cheshire_pkg::iomsb(Cfg.NumExtInIntrs):0]  intr_ext_i,
+  output logic [cheshire_pkg::iomsb(Cfg.NumExtOutIntrTgts):0]
+               [cheshire_pkg::iomsb(Cfg.NumExtOutIntrs):0] intr_ext_o,
   // Interrupts to external harts
-  output logic [iomsb(NumIrqCtxts*Cfg.NumExtIrqHarts):0] xeip_ext_o,
-  output logic [iomsb(Cfg.NumExtIrqHarts):0]             mtip_ext_o,
-  output logic [iomsb(Cfg.NumExtIrqHarts):0]             msip_ext_o,
+  output logic [cheshire_pkg::iomsb(NumIrqCtxts*Cfg.NumExtIrqHarts):0] xeip_ext_o,
+  output logic [cheshire_pkg::iomsb(Cfg.NumExtIrqHarts):0]             mtip_ext_o,
+  output logic [cheshire_pkg::iomsb(Cfg.NumExtIrqHarts):0]             msip_ext_o,
   // Debug interface to external harts
   output logic                               dbg_active_o,
-  output logic [iomsb(Cfg.NumExtDbgHarts):0] dbg_ext_req_o,
-  input  logic [iomsb(Cfg.NumExtDbgHarts):0] dbg_ext_unavail_i,
+  output logic [cheshire_pkg::iomsb(Cfg.NumExtDbgHarts):0] dbg_ext_req_o,
+  input  logic [cheshire_pkg::iomsb(Cfg.NumExtDbgHarts):0] dbg_ext_unavail_i,
   // JTAG interface
   input  logic jtag_tck_i,
   input  logic jtag_trst_ni,
@@ -243,15 +244,15 @@ module cheshire_wrap
 );
 
 // All AXI slave buses
-cheshire_axi_ext_slv_req_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req;
-cheshire_axi_ext_slv_rsp_t [iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp;
+cheshire_axi_ext_slv_req_t [cheshire_pkg::iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_req;
+cheshire_axi_ext_slv_rsp_t [cheshire_pkg::iomsb(Cfg.AxiExtNumSlv):0] axi_ext_slv_rsp;
 
-cheshire_axi_ext_slv_req_t [iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_req;
-cheshire_axi_ext_slv_rsp_t [iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_rsp;
+cheshire_axi_ext_slv_req_t [cheshire_pkg::iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_req;
+cheshire_axi_ext_slv_rsp_t [cheshire_pkg::iomsb(NumSlaveCDCs):0] axi_ext_slv_isolated_rsp;
 
 // All AXI master buses
-cheshire_axi_ext_mst_req_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req;
-cheshire_axi_ext_mst_rsp_t [iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp;
+cheshire_axi_ext_mst_req_t [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_req;
+cheshire_axi_ext_mst_rsp_t [cheshire_pkg::iomsb(Cfg.AxiExtNumMst):0] axi_ext_mst_rsp;
 
 // External LLC (DRAM) bus
 cheshire_axi_ext_llc_req_t axi_llc_mst_req, axi_llc_mst_isolated_req;
@@ -261,8 +262,8 @@ cheshire_axi_ext_llc_rsp_t axi_llc_mst_rsp, axi_llc_mst_isolated_rsp;
 `AXI_ASSIGN_REQ_STRUCT(axi_mbox_slv_req_o, axi_ext_slv_req[MailboxSlvIdx])
 `AXI_ASSIGN_RESP_STRUCT(axi_ext_slv_rsp[MailboxSlvIdx], axi_mbox_slv_rsp_i)
 
-cheshire_reg_ext_req_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_req;
-cheshire_reg_ext_rsp_t [iomsb(Cfg.RegExtNumSlv):0] ext_reg_rsp;
+cheshire_reg_ext_req_t [cheshire_pkg::iomsb(Cfg.RegExtNumSlv):0] ext_reg_req;
+cheshire_reg_ext_rsp_t [cheshire_pkg::iomsb(Cfg.RegExtNumSlv):0] ext_reg_rsp;
 
 // Generate synchronous external register interface from Cheshire
 for (genvar i = 0; i < NumSyncRegSlv; i++) begin: gen_ext_reg_sync

@@ -21,7 +21,7 @@ module carfield
   import tlul_ot_pkg::*;
   import spatz_cluster_pkg::*;
 #(
-  parameter cheshire_cfg_t Cfg = carfield_pkg::CarfieldCfgDefault,
+  parameter cheshire_cfg_t Cfg = carfield_pkg::CheshireCfg,
   parameter int unsigned HypNumPhys  = 2,
   parameter int unsigned HypNumChips = 2,
 `ifdef GEN_NO_HYPERBUS // bender-xilinx.mk
@@ -173,10 +173,15 @@ module carfield
   output carfield_debug_sigs_t                        debug_signals_o
 );
 
+`CHESHIRE_TYPEDEF_ALL(carfield_, CheshireCfg)
+// Generate indices and get maps for all ports
+localparam axi_in_t   AxiIn   = gen_axi_in(CheshireCfg);
+localparam axi_out_t  AxiOut  = gen_axi_out(CheshireCfg);
+localparam int unsigned AxiSlvIdWidth = CheshireCfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
+
 /*********************************
 * General parameters and defines *
 **********************************/
-`CHESHIRE_TYPEDEF_ALL(carfield_, Cfg)
 
 // Clocking and reset strategy
 logic    periph_rst_n;
@@ -203,8 +208,8 @@ logic  l2_clk;
 
 // verilog_lint: waive-start line-length
 // Peripheral interrupts
-logic [Cfg.NumExtOutIntrs-1:0]      chs_intrs_distributed;
-logic [Cfg.NumExtIrqHarts-1:0]      chs_mti;
+logic [CheshireCfg.NumExtOutIntrs-1:0]      chs_intrs_distributed;
+logic [CheshireCfg.NumExtIrqHarts-1:0]      chs_mti;
 logic [CarfieldNumPeriphsIntrs-1:0] car_periph_intrs;
 
 logic       car_sys_timer_lo_intr, car_sys_timer_hi_intr,  car_sys_timer_lo_intr_sync, car_sys_timer_hi_intr_sync;
@@ -271,7 +276,7 @@ assign car_periph_intrs = {
 
 // Mailbox unit interrupts
 
-localparam int unsigned CheshireNumIntHarts = Cfg.NumCores;
+localparam int unsigned CheshireNumIntHarts = CheshireCfg.NumCores;
 localparam int unsigned SafedNumIntHarts    = 1;
 localparam int unsigned SecdNumIntHarts     = 1;
 
@@ -324,89 +329,83 @@ logic [IntClusterNumCores-1:0] pulpcl_dbg_reqs;
 logic [MaxHartId:0] safed_dbg_reqs;
 assign pulpcl_dbg_reqs = safed_dbg_reqs[PulpHartIdOffs+:IntClusterNumCores];
 
-// Generate indices and get maps for all ports
-localparam axi_in_t   AxiIn   = gen_axi_in(Cfg);
-localparam axi_out_t  AxiOut  = gen_axi_out(Cfg);
-
 ///////////////////////////////
 // Wide Parameters: A48, D32 //
 ///////////////////////////////
 
-localparam int unsigned AxiSlvIdWidth = Cfg.AxiMstIdWidth + $clog2(AxiIn.num_in);
-
 // Wide AXI types
-typedef logic [       Cfg.AddrWidth-1:0] car_addrw_t;
-typedef logic [    Cfg.AxiDataWidth-1:0] car_dataw_t;
-typedef logic [(Cfg.AxiDataWidth)/8-1:0] car_strb_t;
-typedef logic [    Cfg.AxiUserWidth-1:0] car_usr_t;
+typedef logic [       CheshireCfg.AddrWidth-1:0] car_addrw_t;
+typedef logic [    CheshireCfg.AxiDataWidth-1:0] car_dataw_t;
+typedef logic [(CheshireCfg.AxiDataWidth)/8-1:0] car_strb_t;
+typedef logic [    CheshireCfg.AxiUserWidth-1:0] car_usr_t;
 typedef logic [       AxiSlvIdWidth-1:0] car_slv_id_t;
 
 // Slave CDC parameters
 localparam int unsigned CarfieldAxiSlvAwWidth =
-                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth   ,
+                        (2**LogDepth)*axi_pkg::aw_width(CheshireCfg.AddrWidth   ,
                                                         AxiSlvIdWidth   ,
-                                                        Cfg.AxiUserWidth);
+                                                        CheshireCfg.AxiUserWidth);
 localparam int unsigned CarfieldAxiSlvWWidth  =
-                        (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
-                                                       Cfg.AxiUserWidth);
+                        (2**LogDepth)*axi_pkg::w_width(CheshireCfg.AxiDataWidth,
+                                                       CheshireCfg.AxiUserWidth);
 localparam int unsigned CarfieldAxiSlvBWidth  =
                         (2**LogDepth)*axi_pkg::b_width(AxiSlvIdWidth   ,
-                                                       Cfg.AxiUserWidth);
+                                                       CheshireCfg.AxiUserWidth);
 localparam int unsigned CarfieldAxiSlvArWidth =
-                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth   ,
+                        (2**LogDepth)*axi_pkg::ar_width(CheshireCfg.AddrWidth   ,
                                                         AxiSlvIdWidth   ,
-                                                        Cfg.AxiUserWidth);
+                                                        CheshireCfg.AxiUserWidth);
 localparam int unsigned CarfieldAxiSlvRWidth  =
-                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth,
+                        (2**LogDepth)*axi_pkg::r_width(CheshireCfg.AxiDataWidth,
                                                        AxiSlvIdWidth   ,
-                                                       Cfg.AxiUserWidth);
+                                                       CheshireCfg.AxiUserWidth);
 
 // Master CDC parameters
 localparam int unsigned CarfieldAxiMstAwWidth =
-                        (2**LogDepth)*axi_pkg::aw_width(Cfg.AddrWidth    ,
-                                                        Cfg.AxiMstIdWidth,
-                                                        Cfg.AxiUserWidth );
+                        (2**LogDepth)*axi_pkg::aw_width(CheshireCfg.AddrWidth    ,
+                                                        CheshireCfg.AxiMstIdWidth,
+                                                        CheshireCfg.AxiUserWidth );
 localparam int unsigned CarfieldAxiMstWWidth  =
-                        (2**LogDepth)*axi_pkg::w_width(Cfg.AxiDataWidth,
-                                                       Cfg.AxiUserWidth);
+                        (2**LogDepth)*axi_pkg::w_width(CheshireCfg.AxiDataWidth,
+                                                       CheshireCfg.AxiUserWidth);
 localparam int unsigned CarfieldAxiMstBWidth  =
-                        (2**LogDepth)*axi_pkg::b_width(Cfg.AxiMstIdWidth,
-                                                      Cfg.AxiUserWidth  );
+                        (2**LogDepth)*axi_pkg::b_width(CheshireCfg.AxiMstIdWidth,
+                                                      CheshireCfg.AxiUserWidth  );
 localparam int unsigned CarfieldAxiMstArWidth =
-                        (2**LogDepth)*axi_pkg::ar_width(Cfg.AddrWidth    ,
-                                                        Cfg.AxiMstIdWidth,
-                                                        Cfg.AxiUserWidth );
+                        (2**LogDepth)*axi_pkg::ar_width(CheshireCfg.AddrWidth    ,
+                                                        CheshireCfg.AxiMstIdWidth,
+                                                        CheshireCfg.AxiUserWidth );
 localparam int unsigned CarfieldAxiMstRWidth  =
-                        (2**LogDepth)*axi_pkg::r_width(Cfg.AxiDataWidth ,
-                                                       Cfg.AxiMstIdWidth,
-                                                       Cfg.AxiUserWidth );
+                        (2**LogDepth)*axi_pkg::r_width(CheshireCfg.AxiDataWidth ,
+                                                       CheshireCfg.AxiMstIdWidth,
+                                                       CheshireCfg.AxiUserWidth );
 
 // External register interface synchronous with Cheshire's clock domain
 carfield_reg_req_t [iomsb(NumSyncRegSlv):0] ext_reg_req, ext_reg_req_cut;
 carfield_reg_rsp_t [iomsb(NumSyncRegSlv):0] ext_reg_rsp, ext_reg_rsp_cut;
 
 `ifndef GEN_NO_HYPERBUS // bender-xilinx.mk
-localparam int unsigned LlcIdWidth = Cfg.AxiMstIdWidth   +
+localparam int unsigned LlcIdWidth = CheshireCfg.AxiMstIdWidth   +
                                      $clog2(AxiIn.num_in)+
-                                     Cfg.LlcNotBypass    ;
+                                     CheshireCfg.LlcNotBypass    ;
 localparam int unsigned LlcArWidth = (2**LogDepth)*
-                                     axi_pkg::ar_width(Cfg.AddrWidth   ,
+                                     axi_pkg::ar_width(CheshireCfg.AddrWidth   ,
                                                        LlcIdWidth      ,
-                                                       Cfg.AxiUserWidth);
+                                                       CheshireCfg.AxiUserWidth);
 localparam int unsigned LlcAwWidth = (2**LogDepth)*
-                                      axi_pkg::aw_width(Cfg.AddrWidth  ,
+                                      axi_pkg::aw_width(CheshireCfg.AddrWidth  ,
                                                        LlcIdWidth      ,
-                                                       Cfg.AxiUserWidth);
+                                                       CheshireCfg.AxiUserWidth);
 localparam int unsigned LlcBWidth  = (2**LogDepth)*
                                       axi_pkg::b_width(LlcIdWidth     ,
-                                                       Cfg.AxiUserWidth);
+                                                       CheshireCfg.AxiUserWidth);
 localparam int unsigned LlcRWidth  = (2**LogDepth)*
-                                      axi_pkg::r_width(Cfg.AxiDataWidth,
+                                      axi_pkg::r_width(CheshireCfg.AxiDataWidth,
                                                       LlcIdWidth      ,
-                                                      Cfg.AxiUserWidth);
+                                                      CheshireCfg.AxiUserWidth);
 localparam int unsigned LlcWWidth  = (2**LogDepth)*
-                                      axi_pkg::w_width(Cfg.AxiDataWidth,
-                                                       Cfg.AxiUserWidth );
+                                      axi_pkg::w_width(CheshireCfg.AxiDataWidth,
+                                                       CheshireCfg.AxiUserWidth );
 
 logic [LlcArWidth-1:0] llc_ar_data;
 logic [    LogDepth:0] llc_ar_wptr;
@@ -429,8 +428,8 @@ logic [    LogDepth:0] llc_w_rptr;
 logic hyper_isolate_req, hyper_isolated_rsp;
 logic security_island_isolate_req;
 
-logic [iomsb(Cfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
-logic [iomsb(Cfg.AxiExtNumMst):0] master_isolated_rsp;
+logic [iomsb(CheshireCfg.AxiExtNumSlv):0] slave_isolate_req, slave_isolated_rsp, slave_isolated;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0] master_isolated_rsp;
 
 // All AXI Slaves (the Mailbox)
 logic [iomsb(NumSlaveCDCs):0][CarfieldAxiSlvAwWidth-1:0] axi_slv_ext_aw_data;
@@ -450,21 +449,21 @@ logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_r_wptr ;
 logic [iomsb(NumSlaveCDCs):0][               LogDepth:0] axi_slv_ext_r_rptr ;
 
 // All AXI Masters
-logic [iomsb(Cfg.AxiExtNumMst):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_wptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_rptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_rptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_wptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_rptr;
-logic [iomsb(Cfg.AxiExtNumMst):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_wptr ;
-logic [iomsb(Cfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_rptr ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][CarfieldAxiMstAwWidth-1:0] axi_mst_ext_aw_data;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_wptr;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_aw_rptr;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][ CarfieldAxiMstWWidth-1:0] axi_mst_ext_w_data ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_wptr ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_w_rptr ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][ CarfieldAxiMstBWidth-1:0] axi_mst_ext_b_data ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_wptr ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_b_rptr ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][CarfieldAxiMstArWidth-1:0] axi_mst_ext_ar_data;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_wptr;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_ar_rptr;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][ CarfieldAxiMstRWidth-1:0] axi_mst_ext_r_data ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_wptr ;
+logic [iomsb(CheshireCfg.AxiExtNumMst):0][               LogDepth:0] axi_mst_ext_r_rptr ;
 
 // soc reg signals
 carfield_reg2hw_t car_regs_reg2hw;
@@ -739,7 +738,7 @@ assign chs_ext_intrs  = {
 
 `ifndef CHS_NETLIST
 cheshire_wrap #(
-  .Cfg                            ( Cfg                          ),
+  .Cfg                            ( CheshireCfg                          ),
   .ExtHartinfo                    ( '0                           ),
   .NumExtIntrs                    ( CarfieldNumExtIntrs          ),
   .cheshire_axi_ext_llc_ar_chan_t ( carfield_axi_llc_ar_chan_t   ),
@@ -912,10 +911,10 @@ hyperbus_wrap      #(
   .NumChips         ( HypNumChips                           ),
   .NumPhys          ( HypNumPhys                            ),
   .IsClockODelayed  ( 1'b0                                  ),
-  .AxiAddrWidth     ( Cfg.AddrWidth                         ),
-  .AxiDataWidth     ( Cfg.AxiDataWidth                      ),
+  .AxiAddrWidth     ( CheshireCfg.AddrWidth                         ),
+  .AxiDataWidth     ( CheshireCfg.AxiDataWidth                      ),
   .AxiIdWidth       ( LlcIdWidth                            ),
-  .AxiUserWidth     ( Cfg.AxiUserWidth                      ),
+  .AxiUserWidth     ( CheshireCfg.AxiUserWidth                      ),
   .axi_req_t        ( carfield_axi_llc_req_t                ),
   .axi_rsp_t        ( carfield_axi_llc_rsp_t                ),
   .axi_w_chan_t     ( carfield_axi_llc_w_chan_t             ),
@@ -929,7 +928,7 @@ hyperbus_wrap      #(
   .reg_rsp_t        ( carfield_a32_d32_reg_rsp_t            ),
   .RxFifoLogDepth   ( 32'd2                                 ),
   .TxFifoLogDepth   ( 32'd2                                 ),
-  .RstChipBase      ( Cfg.LlcOutRegionStart                 ),
+  .RstChipBase      ( CheshireCfg.LlcOutRegionStart                 ),
   .RstChipSpace     ( HypNumPhys * HypNumChips * 'h800_0000 ),
   .PhyStartupCycles ( 300 * 200                             ),
   .AxiLogDepth      ( LogDepth                              ),
@@ -938,7 +937,7 @@ hyperbus_wrap      #(
   .AxiSlaveBWidth   ( LlcBWidth                             ),
   .AxiSlaveRWidth   ( LlcRWidth                             ),
   .AxiSlaveWWidth   ( LlcWWidth                             ),
-  .AxiMaxTrans      ( Cfg.AxiMaxSlvTrans                    ),
+  .AxiMaxTrans      ( CheshireCfg.AxiMaxSlvTrans                    ),
   .CdcSyncStages    ( SyncStages                            )
 ) i_hyperbus_wrap   (
   .clk_i               ( periph_clk         ),
@@ -1026,25 +1025,25 @@ if (CarfieldIslandsCfg.l2_port0.enable) begin: gen_l2
 
   `ifndef L2_WRAP_NETLIST
   l2_wrap #(
-    .Cfg          ( Cfg                    ),
+    .Cfg          ( CheshireCfg            ),
     .NumPort      ( NumL2Ports             ),
-    .AxiAddrWidth ( Cfg.AddrWidth          ),
-    .AxiDataWidth ( Cfg.AxiDataWidth       ),
+    .AxiAddrWidth ( CheshireCfg.AddrWidth  ),
+    .AxiDataWidth ( CheshireCfg.AxiDataWidth ),
     .AxiIdWidth   ( AxiSlvIdWidth          ),
-    .AxiUserWidth ( Cfg.AxiUserWidth       ),
-    .AxiMaxTrans  ( Cfg.AxiMaxSlvTrans     ),
+    .AxiUserWidth ( CheshireCfg.AxiUserWidth ),
+    .AxiMaxTrans  ( CheshireCfg.AxiMaxSlvTrans ),
     .LogDepth     ( LogDepth               ),
     .CdcSyncStages( SyncStages             ),
     .NumRules     ( L2NumRules             ),
     .L2MemSize    ( L2MemSize              ),
     // Atomics
-    .L2MaxReadTxns  ( Cfg.LlcMaxReadTxns   ), // TODO: AMO parameters are default
+    .L2MaxReadTxns  ( CheshireCfg.LlcMaxReadTxns   ), // TODO: AMO parameters are default
                                               // from the LLC (Cheshire), at the
                                               // moment
-    .L2MaxWriteTxns ( Cfg.LlcMaxWriteTxns  ),
-    .AxiUserAmoMsb  ( Cfg.AxiUserAmoMsb    ),
-    .AxiUserAmoLsb  ( Cfg.AxiUserAmoLsb    ),
-    .L2AmoNumCuts   ( Cfg.LlcAmoNumCuts    ),
+    .L2MaxWriteTxns ( CheshireCfg.LlcMaxWriteTxns  ),
+    .AxiUserAmoMsb  ( CheshireCfg.AxiUserAmoMsb    ),
+    .AxiUserAmoLsb  ( CheshireCfg.AxiUserAmoLsb    ),
+    .L2AmoNumCuts   ( CheshireCfg.LlcAmoNumCuts    ),
     .l2_ecc_reg_req_t ( carfield_reg_req_t ),
     .l2_ecc_reg_rsp_t ( carfield_reg_rsp_t )
   ) i_reconfigurable_l2 (
@@ -1168,17 +1167,17 @@ if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
     safety_island_synth_wrapper #(
       .SafetyIslandCfg          ( SafetyIslandCfg            ),
 
-      .AxiAddrWidth             ( Cfg.AddrWidth              ),
-      .AxiDataWidth             ( Cfg.AxiDataWidth           ),
-      .AxiUserWidth             ( Cfg.AxiUserWidth           ),
+      .AxiAddrWidth             ( CheshireCfg.AddrWidth              ),
+      .AxiDataWidth             ( CheshireCfg.AxiDataWidth           ),
+      .AxiUserWidth             ( CheshireCfg.AxiUserWidth           ),
       .AxiInIdWidth             ( AxiSlvIdWidth              ),
-      .AxiOutIdWidth            ( Cfg.AxiMstIdWidth          ),
+      .AxiOutIdWidth            ( CheshireCfg.AxiMstIdWidth          ),
 
       .AxiUserAtop              ( 1'b1                       ),
-      .AxiUserAtopMsb           ( Cfg.AxiUserAmoMsb          ),
-      .AxiUserAtopLsb           ( Cfg.AxiUserAmoLsb          ),
-      .AxiUserEccErr            ( Cfg.AxiUserErrBits         ),
-      .AxiUserEccErrBit         ( Cfg.AxiUserErrLsb          ),
+      .AxiUserAtopMsb           ( CheshireCfg.AxiUserAmoMsb          ),
+      .AxiUserAtopLsb           ( CheshireCfg.AxiUserAmoLsb          ),
+      .AxiUserEccErr            ( CheshireCfg.AxiUserErrBits         ),
+      .AxiUserEccErrBit         ( CheshireCfg.AxiUserErrLsb          ),
 
       .DefaultUser              ( 10'b00000_0_0101           ),
       .LogDepth                 ( LogDepth                   ),
@@ -1320,52 +1319,82 @@ if (CarfieldIslandsCfg.pulp.enable) begin : gen_pulp_cluster
   assign slave_isolated[IntClusterSlvIdx] = slave_isolated_rsp[IntClusterSlvIdx] &
                                             master_isolated_rsp[IntClusterMstIdx];
 
+  // PULP cluster configuration
+  localparam pulp_cluster_package::pulp_cluster_cfg_t IntegerClusterCfg = '{
+    CoreType: pulp_cluster_package::RI5CY,
+    NumCores: 8,
+    DmaNumPlugs: 4,
+    DmaNumOutstandingBursts: 8,
+    DmaBurstLength: 256,
+    NumMstPeriphs: 1,
+    NumSlvPeriphs: 12,
+    ClusterAlias: 1,
+    ClusterAliasBase: 'h0,
+    NumSyncStages: SyncStages,
+    UseHci: 1,
+    TcdmSize: 256*1024,
+    TcdmNumBank: 16,
+    HwpePresent: 1,
+    HwpeCfg: '{NumHwpes: 3,
+               HwpeList: {pulp_cluster_package::SOFTEX,
+                          pulp_cluster_package::NEUREKA,
+                          pulp_cluster_package::REDMULE}
+              },
+    HwpeNumPorts: 9,
+    HMRPresent: 1,
+    HMRDmrEnabled: 1,
+    HMRTmrEnabled: 1,
+    HMRDmrFIxed: 0,
+    HMRTmrFIxed: 0,
+    HMRInterleaveGrps: 1,
+    HMREnableRapidRecovery: 1,
+    HMRSeparateDataVoters: 1,
+    HMRSeparateAxiBus: 0,
+    HMRNumBusVoters: 1,
+    EnableECC: 1,
+    ECCInterco: 1,
+    iCacheNumBanks: 2,
+    iCacheNumLines: 1,
+    iCacheNumWays: 4,
+    iCacheSharedSize: 4*1024,
+    iCachePrivateSize: 512,
+    iCachePrivateDataWidth: 32,
+    EnableReducedTag: 1,
+    L2Size: L2MemSize,
+    DmBaseAddr: carfield_pkg::IntClusterDbgStart,
+    BootRomBaseAddr: carfield_pkg::CarfieldIslandsCfg.l2_port0.base + 'h8080,
+    BootAddr: carfield_pkg::CarfieldIslandsCfg.l2_port0.base + 'h8080,
+    EnablePrivateFpu: 1,
+    EnablePrivateFpDivSqrt: 0,
+    NumAxiIn: 4,
+    NumAxiOut: 3,
+    AxiIdInWidth: AxiSlvIdWidth,
+    AxiIdOutWidth: Cfg.AxiMstIdWidth,
+    AxiAddrWidth: Cfg.AddrWidth,
+    AxiDataInWidth: Cfg.AxiDataWidth,
+    AxiDataOutWidth: Cfg.AxiDataWidth,
+    AxiUserWidth: Cfg.AxiUserWidth,
+    AxiMaxInTrans: Cfg.AxiMaxSlvTrans,
+    AxiMaxOutTrans: Cfg.AxiMaxSlvTrans,
+    AxiCdcLogDepth: LogDepth,
+    AxiCdcSyncStages: SyncStages,
+    SyncStages: SyncStages,
+    ClusterBaseAddr: carfield_pkg::CarfieldAxiMap.AxiStart[CarfieldAxiSlvIdx.pulp],
+    ClusterPeriphOffs: 'h00200000,
+    ClusterExternalOffs: 'h00400000,
+    EnableRemapAddress: 0,
+    SnitchICache: 0,
+    default: '0
+  };
+
+  localparam logic [5:0] IntClusterIndex = (carfield_pkg::PulpHartIdOffs >> 6);
+
 `ifndef INT_CLUSTER_NETLIST
   pulp_cluster #(
-    .NB_CORES                       ( IntClusterNumCores           ),
-    .NB_HWPE_PORTS                  ( IntClusterNumHwpePorts       ),
-    .NB_DMAS                        ( IntClusterNumDmas            ),
-    .NB_MPERIPHS                    ( IntClusterNumMstPer          ),
-    .NB_SPERIPHS                    ( IntClusterNumSlvPer          ),
-    .SynchStages                    ( SyncStages                   ),
-    .TCDM_SIZE                      ( IntClusterTcdmSize           ),
-    .NB_TCDM_BANKS                  ( IntClusterTcdmBanks          ),
-    .HWPE_PRESENT                   ( IntClusterHwpePresent        ),
-    .USE_HETEROGENEOUS_INTERCONNECT ( IntClusterUseHci             ),
-    .SET_ASSOCIATIVE                ( IntClusterSetAssociative     ),
-    .NB_CACHE_BANKS                 ( IntClusterNumCacheBanks      ),
-    .CACHE_LINE                     ( IntClusterNumCacheLines      ),
-    .CACHE_SIZE                     ( IntClusterCacheSize          ),
-    .L0_BUFFER_FEATURE              ( "DISABLED"                   ),
-    .MULTICAST_FEATURE              ( "DISABLED"                   ),
-    .SHARED_ICACHE                  ( "ENABLED"                    ),
-    .DIRECT_MAPPED_FEATURE          ( "DISABLED"                   ),
-    .L2_SIZE                        ( L2MemSize                    ),
-    .USE_REDUCED_TAG                ( "TRUE"                       ),
-    .DEBUG_START_ADDR               ( IntClusterDbgStart           ),
-    .ROM_BOOT_ADDR                  ( IntClusterBootAddr           ),
-    .BOOT_ADDR                      ( IntClusterBootAddr           ),
-    .INSTR_RDATA_WIDTH              ( IntClusterInstrRdataWidth    ),
-    .CLUST_FPU                      ( IntClusterFpu                ),
-    .CLUST_FP_DIVSQRT               ( IntClusterFpuDivSqrt         ),
-    .CLUST_SHARED_FP                ( IntClusterFpu                ),
-    .CLUST_SHARED_FP_DIVSQRT        ( IntClusterFpuDivSqrt         ),
-    .NumAxiMst                      ( IntClusterNumAxiMst          ),
-    .NumAxiSlv                      ( IntClusterNumAxiSlv          ),
-    .AXI_ADDR_WIDTH                 ( Cfg.AddrWidth                ),
-    .AXI_DATA_C2S_WIDTH             ( Cfg.AxiDataWidth             ),
-    .AXI_DATA_S2C_WIDTH             ( Cfg.AxiDataWidth             ),
-    .AXI_USER_WIDTH                 ( Cfg.AxiUserWidth             ),
-    .AXI_ID_IN_WIDTH                ( AxiSlvIdWidth                ),
-    .AXI_ID_OUT_WIDTH               ( Cfg.AxiMstIdWidth            ),
-    .AXI_MAX_IN_TRANS               ( Cfg.AxiMaxSlvTrans           ),
-    .AXI_MAX_OUT_TRANS              ( Cfg.AxiMaxSlvTrans           ),
-    .LOG_DEPTH                      ( LogDepth                     ),
-    .BaseAddr                       ( CarfieldIslandsCfg.pulp.base ),
-    .CdcSynchStages                 ( SyncStages                   )
-  ) i_integer_cluster               (
+    .Cfg                         ( IntegerClusterCfg )
+  ) i_integer_cluster (
 `else
-  int_cluster i_integer_cluster     (
+  int_cluster i_integer_cluster  (
 `endif
     .clk_i                       ( pulp_clk                                  ),
     .rst_ni                      ( pulp_rst_n                                ),
@@ -1495,11 +1524,11 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
 
 `ifndef FP_CLUSTER_NETLIST
   spatz_cluster_wrapper #(
-    .AxiAddrWidth             ( Cfg.AddrWidth           ),
-    .AxiDataWidth             ( Cfg.AxiDataWidth        ),
-    .AxiUserWidth             ( Cfg.AxiUserWidth        ),
+    .AxiAddrWidth             ( CheshireCfg.AddrWidth           ),
+    .AxiDataWidth             ( CheshireCfg.AxiDataWidth        ),
+    .AxiUserWidth             ( CheshireCfg.AxiUserWidth        ),
     .AxiInIdWidth             ( AxiSlvIdWidth           ),
-    .AxiOutIdWidth            ( Cfg.AxiMstIdWidth       ),
+    .AxiOutIdWidth            ( CheshireCfg.AxiMstIdWidth       ),
     .IwcAxiIdOutWidth         ( FpClustIwcAxiIdOutWidth ),
     .LogDepth                 ( LogDepth                ),
     .CdcSyncStages            ( SyncStages              ),
@@ -1664,14 +1693,14 @@ if (CarfieldIslandsCfg.secured.enable) begin : gen_secure_subsystem
   `ifndef SECD_NETLIST
   secure_subsystem_synth_wrap #(
     .HartIdOffs            ( OpnTitHartIdOffs           ),
-    .AxiAddrWidth          ( Cfg.AddrWidth              ),
-    .AxiDataWidth          ( Cfg.AxiDataWidth           ),
-    .AxiUserWidth          ( Cfg.AxiUserWidth           ),
-    .AxiOutIdWidth         ( Cfg.AxiMstIdWidth          ),
-    .AxiOtAddrWidth        ( Cfg.AddrWidth              ),
+    .AxiAddrWidth          ( CheshireCfg.AddrWidth              ),
+    .AxiDataWidth          ( CheshireCfg.AxiDataWidth           ),
+    .AxiUserWidth          ( CheshireCfg.AxiUserWidth           ),
+    .AxiOutIdWidth         ( CheshireCfg.AxiMstIdWidth          ),
+    .AxiOtAddrWidth        ( CheshireCfg.AddrWidth              ),
     .AxiOtDataWidth        ( AxiNarrowDataWidth         ), // TODO: why is this exposed?
-    .AxiOtUserWidth        ( Cfg.AxiUserWidth           ),
-    .AxiOtOutIdWidth       ( Cfg.AxiMstIdWidth          ),
+    .AxiOtUserWidth        ( CheshireCfg.AxiUserWidth           ),
+    .AxiOtOutIdWidth       ( CheshireCfg.AxiMstIdWidth          ),
     .AsyncAxiOutAwWidth    ( CarfieldAxiMstAwWidth      ),
     .AsyncAxiOutWWidth     ( CarfieldAxiMstWWidth       ),
     .AsyncAxiOutBWidth     ( CarfieldAxiMstBWidth       ),
@@ -1783,15 +1812,15 @@ axi_cut #(
 // Shim atomics, which are not supported in reg
 // TODO: should we use a filter instead here?
 axi_riscv_atomics_structs #(
-  .AxiAddrWidth     ( Cfg.AddrWidth          ),
-  .AxiDataWidth     ( Cfg.AxiDataWidth       ),
+  .AxiAddrWidth     ( CheshireCfg.AddrWidth          ),
+  .AxiDataWidth     ( CheshireCfg.AxiDataWidth       ),
   .AxiIdWidth       ( AxiSlvIdWidth          ),
-  .AxiUserWidth     ( Cfg.AxiUserWidth       ),
-  .AxiMaxReadTxns   ( Cfg.RegMaxReadTxns     ),
-  .AxiMaxWriteTxns  ( Cfg.RegMaxWriteTxns    ),
+  .AxiUserWidth     ( CheshireCfg.AxiUserWidth       ),
+  .AxiMaxReadTxns   ( CheshireCfg.RegMaxReadTxns     ),
+  .AxiMaxWriteTxns  ( CheshireCfg.RegMaxWriteTxns    ),
   .AxiUserAsId      ( 1                      ),
-  .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb      ),
-  .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb      ),
+  .AxiUserIdMsb     ( CheshireCfg.AxiUserAmoMsb      ),
+  .AxiUserIdLsb     ( CheshireCfg.AxiUserAmoLsb      ),
   .RiscvWordWidth   ( 64                     ),
   .NAxiCuts         ( 0                      ),
   .axi_req_t        ( carfield_axi_slv_req_t ),
@@ -1807,7 +1836,7 @@ axi_riscv_atomics_structs #(
 
 // AXI cut
 axi_cut #(
-  .Bypass     ( ~Cfg.RegAmoPostCut ),
+  .Bypass     ( ~CheshireCfg.RegAmoPostCut ),
   .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
   .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
   .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
@@ -1829,10 +1858,10 @@ carfield_reg_req_t reg_mbox_req;
 carfield_reg_rsp_t reg_mbox_rsp;
 
 axi_to_reg_v2 #(
-  .AxiAddrWidth ( Cfg.AddrWidth    ),
-  .AxiDataWidth ( Cfg.AxiDataWidth ),
+  .AxiAddrWidth ( CheshireCfg.AddrWidth    ),
+  .AxiDataWidth ( CheshireCfg.AxiDataWidth ),
   .AxiIdWidth   ( AxiSlvIdWidth    ),
-  .AxiUserWidth ( Cfg.AxiUserWidth ),
+  .AxiUserWidth ( CheshireCfg.AxiUserWidth ),
   .RegDataWidth ( AxiNarrowDataWidth ), // 32-bit
   .axi_req_t    ( carfield_axi_slv_req_t ),
   .axi_rsp_t    ( carfield_axi_slv_rsp_t ),
@@ -1906,10 +1935,10 @@ if (CarfieldIslandsCfg.ethernet.enable) begin : gen_ethernet
   );
 
   AXI_BUS #(
-    .AXI_ADDR_WIDTH( Cfg.AddrWidth    ),
-    .AXI_DATA_WIDTH( Cfg.AxiDataWidth ),
+    .AXI_ADDR_WIDTH( CheshireCfg.AddrWidth    ),
+    .AXI_DATA_WIDTH( CheshireCfg.AxiDataWidth ),
     .AXI_ID_WIDTH  ( AxiSlvIdWidth    ),
-    .AXI_USER_WIDTH( Cfg.AxiUserWidth )
+    .AXI_USER_WIDTH( CheshireCfg.AxiUserWidth )
   ) axi_ethernet ();
 
   `AXI_ASSIGN_FROM_REQ(axi_ethernet, axi_ethernet_req);
@@ -2009,10 +2038,10 @@ if (CarfieldIslandsCfg.ethernet.enable) begin : gen_ethernet
 
   // Ethernet IP
   eth_rgmii #(
-    .AXI_ADDR_WIDTH ( Cfg.AddrWidth    ),
-    .AXI_DATA_WIDTH ( Cfg.AxiDataWidth ),
+    .AXI_ADDR_WIDTH ( CheshireCfg.AddrWidth    ),
+    .AXI_DATA_WIDTH ( CheshireCfg.AxiDataWidth ),
     .AXI_ID_WIDTH   ( AxiSlvIdWidth    ),
-    .AXI_USER_WIDTH ( Cfg.AxiUserWidth )
+    .AXI_USER_WIDTH ( CheshireCfg.AxiUserWidth )
   ) i_eth_rgmii (
     .clk_i        ( eth_mdio_clk ),
     /* Clock 200MHz */
@@ -2119,17 +2148,17 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   // Shim atomics, which are not supported in reg
   // TODO: should we use a filter instead here?
   axi_riscv_atomics_structs #(
-    .AxiAddrWidth     ( Cfg.AddrWidth          ),
-    .AxiDataWidth     ( Cfg.AxiDataWidth       ),
+    .AxiAddrWidth     ( CheshireCfg.AddrWidth          ),
+    .AxiDataWidth     ( CheshireCfg.AxiDataWidth       ),
     .AxiIdWidth       ( AxiSlvIdWidth          ),
-    .AxiUserWidth     ( Cfg.AxiUserWidth       ),
-    .AxiMaxReadTxns   ( Cfg.RegMaxReadTxns     ),
-    .AxiMaxWriteTxns  ( Cfg.RegMaxWriteTxns    ),
+    .AxiUserWidth     ( CheshireCfg.AxiUserWidth       ),
+    .AxiMaxReadTxns   ( CheshireCfg.RegMaxReadTxns     ),
+    .AxiMaxWriteTxns  ( CheshireCfg.RegMaxWriteTxns    ),
     .AxiUserAsId      ( 1                      ),
-    .AxiUserIdMsb     ( Cfg.AxiUserAmoMsb      ),
-    .AxiUserIdLsb     ( Cfg.AxiUserAmoLsb      ),
+    .AxiUserIdMsb     ( CheshireCfg.AxiUserAmoMsb      ),
+    .AxiUserIdLsb     ( CheshireCfg.AxiUserAmoLsb      ),
     .RiscvWordWidth   ( 64                     ),
-    .NAxiCuts         ( Cfg.RegAmoNumCuts      ),
+    .NAxiCuts         ( CheshireCfg.RegAmoNumCuts      ),
     .axi_req_t        ( carfield_axi_slv_req_t ),
     .axi_rsp_t        ( carfield_axi_slv_rsp_t )
   ) i_atomics_peripherals (
@@ -2145,7 +2174,7 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   carfield_axi_slv_rsp_t axi_d64_a48_amo_cut_peripherals_rsp;
 
   axi_cut #(
-    .Bypass     ( ~Cfg.RegAmoPostCut         ),
+    .Bypass     ( ~CheshireCfg.RegAmoPostCut         ),
     .aw_chan_t  ( carfield_axi_slv_aw_chan_t ),
     .w_chan_t   ( carfield_axi_slv_w_chan_t  ),
     .b_chan_t   ( carfield_axi_slv_b_chan_t  ),
@@ -2171,9 +2200,9 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   carfield_axi_d32_a48_slv_rsp_t axi_d32_a48_peripherals_rsp;
 
   axi_dw_converter #(
-    .AxiSlvPortDataWidth  ( Cfg.AxiDataWidth                  ),
+    .AxiSlvPortDataWidth  ( CheshireCfg.AxiDataWidth                  ),
     .AxiMstPortDataWidth  ( AxiNarrowDataWidth                ),
-    .AxiAddrWidth         ( Cfg.AddrWidth                     ),
+    .AxiAddrWidth         ( CheshireCfg.AddrWidth                     ),
     .AxiIdWidth           ( AxiSlvIdWidth                     ),
     .aw_chan_t            ( carfield_axi_slv_aw_chan_t        ),
     .mst_w_chan_t         ( carfield_axi_d32_a48_slv_w_chan_t ),
@@ -2229,7 +2258,7 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
     .AxiAddrWidth   ( AxiNarrowAddrWidth                  ),
     .AxiDataWidth   ( AxiNarrowDataWidth                  ),
     .AxiIdWidth     ( AxiSlvIdWidth                       ),
-    .AxiUserWidth   ( Cfg.AxiUserWidth                    ),
+    .AxiUserWidth   ( CheshireCfg.AxiUserWidth            ),
     .AxiMaxWriteTxns( 1                                   ),
     .AxiMaxReadTxns ( 1                                   ),
     .FallThrough    ( 1                                   ),

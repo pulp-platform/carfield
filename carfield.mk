@@ -191,12 +191,8 @@ $(SAFED_SW_DIR)/pulp-freertos: $(SAFED_ROOT)
 	$(MAKE) -C $(SAFED_ROOT) pulp-freertos BENDER="$(BENDER)"
 
 ## Clone integer PMCA domain's SW stack in the dedicated repository.
-pulpd-sw-init: $(PULPD_ROOT) $(PULPD_ROOT)/pulp-runtime $(PULPD_ROOT)/regression-tests
-
-$(PULPD_ROOT)/pulp-runtime: $(PULPD_ROOT)
-	$(MAKE) -C $(PULPD_ROOT) pulp-runtime
-$(PULPD_ROOT)/regression-tests: $(PULPD_ROOT)
-	$(MAKE) -C $(PULPD_ROOT) regression-tests
+pulpd-sw-init:
+	$(MAKE) -C $(PULPD_ROOT) sw-init
 
 ## Build safe domain SW
 .PHONY: safed-sw-build

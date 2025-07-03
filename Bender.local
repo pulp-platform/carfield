@@ -7,15 +7,15 @@ overrides:
   axi_riscv_atomics:    { git: https://github.com/pulp-platform/axi_riscv_atomics.git     , version: 0.8.2 }
   apb:                  { git: "https://github.com/pulp-platform/apb.git"                 , version: 0.2.3 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git"  , version: 0.4.1 }
-  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: "5616a36f5e51d6f07f1c8bca15194077657e197d" } # branch: yt/rapidrecovery
+  redundancy_cells:     { git: "https://github.com/pulp-platform/redundancy_cells.git"    , rev: astral-v0 }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git"  , version: =0.2.13                                }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git"           , version: =0.8.0                                 }
   idma:                 { git: "https://github.com/pulp-platform/idma.git"                , version: 0.5.1                                  }
-  hier-icache:          { git: "https://github.com/pulp-platform/hier-icache.git"         , rev: a971e364bf8090cf77fafad995b480c1ac7ea4e0   }
   scm:                  { git: "https://github.com/pulp-platform/scm.git"                 , rev: 74426dee36f28ae1c02f7635cf844a0156145320   }
-  cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 89e1019d64a86425211be6200770576cbdf3e8b3   } # branch: assertion-fix
   clic:                 { git: "https://github.com/pulp-platform/clic.git"                , rev: 0ff9f07e0a492bff046dfe24399b1e1e82d557b7   } # branch: balasr/dev-2
   fpnew:                { git: "https://github.com/pulp-platform/cvfpu.git"               , rev: pulp-v0.1.3 }
   cv32e40p:             { git: "https://github.com/pulp-platform/cv32e40p.git"            , rev: e863f576699815b38cc9d80dbdede8ed5efd5991   }
   axi_rt:               { git: "https://github.com/pulp-platform/axi_rt.git"              , version: =0.0.0-alpha.4                         }
   serial_link:          { git: "https://github.com/pulp-platform/serial_link.git"         , rev: 4024f01b1d67cdf1cf9486467d0f2e2f407aa372   }
+  neureka:              { git: "https://github.com/pulp-platform/neureka.git"             , rev: f6b9a014c7ff4c536865c8ad376b383d4026f286   }
+  softex:               { git: "https://github.com/belanoa/softex.git"                    , rev: a93ddff106ca3596660584ce6c7f77fb2a8475e3   }
