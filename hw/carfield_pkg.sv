@@ -591,13 +591,34 @@ typedef struct packed {
 // Cheshire configuration
 localparam cheshire_cfg_t CheshireCfg = '{
   // CVA6 parameters
-  Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
-  Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
-  Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+  Cva6RASDepth      : 2,
+  Cva6BTBEntries    : 32,
+  Cva6BHTEntries    : 128,
   Cva6NrPMPEntries  : 0,
   Cva6ExtCieLength  : 'h1000_0000, // [0x2000_0000, 0x7000_0000) is non-CIE,
                                    // [0x7000_0000, 0x8000_0000) is CIE
   Cva6ExtCieOnTop   : 1,
+  Cva6NrScoreboardEntries     : 8,
+  Cva6MaxOutstandingStores    : 7,
+  Cva6IcacheByteSize          : 16384,
+  Cva6IcacheSetAssoc          : 4,
+  Cva6IcacheLineWidth         : 128,
+  Cva6DCacheType              : config_pkg::WB,
+  Cva6DcacheByteSize          : 32768,
+  Cva6DcacheSetAssoc          : 8,
+  Cva6DcacheLineWidth         : 128,
+  Cva6DcacheFlushOnFence      : 1,
+  Cva6DcacheInvalidateOnFlush : 0,
+  Cva6InstrTlbEntries         : 16,
+  Cva6DataTlbEntries          : 16,
+  Cva6LockableTlbWays         : 8,
+  Cva6NumTlbColors            : 4,
+  Cva6UseSharedTlb            : 0,
+  Cva6SharedTlbDepth          : 64,
+  Cva6NrLoadPipeRegs          : 1,
+  Cva6NrStorePipeRegs         : 0,
+  Cva6DcacheIdWidth           : 1,
+  Cva6SuperscalarEn           : 0,
   // Harts
   NumCores          : 2,
   CoreMaxTxns       : 8,
@@ -610,11 +631,6 @@ localparam cheshire_cfg_t CheshireCfg = '{
   NumExtOutIntrTgts : CarfieldNumRouterTargets,
   NumExtOutIntrs    : CarfieldNumExtIntrs+$bits(cheshire_int_intr_t),
   ClicIntCtlBits    : 8,
-  ClicUseSMode      : 1,
-  ClicUseUMode      : 0,
-  ClicUseVsMode     : 1,
-  ClicUseVsModePrio : 1,
-  ClicNumVsCtxts    : 2, // TODO: choose appropriately
   NumExtIntrSyncs   : SyncStages,
   // Interconnect
   AddrWidth         : 48,
@@ -631,6 +647,7 @@ localparam cheshire_cfg_t CheshireCfg = '{
   RegMaxWriteTxns   : 8,
   RegAmoNumCuts     : 1,
   RegAmoPostCut     : 1,
+  RegAdaptMemCut    : 1,
   // External AXI ports (at most 8 ports and rules)
   AxiExtNumMst      : CarfieldAxiNumMasters,
   AxiExtNumSlv      : CarfieldAxiNumSlaves,
@@ -658,6 +675,7 @@ localparam cheshire_cfg_t CheshireCfg = '{
   Dma               : 1,
   SerialLink        : 1,
   Vga               : 0,
+  Usb               : 1,
   AxiRt             : 1,
   Clic              : 1,
   IrqRouter         : 1,
@@ -691,29 +709,37 @@ localparam cheshire_cfg_t CheshireCfg = '{
   LlcCachePartition : 1,
   LlcMaxPartition   : 16,
   LlcRemapHash      : axi_llc_pkg::Modulo,
-  // VGA: RGB332; carfield doesn't have a vga, but widths are required for top-level pins anyway.
-  VgaRedWidth       : 3,
-  VgaGreenWidth     : 3,
-  VgaBlueWidth      : 2,
+  // VGA: RGB565; carfield doesn't have a vga, but widths are required for top-level pins anyway.
+  VgaRedWidth       : 5,
+  VgaGreenWidth     : 6,
+  VgaBlueWidth      : 5,
+  VgaHCountWidth    : 24, // TODO: Default is 32; is this needed?
+  VgaVCountWidth    : 24, // TODO: See above
+  VgaBufferDepth    : 16,
+  VgaMaxReadTxns    : 24,
   // Serial Link: map other chip's lower 32bit to 'h1_000_0000
   SlinkMaxTxnsPerId : 4,
   SlinkMaxUniqIds   : 4,
   SlinkMaxClkDiv    : 1024,
-  SlinkRegionStart  : 'h1_0000_0000,
-  SlinkRegionEnd    : 'h2_0000_0000,
+  SlinkRegionStart  : 64'h1_0000_0000,
+  SlinkRegionEnd    : 64'h2_0000_0000,
   SlinkTxAddrMask   : 'hFFFF_FFFF,
   SlinkTxAddrDomain : 'h0000_0000,
   SlinkUserAmoBit   : 3,  // Convention: lower AMO bits for cores, MSB for serial link
+  // USB config
+  UsbDmaMaxReads    : 16,
+  UsbAddrMask       : 'hFFFF_FFFF,
+  UsbAddrDomain     : 'h0000_0000,
   // DMA config
   DmaConfMaxReadTxns  : 4,
   DmaConfMaxWriteTxns : 4,
   DmaConfAmoNumCuts   : 1,
+  DmaConfAmoPostCut   : 1,
+  DmaConfEnableTwoD   : 1,
   DmaNumAxInFlight    : 24,
   DmaMemSysDepth      : 16,
   DmaJobFifoDepth     : 4,
   DmaRAWCouplingAvail : 1,
-  DmaConfAmoPostCut   : 1,
-  DmaConfEnableTwoD   : 1,
   // GPIOs
   GpioInputSyncs      : 1,
   // AXI RT
@@ -722,6 +748,11 @@ localparam cheshire_cfg_t CheshireCfg = '{
   AxiRtNumAddrRegions : 2,
   AxiRtCutPaths       : 1,
   AxiRtEnableChecks   : 0,
+  // CLIC
+  ClicVsclic          : 0,
+  ClicVsprio          : 0,
+  ClicNumVsctxts      : 4,
+  ClicPrioWidth       : 1,
   // All non-set values should be zero
   default: '0
 };
