@@ -127,8 +127,13 @@ PLIC_NUM_INTRS := 89
 SERIAL_LINK_NUM_BITS := 16
 
 # AXI Real-Time unit configuration in Carfield
+# CVA60, CVA61, DBG, SYSDMA, SL, USB, SAFED, SECD, SPATZD, PULPD
 AXIRT_NUM_MGRS := 10
 AXIRT_NUM_SUBS := 2
+
+# LLC partitioning configuration
+CHS_LLC_PARTITION     := 1
+CHS_LLC_MAXPARTITIONS := 16
 
 ##########################
 # Dependency maintenance #

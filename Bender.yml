@@ -12,11 +12,11 @@ package:
 
 dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
-  axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
-  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 0c95210cf242c384fafe3019e84b8974c3ff1e92 } # branch: aottaviano/carfield
-  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             version: 0.0.9                                }
+  axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.8                               }
+  cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: ce7b0270e1bbce8bb0fe5b006115bbf03a423670 } # branch: carfield
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 841deb9d821b63bf05a1c85d3a4746352a8bcae2 } # branch: aottaviano/nonfree
   dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
-  safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: aaef55c798ab53560faaf451a86668fa1e6d0f3b } # branch: carfield
+  safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: d9feaedcec1d2fa09fbb57cd1c910fa9a821a0de } # branch: carfield
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         version: 3.0.3                                }
   opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: 48595339c9bea8eddf7cc799bb74e6af5ec5d846 } # branch: carfield-soc
   mailbox_unit:       { git: git@github.com:pulp-platform/mailbox_unit.git,             version: 1.1.0                                }
@@ -24,7 +24,7 @@ dependencies:
   timer_unit:         { git: https://github.com/pulp-platform/timer_unit.git,           version: 1.0.2                                }
   apb_adv_timer:      { git: https://github.com/pulp-platform/apb_adv_timer.git,        version: 1.0.4                                }
   can_bus:            { git: git@github.com:AlSaqr-platform/can_bus.git,                rev: 0ec0bf8b7dab6d5e4b3f7ec58338a8efee066379 } # branch: pulp
-  spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: b8fea8f2386f837a0854ad4e84f25b70a3a430e0 } # branch: main
+  spatz:              { git: https://github.com/pulp-platform/spatz.git,                rev: b7474288e3945305b5b1c0e7300cc9ad17a222be } # branch: main
   common_cells:       { git: https://github.com/pulp-platform/common_cells.git,         version: 1.31.1                               }
   pulp-ethernet:      { git: https://github.com/pulp-platform/pulp-ethernet.git,        rev: bdc8031ab270a49da28df269266ce9ab9a133636 } # branch: carfield
   riscv-dbg:          { git: https://github.com/pulp-platform/riscv-dbg.git,            version: =0.8.0                               }

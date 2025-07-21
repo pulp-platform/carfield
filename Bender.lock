@@ -24,8 +24,8 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: fccffb5953ec8564218ba05e20adbedec845e014
-    version: 0.39.1
+    revision: 78831b6feba265d5ee2683bbf42b4150f8a35c43
+    version: 0.39.8
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -48,10 +48,10 @@ packages:
     dependencies:
     - axi_slice
   axi_llc:
-    revision: 7d7fc1349d4915a657de535a491bc26fbf0d2cfa
+    revision: d8d41097c43e1bf8448bd40f258fdeb8482a9a8c
     version: null
     source:
-      Git: https://github.com/pulp-platform/axi_llc
+      Git: https://github.com/pulp-platform/axi_llc.git
     dependencies:
     - axi
     - common_cells
@@ -77,8 +77,8 @@ packages:
     - common_cells
     - common_verification
   axi_rt:
-    revision: 2be9d4028cd3fd6617a0302a53212495a4c4e3fa
-    version: 0.0.0-alpha.4
+    revision: 50153a346b753dc2bc7723c446656a43db35d02d
+    version: 0.0.0-alpha.10
     source:
       Git: https://github.com/pulp-platform/axi_rt.git
     dependencies:
@@ -90,6 +90,13 @@ packages:
     version: 1.1.4
     source:
       Git: https://github.com/pulp-platform/axi_slice.git
+    dependencies:
+    - common_cells
+  axi_stream:
+    revision: 54891ff40455ca94a37641b9da4604647878cc07
+    version: 0.1.1
+    source:
+      Git: https://github.com/pulp-platform/axi_stream.git
     dependencies:
     - common_cells
   axi_vga:
@@ -108,7 +115,7 @@ packages:
       Git: git@github.com:AlSaqr-platform/can_bus.git
     dependencies: []
   cheshire:
-    revision: 0c95210cf242c384fafe3019e84b8974c3ff1e92
+    revision: ce7b0270e1bbce8bb0fe5b006115bbf03a423670
     version: null
     source:
       Git: https://github.com/pulp-platform/cheshire.git
@@ -124,6 +131,7 @@ packages:
     - common_cells
     - common_verification
     - cva6
+    - dram_rtl_sim
     - idma
     - irq_router
     - opentitan_peripherals
@@ -133,8 +141,8 @@ packages:
     - tagger
     - unbent
   clic:
-    revision: 0ff9f07e0a492bff046dfe24399b1e1e82d557b7
-    version: 3.0.0-for-carfield
+    revision: 72472df17362734e4d2ac2bcb8c80a452fba9808
+    version: 3.0.0-rc5
     source:
       Git: https://github.com/pulp-platform/clic.git
     dependencies:
@@ -196,7 +204,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: ec242579ea25a1f6bef7235591814dd1e475f90c
+    revision: 39e65c9918423ba20985771a0fbd8ad93f18c802
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
@@ -205,6 +213,13 @@ packages:
     - common_cells
     - fpnew
     - tech_cells_generic
+  dram_rtl_sim:
+    revision: 2cac4a9e12a60537567276b539ab6c919c87b5dc
+    version: 0.1.1
+    source:
+      Git: https://github.com/pulp-platform/dram_rtl_sim.git
+    dependencies:
+    - axi
   dyn_mem:
     revision: 480590062742230dc9bd4050358a15b4747bdf34
     version: null
@@ -234,7 +249,7 @@ packages:
     - fpnew
     - tech_cells_generic
   fpnew:
-    revision: a8e0cba6dd50f357ece73c2c955d96efc3c6c315
+    revision: e5aa6a01b5bbe1675c3aa8872e1203413ded83d1
     version: null
     source:
       Git: https://github.com/pulp-platform/cvfpu.git
@@ -287,8 +302,8 @@ packages:
     dependencies:
     - tech_cells_generic
   hyperbus:
-    revision: 2a14bd8f9a985b488ee23d240764f52f129f7729
-    version: 0.0.9
+    revision: 841deb9d821b63bf05a1c85d3a4746352a8bcae2
+    version: null
     source:
       Git: https://github.com/pulp-platform/hyperbus.git
     dependencies:
@@ -310,14 +325,16 @@ packages:
       Git: https://github.com/pulp-platform/icache-intc.git
     dependencies: []
   idma:
-    revision: ca1b28816a3706be0bf9ce01378246d5346384f0
-    version: 0.5.1
+    revision: ff5d56fffb3767814db88d6bf8f381974ea33aa5
+    version: 0.6.4
     source:
-      Git: https://github.com/pulp-platform/idma.git
+      Git: https://github.com/pulp-platform/iDMA.git
     dependencies:
     - axi
+    - axi_stream
     - common_cells
     - common_verification
+    - obi
     - register_interface
   irq_router:
     revision: d1d31350b24f3965b3a51e1bc96c71eb34e94db3
@@ -473,15 +490,15 @@ packages:
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: 138d74bcaa90c70180c12215db3776813d2a95f2
-    version: 0.8.0
+    revision: 358f90110220adf7a083f8b65d157e836d706236
+    version: 0.8.1
     source:
       Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
     - common_cells
     - tech_cells_generic
   safety_island:
-    revision: aaef55c798ab53560faaf451a86668fa1e6d0f3b
+    revision: d9feaedcec1d2fa09fbb57cd1c910fa9a821a0de
     version: null
     source:
       Git: https://github.com/pulp-platform/safety_island.git
@@ -530,7 +547,7 @@ packages:
     - hwpe-stream
     - ibex
   spatz:
-    revision: b8fea8f2386f837a0854ad4e84f25b70a3a430e0
+    revision: b7474288e3945305b5b1c0e7300cc9ad17a222be
     version: null
     source:
       Git: https://github.com/pulp-platform/spatz.git
