@@ -14,7 +14,7 @@ dependencies:
   register_interface: { git: https://github.com/pulp-platform/register_interface.git,   version: 0.4.2                                }
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.8                               }
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: ce7b0270e1bbce8bb0fe5b006115bbf03a423670 } # branch: carfield
-  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             version: 0.0.9                                }
+  hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 841deb9d821b63bf05a1c85d3a4746352a8bcae2 } # branch: aottaviano/nonfree
   dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
   safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: d9feaedcec1d2fa09fbb57cd1c910fa9a821a0de } # branch: carfield
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         version: 3.0.3                                }
