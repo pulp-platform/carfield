@@ -45,7 +45,7 @@ if {$::env(XILINX_BOARD) eq "vcu128"} {
                            CONFIG.C0.DDR4_CasWriteLatency {12} \
                            CONFIG.C0.DDR4_AxiDataWidth {128} \
                            CONFIG.C0.DDR4_AxiAddressWidth {29} \
-                           CONFIG.C0.DDR4_AxiIDWidth {8} \
+                           CONFIG.C0.DDR4_AxiIDWidth {4} \
                            CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
                            CONFIG.System_Clock {No_Buffer} \
                            CONFIG.Reference_Clock {No_Buffer} \
