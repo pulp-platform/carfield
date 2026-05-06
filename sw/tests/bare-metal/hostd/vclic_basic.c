@@ -29,7 +29,7 @@ static int probe_rw(uint64_t addr, uint32_t val)
     err = probe_rw(CAR_CLIC_CFG_BASE_ADDR(0) + NAME, VAL);                                                                 \
     if (err) {                                                                                                         \
         printf("error: rw " #NAME "\n");                                                                               \
-        uart_write_flush(&__base_uart);                                                                                \
+        uart_write_flush(&__uart_base_addr__);                                                                                \
         return 1;                                                                                                      \
     }
 
@@ -38,9 +38,9 @@ int main(void)
     int err = 0;
 
     // Init UART
-    uint32_t rtc_freq   = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t rtc_freq   = *reg32(&__regs_rtc_freq_base_addr__, 0);
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
-    uart_init(&__base_uart, reset_freq, 115200);
+    uart_init(&__uart_base_addr__, reset_freq, 115200);
 
     uint32_t mclicconf = readw(CAR_CLIC_CFG_BASE_ADDR(0) + MCLIC_MCLICCFG_REG_OFFSET);
 
@@ -55,7 +55,7 @@ int main(void)
     // VCLIC regs
     VCLIC_RW_TEST_REG(0x0e000, 1);
 
-    uart_write_flush(&__base_uart);
+    uart_write_flush(&__uart_base_addr__);
 
     return 0;
 }

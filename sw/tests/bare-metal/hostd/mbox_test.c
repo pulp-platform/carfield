@@ -27,9 +27,9 @@ int main(int argc, char const *argv[]) {
     unsigned external_irq_en = 0x00000800;
 
     // Uart setup
-    uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
+    uint32_t rtc_freq = *reg32(&__regs_rtc_freq_base_addr__, 0);
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
-    uart_init(&__base_uart, reset_freq, 115200);
+    uart_init(&__uart_base_addr__, reset_freq, 115200);
 
     asm volatile("csrw  mstatus, %0\n" : : "r"(global_irq_en  ));     // Set global interrupt enable in CVA6 csr
     asm volatile("csrw  mie, %0\n"     : : "r"(external_irq_en));     // Set external interrupt enable in CVA6 csr
