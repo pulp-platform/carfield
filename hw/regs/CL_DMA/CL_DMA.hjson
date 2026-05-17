@@ -1,0 +1,327 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# DMA register template
+{
+  name:               "dma"
+  human_name:         "DMA Controller"
+  one_line_desc:      "DMA Controller for the integrated OpenTitan."
+  one_paragraph_desc: '''
+  Cluster DMA component manages the following features:
+  - parametric number of RX/TX full-duplex channels
+  - Up to 16 outstanding transfers between L1 and L2 memories
+  - Linear or 2D transfers modes on both TCDM or EXT (L2) sides
+  '''
+  cip_id:             "36",
+  design_spec:        "../doc"
+  dv_doc:             "../doc/dv"
+  version:            "1.0.0"
+
+  clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
+  scan: "true"        // Enable `scanmode_i` port
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", hier_path: "u_dma_reg" }
+    { protocol: "tlul", direction: "host", name: "host" }
+  ]
+  param_list: [
+    { name: "NumIntClearSources",
+      desc: "Number of interrupt clearing sources to process",
+      type: "int",
+      default: "11",
+      local: "true"
+    },
+    { name: "EnableDataIntgGen",
+      desc: "Compute integrity bits for A channel data on all TL-UL host ports",
+      type: "bit",
+      default: "1'b1",
+      local: "false",
+      expose: "true",
+    },
+    { name: "EnableRspDataIntgCheck",
+      desc: "Enable integrity checks on the response TL-UL D channel",
+      type: "bit",
+      default: "1'b1",
+      local: "false",
+      expose: "true",
+    },
+    { name: "TlUserRsvd",
+      desc: "Value of `rsvd` field in A channel of all TL-UL host ports",
+      type: "logic [tlul_pkg::RsvdWidth-1:0]"
+      default: "'0",
+      local: "false",
+      expose: "true",
+    },
+    { name: "SysRacl",
+      desc: "Value of `racl_vec` field in `sys` output",
+      type: "logic [dma_pkg::SYS_RACL_WIDTH-1:0]"
+      default: "'0",
+      local: "false",
+      expose: "true",
+    },
+    { name: "OtAgentId",
+      desc: "OT Agent ID"
+      type: "int unsigned"
+      default: "0",
+      local: "false",
+      expose: "true",
+    },
+  ],
+  inter_signal_list: [
+    { name: "lsio_trigger"
+      type: "uni",
+      act: "rcv",
+      package: "dma_pkg",
+      struct: "lsio_trigger",
+      width: "1"
+    }
+    { name: "sys"
+      type: "req_rsp"
+      struct: "sys"
+      package: "dma_pkg"
+      act: "req"
+      width: "1"
+    }
+    { struct:  "tl_h2d"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "ctn_tl_h2d"
+      act:     "req"
+      desc:    "TL-UL host port for egress into CTN (request part), synchronous"
+    }
+    { struct:  "tl_d2h"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "ctn_tl_d2h"
+      act:     "rcv"
+      desc:    "TL-UL host port for egress into CTN (response part), synchronous"
+    }
+  ]
+  interrupt_list: [
+    { name: "dma_done"
+      desc: "DMA operation has been completed."
+      type: "status"
+    }
+    { name: "dma_chunk_done"
+      desc: "Indicates the transfer of a single chunk has been completed."
+      type: "status"
+    }
+    { name: "dma_error"
+      desc: "DMA error has occurred. DMA_STATUS.error_code register shows the details."
+      type: "status"
+    }
+  ]
+  alert_list: [
+    { name: "fatal_fault"
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
+  ]
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+    { name: "ASID.INTERSIG.MUBI",
+      desc: "Destination and source ASID signals are multibit encoded."
+    }
+    { name: "RANGE.CONFIG.REGWEN_MUBI",
+      desc: "DMA enabled memory range is software multibit lockable."
+    }
+  ]
+  regwidth: "32"
+  registers: [
+    { name: "CMD"
+      desc: '''
+            ?
+            ?
+            ?
+            '''
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "16:0"
+          name: "LEN"
+          resval: 0x0
+          desc: "Transfer length in bytes configuration bitfield."
+        }
+        { bits: "17"
+          name: "TYPE"
+          resval: 0x0
+          desc: '''Transfer direction configuration bitfield:
+                -1'b0: L1 to L2
+                -1'b1: L2 to L1
+                '''
+        }
+        { bits: "18"
+          name: "INC"
+          resval: 0x0
+          desc: '''Transfer incremental configuration bitfield:
+                -1'b0: non incremental.
+                -1'b1: incremental.
+                '''
+        }
+        { bits: "19"
+          name: "EXT_2D"
+          resval: 0x0
+          desc: '''Transfer type configuration bitfield:
+                -1'b0: linear transfer in EXT interface.
+                -1'b1: 2D transfer in EXT interface.
+                '''
+        }
+        { bits: "20"
+          name: "ELE"
+          resval: 0x0
+          desc: '''Transfer event generation configuration bitfield:
+                -1'b0: disabled.
+                -1'b1: enabled.
+                '''
+        }
+        { bits: "21"
+          name: "ILE"
+          resval: 0x0
+          desc: '''Transfer interrupt generation configuration bitfield:
+                -1'b0: disabled.
+                -1'b1: enabled.
+                '''
+        }
+        { bits: "22"
+          name: "BLE"
+          resval: 0x0
+          desc: '''Transfer event or interrupt broadcast configuration bitfield:
+                1'b0: event or interrupt is routed to the cluster core who initiated the transfer.
+                1'b1: event or interrupt are broadcasted to all cluster cores.
+                '''
+        }
+        { bits: "23"
+          name: "TCDM_2D"
+          resval: 0x0
+          desc: '''Transfer type configuration bitfield:
+                -1'b0: linear transfer in TCDM interface
+                -1'b1: 2D transfer in TCDM interface
+                '''
+        }
+      ]
+    }
+    { name: "TID"
+      desc: "Transfer identifier value bitfield."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "3:0"
+          name: "get_tid"
+          resval: 0x0
+          desc: "Transfer identifier value bitfield."
+        }
+      ]
+    }
+    { name: "TCDM_ADDR"
+      desc: "Transfer L1 base address configuration bitfield."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "tcdm_addr"
+          resval: 0x0
+          desc: "Transfer L1 base address configuration bitfield."
+        }
+      ]
+    }
+    { name: "EXT_ADDR"
+      desc: "Transfer L2 base address configuration bitfield."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "ext_addr"
+          resval: 0x0
+          desc: "Transfer L2 base address configuration bitfield."
+        }
+      ]
+    }
+    { name: "EXT_COUNT_2D"
+      desc: "EXT 2D transfer conut value configuration bitfield."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "ext_count_2D"
+          resval: 0x0
+          desc: "EXT 2D transfer conut value configuration bitfield."
+        }
+      ]
+    }
+    { name: "EXT_STRIDE_2D"
+      desc: "EXT 2D transfer stride value configuration bitfield."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "ext_stride_2D"
+          resval: 0x0
+          desc: "EXT 2D transfer stride value configuration bitfield."
+        }
+      ]
+    }
+    { name: "TCDM_COUNT_2D"
+      desc: "TCDM 2D transfer conut value configuration bitfield."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "tcdm_count_2D"
+          resval: 0x0
+          desc: "TCDM 2D transfer conut value configuration bitfield."
+        }
+      ]
+    }
+    { name: "TCDM_STRIDE_2D"
+      desc: "TCDM 2D transfer stride value configuration bitfield."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "tcdm_stride_2D"
+          resval: 0x0
+          desc: "TCDM 2D transfer stride value configuration bitfield."
+        }
+      ]
+    }
+    { name: "STATUS"
+      desc: '''
+            ?
+            ?
+            ?
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "15:0"
+          name: "TID_TR"
+          resval: 0x0
+          desc: '''Transfer status bitfield:
+                TID_TR[i]=1'b1 means that transfer with TID i is active.
+		'''
+        }
+        { bits: "31:16"
+          name: "TID_ALLOC"
+          resval: 0x0
+          desc: '''Transfer status bitfield:
+                - TID_TR[i]=1'b0 means that transfer allocator with TID i-16 is free.
+                - TID_TR[i]=1'b1 means that transfer allocator with TID i-16 is reserved.
+                '''
+        }
+      ]
+    }
+    { name: "TID_FREE"
+      desc: "Transfer canceller configuration bitfield. Writing a 1'b1 in TID_FREE[i] will free transfer with TID i."
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "15:0"
+          name: "tid_free"
+          resval: 0x0
+          desc: "Transfer canceller configuration bitfield. Writing a 1'b1 in TID_FREE[i] will free transfer with TID i."
+        }
+      ]
+    }
+  ]
+}

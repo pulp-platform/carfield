@@ -1,0 +1,42 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+
+// SPDX-License-Identifier: Apache-2.0
+
+// CLIC virtual supervisor interrupt register
+{
+  name: "CLICINTV",
+  cip_id: "36",
+  version: "3.0.0", //3.0.0-for-carfield
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true}
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  regwidth: "32",
+  registers: [
+    { name: "CLICINTV",
+      desc: "CLIC interrupt virtualization",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:26", name: "VSID3", desc: "interrupt VS id" },
+        { bits: "24", name: "V3", desc: "interrupt delegated to VS-mode"},
+        { bits: "23:18", name: "VSID2", desc: "interrupt VS id" },
+        { bits: "16", name: "V2", desc: "interrupt delegated to VS-mode"},
+        { bits: "15:10", name: "VSID1", desc: "interrupt VS id" },
+        { bits: "8", name: "V1", desc: "interrupt delegated to VS-mode"},
+        { bits: "7:2", name: "VSID0", desc: "interrupt VS id" },
+        { bits: "0", name: "V0", desc: "interrupt delegated to VS-mode"},
+      ],
+    }
+  ]
+}

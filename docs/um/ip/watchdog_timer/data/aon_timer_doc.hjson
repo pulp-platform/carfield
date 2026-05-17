@@ -1,0 +1,266 @@
+
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+{
+  name:               "aon_timer",
+  human_name:         "Always-On Timer",
+  one_line_desc:      "Wakeup and watchdog timers running on a low-power, always-on clock",
+  one_paragraph_desc: '''
+  Always-On (AON) Timer is the main timer hardware block of OpenTitan.
+  It includes two 32-bit up-counting timers, one of which functions as a wakeup timer and the other as a watchdog timer.
+  The watchdog timer has two thresholds: a 'bark' threshold that generates an interrupt and a 'bite' threshold that resets the system.
+  The wakeup timer has a 12-bit pre-scaler to enable very long timeouts and also generates an interrupt to the core.
+  The timers run on a ~200 kHz AON clock and have a maximum timeout window of roughly ~6 hours for the watchdog timer and ~1000 days with the use of the pre-scaler for the wakeup timer.
+  '''
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_aon_timer",
+  version:            "1.0.0",
+  life_stage:         "L1",
+  design_stage:       "D3",
+  verification_stage: "V2",
+  dif_stage:"S2",
+  cip_id: "3",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_aon_i", reset: "rst_aon_ni"}
+  ]
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device"}
+  ],
+  interrupt_list: [
+    { name: "wkup_timer_expired",
+      desc: "Raised if the wakeup timer has hit the specified threshold"
+    },
+    { name: "wdog_timer_bark",
+      desc: "Raised if the watchdog timer has hit the bark threshold"
+    },
+  ],
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ],
+  wakeup_list: [
+    { name: "wkup_req",
+      desc: "Raised if the wakeup or watchdog timer has hit the specified threshold"
+    },
+  ],
+  reset_request_list: [
+    { name: "aon_timer_rst_req",
+      desc: "watchdog reset requestt"
+    },
+  ],
+  inter_signal_list: [
+    // wakeup and reset request signals
+    { struct:  "logic",
+      type:    "uni",
+      name:    "nmi_wdog_timer_bark",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "wkup_req",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "aon_timer_rst_req",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    },
+    // Broadcast from LC
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    },
+    { name:    "sleep_mode",
+      type:    "uni",
+      act:     "rcv",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    }
+  ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+  no_auto_intr_regs: "true",
+  regwidth: "32",
+  registers: [
+    { name: "WKUP_CTRL",
+      desc: "Wakeup Timer Control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_aon_i",
+      fields: [
+        { bits: "0",
+          name: "enable",
+          desc: "When set to 1, the wakeup timer will count",
+        }
+        { bits: "12:1",
+          name: "prescaler",
+          desc: "Pre-scaler value for wakeup timer count",
+        }
+      ],
+    },
+    { name: "WKUP_THOLD",
+      desc: "Wakeup Timer Threshold Register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_aon_i",
+      fields: [
+        { bits: "31:0",
+          name: "threshold",
+          desc: "The count at which a wakeup interrupt should be generated",
+        }
+      ],
+    },
+    { name: "WKUP_COUNT",
+      desc: "Wakeup Timer Count Register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_aon_i",
+      fields: [
+        { bits: "31:0",
+          name: "count",
+          desc: "The current wakeup counter value",
+        }
+      ],
+      tags: [// this could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+    },
+    { name: "WDOG_REGWEN",
+      desc: "Watchdog Timer Write Enable Register",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "regwen",
+          desc: "Once cleared, the watchdog configuration will be locked until the next reset",
+          resval: 1
+        }
+      ]
+    },
+    { name: "WDOG_CTRL",
+      desc: "Watchdog Timer Control register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_aon_i",
+      regwen: "WDOG_REGWEN",
+      fields: [
+        { bits: "0",
+          name: "enable",
+          desc: "When set to 1, the watchdog timer will count",
+        },
+        { bits: "1",
+          name: "pause_in_sleep",
+          desc: "When set to 1, the watchdog timer will not count during sleep",
+        }
+      ],
+    },
+    { name: "WDOG_BARK_THOLD",
+      desc: "Watchdog Timer Bark Threshold Register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_aon_i",
+      regwen: "WDOG_REGWEN",
+      fields: [
+        { bits: "31:0",
+          name: "threshold",
+          desc: "The count at which a watchdog bark interrupt should be generated",
+        }
+      ],
+    },
+    { name: "WDOG_BITE_THOLD",
+      desc: "Watchdog Timer Bite Threshold Register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_aon_i",
+      regwen: "WDOG_REGWEN",
+      fields: [
+        { bits: "31:0",
+          name: "threshold",
+          desc: "The count at which a watchdog bite reset should be generated",
+        }
+      ],
+    },
+    { name: "WDOG_COUNT",
+      desc: "Watchdog Timer Count Register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_aon_i",
+      fields: [
+        { bits: "31:0",
+          name: "count",
+          desc: "The current watchdog counter value",
+        }
+      ],
+      tags: [// this could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+    },
+    { name: "INTR_STATE",
+      desc: "Interrupt State Register",
+      swaccess: "rw1c",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "wkup_timer_expired",
+          desc: "Raised if the wakeup timer has hit the specified threshold",
+        }
+        { bits: "1",
+          name: "wdog_timer_bark",
+          desc: "Raised if the watchdog timer has hit the bark threshold",
+        }
+      ]
+      tags: [// interrupt could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+    },
+    { name: "INTR_TEST",
+      desc: "Interrupt Test Register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "0",
+          name: "wkup_timer_expired",
+          desc: "Write 1 to force wkup_timer_expired interrupt",
+        }
+        { bits: "1",
+          name: "wdog_timer_bark",
+          desc: "Write 1 to force wdog_timer_bark interrupt",
+        }
+      ]
+    },
+    { name: "WKUP_CAUSE",
+      desc: "Wakeup request status",
+      swaccess: "rw0c",
+      hwaccess: "hrw",
+      async: "clk_aon_i",
+      fields: [
+        { bits: "0",
+          name: "cause",
+          desc: "AON timer requested wakeup, write 0 to clear",
+        }
+      ]
+      tags: [// this could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+    },
+  ],
+}
