@@ -29,15 +29,19 @@ vivado_env_bd := \
     XILINX_ELABORATION_ONLY=$(XILINX_ELABORATION_ONLY)
 
 # Flavor specific bender args
-xilinx_targs_bd := $(common_targs) $(xilinx_targs_common) -t xilinx_bd -t $(XILINX_BOARD)
-xilinx_defs_bd := $(common_defs) $(xilinx_defs_common)
+xilinx_targs_bd := $(common_targs) $(xilinx_targs_common) -t xilinx_bd -t $(XILINX_BOARD) --exclude neureka --exclude opentitan
+xilinx_defs_bd := $(common_defs) $(xilinx_defs_common) -DCOMMON_CELLS_ASSERTS_OFF=1
+
+ik: $(CAR_XIL_DIR)/flavor_bd/scripts/add_includes.tcl
+	echo "hi"
 
 # Add includes files for block design
 $(CAR_XIL_DIR)/flavor_bd/scripts/add_includes.tcl:
 	${BENDER} script vivado --only-defines $(xilinx_targs_bd) $(xilinx_defs_bd) > $@.bak
 	${BENDER} script vivado --only-includes $(xilinx_targs_bd) $(xilinx_defs_bd) >> $@.bak
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
-	grep -v -P "lowrisc_ip/ip/prim/rtl" $@.bak > $@
+	# grep -v -P "lowrisc_ip/ip/prim/rtl" $@.bak > $@.bak2
+	grep -v -P "opentitan-" $@.bak > $@
     # Override system verilog files
 	$(CAR_XIL_DIR)/scripts/overrides.sh $@
 	echo "" >> $@

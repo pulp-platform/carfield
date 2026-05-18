@@ -15,7 +15,7 @@ dependencies:
   axi:                { git: https://github.com/pulp-platform/axi.git,                  version: 0.39.1                               }
   cheshire:           { git: https://github.com/pulp-platform/cheshire.git,             rev: 334d0465d7c0521a38104eaa930acfe64906b923 } # branch: aottaviano/carfield
   hyperbus:           { git: https://github.com/pulp-platform/hyperbus.git,             rev: 841deb9d821b63bf05a1c85d3a4746352a8bcae2 } # branch: aottaviano/nonfree
-  dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: 480590062742230dc9bd4050358a15b4747bdf34 } # branch: main
+  dyn_mem:            { git: https://github.com/pulp-platform/dyn_spm.git,              rev: d3570a1ca4af17a9a557643016911d64a44eb785 } # branch: aottaviano/bump-redcells
   safety_island:      { git: https://github.com/pulp-platform/safety_island.git,        rev: ae2bfaa07c85de34a0f4f334f376f21f6884b77f } # branch: carfield
   pulp_cluster:       { git: https://github.com/pulp-platform/pulp_cluster.git,         version: 3.0.3                                }
   opentitan:          { git: https://github.com/pulp-platform/opentitan.git,            rev: 8d7c0dc53329eb775d2f1272174c68997e4b9a1b } # branch: carfield-soc
