@@ -665,7 +665,7 @@ localparam cheshire_cfg_t CheshireCfg = '{
   Dma               : 1,
   SerialLink        : 1,
   Vga               : 0,
-  AxiRt             : 1,
+  AxiRt             : 0,
   Clic              : 1,
   IrqRouter         : 1,
   BusErr            : 1,

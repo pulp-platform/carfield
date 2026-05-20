@@ -323,8 +323,17 @@ proc create_root_design { parentCell } {
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
   set_property -dict [ list \
    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {None} \
+   CONFIG.C0.BANK_GROUP_WIDTH {1} \
+   CONFIG.C0.CS_WIDTH {2} \
+   CONFIG.C0.DDR4_AxiAddressWidth {32} \
+   CONFIG.C0.DDR4_CLKOUT0_DIVIDE {3} \
+   CONFIG.C0.DDR4_Clamshell {true} \
+   CONFIG.C0.DDR4_DataWidth {64} \
+   CONFIG.C0.DDR4_InputClockPeriod {10000} \
+   CONFIG.C0.DDR4_MCS_ECC {false} \
+   CONFIG.C0.DDR4_MemoryPart {MT40A512M16HA-075E} \
    CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
-   CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram} \
+   CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
    CONFIG.System_Clock {No_Buffer} \
  ] $ddr4_0
 
@@ -458,7 +467,6 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net xbar_periph_out_M01_AXI [get_bd_intf_pins axi_dma_0/S_AXI_LITE] [get_bd_intf_pins xbar_periph_out/M01_AXI]
   connect_bd_intf_net -intf_net xbar_periph_out_M02_AXI [get_bd_intf_pins xbar_periph_out/M02_AXI] [get_bd_intf_pins xdma_0/S_AXI_B]
   connect_bd_intf_net -intf_net xbar_periph_out_M03_AXI [get_bd_intf_pins xbar_periph_out/M03_AXI] [get_bd_intf_pins xdma_0/S_AXI_LITE]
-  connect_bd_intf_net -intf_net xbar_periph_out_M04_AXI [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI_CTRL] [get_bd_intf_pins xbar_periph_out/M04_AXI]
   connect_bd_intf_net -intf_net xdma_0_M_AXI_B [get_bd_intf_pins xbar_periph_in/S03_AXI] [get_bd_intf_pins xdma_0/M_AXI_B]
   connect_bd_intf_net -intf_net xdma_0_pcie_mgt [get_bd_intf_ports pci_express_x1] [get_bd_intf_pins xdma_0/pcie_mgt]
 
@@ -511,7 +519,6 @@ proc create_root_design { parentCell } {
   assign_bd_address -offset 0x00000000 -range 0x0001000000000000 -target_address_space [get_bd_addr_spaces xdma_0/M_AXI_B] [get_bd_addr_segs carfield_xilinx_ip_0/periph_axi_s/reg0] -force
 
   # Exclude Address Segments
-  exclude_bd_addr_seg -offset 0x78000000 -range 0x00100000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP_CTRL/C0_REG]
   exclude_bd_addr_seg -offset 0x00000000 -range 0x20000000 -target_address_space [get_bd_addr_spaces carfield_xilinx_ip_0/periph_axi_m] [get_bd_addr_segs xdma_0/S_AXI_LITE/CTL0]
 
 
