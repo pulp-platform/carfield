@@ -538,6 +538,42 @@ Assuming each mailbox is identified with id `i`, the register file map reads:
 The above register map can be found in the dedicated
 [repository](https://github.com/pulp-platform/mailbox_uni) and is reported here for convenience.
 
+Note that the `INT_RCV` interrupts are not connected to interrupt lines and can thus only be used with polling.
+
+The current ID assignment for mailbox IDs is the following:
+
+| **id** | **From**            | **To**               |
+|--------|---------------------|----------------------|
+| 0      | Safe domain         | Spatz domain, core 0 |
+| 1      | Safe domain         | Spatz domain, core 1 |
+| 2      | Host domain, core 0 | Spatz domain, core 0 |
+| 3      | Host domain, core 0 | Spatz domain, core 1 |
+| 4      | Host domain, core 1 | Spatz domain, core 0 |
+| 5      | Host domain, core 1 | Spatz domain, core 1 |
+| 6      | Host domain, core 0 | Pulp domain          |
+| 7      | Host domain, core 1 | Pulp domain          |
+| 8      | Host domain, core 0 | Secure domain        |
+| 9      | Host domain, core 1 | Secure domain        |
+| 10     | Host domain, core 0 | Safe domain          |
+| 11     | Host domain, core 1 | Safe domain          |
+| 12     | Spatz domain        | Host domain, core 0  |
+| 13     | Spatz domain        | Host domain, core 1  |
+| 14     | Spatz domain        | Safe domain          |
+| 15     | Pulp domain         | Host domain, core 0  |
+| 16     | Pulp domain         | Host domain, core 1  |
+| 17     | Pulp domain         | Safe domain          |
+| 18     | Secure domain       | Host domain, core 0  |
+| 19     | Secure domain       | Host domain, core 1  |
+| 20     | Secure domain       | Safe domain          |
+| 21     | Safe domain         | Host domain, core 0  |
+| 22     | Safe domain         | Host domain, core 1  |
+| 23     | Safe domain         | Secure domain        |
+| 24     | Safe domain         | Pulp domain          |
+
+The `INT_SND` is raised on the **To** side of the table. Note that there is no enforcement
+as to which domain is able to read or write which mailbox, all domains can read and write
+to any mailbox.
+
 ## Platform control registers
 
 PCRs provide basic system information, and control clock, reset and other functionalities of
