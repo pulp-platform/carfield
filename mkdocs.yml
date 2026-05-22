@@ -47,3 +47,6 @@ nav:
   - Architecture: um/arch.md
   - Software Stack: um/sw.md
   - Troubleshooting: um/troubleshooting.md
+- Developer Manual:
+  - dm/index.md
+  - Accelerator Boot Flow: dm/accel-boot.md
