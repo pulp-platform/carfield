@@ -46,3 +46,4 @@ nav:
   - um/index.md
   - Architecture: um/arch.md
   - Software Stack: um/sw.md
+  - Troubleshooting: um/troubleshooting.md
