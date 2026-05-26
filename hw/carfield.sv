@@ -1158,7 +1158,7 @@ if (CarfieldIslandsCfg.safed.enable) begin : gen_safety_island
   end
 
   for (genvar i = 0; i < CheshireNumIntHarts; i++ ) begin : gen_safed_mbox_intr
-    assign safed_hostd_mbox_intr [i] = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 1];
+    assign safed_hostd_mbox_intr [i] = snd_mbox_intrs[SafedMboxOffset + i];
   end
   assign safed_secd_mbox_intr = snd_mbox_intrs[SafedMboxOffset + CheshireNumIntHarts + 0];
 

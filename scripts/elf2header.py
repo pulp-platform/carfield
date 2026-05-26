@@ -150,8 +150,10 @@ class stim(object):
         file.write('#define ELF_BOOT_ADDR %s \n' %(hex(self.start_addr)))
       file.write('int load_binary() {\n' )
       file.write(c_function)
+      sorted_keys = sorted(self.mem.keys())
+      assert (int(sorted_keys[1]) - int(sorted_keys[0])) == 4
       for key in sorted(self.mem.keys()):
-        file.write('  (*(volatile unsigned int *)(uint64_t)(0x%X)) = 0x%0*X ;\n' % (int(key), width*2, self.mem.get(key)))
+        file.write('  (*(volatile uint32_t *)(uint64_t)(0x%X)) = 0x%0*X ;\n' % (int(key), width*2, self.mem.get(key)))
       file.write('#endif\n')
       file.write('return 0; \n }\n')
 

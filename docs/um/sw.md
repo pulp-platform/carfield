@@ -78,7 +78,7 @@ BMPs for all domains can be built from the root of Carfield through a portable *
 To simplify each domain SW build as much as possible, we provide a make fragment located at
 `sw/tests/bare-metal/<domain>/sw.mk`, included in the main `sw.mk`.
 
-BMPs for each domain are compiled *in situ* in the domain repository, since each IP was design for,
+BMPs for each domain are compiled *in situ* in the domain repository, since each IP was designed for,
 or supports also, standalone execution and has its own build flow.
 
 The global command
@@ -172,7 +172,7 @@ launching its execution.
 
 Upon target device completion, the offloader:
 
-* Is asynchronously notified of the event via a mailboxe interrupt; BMOs of this kind are called
+* Is asynchronously notified of the event via a mailbox interrupt; BMOs of this kind are called
   *non-blocking*
 * Sychronously polls a specific register to catch the completion; BMOs of this kind are called
   *blocking*
