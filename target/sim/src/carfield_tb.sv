@@ -17,6 +17,7 @@ module tb_carfield_soc;
   import uvm_pkg::*;
   import carfield_pkg::*;
   import cheshire_pkg::*;
+  import carfield_configuration::*;
 
   // carfield top
   carfield_soc_fixture fix();
@@ -30,7 +31,7 @@ module tb_carfield_soc;
   bit         is_dram;
 
   // hyperbus
-  localparam int unsigned HyperbusTburstMax = 32'h20009008;
+  localparam int unsigned HyperbusTburstMax = carfield_configuration::HyperBusBase + 32'h8;
 
   // mailbox unit
   parameter logic [31:0] CAR_MBOX_BASE             = 32'h40000000;
@@ -178,9 +179,9 @@ module tb_carfield_soc;
     bit         safed_exit_status;
     bit  [31:0] safed_isolated;
 
-    localparam int unsigned SafetyIslandClkEnRegAddr         = 32'h20010070;
-    localparam int unsigned SafetyIslandIsolateRegAddr       = 32'h20010040;
-    localparam int unsigned SafetyIslandIsolateStatusRegAddr = 32'h20010058;
+    localparam int unsigned SafetyIslandClkEnRegAddr         = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_SAFETY_ISLAND_CLK_EN_OFFSET;
+    localparam int unsigned SafetyIslandIsolateRegAddr       = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_SAFETY_ISLAND_ISOLATE_OFFSET;
+    localparam int unsigned SafetyIslandIsolateStatusRegAddr = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_SAFETY_ISLAND_ISOLATE_STATUS_OFFSET;
 
     initial begin
       // Fetch plusargs or use safe (fail-fast) defaults
@@ -284,20 +285,20 @@ module tb_carfield_soc;
   // pulp cluster standalone
   if (CarfieldIslandsCfg.pulp.enable) begin: gen_pulp_tb
     // Useful register addresses
-    localparam int unsigned CarL2StartAddr                      = 32'h7800_0000;
+    localparam int unsigned CarL2StartAddr                      = carfield_configuration::L2Port0Base;
     localparam int unsigned CarDramStartAddr                    = 32'h8000_0000;
     localparam int unsigned PulpdNumCores                       = 12;
     localparam int unsigned PulpdBootAddrL2                     = CarL2StartAddr + 32'h8080;
     localparam int unsigned PulpdBootAddrDram                   = CarDramStartAddr + 32'h8080;
-    localparam int unsigned PulpdBootAddr                       = 32'h50200040;
-    localparam int unsigned PulpdRetAddr                        = 32'h50200100;
-    localparam int unsigned CarSocCtrlPulpdClkEnRegAddr         = 32'h20010078;
-    localparam int unsigned CarSocCtrlPulpdIsolateRegAddr       = 32'h20010048;
-    localparam int unsigned CarSocCtrlPulpdIsolateStatusRegAddr = 32'h20010060;
-    localparam int unsigned CarSocCtrlPulpdFetchEnAddr          = 32'h200100c0;
-    localparam int unsigned CarSocCtrlPulpdBootEnAddr           = 32'h200100dc;
-    localparam int unsigned CarSocCtrlPulpdBusyAddr             = 32'h200100e4;
-    localparam int unsigned CarSocCtrlPulpdEocAddr              = 32'h200100e8;
+    localparam int unsigned PulpdBootAddr                       = carfield_configuration::PulpClusterBase + 32'h00200040;
+    localparam int unsigned PulpdRetAddr                        = carfield_configuration::PulpClusterBase + 32'h00200100;
+    localparam int unsigned CarSocCtrlPulpdClkEnRegAddr         = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_PULP_CLUSTER_CLK_EN_OFFSET;
+    localparam int unsigned CarSocCtrlPulpdIsolateRegAddr       = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_PULP_CLUSTER_ISOLATE_OFFSET;
+    localparam int unsigned CarSocCtrlPulpdIsolateStatusRegAddr = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_PULP_CLUSTER_ISOLATE_STATUS_OFFSET;
+    localparam int unsigned CarSocCtrlPulpdFetchEnAddr          = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_PULP_CLUSTER_FETCH_ENABLE_OFFSET;
+    localparam int unsigned CarSocCtrlPulpdBootEnAddr           = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_PULP_CLUSTER_BOOT_ENABLE_OFFSET;
+    localparam int unsigned CarSocCtrlPulpdBusyAddr             = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_PULP_CLUSTER_BUSY_OFFSET;
+    localparam int unsigned CarSocCtrlPulpdEocAddr              = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_PULP_CLUSTER_EOC_OFFSET;
     // sim variables
     string      pulpd_preload_elf;
     logic [1:0] pulpd_boot_mode;
@@ -440,9 +441,9 @@ module tb_carfield_soc;
     doub_bt     spatzd_binary_entry;
     doub_bt     spatzd_reg_value;
 
-    localparam int unsigned SpatzdClkEnRegAddr         = 32'h2001007c;
-    localparam int unsigned SpatzdIsolateRegAddr       = 32'h2001004c;
-    localparam int unsigned SpatzdIsolateStatusRegAddr = 32'h20010064;
+    localparam int unsigned SpatzdClkEnRegAddr         = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_SPATZ_CLUSTER_CLK_EN_OFFSET;
+    localparam int unsigned SpatzdIsolateRegAddr       = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_SPATZ_CLUSTER_ISOLATE_OFFSET;
+    localparam int unsigned SpatzdIsolateStatusRegAddr = carfield_configuration::PcrsBase + carfield_reg_pkg::CARFIELD_SPATZ_CLUSTER_ISOLATE_STATUS_OFFSET;
 
     initial begin
       // Fetch plusargs or use safe (fail-fast) defaults
