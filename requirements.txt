@@ -1,8 +1,8 @@
 hjson
 jsonref
 jsonschema
-Mako==1.1.6
-PyYAML==6.0
+Mako
+PyYAML
 pyelftools==0.29
 requests
 mako
@@ -14,3 +14,7 @@ mkdocs-material
 mkdocs-glightbox
 dataclasses
 jstyleson
+flatdict
+peakrdl
+peakrdl-rawheader
+setuptools<81
