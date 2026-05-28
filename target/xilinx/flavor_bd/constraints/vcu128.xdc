@@ -178,8 +178,8 @@ set_property IOSTANDARD  LVCMOS18 [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC
 #set_property IOSTANDARD  DIFF_SSTL12_DCI [get_ports "c0_sys_clk_n"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L15P_T2L_N4_AD11P_66
 #set_property PACKAGE_PIN BH52       [get_ports "PL_DDR4_CKE"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L14N_T2L_N3_GC_66
 #set_property IOSTANDARD  SSTL12_DCI [get_ports "PL_DDR4_CKE"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L14N_T2L_N3_GC_66
-#set_property PACKAGE_PIN BG52       [get_ports "c0_ddr4_act_n"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L14P_T2L_N2_GC_66
-#set_property IOSTANDARD  SSTL12_DCI [get_ports "c0_ddr4_act_n"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L14P_T2L_N2_GC_66
+#set_property PACKAGE_PIN BG52       [get_ports "ddr4_sdram_act_n"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L14P_T2L_N2_GC_66
+#set_property IOSTANDARD  SSTL12_DCI [get_ports "ddr4_sdram_act_n"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L14P_T2L_N2_GC_66
 #set_property PACKAGE_PIN BJ53       [get_ports "PL_DDR4_TEN"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L13N_T2L_N1_GC_QBC_66
 #set_property IOSTANDARD  SSTL12_DCI [get_ports "PL_DDR4_TEN"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L13N_T2L_N1_GC_QBC_66
 #set_property PACKAGE_PIN BJ52       [get_ports "PL_DDR4_ALERT_B"] ;# Bank  66 VCCO - DDR4_VDDQ_1V2 - IO_L13P_T2L_N0_GC_QBC_66
