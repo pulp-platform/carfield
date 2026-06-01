@@ -303,7 +303,7 @@ module carfield_soc_fixture;
     .RstCycles         ( RstCycles ),
     .TAppl             ( TAppl ),
     .TTest             ( TTest )
-  ) chs_vip (
+  ) vip (
     // We do not connect to axi_sim_mem, but to HyperRAM
     .axi_llc_mst_req ( '0 ),
     .axi_llc_mst_rsp (    ),
@@ -470,7 +470,7 @@ module carfield_soc_fixture;
   );
     axi_data_t beats [$];
     #(ClkPeriodSys * idle_cycles);
-    chs_vip.slink_read_beats(addr, 2, 0, beats);
+    vip.slink_read_beats(addr, 2, 0, beats);
     data = beats[0];
   endtask
 

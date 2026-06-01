@@ -47,7 +47,8 @@ ifdef DEBUG
 	VSIM_FLAGS := $(QUESTA_FLAGS)
 	RUN_AND_EXIT := log -r /*; run -all
 else
-	VOPT_FLAGS := $(QUESTA_FLAGS) -O5 +acc=p+$(TBENCH). +noacc=p+carfield. -sdf
+	# TODO: Figure Questa compiler error in HPDCache when noacc
+	VOPT_FLAGS := $(QUESTA_FLAGS) -O5 +acc=p+$(TBENCH). +noacc=p+carfield. +acc=p+cva6_hpdcache_wrapper. -sdf
 	VSIM_FLAGS := $(QUESTA_FLAGS) -c
 	RUN_AND_EXIT := run -all; exit
 endif

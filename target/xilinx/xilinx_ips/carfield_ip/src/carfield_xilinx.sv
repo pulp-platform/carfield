@@ -402,21 +402,17 @@ module carfield_xilinx
   carfield_axi_mst_req_t periph_soc_bd_req, periph_bd_soc_req;
   carfield_axi_mst_rsp_t periph_soc_bd_rsp, periph_bd_soc_rsp;
 
-  serial_link #(
+  slink #(
     .axi_req_t    ( carfield_axi_mst_req_t ),
     .axi_rsp_t    ( carfield_axi_mst_rsp_t ),
-    .cfg_req_t    ( carfield_reg_req_t ),
-    .cfg_rsp_t    ( carfield_reg_rsp_t ),
     .aw_chan_t    ( carfield_axi_mst_aw_chan_t ),
     .ar_chan_t    ( carfield_axi_mst_ar_chan_t ),
     .r_chan_t     ( carfield_axi_mst_r_chan_t  ),
     .w_chan_t     ( carfield_axi_mst_w_chan_t  ),
     .b_chan_t     ( carfield_axi_mst_b_chan_t  ),
-    .hw2reg_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_hw2reg_t ),
-    .reg2hw_t     ( serial_link_single_channel_reg_pkg::serial_link_single_channel_reg2hw_t ),
-    .NumChannels  ( SlinkNumChan   ),
-    .NumLanes     ( SlinkNumLanes  ),
-    .MaxClkDiv    ( SlinkMaxClkDiv )
+    .apb_req_t    ( carfield_apb_req_t  ),
+    .apb_rsp_t    ( carfield_apb_resp_t ),
+    .NoRegCdc     ( 1'b1 )
   ) i_serial_link (
     .clk_i          ( host_clk   ),
     .rst_ni         ( rst_n      ),
@@ -429,8 +425,8 @@ module carfield_xilinx
     .axi_in_rsp_o   ( periph_bd_soc_rsp ),
     .axi_out_req_o  ( periph_soc_bd_req ),
     .axi_out_rsp_i  ( periph_soc_bd_rsp ),
-    .cfg_req_i      ( '0 ),
-    .cfg_rsp_o      (    ),
+    .apb_req_i      ( '0 ),
+    .apb_rsp_o      (    ),
     .ddr_rcv_clk_i  ( slink_clk_soc_periph ),
     .ddr_rcv_clk_o  ( slink_clk_periph_soc ),
     .ddr_i          ( slink_soc_periph ),
