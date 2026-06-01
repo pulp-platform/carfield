@@ -14,4 +14,4 @@ $(CAR_XIL_DIR)/xilinx_ips/carfield_ip/tcl/add_sources.tcl: Bender.yml
 	$(BENDER) script vivado $(xilinx_targs) $(common_defs) $(xilinx_defs_bd) > $@
 	mv $@ $@.bak
 # Remove ibex's vendored prim includes as they conflict with opentitan's vendored prim includes
-	grep -v -P "lowrisc_ip/ip/prim/rtl" $@.bak > $@
+	grep -v -P "opentitan-" $@.bak > $@
