@@ -13,6 +13,9 @@ set_property XPM_LIBRARIES XPM_MEMORY [current_project]
 # set number of threads to 8 (maximum, unfortunately)
 set_param general.maxThreads 8
 
+# Avoid changing top level randomly in case of error
+# set_property source_mgmt_mode None [current_project]
+
 # Define sources
 source tcl/add_sources.tcl
 
@@ -27,10 +30,13 @@ set_property processing_order LATE [get_files carfield.xdc]
 
 # Package IP
 set_property top carfield_xilinx_ip [current_fileset]
+# set_property source_mgmt_mode None [current_project]
+
+remove_files [get_files {*hpdcache_sram_ecc_1rw.sv *hpdcache_sram_wbyteenable_ecc_1rw.sv *hpdcache_sram_wmask_ecc_1rw.sv}]
 
 # Attention SFCU is only used because of Carfield's structure
 update_compile_order -fileset sources_1
-synth_design -rtl -name rtl_1 -sfcu
+synth_design -rtl -name rtl_1 -sfcu -top [get_property top [current_fileset]]
 
 ipx::package_project -root_dir . -vendor ethz.ch -library user -taxonomy /UserIP -set_current false
 
@@ -38,7 +44,8 @@ ipx::package_project -root_dir . -vendor ethz.ch -library user -taxonomy /UserIP
 close_project
 open_project $project.xpr
 # Export this IP as a .xci too for coherence with Xilinx IPs
-set_property ip_repo_paths . [current_project]
+set_property ip_repo_paths [file normalize .] [current_project]
+update_ip_catalog
 create_ip -verbose -module_name $project -vlnv ethz.ch:user:carfield_xilinx_ip
 
 exit

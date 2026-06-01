@@ -18,6 +18,9 @@ set_param general.maxThreads 8
 set_property ip_repo_paths ../xilinx_ips/carfield_ip [current_project]
 update_ip_catalog
 
+# Avoid changing top level randomly in case of error
+# set_property source_mgmt_mode None [current_project]
+
 # Add params to runs
 import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD).xdc
 import_files -fileset constrs_1 -norecurse ../constraints/carfield_islands.tcl
@@ -32,8 +35,7 @@ if {[info exists ::env(GEN_EXT_JTAG)] && ($::env(GEN_EXT_JTAG)==1)} {
   import_files -fileset constrs_1 -norecurse constraints/$::env(XILINX_BOARD)_ext_jtag.xdc
 }
 
-make_wrapper -files [get_files $project/$project.srcs/sources_1/bd/design_1/design_1.bd] -top
-add_files -norecurse $project/$project.gen/sources_1/bd/design_1/hdl/design_1_wrapper.v
+add_files -norecurse [make_wrapper -files [get_files *design_1.bd] -top]
 
 # Create OOC runs
 generate_target all [get_files *design_1.bd]
