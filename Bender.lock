@@ -120,6 +120,7 @@ packages:
     source:
       Git: https://github.com/pulp-platform/cheshire.git
     dependencies:
+    - apb
     - apb_uart
     - axi
     - axi_llc
@@ -156,8 +157,8 @@ packages:
     - common_cells
     - register_interface
   cluster_icache:
-    revision: 64e21ae455bbdde850c4df13bef86ea55ac42537
-    version: 0.2.0
+    revision: 1642961b9561513f283674efc2c90f24855e8d39
+    version: 0.3.1
     source:
       Git: https://github.com/pulp-platform/cluster_icache.git
     dependencies:
@@ -213,7 +214,6 @@ packages:
     - clic
     - common_cells
     - common_verification
-    - fpnew
     - register_interface
     - tech_cells_generic
   dram_rtl_sim:
@@ -252,7 +252,7 @@ packages:
     - fpnew
     - tech_cells_generic
   fpnew:
-    revision: a8e0cba6dd50f357ece73c2c955d96efc3c6c315
+    revision: e5aa6a01b5bbe1675c3aa8872e1203413ded83d1
     version: null
     source:
       Git: https://github.com/pulp-platform/cvfpu.git
@@ -404,9 +404,6 @@ packages:
       Git: https://github.com/pulp-platform/opentitan.git
     dependencies:
     - axi
-    - cluster_interconnect
-    - idma
-    - register_interface
   opentitan_peripherals:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
@@ -533,13 +530,29 @@ packages:
     - tech_cells_generic
   serial_link:
     revision: d4e513aebd368d77808c5e6629a1e2729c16eba0
-    version: null
+    version: 2.0.0
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
+    - apb
     - axi
+    - axi_stream
     - common_cells
-    - register_interface
+  snitch_cluster:
+    revision: ca3d1588a65063458b259c667fe24a68666f149f
+    version: null
+    source:
+      Git: https://github.com/pulp-platform/snitch_cluster.git
+    dependencies:
+    - apb
+    - axi
+    - axi_riscv_atomics
+    - cluster_icache
+    - common_cells
+    - fpnew
+    - idma
+    - riscv-dbg
+    - tech_cells_generic
   softex:
     revision: a93ddff106ca3596660584ce6c7f77fb2a8475e3
     version: null
