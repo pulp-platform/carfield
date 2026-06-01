@@ -392,6 +392,7 @@ module carfield_soc_fixture;
   /////////////////////////
   // Security island VIP //
   /////////////////////////
+`ifdef NEVERDEFINED
   lc_ctrl_pkg::lc_tx_t secured_fetch_enable;
   if (CarfieldIslandsCfg.secured.enable) begin: gen_scured_vip
     localparam time ClkPeriodSecdJtag = 20ns;
@@ -445,23 +446,29 @@ module carfield_soc_fixture;
   end else begin: gen_no_scured_vip
     assign secured_fetch_enable = lc_ctrl_pkg::Off;
   end
+`endif
 
   ///////////////////
   // Generic tasks //
   ///////////////////
 
   task passthrough_or_wait_for_secd_hw_init();
+`ifdef NEVERDEFINED
     if (CarfieldIslandsCfg.secured.enable &&
        (secure_boot || !i_dut.car_regs_hw2reg.security_island_isolate_status.d) &&
         secured_fetch_enable != lc_ctrl_pkg::On) begin
       $display("Wait for OT to boot...");
       wait (secured_fetch_enable == lc_ctrl_pkg::On);
     end
+`endif
   endtask
 
   task set_secure_boot(input logic sb);
+`ifdef NEVERDEFINED
     secure_boot = sb;
+`endif
   endtask
+
 
   task automatic slink_read_reg(
     input doub_bt addr,
