@@ -18,7 +18,6 @@ module carfield
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
   import safety_island_pkg::*;
-  import tlul_ot_pkg::*;
   import spatz_cluster_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CheshireCfg,
@@ -2317,109 +2316,6 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   assign reg_bus_wdt.error = reg_wdt_rsp.error;
   assign reg_bus_wdt.ready = reg_wdt_rsp.ready;
 
-  // reg to tilelink
-  tlul_ot_pkg::tl_h2d_t tl_wdt_req;
-  tlul_ot_pkg::tl_d2h_t tl_wdt_rsp;
-
-  reg_to_tlul #(
-    .req_t             ( carfield_a32_d32_reg_req_t     ),
-    .rsp_t             ( carfield_a32_d32_reg_rsp_t     ),
-    .tl_h2d_t          ( tlul_ot_pkg::tl_h2d_t          ),
-    .tl_d2h_t          ( tlul_ot_pkg::tl_d2h_t          ),
-    .tl_a_user_t       ( tlul_ot_pkg::tl_a_user_t       ),
-    .tl_a_op_e         ( tlul_ot_pkg::tl_a_op_e         ),
-    .TL_A_USER_DEFAULT ( tlul_ot_pkg::TL_A_USER_DEFAULT ),
-    .PutFullData       ( tlul_ot_pkg::PutFullData       ),
-    .Get               ( tlul_ot_pkg::Get               )
-  ) i_reg_to_tlul_wdt (
-    .tl_o      ( tl_wdt_req  ),
-    .tl_i      ( tl_wdt_rsp  ),
-    .reg_req_i ( reg_wdt_req ),
-    .reg_rsp_o ( reg_wdt_rsp )
-  );
-
-  // Wdt
-  aon_timer i_watchdog_timer (
-    .clk_i                     ( periph_clk            ),
-    .rst_ni                    ( periph_pwr_on_rst_n   ),
-    .clk_aon_i                 ( rt_clk_i              ),
-    .rst_aon_ni                ( periph_pwr_on_rst_n   ),
-    .tl_i                      ( tl_wdt_req            ),
-    .tl_o                      ( tl_wdt_rsp            ),
-    .alert_rx_i                ( '0                    ), // TODO: what are these for?
-    .alert_tx_o                ( /* TODO connect me */ ),
-    .lc_escalate_en_i          ( '0                    ),
-    .intr_wkup_timer_expired_o ( car_wdt_intrs[0] ),
-    .intr_wdog_timer_bark_o    ( car_wdt_intrs[1] ),
-    .nmi_wdog_timer_bark_o     ( car_wdt_intrs[2] ),
-    .wkup_req_o                ( car_wdt_intrs[3] ),
-    .aon_timer_rst_req_o       ( car_wdt_intrs[4] ),
-    .sleep_mode_i              ( '0                    )
-  );
-
-  // Hyperbus
-  REG_BUS #(
-    .ADDR_WIDTH ( AxiNarrowAddrWidth ),
-    .DATA_WIDTH ( AxiNarrowDataWidth )
-  ) reg_bus_hyper (periph_clk);
-
-  apb_to_reg i_apb_to_reg_hyper (
-    .clk_i     ( periph_clk                       ),
-    .rst_ni    ( periph_pwr_on_rst_n              ),
-    .penable_i ( apb_mst_req[HyperBusIdx].penable ),
-    .pwrite_i  ( apb_mst_req[HyperBusIdx].pwrite  ),
-    .paddr_i   ( apb_mst_req[HyperBusIdx].paddr   ),
-    .psel_i    ( apb_mst_req[HyperBusIdx].psel    ),
-    .pwdata_i  ( apb_mst_req[HyperBusIdx].pwdata  ),
-    .prdata_o  ( apb_mst_rsp[HyperBusIdx].prdata  ),
-    .pready_o  ( apb_mst_rsp[HyperBusIdx].pready  ),
-    .pslverr_o ( apb_mst_rsp[HyperBusIdx].pslverr ),
-    .reg_o     ( reg_bus_hyper                    )
-  );
-
-  assign reg_hyper_req.addr  = reg_bus_hyper.addr;
-  assign reg_hyper_req.write = reg_bus_hyper.write;
-  assign reg_hyper_req.wdata = reg_bus_hyper.wdata;
-  assign reg_hyper_req.wstrb = reg_bus_hyper.wstrb;
-  assign reg_hyper_req.valid = reg_bus_hyper.valid;
-
-  assign reg_bus_hyper.rdata = reg_hyper_rsp.rdata;
-  assign reg_bus_hyper.error = reg_hyper_rsp.error;
-  assign reg_bus_hyper.ready = reg_hyper_rsp.ready;
-
-  // CAN bus
-  logic [63:0] can_timestamp;
-  assign can_timestamp = '1;
-  if (carfield_configuration::CanEnable) begin: gen_can
-    can_top_apb #(
-      .rx_buffer_size   ( 32                    ),
-      .txt_buffer_count ( 2                     ),
-      .target_technology( 0                     ) // 0 for ASIC or 1 for FPGA
-    ) i_apb_to_can (
-      .aclk             ( periph_clk             ),
-      .arstn            ( periph_pwr_on_rst_n    ),
-      .scan_enable      ( 1'b0                   ),
-      .res_n_out        (                        ),
-      .irq              ( car_can_intr           ),
-      .CAN_tx           ( can_tx_o               ),
-      .CAN_rx           ( can_rx_i               ),
-      .timestamp        ( can_timestamp          ),
-      .s_apb_paddr      ( apb_mst_req[CanIdx].paddr   ),
-      .s_apb_penable    ( apb_mst_req[CanIdx].penable ),
-      .s_apb_pprot      ( 3'b000                 ),
-      .s_apb_prdata     ( apb_mst_rsp[CanIdx].prdata  ),
-      .s_apb_pready     ( apb_mst_rsp[CanIdx].pready  ),
-      .s_apb_psel       ( apb_mst_req[CanIdx].psel    ),
-      .s_apb_pslverr    ( apb_mst_rsp[CanIdx].pslverr ),
-      .s_apb_pstrb      ( 4'b1111                ),
-      .s_apb_pwdata     ( apb_mst_req[CanIdx].pwdata  ),
-      .s_apb_pwrite     ( apb_mst_req[CanIdx].pwrite  )
-    );
-  end else begin: gen_no_can
-    assign car_can_intr = '0;
-    assign can_tx_o = '0;
-    assign apb_mst_rsp[CanIdx] = '0;
-  end
 end else begin: gen_no_periph
   assign car_regs_hw2reg.periph_isolate_status.d = '0;
   assign car_regs_hw2reg.periph_isolate_status.de = '0;
