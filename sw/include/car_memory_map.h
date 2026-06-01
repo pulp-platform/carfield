@@ -22,6 +22,9 @@
 
 // Base addresses provided at link time
 extern void *__base_l2;
+extern void *__regs_base_addr__;
+extern void *__uart_base_addr__;
+extern void *__regs_rtc_freq_base_addr__;
 
 // Main Islands and accelerators
 

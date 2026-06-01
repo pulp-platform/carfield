@@ -591,9 +591,9 @@ typedef struct packed {
 // Cheshire configuration
 localparam cheshire_cfg_t CheshireCfg = '{
   // CVA6 parameters
-  Cva6RASDepth      : ariane_pkg::ArianeDefaultConfig.RASDepth,
-  Cva6BTBEntries    : ariane_pkg::ArianeDefaultConfig.BTBEntries,
-  Cva6BHTEntries    : ariane_pkg::ArianeDefaultConfig.BHTEntries,
+  Cva6RASDepth      : cheshire_pkg::DefaultCfg.Cva6RASDepth,
+  Cva6BTBEntries    : cheshire_pkg::DefaultCfg.Cva6BTBEntries,
+  Cva6BHTEntries    : cheshire_pkg::DefaultCfg.Cva6BHTEntries,
   Cva6NrPMPEntries  : 0,
   Cva6ExtCieLength  : 'h1000_0000, // [0x2000_0000, 0x7000_0000) is non-CIE,
                                    // [0x7000_0000, 0x8000_0000) is CIE
@@ -610,11 +610,18 @@ localparam cheshire_cfg_t CheshireCfg = '{
   NumExtOutIntrTgts : CarfieldNumRouterTargets,
   NumExtOutIntrs    : CarfieldNumExtIntrs+$bits(cheshire_int_intr_t),
   ClicIntCtlBits    : 8,
-  ClicUseSMode      : 1,
-  ClicUseUMode      : 0,
-  ClicUseVsMode     : 1,
-  ClicUseVsModePrio : 1,
-  ClicNumVsCtxts    : 2, // TODO: choose appropriately
+
+  // TODO: Port Carfield Supports // ClicUseSMode      : 1,
+  // TODO: Port Carfield Supports // ClicUseUMode      : 0,
+  // TODO: Port Carfield Supports // ClicUseVsMode     : 1,
+  // TODO: Port Carfield Supports // ClicUseVsModePrio : 1,
+  // TODO: Port Carfield Supports // ClicNumVsCtxts    : 2, // TODO: choose appropriately
+  Clic: 1,
+  ClicVsclic: 1,
+  ClicVsprio: 1,
+  ClicNumVsctxts: 4,
+  ClicPrioWidth: 1,
+
   NumExtIntrSyncs   : SyncStages,
   // Interconnect
   AddrWidth         : 48,
@@ -686,11 +693,13 @@ localparam cheshire_cfg_t CheshireCfg = '{
   LlcOutConnect     : 1,
   LlcOutRegionStart : 'h8000_0000,
   LlcOutRegionEnd   : 'h1_0000_0000,
-  LlcUserMsb        : 9,
-  LlcUserLsb        : 5,
-  LlcCachePartition : 1,
-  LlcMaxPartition   : 16,
-  LlcRemapHash      : axi_llc_pkg::Modulo,
+  //LlcEnableUncAlias : 1,
+  //LlcOutUncStart    : 64'h3_0000_0000,  // Behind default Slink region
+  // TODO: Port Carfield Supports // LlcUserMsb        : 9,
+  // TODO: Port Carfield Supports // LlcUserLsb        : 5,
+  // TODO: Port Carfield Supports // LlcCachePartition : 1,
+  // TODO: Port Carfield Supports // LlcMaxPartition   : 16,
+  // TODO: Port Carfield Supports // LlcRemapHash      : axi_llc_pkg::Modulo,
   // VGA: RGB332; carfield doesn't have a vga, but widths are required for top-level pins anyway.
   VgaRedWidth       : 3,
   VgaGreenWidth     : 3,

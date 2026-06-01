@@ -49,7 +49,7 @@ int main(void) {
     __axirt_enable(0x5);
 
     // launch DMA transfer
-    sys_dma_2d_blk_memcpy(DST_ADDR, SRC_ADDR, SIZE_BYTES, DST_STRIDE, SRC_STRIDE, NUM_REPS);
+    sys_dma_2d_blk_memcpy(DST_ADDR, SRC_ADDR, SIZE_BYTES, DST_STRIDE, SRC_STRIDE, NUM_REPS, DMA_CONF_DECOUPLE_NONE);
 
     // read budget registers and compare
     volatile uint32_t read_budget = *reg32(&__base_axirt, AXI_RT_READ_BUDGET_LEFT_2_REG_OFFSET);

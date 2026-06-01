@@ -21,7 +21,8 @@
       status = "okay";
       compatible = "eth,ariane", "riscv";
       clock-frequency = <50000000>; // 50 MHz
-      riscv,isa = "rv64imafdc";
+      riscv,isa = "rv64imafdc_zicbom";
+      riscv,cbom-block-size = <16>; // 128-bits
       mmu-type = "riscv,sv39";
       tlb-split;
       reg = <0>;
@@ -51,7 +52,7 @@
       reg = <0x0 0x0 0x0 0x1000>;
     };
     idma@1000000 {
-      compatible = "eth,idma";
+      compatible = "eth,idma-engine";
       reg = <0x0 0x1000000 0x0 0x1000>;
     };
     ctrl-regs@3000000 {
@@ -69,7 +70,7 @@
     serial@3002000 {
       compatible = "ns16550a";
       clock-frequency = <50000000>; // 50 MHz
-      current-speed = <38400>;
+      current-speed = <115200>;
       interrupt-parent = <&PLIC0>;
       interrupts = <1>;
       reg = <0x0 0x3002000 0x0 0x1000>;
@@ -122,7 +123,7 @@
     gpio@3005000 {
       compatible = "gpio,carfield";
       reg = <0x0 0x3005000 0x0 0x1000>;
-      interrupts-extended = <&PLIC0 19 &PLIC0 21 &PLIC0 22 &PLIC0 24>;
+      interrupts-extended = <&PLIC0 20 &PLIC0 21 &PLIC0 22 &PLIC0 23 &PLIC0 24 &PLIC0 25>;
     };
     tcdm@10000000 {
       reg = <0x0 0x10000000 0x0 0x400000>;
