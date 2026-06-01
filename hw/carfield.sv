@@ -18,7 +18,6 @@ module carfield
   import carfield_reg_pkg::*;
   import cheshire_pkg::*;
   import safety_island_pkg::*;
-  import tlul_ot_pkg::*;
   import spatz_cluster_pkg::*;
 #(
   parameter cheshire_cfg_t Cfg = carfield_pkg::CheshireCfg,
@@ -2317,46 +2316,6 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
   assign reg_bus_wdt.error = reg_wdt_rsp.error;
   assign reg_bus_wdt.ready = reg_wdt_rsp.ready;
 
-  // reg to tilelink
-  tlul_ot_pkg::tl_h2d_t tl_wdt_req;
-  tlul_ot_pkg::tl_d2h_t tl_wdt_rsp;
-
-  reg_to_tlul #(
-    .req_t             ( carfield_a32_d32_reg_req_t     ),
-    .rsp_t             ( carfield_a32_d32_reg_rsp_t     ),
-    .tl_h2d_t          ( tlul_ot_pkg::tl_h2d_t          ),
-    .tl_d2h_t          ( tlul_ot_pkg::tl_d2h_t          ),
-    .tl_a_user_t       ( tlul_ot_pkg::tl_a_user_t       ),
-    .tl_a_op_e         ( tlul_ot_pkg::tl_a_op_e         ),
-    .TL_A_USER_DEFAULT ( tlul_ot_pkg::TL_A_USER_DEFAULT ),
-    .PutFullData       ( tlul_ot_pkg::PutFullData       ),
-    .Get               ( tlul_ot_pkg::Get               )
-  ) i_reg_to_tlul_wdt (
-    .tl_o      ( tl_wdt_req  ),
-    .tl_i      ( tl_wdt_rsp  ),
-    .reg_req_i ( reg_wdt_req ),
-    .reg_rsp_o ( reg_wdt_rsp )
-  );
-
-  // Wdt
-  aon_timer i_watchdog_timer (
-    .clk_i                     ( periph_clk            ),
-    .rst_ni                    ( periph_pwr_on_rst_n   ),
-    .clk_aon_i                 ( rt_clk_i              ),
-    .rst_aon_ni                ( periph_pwr_on_rst_n   ),
-    .tl_i                      ( tl_wdt_req            ),
-    .tl_o                      ( tl_wdt_rsp            ),
-    .alert_rx_i                ( '0                    ), // TODO: what are these for?
-    .alert_tx_o                ( /* TODO connect me */ ),
-    .lc_escalate_en_i          ( '0                    ),
-    .intr_wkup_timer_expired_o ( car_wdt_intrs[0] ),
-    .intr_wdog_timer_bark_o    ( car_wdt_intrs[1] ),
-    .nmi_wdog_timer_bark_o     ( car_wdt_intrs[2] ),
-    .wkup_req_o                ( car_wdt_intrs[3] ),
-    .aon_timer_rst_req_o       ( car_wdt_intrs[4] ),
-    .sleep_mode_i              ( '0                    )
-  );
-
   // Hyperbus
   REG_BUS #(
     .ADDR_WIDTH ( AxiNarrowAddrWidth ),
@@ -2420,6 +2379,7 @@ if (CarfieldIslandsCfg.periph.enable) begin: gen_periph // Handle with care...
     assign can_tx_o = '0;
     assign apb_mst_rsp[CanIdx] = '0;
   end
+
 end else begin: gen_no_periph
   assign car_regs_hw2reg.periph_isolate_status.d = '0;
   assign car_regs_hw2reg.periph_isolate_status.de = '0;

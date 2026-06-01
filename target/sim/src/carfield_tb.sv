@@ -201,7 +201,7 @@ module tb_carfield_soc;
         // Writing max burst length in Hyperbus configuration registers to
         // prevent the Verification IPs from triggering timing checks.
         $display("[TB] INFO: Configuring Hyperbus through serial link.");
-        fix.gen_safed_vip.safed_vip.axi_write_32(HyperbusTburstMax, 32'd128);
+        // fix.gen_safed_vip.safed_vip.axi_write_32(HyperbusTburstMax, 32'd128);
 
         $display("[TB] %t - Enabling safety island clock for stand-alone tests ", $realtime);
         // Clock island after PoR
@@ -461,7 +461,7 @@ module tb_carfield_soc;
         // Writing max burst length in Hyperbus configuration registers to
         // prevent the Verification IPs from triggering timing checks.
         $display("[TB] INFO: Configuring Hyperbus through serial link.");
-        fix.vip.slink_write_32(HyperbusTburstMax, 32'd128);
+        // fix.vip.slink_write_32(HyperbusTburstMax, 32'd128);
 
         $display("[TB] %t - Enabling spatz clock for stand-alone tests ", $realtime);
         // Clock island after PoR

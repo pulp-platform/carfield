@@ -18,6 +18,7 @@ common_targs += -t scm_use_fpga_scm
 common_targs += -t cv64a6_imafdchsclic_sv39_hpdcache_wb
 common_targs += -t rtl
 common_targs += -t deprecated
+common_targs += --exclude neureka --exclude opentitan
 # Carfield config target.
 common_targs += -t $(CARFIELD_CONFIG)
 
