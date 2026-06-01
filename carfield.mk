@@ -123,9 +123,6 @@ PLICCORES      := 8
 # PLIC number of input interrupts
 PLIC_NUM_INTRS := 89
 
-# Serial Link configuration in cheshire
-SERIAL_LINK_NUM_BITS := 16
-
 # AXI Real-Time unit configuration in Carfield
 AXIRT_NUM_MGRS := 10
 AXIRT_NUM_SUBS := 2
@@ -257,12 +254,6 @@ update_plic: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 	sed -i 's/src: .*/src: $(PLIC_NUM_INTRS),/' $<
 	sed -i 's/target: .*/target: $(PLICCORES),/' $<
 
-## Update host domain Serial Link configuration. The default configuration in cheshire allows for 4
-## data lanes for the serial link. We update the configuration to 8 data lanes.
-.PHONY: update_serial_link
-update_serial_link: $(CHS_ROOT)/hw/serial_link.hjson
-	sed -i 's/\(default: "\)8/\116/' $<
-
 ## Generate Spatz HW starting from a configuration file. This includes register file, memory map,
 ## interconnect parametrization.
 .PHONY: spatzd-hw-init
@@ -275,7 +266,7 @@ spatzd-hw-init: | venv
 ## Generate Cheshire HW. This target has a prerequisite, i.e. the PLIC and serial link
 ## configurations must be chosen before generating the hardware.
 .PHONY: chs-hw-init
-chs-hw-init: update_plic update_serial_link | venv
+chs-hw-init: update_plic | venv
 	$(MAKE) -B chs-hw-all
 
 ##############

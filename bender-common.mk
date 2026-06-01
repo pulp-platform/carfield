@@ -6,7 +6,7 @@
 # Author: Matteo Perotti <mperotti@iis.ee.ethz.ch>
 
 # Runtime-selectable Carfield configuration
-CARFIELD_CONFIG ?= carfield_l2dual_safe_secure_pulp_spatz_periph_can
+CARFIELD_CONFIG ?= carfield_l2dual_spatz_periph
 
 # bender targets
 common_targs += -t cva6
@@ -15,7 +15,7 @@ common_targs += -t spatz
 common_targs += -t integer_cluster
 common_targs += -t cv32e40p_use_ff_regfile
 common_targs += -t scm_use_fpga_scm
-common_targs += -t cv64a6_imafdcsclic_sv39
+common_targs += -t cv64a6_imafdchsclic_sv39_hpdcache_wb
 common_targs += -t rtl
 common_targs += -t deprecated
 # Carfield config target.
