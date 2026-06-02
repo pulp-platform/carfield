@@ -25,7 +25,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2020.2
+set scripts_vivado_version 2022.1
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -137,7 +137,7 @@ xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:ddr4:2.2\
 xilinx.com:ip:xlconstant:1.1\
 xilinx.com:ip:proc_sys_reset:5.0\
-xilinx.com:ip:util_ds_buf:2.1\
+xilinx.com:ip:util_ds_buf:2.2\
 xilinx.com:ip:vio:3.0\
 xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:xdma:4.1\
@@ -353,7 +353,7 @@ proc create_root_design { parentCell } {
  ] $psr_333
 
   # Create instance: util_ds_buf_0, and set properties
-  set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0 ]
+  set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 util_ds_buf_0 ]
   set_property -dict [ list \
    CONFIG.C_BUF_TYPE {IBUFDS} \
    CONFIG.DIFF_CLK_IN_BOARD_INTERFACE {Custom} \
@@ -361,7 +361,7 @@ proc create_root_design { parentCell } {
  ] $util_ds_buf_0
 
   # Create instance: util_ds_buf_1, and set properties
-  set util_ds_buf_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_1 ]
+  set util_ds_buf_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 util_ds_buf_1 ]
   set_property -dict [ list \
    CONFIG.C_BUF_TYPE {IBUFDSGTE} \
    CONFIG.DIFF_CLK_IN_BOARD_INTERFACE {pcie_refclk} \
