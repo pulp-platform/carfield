@@ -9,7 +9,7 @@ puts $::env(XILINX_BIT)
 open_hw_manager
 
 connect_hw_server -url $::env(XILINX_HOST):$::env(XILINX_PORT)
-open_hw_target [get_hw_targets $::env(XILINX_FPGA_PATH)]
+open_hw_target [get_hw_targets]
 
 if {$::env(XILINX_BOARD) eq "genesys2"} {
   set hw_device [get_hw_devices xc7k325t_0]
