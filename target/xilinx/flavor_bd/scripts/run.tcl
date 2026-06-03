@@ -48,7 +48,13 @@ export_ip_user_files -of_objects  [get_files *design_1.bd] -no_script
 create_ip_run [get_files *design_1.bd]
 
 # Make sure carfield.xdc (imported from IP) executes after carfield_islands.tcl (that generates the clocks)
-set_property processing_order LATE [get_files carfield.xdc]
+#set_property processing_order LATE [get_files carfield.xdc]
+set xdc_file [get_files -quiet carfield.xdc]
+if {$xdc_file ne ""} {
+  set_property processing_order LATE $xdc_file
+} else {
+  puts "INFO: carfield.xdc not found, skipping processing_order setting."
+}
 
 # Start OOC synthesis of changed IPs
 set synth_runs [get_runs *synth*]
@@ -88,7 +94,8 @@ wait_on_run synth_1
 open_run synth_1 -name synth_1
 
 # Instantiate ILA
-set DEBUG [llength [get_nets -hier -filter {MARK_DEBUG == 1}]]
+#set DEBUG [llength [get_nets -hier -filter {MARK_DEBUG == 1}]]
+set DEBUG 0
 if ($DEBUG) {
   # Create core
   puts "Creating debug core..."

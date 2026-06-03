@@ -16,7 +16,8 @@ module carfield_xilinx_ip
   input  wire         clk_10             ,
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock_rtl:1.0 clock clk_20" *) (* X_INTERFACE_PARAMETER = "FREQ_HZ 20000000" *)
   input  wire         clk_20             ,
-(* X_INTERFACE_INFO = "xilinx.com:signal:clock_rtl:1.0 clock clk_50" *) (* X_INTERFACE_PARAMETER = "FREQ_HZ 50000000, ASSOCIATED_BUSIF periph_axi_s" *)
+//(* X_INTERFACE_INFO = "xilinx.com:signal:clock_rtl:1.0 clock clk_50" *) (* X_INTERFACE_PARAMETER = "FREQ_HZ 50000000, ASSOCIATED_BUSIF periph_axi_s" *)
+ (* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk_50 CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME clk_50, FREQ_HZ 49995002, ASSOCIATED_BUSIF periph_axi_s, ASSOCIATED_RESET cpu_reset" *)
   input  wire         clk_50             ,
 (* X_INTERFACE_INFO = "xilinx.com:signal:clock_rtl:1.0 clock clk_100" *) (* X_INTERFACE_PARAMETER = "FREQ_HZ 100000000" *)
   input  wire         clk_100            ,
@@ -204,7 +205,7 @@ module carfield_xilinx_ip
   output wire [7:0] periph_axi_m_axi_wstrb,
 (* X_INTERFACE_INFO = "xilinx.com:interface:aximm:1.0 periph_axi_m WVALID" *)
   output wire periph_axi_m_axi_wvalid,
-(* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 periph_axi_m CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME periph_axi_m, ASSOCIATED_BUSIF periph_axi_m, FREQ_HZ 500000000" *)
+(* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 periph_axi_m CLK" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME periph_axi_m, ASSOCIATED_BUSIF periph_axi_m, FREQ_HZ 50000000" *)
   output wire periph_axi_m_aclk,
 (* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 periph_axi_m RST" *) (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME periph_axi_m, POLARITY ACTIVE_LOW" *)
   output wire periph_axi_m_aresetn,

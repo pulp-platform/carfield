@@ -347,8 +347,11 @@ module carfield_xilinx
   assign dram_axi_m_aclk             = soc_clk;
   assign dram_axi_m_aresetn          = rst_n;
 
+localparam logic [47:0] CF_DRAM_BASE = 48'h0000_8000_0000;
+
   assign dram_axi_m_axi_awid         = llc_req.aw.id;
-  assign dram_axi_m_axi_awaddr       = llc_req.aw.addr;
+ // assign dram_axi_m_axi_awaddr       = llc_req.aw.addr;
+  assign dram_axi_m_axi_awaddr       = llc_req.aw.addr - CF_DRAM_BASE;
   assign dram_axi_m_axi_awlen        = llc_req.aw.len;
   assign dram_axi_m_axi_awsize       = llc_req.aw.size;
   assign dram_axi_m_axi_awburst      = llc_req.aw.burst;
@@ -371,7 +374,8 @@ module carfield_xilinx
   assign llc_rsp.b_valid             = dram_axi_m_axi_bvalid;
 
   assign dram_axi_m_axi_arid         = llc_req.ar.id;
-  assign dram_axi_m_axi_araddr       = llc_req.ar.addr;
+  //assign dram_axi_m_axi_araddr       = llc_req.ar.addr;
+  assign dram_axi_m_axi_araddr       = llc_req.ar.addr - CF_DRAM_BASE;
   assign dram_axi_m_axi_arlen        = llc_req.ar.len;
   assign dram_axi_m_axi_arsize       = llc_req.ar.size;
   assign dram_axi_m_axi_arburst      = llc_req.ar.burst;
@@ -491,10 +495,17 @@ module carfield_xilinx
   // AXI periph block design to soc
 
   // periph_axi_s_aclk     unused (assumed already synch with soc_clk)
-  // periph_axi_s_aresetn  ubused (assumed already synch with reset)
+  // periph_axi_s_aresetn  unused (assumed already synch with reset)
+
+  // PS-visible AXI window for Carfield peripheral register access.
+  // PS accesses at 0xA000_0000 are remapped to the Carfield PCRS register block at 0x2001_0000.
+  
+  localparam logic [47:0] PS_CF_WINDOW_BASE = 48'h0000_A000_0000;
+  localparam logic [47:0] CF_PERIPH_BASE    = 48'h0000_2001_0000;
 
   assign periph_bd_soc_req.aw.id      =  periph_axi_s_axi_awid    ;
-  assign periph_bd_soc_req.aw.addr    =  periph_axi_s_axi_awaddr  ;
+  //assign periph_bd_soc_req.aw.addr    =  periph_axi_s_axi_awaddr  ;
+  assign periph_bd_soc_req.aw.addr    =  periph_axi_s_axi_awaddr - PS_CF_WINDOW_BASE + CF_PERIPH_BASE; 
   assign periph_bd_soc_req.aw.len     =  periph_axi_s_axi_awlen   ;
   assign periph_bd_soc_req.aw.size    =  periph_axi_s_axi_awsize  ;
 
@@ -517,8 +528,9 @@ module carfield_xilinx
   assign periph_axi_s_axi_bresp       = periph_bd_soc_rsp.b.resp  ;
   assign periph_axi_s_axi_bvalid      = periph_bd_soc_rsp.b_valid ;
 
-  assign periph_bd_soc_req.ar.id      = periph_axi_s_axi_arid      ;
-  assign periph_bd_soc_req.ar.addr    = periph_axi_s_axi_araddr    ;
+  assign periph_bd_soc_req.ar.id      = periph_axi_s_axi_arid      ;  
+  assign periph_bd_soc_req.ar.addr    =  periph_axi_s_axi_araddr - PS_CF_WINDOW_BASE + CF_PERIPH_BASE; 
+  //assign periph_bd_soc_req.ar.addr    =  periph_axi_s_axi_araddr   ;
   assign periph_bd_soc_req.ar.len     = periph_axi_s_axi_arlen     ;
   assign periph_bd_soc_req.ar.size    = periph_axi_s_axi_arsize    ;
   assign periph_bd_soc_req.ar.burst   = periph_axi_s_axi_arburst   ;
