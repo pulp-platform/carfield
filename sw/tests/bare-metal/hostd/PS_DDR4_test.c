@@ -90,9 +90,9 @@ int main(void)
     return 0;
 }
 
-// PS C Code
+// PS C Code Used in Vitis
 /*
-#include <stdint.h>
+#include <stdint.h>git 
 #include "platform.h"
 #include "xil_printf.h"
 #include "xil_cache.h"
