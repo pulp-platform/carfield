@@ -10,7 +10,7 @@
 # Makefile variables (user inputs are in capital letters)
 #
 
-VIVADO   ?= vitis-2020.2 vivado
+VIVADO   ?= vitis-2022.1 vivado
 
 XILINX_PROJECT ?= carfield
 # XILINX_FLAVOR in {vanilla,bd} see carfield_bd.mk
