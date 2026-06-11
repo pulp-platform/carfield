@@ -17,4 +17,4 @@ overrides:
   serial_link:          { git: "https://github.com/pulp-platform/serial_link.git"         , version: 2.0.0 }
   neureka:              { git: "https://github.com/pulp-platform/neureka.git"             , rev: f6b9a014c7ff4c536865c8ad376b383d4026f286   }
   softex:               { git: "https://github.com/belanoa/softex.git"                    , rev: a93ddff106ca3596660584ce6c7f77fb2a8475e3   }
-  cva6:                 { git: "https://github.com/pulp-platform/cva6.git"                , rev: ck/carfield }
+  cva6:                 { git: "https://github.com/pulp-platform/cva6.git"                , rev: ck/hero-ci/pulp-v3 }
