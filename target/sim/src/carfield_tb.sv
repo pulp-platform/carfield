@@ -110,7 +110,7 @@ module tb_carfield_soc;
       // Writing max burst length in Hyperbus configuration registers to
       // prevent the Verification IPs from triggering timing checks.
       $display("[TB] INFO: Configuring Hyperbus through serial link.");
-      fix.vip.slink_write_32(HyperbusTburstMax, 32'd128);
+      //fix.vip.slink_write_32(HyperbusTburstMax, 32'd128);
 
       // If the safety island is enabled, when Cheshire is offloading to it
       // it should be set in passive preload bootmode
