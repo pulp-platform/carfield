@@ -136,21 +136,25 @@
       compatible = "mboxes,carfield";
       reg = <0x0 0x40000000 0x0 0x1000>;
     };
+    // Cached
     l2-intl-0@78000000 {
       compatible = "l2-intl,carfield";
       reg = <0x0 0x78000000 0x0 0x040000>;
     };
+    // Cached
     l2-cont-0@78100000 {
       compatible = "l2-cont,carfield";
       reg = <0x0 0x78100000 0x0 0x040000>;
     };
-    l2-intl-1@78200000 {
+    // Uncached
+    l2-intl-1@68000000 {
       compatible = "l2-intl,carfield";
-      reg = <0x0 0x78200000 0x0 0x040000>;
+      reg = <0x0 0x68000000 0x0 0x040000>;
     };
-    l2-cont-1@78300000 {
+    // Uncached
+    l2-cont-1@68100000 {
       compatible = "l2-cont,carfield";
-      reg = <0x0 0x78300000 0x0 0x040000>;
+      reg = <0x0 0x68100000 0x0 0x040000>;
     };
     safety-island@60000000 {
       compatible = "safety-island,carfield";
