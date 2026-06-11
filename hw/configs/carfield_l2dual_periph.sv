@@ -14,9 +14,9 @@ import cheshire_pkg::*;
 localparam bit     L2Port0Enable = 1;
 localparam doub_bt L2Port0Base = 'h78000000;
 localparam doub_bt L2Port0Size = 'h00200000;
-// L2, port 1
+// L2, port 1 (uncached)
 localparam bit     L2Port1Enable = 1;
-localparam doub_bt L2Port1Base = L2Port0Base + L2Port0Size;
+localparam doub_bt L2Port1Base = 'h68000000;
 localparam doub_bt L2Port1Size = L2Port0Size;
 // Safety Island
 localparam bit     SafetyIslandEnable = 0;
