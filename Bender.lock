@@ -203,7 +203,7 @@ packages:
     - fpnew
     - tech_cells_generic
   cva6:
-    revision: 1661e5ec18494ac90b42730da835630ef225a0cb
+    revision: 8285576ed89f12d0b6b3b72f8817dd848f7c5ff5
     version: null
     source:
       Git: https://github.com/pulp-platform/cva6.git
