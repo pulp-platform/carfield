@@ -24,8 +24,8 @@ packages:
     - obi_peripherals
     - register_interface
   axi:
-    revision: a256a3b86394fedf19e361047fccfdd7f6ef83e4
-    version: 0.39.9
+    revision: a8c53cee2520d328d390c507c88818e8ac144c8c
+    version: 0.39.10
     source:
       Git: https://github.com/pulp-platform/axi.git
     dependencies:
@@ -120,6 +120,7 @@ packages:
     source:
       Git: https://github.com/pulp-platform/cheshire.git
     dependencies:
+    - apb
     - apb_uart
     - axi
     - axi_llc
@@ -213,7 +214,6 @@ packages:
     - clic
     - common_cells
     - common_verification
-    - fpnew
     - register_interface
     - tech_cells_generic
   dram_rtl_sim:
@@ -404,9 +404,6 @@ packages:
       Git: https://github.com/pulp-platform/opentitan.git
     dependencies:
     - axi
-    - cluster_interconnect
-    - idma
-    - register_interface
   opentitan_peripherals:
     revision: cd3153de2783abd3d03d0595e6c4b32413c62f14
     version: 0.4.0
@@ -532,14 +529,15 @@ packages:
     dependencies:
     - tech_cells_generic
   serial_link:
-    revision: d4e513aebd368d77808c5e6629a1e2729c16eba0
-    version: null
+    revision: bb06f8522c4b1f185fc09f0b9ef73fe9f19da391
+    version: 2.0.1
     source:
       Git: https://github.com/pulp-platform/serial_link.git
     dependencies:
+    - apb
     - axi
+    - axi_stream
     - common_cells
-    - register_interface
   softex:
     revision: a93ddff106ca3596660584ce6c7f77fb2a8475e3
     version: null
@@ -553,7 +551,7 @@ packages:
     - hwpe-stream
     - ibex
   spatz:
-    revision: f5692c201b0e6ec87a71fed5cc56b84b063d5e24
+    revision: 51f78b0c49b6a971ddb61b90e8aaca0b024f6b46
     version: null
     source:
       Git: https://github.com/pulp-platform/spatz.git
