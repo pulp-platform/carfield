@@ -168,8 +168,8 @@
       // Link to the buffer for this device
       //memory-region = <&reserved_dev_buffer>;
     };
-    spatz-cluster@51000000 {
-      compatible = "spatz-cluster,carfield";
+    snitch-cluster@51000000 {
+      compatible = "snitch-cluster,carfield";
       reg = <0x0 0x51000000 0x0 0x800000>;
       // Link to the buffer for this device
      // memory-region = <&reserved_dev_buffer>;

@@ -10,6 +10,7 @@ SNITCHD_SW_DIR = $(CAR_SW_DIR)/tests/bare-metal/snitchd
 SNITCHD_LLVM_ROOT = /usr/pack/riscv-1.0-kgf/pulp-llvm-0.12.0
 SNITCHD_CC        = $(SNITCHD_LLVM_ROOT)/bin/clang
 SNITCHD_LD       ?= $(SNITCHD_LLVM_ROOT)/bin/ld.lld
+SNITCHD_OBJDUMP  = $(SNITCHD_LLVM_ROOT)/bin/llvm-objdump
 
 SNITCHD_CFLAGS   = -mcpu=snitch -menable-experimental-extensions -mabi=ilp32d -mcmodel=medany
 SNITCHD_CFLAGS  += -fno-builtin-printf -fno-builtin-sqrtf -fno-common
@@ -24,7 +25,7 @@ $(SNITCHD_SW_DIR)/build:
 
 $(SNITCHD_SW_DIR)/build/hello_world.elf: $(SNITCHD_SW_DIR)/hello_world.c $(SNITCHD_SW_DIR)/runtime/crt0.S $(SNITCHD_SW_DIR)/runtime/link.ld | $(SNITCHD_SW_DIR)/build
 	$(SNITCHD_CC) $(SNITCHD_CFLAGS) $(SNITCHD_LDFLAGS) $(filter %.S,$^) $(filter %.c,$^) -o $@
+	$(SNITCHD_OBJDUMP) -S $@ > $@.dump
 
-$(SNITCHD_SW_DIR)/build/hello_world.h: $(SNITCHD_SW_DIR)/build/hello_world.elf | venv
+$(SNITCHD_SW_DIR)/hello_world.h: $(SNITCHD_SW_DIR)/build/hello_world.elf | venv
 	$(VENV)/python $(CAR_ROOT)/scripts/elf2header.py --binary $< --vectors $@
-

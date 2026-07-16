@@ -273,7 +273,7 @@ module snitch_cluster_carfield
     .debug_req_i             ('0),
     .meip_i                  ('0),
     .mtip_i                  ('0),
-    .msip_i                  ('0),
+    .msip_i                  (msip_i),
     .narrow_in_req_i         (snitch_narrow_in_req ),
     .narrow_in_resp_o        (snitch_narrow_in_rsp ),
     .narrow_out_req_o        (snitch_narrow_out_req),
