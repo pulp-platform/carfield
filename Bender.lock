@@ -562,7 +562,7 @@ packages:
     - hwpe-stream
     - ibex
   snitch_cluster:
-    revision: 939dfa62bc896ae8f104e5837f14b3138544da4c
+    revision: 8a2156831720d2b34f4ed393468ead761b13e4e8
     version: null
     source:
       Git: https://github.com/CyrilKoe/snitch_cluster.git
