@@ -346,13 +346,14 @@ proc create_root_design { parentCell } {
    CONFIG.CONST_VAL {0} \
  ] $low
 
-  # Create instance: psr_10, and set properties
-  set psr_10 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 psr_10 ]
+  # Create instance: psr_50, and set properties
+  # Synced to clk_50 — same domain as Carfield host, DMA, Ethernet AXI-lite, and periph interconnects
+  set psr_50 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 psr_50 ]
   set_property -dict [ list \
    CONFIG.C_AUX_RESET_HIGH {1} \
    CONFIG.RESET_BOARD_INTERFACE {reset} \
    CONFIG.USE_BOARD_FLOW {true} \
- ] $psr_10
+ ] $psr_50
 
   # Create instance: psr_333, and set properties
   set psr_333 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 psr_333 ]
@@ -482,30 +483,30 @@ proc create_root_design { parentCell } {
   connect_bd_net -net carfield_xilinx_ip_0_dram_axi_m_aclk [get_bd_pins carfield_xilinx_ip_0/dram_axi_m_aclk] [get_bd_pins xbar_dram/aclk]
   connect_bd_net -net carfield_xilinx_ip_0_periph_axi_m_aclk [get_bd_pins carfield_xilinx_ip_0/periph_axi_m_aclk] [get_bd_pins xbar_periph_out/aclk]
   connect_bd_net -net carfield_xilinx_ip_0_uart_tx_o [get_bd_ports uart_tx_o] [get_bd_pins carfield_xilinx_ip_0/uart_tx_o]
-  connect_bd_net -net clk_wiz_0_clk_10 [get_bd_pins carfield_xilinx_ip_0/clk_10] [get_bd_pins clk_wiz_0/clk_10] [get_bd_pins psr_10/slowest_sync_clk]
+  connect_bd_net -net clk_wiz_0_clk_10 [get_bd_pins carfield_xilinx_ip_0/clk_10] [get_bd_pins clk_wiz_0/clk_10]
   connect_bd_net -net clk_wiz_0_clk_20 [get_bd_pins carfield_xilinx_ip_0/clk_20] [get_bd_pins clk_wiz_0/clk_20]
-  connect_bd_net -net clk_wiz_0_clk_50 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/m_axi_sg_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_ethernet_0/axis_clk] [get_bd_pins axi_ethernet_0/s_axi_lite_clk] [get_bd_pins carfield_xilinx_ip_0/clk_50] [get_bd_pins clk_wiz_0/clk_50] [get_bd_pins vio_0/clk] [get_bd_pins xbar_periph_in/aclk] [get_bd_pins xbar_periph_out/aclk1]
+  connect_bd_net -net clk_wiz_0_clk_50 [get_bd_pins axi_dma_0/m_axi_mm2s_aclk] [get_bd_pins axi_dma_0/m_axi_s2mm_aclk] [get_bd_pins axi_dma_0/m_axi_sg_aclk] [get_bd_pins axi_dma_0/s_axi_lite_aclk] [get_bd_pins axi_ethernet_0/axis_clk] [get_bd_pins axi_ethernet_0/s_axi_lite_clk] [get_bd_pins carfield_xilinx_ip_0/clk_50] [get_bd_pins clk_wiz_0/clk_50] [get_bd_pins psr_50/slowest_sync_clk] [get_bd_pins vio_0/clk] [get_bd_pins xbar_periph_in/aclk] [get_bd_pins xbar_periph_out/aclk1]
   connect_bd_net -net clk_wiz_0_clk_100 [get_bd_pins carfield_xilinx_ip_0/clk_100] [get_bd_pins clk_wiz_0/clk_100]
-  connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins psr_10/dcm_locked]
+  connect_bd_net -net clk_wiz_0_locked [get_bd_pins clk_wiz_0/locked] [get_bd_pins psr_50/dcm_locked]
   connect_bd_net -net concat_irq_dout [get_bd_pins carfield_xilinx_ip_0/gpio_i] [get_bd_pins concat_irq/dout]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins psr_333/slowest_sync_clk] [get_bd_pins xbar_dram/aclk1] [get_bd_pins xbar_periph_out/aclk3]
   connect_bd_net -net dummy_port_in_1 [get_bd_ports dummy_port_in] [get_bd_pins axi_ethernet_0/dummy_port_in]
   connect_bd_net -net high_dout [get_bd_pins carfield_xilinx_ip_0/jtag_trst_ni] [get_bd_pins high/dout]
   connect_bd_net -net low_dout [get_bd_pins carfield_xilinx_ip_0/testmode_i] [get_bd_pins low/dout]
   connect_bd_net -net pcie_perstn_1 [get_bd_ports pcie_perstn] [get_bd_pins xdma_0/sys_rst_n]
-  connect_bd_net -net psr_10_interconnect_aresetn [get_bd_pins psr_10/interconnect_aresetn] [get_bd_pins xbar_dram/aresetn] [get_bd_pins xbar_periph_in/aresetn] [get_bd_pins xbar_periph_out/aresetn]
-  connect_bd_net -net psr_10_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_ethernet_0/s_axi_lite_resetn] [get_bd_pins psr_10/peripheral_aresetn]
+  connect_bd_net -net psr_50_interconnect_aresetn [get_bd_pins psr_50/interconnect_aresetn] [get_bd_pins xbar_dram/aresetn] [get_bd_pins xbar_periph_in/aresetn] [get_bd_pins xbar_periph_out/aresetn]
+  connect_bd_net -net psr_50_peripheral_aresetn [get_bd_pins axi_dma_0/axi_resetn] [get_bd_pins axi_ethernet_0/s_axi_lite_resetn] [get_bd_pins psr_50/peripheral_aresetn]
   connect_bd_net -net psr_333_peripheral_aresetn [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins psr_333/peripheral_aresetn]
   connect_bd_net -net psr_333_peripheral_reset [get_bd_pins ddr4_0/sys_rst] [get_bd_pins psr_333/peripheral_reset]
-  connect_bd_net -net psr_50_mb_reset [get_bd_pins carfield_xilinx_ip_0/cpu_reset] [get_bd_pins psr_10/mb_reset]
-  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins psr_10/ext_reset_in] [get_bd_pins psr_333/ext_reset_in]
+  connect_bd_net -net psr_50_mb_reset [get_bd_pins carfield_xilinx_ip_0/cpu_reset] [get_bd_pins psr_50/mb_reset]
+  connect_bd_net -net reset_1 [get_bd_ports reset] [get_bd_pins psr_50/ext_reset_in] [get_bd_pins psr_333/ext_reset_in]
   connect_bd_net -net uart_rx_i_1 [get_bd_ports uart_rx_i] [get_bd_pins carfield_xilinx_ip_0/uart_rx_i]
   connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins clk_wiz_0/clk_in1] [get_bd_pins ddr4_0/c0_sys_clk_i] [get_bd_pins util_ds_buf_0/IBUF_OUT]
   connect_bd_net -net util_ds_buf_1_IBUF_DS_ODIV2 [get_bd_pins util_ds_buf_1/IBUF_DS_ODIV2] [get_bd_pins xdma_0/sys_clk]
   connect_bd_net -net util_ds_buf_1_IBUF_OUT [get_bd_pins util_ds_buf_1/IBUF_OUT] [get_bd_pins xdma_0/sys_clk_gt]
   connect_bd_net -net vio_0_probe_out0 [get_bd_pins carfield_xilinx_ip_0/boot_mode_i] [get_bd_pins vio_0/probe_out0]
   connect_bd_net -net vio_0_probe_out1 [get_bd_pins carfield_xilinx_ip_0/boot_mode_safety_i] [get_bd_pins vio_0/probe_out1]
-  connect_bd_net -net vio_0_probe_out2 [get_bd_pins psr_10/aux_reset_in] [get_bd_pins psr_333/aux_reset_in] [get_bd_pins vio_0/probe_out2]
+  connect_bd_net -net vio_0_probe_out2 [get_bd_pins psr_50/aux_reset_in] [get_bd_pins psr_333/aux_reset_in] [get_bd_pins vio_0/probe_out2]
   connect_bd_net -net xdma_0_axi_aclk [get_bd_pins xbar_periph_in/aclk1] [get_bd_pins xbar_periph_out/aclk2] [get_bd_pins xdma_0/axi_aclk]
 
   # Create address segments

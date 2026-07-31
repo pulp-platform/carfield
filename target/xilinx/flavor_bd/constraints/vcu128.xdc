@@ -8,7 +8,8 @@
 set_false_path -through [get_pins -of_objects [get_cells design_1_i/vio_0] -filter {NAME =~ *probe*}]
 
 # Create system clocks
-create_clock -period 10 -name sys_clk [get_pins design_1_i/util_ds_buf_0/IBUF_OUT]
+create_clock -period 10 -name sys_clk [get_ports sys_clk_clk_p[0]]
+create_generated_clock -name sys_clk_buf -source [get_ports sys_clk_clk_p[0]] -multiply_by 1 -divide_by 1 [get_pins design_1_i/util_ds_buf_0/IBUF_OUT]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins design_1_i/util_ds_buf_0/IBUF_OUT]
 create_clock -period 10 -name pcie_clk [get_nets design_1_i/util_ds_buf_1/U0/IBUF_OUT[0]]
 create_clock -period 10 -name pcie_clk_div [get_nets design_1_i/util_ds_buf_1/U0/IBUF_DS_ODIV2[0]]
