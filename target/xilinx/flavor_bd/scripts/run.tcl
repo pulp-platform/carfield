@@ -95,10 +95,6 @@ if ($DEBUG) {
   set ila_clk_net [get_nets design_1_i/clk_wiz_0_clk_50]
   set_property port_width 1 [get_debug_ports u_ila_0/clk]
   connect_debug_port u_ila_0/clk $ila_clk_net
-  set ila_clks [get_clocks -of_objects $ila_clk_net]
-  set ila_clk_names {}
-  foreach c $ila_clks { lappend ila_clk_names [get_property NAME $c] }
-  set ila_period [get_property PERIOD [lindex $ila_clks 0]]
   # Get nets to debug
   set debugNets [lsort -dictionary [get_nets -hier -filter {MARK_DEBUG == 1}]]
   set netNameLast ""
@@ -117,19 +113,7 @@ if ($DEBUG) {
           }
           set_property port_width [llength $sigList] [get_debug_ports u_ila_0/probe$probe_i]
           set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe$probe_i]
-          set probe_nets [get_nets $sigList]
-          connect_debug_port u_ila_0/probe$probe_i $probe_nets
-          # If the probed net is not in the ILA clock domain, constrain the CDC path
-          set probe_clks [get_clocks -quiet -of_objects \
-            [all_fanin -quiet -to [lindex $probe_nets 0] -flat -startpoints_only]]
-          foreach probe_clk $probe_clks {
-            set probe_clk_name [get_property NAME $probe_clk]
-            if {[lsearch -exact $ila_clk_names $probe_clk_name] < 0} {
-              puts "  CDC into ILA: $probe_clk_name -> {$ila_clk_names}, set_max_delay $ila_period through probe"
-              set_max_delay -datapath_only -from $probe_clk -to $ila_clks -through $probe_nets $ila_period
-              break
-            }
-          }
+          connect_debug_port u_ila_0/probe$probe_i [get_nets $sigList]
           incr probe_i
       }
       set sigList ""
@@ -137,12 +121,15 @@ if ($DEBUG) {
     lappend sigList $net
     set netNameLast $netName
   }
-  # Need to save save constraints before implementing the core
-  set_property target_constrs_file [get_files $::env(XILINX_BOARD).xdc] [current_fileset -constrset]
 
+  # Neet to save constraints before implementing the core
+  set_property target_constrs_file [get_files $::env(XILINX_BOARD).xdc] [current_fileset -constrset]
   save_constraints -force
   implement_debug_core
   write_debug_probes -force probes.ltx
+  # Add new constraints between ILA and design
+  set ila_cdc_tcl [file normalize [file join [file dirname [info script]] ila_cdc_max_delay.tcl]]
+  set_property STEPS.OPT_DESIGN.TCL.PRE $ila_cdc_tcl [get_runs impl_1]
 }
 
 # Incremental implementation
