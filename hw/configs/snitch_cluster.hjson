@@ -85,6 +85,12 @@
     },
     external_addr_regions: [
         {
+            name: "l2",
+            address: 0x78000000,
+            length: 0x02000000,
+            cacheable: true
+        },
+        {
             name: "dram",
             address: 0x80000000,
             length: 0x80000000,

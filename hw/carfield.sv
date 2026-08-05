@@ -1503,7 +1503,7 @@ if (CarfieldIslandsCfg.spatz.enable) begin : gen_spatz_cluster
     .meip_i          ( '0 /* Unconnected */ ),
     .msip_i          ( spatzcl_mbox_intr         ),
     .mtip_i          ( spatzcl_timer_intr        ),
-    .debug_req_i     ( car_regs_reg2hw.spatz_cluster_debug_req ),
+    .debug_req_i     ( car_regs_reg2hw.spatz_cluster_debug_req.q ),
     //AXI Isolate
     .axi_isolate_i         ( slave_isolate_req [FPClusterSlvIdx]   ),
     .axi_isolated_o        ( master_isolated_rsp [FPClusterMstIdx] ),

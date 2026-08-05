@@ -78,13 +78,12 @@ module snitch_cluster_carfield
   // Local parameters
   localparam int unsigned AxiStrbWidth = AxiDataWidth / 8
 )(
-  input  logic                clk_i,
-  input  logic                rst_ni,
-  input  logic [9-1:0] debug_req_i,
-
-  input  logic [9-1:0] meip_i,
-  input  logic [9-1:0] mtip_i,
-  input  logic [9-1:0] msip_i,
+  input  logic                                        clk_i,
+  input  logic                                        rst_ni,
+  input  logic [snitch_cluster_pkg::NrCores-1:0]      debug_req_i,
+  input  logic [snitch_cluster_pkg::NrCores-1:0]      meip_i,
+  input  logic [snitch_cluster_pkg::NrCores-1:0]      mtip_i,
+  input  logic [snitch_cluster_pkg::NrCores-1:0]      msip_i,
   output logic                          cluster_probe_o,
   input  logic axi_isolate_i,
   output logic axi_isolated_o,
@@ -151,6 +150,10 @@ module snitch_cluster_carfield
   snitch_cluster_pkg::wide_out_resp_t     snitch_wide_out_rsp; // idw = 3
   merge_mst_req_t  snitch_wide_out_narowid_req; // idw = 4
   merge_mst_resp_t snitch_wide_out_narowid_rsp; // idw = 4
+
+  logic bootrom_busy;
+  // Snitch has no spatz_status CSR export; reflect outbound AXI activity instead.
+  logic cluster_axi_out_busy;
 
   axi_iw_converter #(
     .AxiSlvPortIdWidth      ( snitch_cluster_pkg::WideIdWidthOut   ),
@@ -224,12 +227,6 @@ module snitch_cluster_carfield
   logic [MergeXbarCfg.NoSlvPorts-1:0][$clog2(MergeXbarCfg.NoMstPorts)-1:0] merge_xbar_default_port;
   assign merge_xbar_default_port = '{default: Merge_SoC};
 
-  generate
-  if (snitch_cluster_pkg::NarrowDataWidth != snitch_cluster_pkg::WideDataWidth ) begin
-      $error("%m ** Narrow and wide must be the same size");
-  end
-  endgenerate
-
   axi_xbar #(
     .Cfg (MergeXbarCfg),
     .slv_aw_chan_t (merge_mst_aw_chan_t),
@@ -247,16 +244,16 @@ module snitch_cluster_carfield
     .mst_resp_t (merge_slv_resp_t),
     .rule_t (xbar_rule_t)
   ) i_merge_xbar (
-    .clk_i,
-    .rst_ni,
-    .test_i (1'b0),
-    .slv_ports_req_i ({snitch_narrow_out_req, snitch_wide_out_narowid_req}),
-    .slv_ports_resp_o ({snitch_narrow_out_rsp, snitch_wide_out_narowid_rsp}),
-    .mst_ports_req_o (merge_axi_slv_req),
-    .mst_ports_resp_i (merge_axi_slv_rsp),
-    .addr_map_i (merge_xbar_rule),
-    .en_default_mst_port_i (MergeEnableDefaultMstPort),
-    .default_mst_port_i (merge_xbar_default_port)
+    .clk_i                 ( clk_i                                                    ),
+    .rst_ni                ( rst_ni                                                   ),
+    .test_i                ( 1'b0                                                     ),
+    .slv_ports_req_i       ( {snitch_narrow_out_req, snitch_wide_out_narowid_req}     ),
+    .slv_ports_resp_o      ( {snitch_narrow_out_rsp, snitch_wide_out_narowid_rsp}     ),
+    .mst_ports_req_o       ( merge_axi_slv_req                                        ),
+    .mst_ports_resp_i      ( merge_axi_slv_rsp                                        ),
+    .addr_map_i            ( merge_xbar_rule                                          ),
+    .en_default_mst_port_i ( MergeEnableDefaultMstPort                                ),
+    .default_mst_port_i    ( merge_xbar_default_port                                  )
   );
 
   // ----------------
@@ -266,22 +263,29 @@ module snitch_cluster_carfield
   // We use narrow as wide does not connect to the peripherals
   assign snitch_wide_in_req = '0;
 
+  snitch_cluster_pkg::sram_cfgs_t cluster_sram_cfgs;
+
+  assign cluster_sram_cfgs = '0;
 
   snitch_cluster_wrapper i_snitch_cluster_wrapper (
-    .clk_i,
-    .rst_ni,
-    .debug_req_i             ('0),
-    .meip_i                  ('0),
-    .mtip_i                  ('0),
-    .msip_i                  (msip_i),
-    .narrow_in_req_i         (snitch_narrow_in_req ),
-    .narrow_in_resp_o        (snitch_narrow_in_rsp ),
-    .narrow_out_req_o        (snitch_narrow_out_req),
-    .narrow_out_resp_i       (snitch_narrow_out_rsp),
-    .wide_out_req_o          (snitch_wide_out_req  ),
-    .wide_out_resp_i         (snitch_wide_out_rsp  ),
-    .wide_in_req_i           (snitch_wide_in_req   ),
-    .wide_in_resp_o          (snitch_wide_in_rsp   )
+    .clk_i               ( clk_i                                  ),
+    .rst_ni              ( rst_ni                                 ),
+    .debug_req_i         ( debug_req_i                            ),
+    .meip_i              ( meip_i                                 ),
+    .mtip_i              ( mtip_i                                 ),
+    .msip_i              ( msip_i                                 ),
+    .hart_base_id_i      ( snitch_cluster_pkg::CfgBaseHartId      ),
+    .cluster_base_addr_i ( snitch_cluster_pkg::CfgClusterBaseAddr ),
+    .clk_d2_bypass_i     ( 1'b0                                   ),
+    .sram_cfgs_i         ( cluster_sram_cfgs                      ),
+    .narrow_in_req_i     ( snitch_narrow_in_req                   ),
+    .narrow_in_resp_o    ( snitch_narrow_in_rsp                   ),
+    .narrow_out_req_o    ( snitch_narrow_out_req                  ),
+    .narrow_out_resp_i   ( snitch_narrow_out_rsp                  ),
+    .wide_out_req_o      ( snitch_wide_out_req                    ),
+    .wide_out_resp_i     ( snitch_wide_out_rsp                    ),
+    .wide_in_req_i       ( snitch_wide_in_req                     ),
+    .wide_in_resp_o      ( snitch_wide_in_rsp                     )
   );
 
 
@@ -295,6 +299,11 @@ module snitch_cluster_carfield
   // From Cluster to SoC (CDC out)
   axi_out_req_t   axi_from_cluster_req;
   axi_out_resp_t  axi_from_cluster_rsp;
+
+  assign cluster_axi_out_busy = axi_from_cluster_req.aw_valid | axi_from_cluster_req.w_valid |
+                                axi_from_cluster_req.ar_valid | axi_from_cluster_rsp.b_valid |
+                                axi_from_cluster_rsp.r_valid;
+  assign cluster_probe_o      = bootrom_busy | cluster_axi_out_busy;
 
   axi_iw_converter #(
     .AxiSlvPortIdWidth      ( MergeIdWidthOut    ),
@@ -353,9 +362,9 @@ module snitch_cluster_carfield
     .STAGES        ( SyncStages ),
     .ResetValue    ( 1'b1       )
   ) i_isolate_sync (
-    .clk_i,
-    .rst_ni   ( pwr_on_rst_ni    ),
-    .serial_i ( axi_isolate_i    ),
+    .clk_i    ( clk_i           ),
+    .rst_ni   ( pwr_on_rst_ni   ),
+    .serial_i ( axi_isolate_i   ),
     .serial_o ( axi_isolate_sync )
   );
 
@@ -470,23 +479,25 @@ module snitch_cluster_carfield
     .reg_req_t          (reg_dma_req_t     ),
     .reg_rsp_t          (reg_dma_rsp_t     )
   ) i_axi_to_reg_bootrom (
-    .clk_i      (clk_i                    ),
-    .rst_ni     (rst_ni                   ),
-    .axi_req_i  (merge_axi_slv_req[Merge_Rom]),
-    .axi_rsp_o  (merge_axi_slv_rsp[Merge_Rom]),
-    .reg_req_o  (bootrom_reg_req          ),
-    .reg_rsp_i  (bootrom_reg_rsp          ),
-    .busy_o     ( )
+    .clk_i      ( clk_i                            ),
+    .rst_ni     ( rst_ni                           ),
+    .axi_req_i  ( merge_axi_slv_req[Merge_Rom]     ),
+    .axi_rsp_o  ( merge_axi_slv_rsp[Merge_Rom]     ),
+    .reg_req_o  ( bootrom_reg_req                  ),
+    .reg_rsp_i  ( bootrom_reg_rsp                  ),
+    .reg_id_o   (                                      ),
+    .busy_o     ( bootrom_busy                         )
   );
 
   snitch_cluster_bootrom #(
-    .AddrWidth (snitch_cluster_pkg::AddrWidth     ),
-    .DataWidth (32)
+    .AddrWidth ( snitch_cluster_pkg::AddrWidth ),
+    .DataWidth ( 32                            )
   ) i_bootrom (
-    .clk_i  (clk_i                        ),
-    .req_i  (bootrom_reg_req.valid        ),
-    .addr_i (snitch_cluster_pkg::addr_t'(bootrom_reg_req.addr)),
-    .data_o(bootrom_reg_rsp.rdata        )
+    .clk_i  ( clk_i                                                  ),
+    .rst_ni ( rst_ni                                                 ),
+    .req_i  ( bootrom_reg_req.valid                                  ),
+    .addr_i ( snitch_cluster_pkg::addr_t'(bootrom_reg_req.addr)       ),
+    .data_o ( bootrom_reg_rsp.rdata                                  )
   );
   `FF(bootrom_reg_rsp.ready, bootrom_reg_req.valid, 1'b0)
   assign bootrom_reg_rsp.error = 1'b0;
