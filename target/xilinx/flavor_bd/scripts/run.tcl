@@ -73,6 +73,7 @@ if {[llength $runs_queued] != 0} {
 
 # set_property strategy Flow_RuntimeOptimized [get_runs synth_1]
 # set_property strategy Flow_RuntimeOptimized [get_runs impl_1]
+set_property strategy Performance_Explore [get_runs impl_1]
 
 set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
 # Enable sfcu due to package conflicts
