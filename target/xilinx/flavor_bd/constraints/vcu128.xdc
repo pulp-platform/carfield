@@ -8,7 +8,8 @@
 set_false_path -through [get_pins -of_objects [get_cells design_1_i/vio_0] -filter {NAME =~ *probe*}]
 
 # Create system clocks
-create_clock -period 10 -name sys_clk [get_pins design_1_i/util_ds_buf_0/IBUF_OUT]
+create_clock -period 10 -name sys_clk [get_ports sys_clk_clk_p[0]]
+create_generated_clock -name sys_clk_buf -source [get_ports sys_clk_clk_p[0]] -multiply_by 1 -divide_by 1 [get_pins design_1_i/util_ds_buf_0/IBUF_OUT]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_pins design_1_i/util_ds_buf_0/IBUF_OUT]
 create_clock -period 10 -name pcie_clk [get_nets design_1_i/util_ds_buf_1/U0/IBUF_OUT[0]]
 create_clock -period 10 -name pcie_clk_div [get_nets design_1_i/util_ds_buf_1/U0/IBUF_DS_ODIV2[0]]
@@ -16,8 +17,8 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets design_1_i/util_ds_buf_1/U
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets design_1_i/util_ds_buf_1/U0/IBUF_OUT[0]]
 
 # PCIe clock LOC
-set_property LOC [get_package_pins -of_objects [get_bels [get_sites -filter {NAME =~ *COMMON*} -of_objects [get_iobanks -of_objects [get_sites GTYE4_CHANNEL_X1Y15]]]/REFCLK0P]] [get_ports pcie_refclk_clk_p[0]]
-set_property LOC [get_package_pins -of_objects [get_bels [get_sites -filter {NAME =~ *COMMON*} -of_objects [get_iobanks -of_objects [get_sites GTYE4_CHANNEL_X1Y15]]]/REFCLK0N]] [get_ports pcie_refclk_clk_n[0]]
+set_property LOC [get_package_pins -of_objects [get_bels [get_sites -filter {NAME =~ *COMMON*} -of_objects [get_iobanks -of_objects [get_sites GTYE4_CHANNEL_X1Y15]]]/REFCLK0P]] [get_ports pcie_refclk_clk_p]
+set_property LOC [get_package_pins -of_objects [get_bels [get_sites -filter {NAME =~ *COMMON*} -of_objects [get_iobanks -of_objects [get_sites GTYE4_CHANNEL_X1Y15]]]/REFCLK0N]] [get_ports pcie_refclk_clk_n]
 
 #  VCU128 Rev1.0 XDC
 #  Date: 01/24/2018
@@ -440,8 +441,8 @@ set_property IOSTANDARD  LVCMOS18 [get_ports "uart_tx_o"] ;# Bank  67 VCCO - VCC
 #set_property IOSTANDARD  POD12_DCI [get_ports "PL_DDR4_DQ33"] ;# Bank  64 VCCO - DDR4_VDDQ_1V2 - IO_L2N_T0L_N3_64
 #set_property PACKAGE_PIN BP28      [get_ports "PL_DDR4_DQ35"] ;# Bank  64 VCCO - DDR4_VDDQ_1V2 - IO_L2P_T0L_N2_64
 #set_property IOSTANDARD  POD12_DCI [get_ports "PL_DDR4_DQ35"] ;# Bank  64 VCCO - DDR4_VDDQ_1V2 - IO_L2P_T0L_N2_64
-set_property PACKAGE_PIN BM29 [get_ports cpu_reset]
-set_property IOSTANDARD LVCMOS12 [get_ports cpu_reset]
+set_property PACKAGE_PIN BM29 [get_ports reset]
+set_property IOSTANDARD LVCMOS12 [get_ports reset]
 #set_property PACKAGE_PIN BM28      [get_ports "PL_DDR4_DM4_B"] ;# Bank  64 VCCO - DDR4_VDDQ_1V2 - IO_L1P_T0L_N0_DBC_64
 #set_property IOSTANDARD  POD12_DCI [get_ports "PL_DDR4_DM4_B"] ;# Bank  64 VCCO - DDR4_VDDQ_1V2 - IO_L1P_T0L_N0_DBC_64
 #set_property PACKAGE_PIN A16      [get_ports "FMCP_HSPC_LA22_N"] ;# Bank  71 VCCO - VADJ     - IO_L24N_T3U_N11_71
