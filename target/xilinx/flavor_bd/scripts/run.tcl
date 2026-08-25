@@ -92,8 +92,9 @@ if ($DEBUG) {
   set_property -dict "ALL_PROBE_SAME_MU true ALL_PROBE_SAME_MU_CNT 4 C_ADV_TRIGGER true C_DATA_DEPTH 16384 \
    C_EN_STRG_QUAL true C_INPUT_PIPE_STAGES 0 C_TRIGIN_EN false C_TRIGOUT_EN false" [get_debug_cores u_ila_0]
   ## Clock
+  set ila_clk_net [get_nets design_1_i/clk_wiz_0_clk_50]
   set_property port_width 1 [get_debug_ports u_ila_0/clk]
-  connect_debug_port u_ila_0/clk [get_nets design_1_i/clk_wiz_0_clk_50]
+  connect_debug_port u_ila_0/clk $ila_clk_net
   # Get nets to debug
   set debugNets [lsort -dictionary [get_nets -hier -filter {MARK_DEBUG == 1}]]
   set netNameLast ""
@@ -120,12 +121,15 @@ if ($DEBUG) {
     lappend sigList $net
     set netNameLast $netName
   }
-  # Need to save save constraints before implementing the core
-  set_property target_constrs_file [get_files $::env(XILINX_BOARD).xdc] [current_fileset -constrset]
 
+  # Neet to save constraints before implementing the core
+  set_property target_constrs_file [get_files $::env(XILINX_BOARD).xdc] [current_fileset -constrset]
   save_constraints -force
   implement_debug_core
   write_debug_probes -force probes.ltx
+  # Add new constraints between ILA and design
+  set ila_cdc_tcl [file normalize [file join [file dirname [info script]] ila_cdc_max_delay.tcl]]
+  set_property STEPS.OPT_DESIGN.TCL.PRE $ila_cdc_tcl [get_runs impl_1]
 }
 
 # Incremental implementation
