@@ -57,7 +57,7 @@
     };
     ctrl-regs@3000000 {
       compatible = "eth,control-regs";
-      reg = <0x0 0x300r 0x0 0x1000>;
+      reg = <0x0 0x3000000 0x0 0x1000>;
     };
     axi_llc@3001000 {
       compatible = "eth,axi-llc";
