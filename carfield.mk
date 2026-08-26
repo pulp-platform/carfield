@@ -259,7 +259,7 @@ update_plic: $(CHS_ROOT)/hw/rv_plic.cfg.hjson
 .PHONY: spatzd-hw-init
 spatzd-hw-init: | venv
 	$(MAKE) -C $(SPATZD_ROOT) init
-	$(MAKE) -C $(SPATZD_MAKEDIR) SPATZ_CLUSTER_CFG_PATH=$(SPATZD_MAKEDIR)/cfg/$(SPATZD_CFG) generate -B
+	$(MAKE) -C $(SPATZD_MAKEDIR) SPATZ_CLUSTER_CFG_PATH=$(SPATZD_MAKEDIR)/cfg/$(SPATZD_CFG) generate bootrom -B
 	cp $(SPATZD_ROOT)/sw/snRuntime/include/spatz_cluster_peripheral.h $(CAR_SW_DIR)/include/regs/
 
 ## Generate Cheshire HW. This target has a prerequisite, i.e. the PLIC and serial link

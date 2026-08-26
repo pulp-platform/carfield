@@ -7,3 +7,5 @@
 ROOTD=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)
 export LLVM_SPATZ_DIR=/usr/pack/riscv-1.0-kgf/spatz-llvm-2023.08.10
 export GCC_SPATZ_DIR=/usr/pack/riscv-1.0-kgf/spatz-gcc-7.1.1
+export TOOLS_DIR=/usr/scratch2/pisoc10/spatz/tools
+export LLVM_INSTALL_DIR=$TOOLS_DIR/riscv-llvm

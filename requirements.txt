@@ -1,3 +1,5 @@
+numpy
+json5
 hjson
 jsonref
 jsonschema
